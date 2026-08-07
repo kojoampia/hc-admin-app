@@ -5,6 +5,7 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { TranslatePipe } from '@ngx-translate/core';
 import { map } from 'rxjs';
 
+import { ApiMode, ApiModeService } from 'app/core/api-mode/api-mode.service';
 import { AccountService } from 'app/core/auth/account.service';
 import { LoginService } from 'app/login/login.service';
 import { IAuditEntry } from 'app/entities/platform/audit-entry/audit-entry.model';
@@ -53,9 +54,16 @@ export default class OrganisationProfile implements OnInit {
   private readonly accountService = inject(AccountService);
   private readonly loginService = inject(LoginService);
   private readonly professionalNames = inject(ProfessionalNamesService);
+  private readonly apiModeService = inject(ApiModeService);
 
   // eslint-disable-next-line @typescript-eslint/member-ordering
   readonly account = this.accountService.account;
+  // eslint-disable-next-line @typescript-eslint/member-ordering
+  readonly apiMode = this.apiModeService.mode;
+  // eslint-disable-next-line @typescript-eslint/member-ordering
+  readonly gatewayUrl = this.apiModeService.gatewayUrl;
+  // eslint-disable-next-line @typescript-eslint/member-ordering
+  readonly gatewayDraft = signal('');
 
   // eslint-disable-next-line @typescript-eslint/member-ordering
   readonly currentRole = computed(() => roleByAuthorities(this.account()?.authorities));
@@ -86,6 +94,23 @@ export default class OrganisationProfile implements OnInit {
 
   selectTab(tab: OrganisationTab): void {
     this.activeTab.set(tab);
+    if (tab === 'security') {
+      this.gatewayDraft.set(this.gatewayUrl());
+    }
+  }
+
+  /**
+   * Point the console at the mock or at a real gateway.
+   *
+   * This reloads. Switching data source mid-session would leave every loaded
+   * screen showing rows from the other one, and the stored token was minted
+   * by whichever side answered /api/authenticate.
+   */
+  switchApiMode(mode: ApiMode): void {
+    if (mode === this.apiMode()) {
+      return;
+    }
+    this.apiModeService.switchAndReload(mode, mode === 'network' ? this.gatewayDraft() : undefined);
   }
 
   /**

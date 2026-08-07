@@ -127,6 +127,45 @@
         </section>
 
         <section class="card card-pad">
+          <h4 abfTranslate="organisation.security.dataSource">Data source</h4>
+          <p class="muted small" abfTranslate="organisation.security.dataSourceHint">
+            The console can answer its own API in the browser, or talk to a real hc-admin-gateway. Switching signs you out and reloads.
+          </p>
+
+          <dl class="kv-list">
+            <dt abfTranslate="organisation.security.currentMode">Current</dt>
+            <dd>
+              <abf-status-pill [status]="apiMode() === 'mock' ? 'DEGRADED' : 'HEALTHY'" namespace="organisation.security.mode" />
+            </dd>
+          </dl>
+
+          @if (apiMode() === 'mock') {
+            <div class="field mt-12">
+              <label class="hpd-label" for="abf-gateway-url" abfTranslate="organisation.security.gatewayUrl">Gateway URL</label>
+              <input
+                id="abf-gateway-url"
+                type="url"
+                class="form-control"
+                [value]="gatewayDraft()"
+                (input)="gatewayDraft.set($any($event.target).value)"
+              />
+            </div>
+            <button type="button" class="btn btn-primary btn-sm mt-12" (click)="switchApiMode('network')">
+              <fa-icon icon="cloud" />
+              <span abfTranslate="organisation.security.useGateway">Connect to the gateway</span>
+            </button>
+          } @else {
+            <p class="muted small">
+              {{ gatewayUrl() || ('organisation.security.sameOrigin' | translate) }}
+            </p>
+            <button type="button" class="btn btn-ghost btn-sm mt-12" (click)="switchApiMode('mock')">
+              <fa-icon icon="database" />
+              <span abfTranslate="organisation.security.useMock">Return to the in-browser mock</span>
+            </button>
+          }
+        </section>
+
+        <section class="card card-pad">
           <h4 abfTranslate="organisation.security.switchRole">Switch role</h4>
           <p class="muted small" abfTranslate="organisation.security.switchHint">
             Switching re-issues the session token. Controls gated on an authority you no longer hold disappear immediately.

@@ -1,5 +1,5 @@
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
-import { ApplicationConfig, LOCALE_ID, inject } from '@angular/core';
+import { ApplicationConfig, LOCALE_ID, inject, provideAppInitializer } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import {
   NavigationError,
@@ -21,6 +21,7 @@ import { authExpiredInterceptor } from 'app/core/interceptor/auth-expired.interc
 import { authInterceptor } from 'app/core/interceptor/auth.interceptor';
 import { errorHandlerInterceptor } from 'app/core/interceptor/error-handler.interceptor';
 import { notificationInterceptor } from 'app/core/interceptor/notification.interceptor';
+import { ApiModeService } from 'app/core/api-mode/api-mode.service';
 import { mockApiInterceptor } from 'app/core/mock/mock-api.interceptor';
 
 import './config/dayjs';
@@ -56,6 +57,11 @@ if (environment.DEBUG_INFO_ENABLED) {
 export const appConfig: ApplicationConfig = {
   providers: [
     provideTranslation(),
+    // Before anything issues a request: decide whether we are talking to the
+    // in-browser mock or a real gateway, and set the endpoint prefix to match.
+    provideAppInitializer(() => {
+      inject(ApiModeService).restore();
+    }),
     provideRouter(routes, ...routerFeatures),
     // Set this to true to enable service worker (PWA)
     provideServiceWorker('ngsw-worker.js', { enabled: false }),

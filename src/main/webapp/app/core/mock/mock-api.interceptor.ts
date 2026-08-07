@@ -2,6 +2,8 @@ import { HttpErrorResponse, HttpEvent, HttpHandlerFn, HttpParams, HttpRequest, H
 import { InjectionToken, inject } from '@angular/core';
 import { Observable, delay, of, throwError } from 'rxjs';
 
+import { ApiModeService } from 'app/core/api-mode/api-mode.service';
+
 import { MockNotFoundError, MockStatusError, handleRequest } from './mock-router';
 
 /**
@@ -55,8 +57,16 @@ const API_PREFIX = /^(?:.*\/)?(api|management)\//;
 
 export const mockApiInterceptor = (request: HttpRequest<unknown>, next: HttpHandlerFn): Observable<HttpEvent<unknown>> => {
   // Read from DI first: inject() is only valid during this function's
-  // synchronous run, and the early return below would otherwise skip it.
+  // synchronous run, and the early returns below would otherwise skip it.
   const configuredLatency = inject(MOCK_LATENCY);
+  const apiMode = inject(ApiModeService);
+
+  // In network mode this interceptor does nothing at all — every request goes
+  // to the real gateway. It stays registered rather than being conditionally
+  // provided so the switch is a runtime decision, not a rebuild.
+  if (!apiMode.isMock()) {
+    return next(request);
+  }
 
   const [pathPart, queryPart] = request.urlWithParams.split('?');
   const match = API_PREFIX.exec(pathPart);

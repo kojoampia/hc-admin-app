@@ -17,4 +17,22 @@
  *
  * @type {import('vite').CommonServerOptions['proxy']}
  */
-export default {};
+const gatewayHost = process.env.ABF_GATEWAY_HOST ?? '127.0.0.1';
+const gatewayPort = process.env.ABF_GATEWAY_PORT ?? 5504;
+
+export default {
+  // Only reached in NETWORK mode. In mock mode the interceptor resolves these
+  // paths inside the browser and nothing arrives here at all.
+  //
+  // It is a proxy rather than a direct cross-origin call on purpose: the
+  // gateway would otherwise have to CORS-allow the dev server, and a
+  // same-origin path also keeps the JWT on the same site.
+  '^/(api|management)/': {
+    target: `http://${gatewayHost}:${gatewayPort}`,
+    xfwd: true,
+    // A dead gateway should fail fast and visibly, not hang the request until
+    // something times out and looks like slowness.
+    timeout: 5000,
+    proxyTimeout: 5000,
+  },
+};
