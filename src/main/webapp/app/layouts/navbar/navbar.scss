@@ -6,6 +6,15 @@ is the only place the shell's grid gives up its second column.
 ========================================================================== */
 @import 'hc-tokens';
 
+/* The component host must not be the grid item — the shell's grid expects the
+   sidebar element itself in its first column. `display: contents` lifts both
+   children (the sidebar and the drawer scrim) into the grid; the scrim is
+   `display: none` on desktop and `position: fixed` once shown, so it never
+   claims a column. */
+:host {
+  display: contents;
+}
+
 .abf-sidebar {
   background: var(--abf-navy);
   color: #fff;
@@ -69,7 +78,9 @@ is the only place the shell's grid gives up its second column.
   }
 }
 
-.nav {
+// Renamed from the prototype's `.nav`: Bootstrap owns that class globally and
+// its `flex-wrap: wrap` fought this column, wrapping the sidebar into two.
+.abf-nav {
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -134,7 +145,7 @@ is the only place the shell's grid gives up its second column.
   }
 }
 
-.nav-lbl {
+.abf-nav-lbl {
   font-size: 10px;
   letter-spacing: 0.15em;
   text-transform: uppercase;

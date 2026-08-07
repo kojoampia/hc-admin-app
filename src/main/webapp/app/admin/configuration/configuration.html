@@ -24,7 +24,7 @@
             </td>
             <td>
               @for (property of bean.properties | keyvalue; track property.key) {
-                <div class="row">
+                <div class="abf-row">
                   <div class="col-md-4">{{ property.key }}</div>
                   <div class="col-md-8">
                     <span class="float-end bg-secondary break">{{ property.value | json }}</span>

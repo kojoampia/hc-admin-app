@@ -26,7 +26,7 @@
 <div class="tab-panel" role="tabpanel" [id]="'abf-panel-' + activeTab()" [attr.aria-labelledby]="'abf-tab-' + activeTab()">
   @switch (activeTab()) {
     @case ('about') {
-      <div class="grid g-2">
+      <div class="abf-grid abf-g-2">
         <section class="card card-pad">
           <h4 abfTranslate="organisation.about.identity">Organisation</h4>
           <dl class="kv-list">
@@ -93,7 +93,7 @@
               @for (team of teams(); track team.id) {
                 <tr>
                   <td>{{ team.name }}</td>
-                  <td class="muted">{{ team.supervisor?.licenceNumber ?? '—' }}</td>
+                  <td class="muted">{{ supervisorName(team) }}</td>
                   <td class="right">
                     <a class="btn btn-ghost btn-sm" [routerLink]="['/team', team.id, 'view']">
                       <fa-icon icon="eye" />
@@ -113,7 +113,7 @@
     }
 
     @case ('security') {
-      <div class="grid g-2">
+      <div class="abf-grid abf-g-2">
         <section class="card card-pad">
           <h4 abfTranslate="organisation.security.signedIn">Signed in as</h4>
           <dl class="kv-list">

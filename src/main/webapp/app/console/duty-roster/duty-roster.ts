@@ -15,6 +15,7 @@ import { ShiftAssignmentService } from 'app/entities/operations/shift-assignment
 import { TranslateDirective } from 'app/shared/language';
 import HasAnyAuthorityDirective from 'app/shared/auth/has-any-authority.directive';
 import { ConsoleAuthority } from 'app/shared/auth/console-role';
+import { AccountService } from 'app/core/auth/account.service';
 
 /** unassigned -> DAY -> EVENING -> NIGHT -> OFF -> unassigned. */
 export const SHIFT_CYCLE: (ShiftKind | null)[] = [null, 'DAY', 'EVENING', 'NIGHT', 'OFF'];
@@ -68,6 +69,20 @@ export default class DutyRoster implements OnInit {
   private readonly rosterWeekService = inject(RosterWeekService);
   private readonly shiftService = inject(ShiftAssignmentService);
   private readonly professionalService = inject(ProfessionalService);
+  private readonly accountService = inject(AccountService);
+
+  /**
+   * Cycling a cell writes a ShiftAssignment, so it is a mutating control and
+   * must be gated like every other one. The toolbar buttons sit behind
+   * *abfHasAnyAuthority; a grid of 49 buttons is cheaper to disable than to
+   * wrap individually, and disabled communicates "read-only" better than a
+   * cell that silently does nothing.
+   */
+  // eslint-disable-next-line @typescript-eslint/member-ordering
+  readonly canEdit = computed(() => {
+    this.accountService.account();
+    return this.accountService.hasAnyAuthority(ConsoleAuthority.ADMIN);
+  });
 
   /** Slots that could be planned: seven days for every rostered professional. */
   // eslint-disable-next-line @typescript-eslint/member-ordering
@@ -135,6 +150,9 @@ export default class DutyRoster implements OnInit {
 
   /** Click a cell to advance it through the cycle. */
   cycle(row: RosterRow, dayIndex: number): void {
+    if (!this.canEdit()) {
+      return;
+    }
     const cell = row.cells[dayIndex];
     const target = nextShift(cell.shift);
     this.isSaving.set(true);
@@ -269,15 +287,19 @@ export default class DutyRoster implements OnInit {
   }
 
   /**
-   * Only professionals who appear on the roster get a row — the grid shows
-   * the rostered staff, not the whole directory, which is why the prototype
-   * lists seven of nine.
+   * Every rosterable professional gets a row — everyone except pending
+   * applicants, which is seven of the nine on file and matches the
+   * prototype's grid exactly.
+   *
+   * Membership deliberately does NOT come from "has an assignment this week".
+   * An unassigned cell is the absence of a ShiftAssignment, so anyone with a
+   * completely empty week would vanish from the grid — hiding precisely the
+   * person whose gaps most need filling, and quietly shrinking the
+   * unassigned-slot count that is supposed to surface them.
    */
   private buildRows(professionals: IProfessional[], assignments: IShiftAssignment[]): void {
-    const rostered = new Set(assignments.map(assignment => assignment.professional?.id).filter((id): id is number => id != null));
-
     const rows = professionals
-      .filter(professional => rostered.has(professional.id))
+      .filter(professional => professional.status !== 'PENDING')
       .map(professional => {
         const cells: RosterCell[] = this.dayIndexes.map(dayIndex => {
           const match = assignments.find(assignment => assignment.professional?.id === professional.id && assignment.dayIndex === dayIndex);

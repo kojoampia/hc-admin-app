@@ -6,6 +6,15 @@
   min-height: 100vh;
 }
 
+/* A <router-outlet> renders its component as a SIBLING and stays in the DOM
+   itself, so the element would otherwise consume the first grid column and
+   push the sidebar and main pane one cell to the right. The navbar component
+   sets `:host { display: contents }` for the same reason — between them, the
+   grid's children are exactly the sidebar and the main pane. */
+.abf-shell > router-outlet {
+  display: none;
+}
+
 .abf-main {
   display: flex;
   flex-direction: column;

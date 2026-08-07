@@ -37,7 +37,7 @@
             <span class="tl">{{ task.title }}</span>
             <span class="mt">
               <span class="tiny-av">{{ ownerInitials(task) }}</span>
-              <span class="trunc">{{ task.owner?.licenceNumber ?? ('taskBoard.unassigned' | translate) }}</span>
+              <span class="trunc">{{ ownerName(task) || ('taskBoard.unassigned' | translate) }}</span>
               @if (task.tag) {
                 <span class="tag">{{ task.tag }}</span>
               }

@@ -14,6 +14,7 @@ import HasAnyAuthorityDirective from 'app/shared/auth/has-any-authority.directiv
 import { ConsoleAuthority } from 'app/shared/auth/console-role';
 import { ShellCountersService } from 'app/layouts/shell-counters.service';
 
+import { ProfessionalNamesService } from '../shared/professional-names.service';
 import { TaskDialog } from './task-dialog';
 
 export type TaskState = 'TODO' | 'DOING' | 'DONE';
@@ -45,6 +46,7 @@ export default class TaskBoard implements OnInit {
   private readonly taskService = inject(TaskService);
   private readonly counters = inject(ShellCountersService);
   private readonly modalService = inject(NgbModal);
+  private readonly professionalNames = inject(ProfessionalNamesService);
 
   private readonly filtered = computed(() => {
     const term = this.search().trim().toLowerCase();
@@ -52,7 +54,7 @@ export default class TaskBoard implements OnInit {
       return this.tasks();
     }
     return this.tasks().filter(task =>
-      [task.title, task.tag, task.owner?.licenceNumber].some(value => (value ?? '').toLowerCase().includes(term)),
+      [task.title, task.tag, this.ownerName(task)].some(value => (value ?? '').toLowerCase().includes(term)),
     );
   });
 
@@ -65,6 +67,7 @@ export default class TaskBoard implements OnInit {
   );
 
   ngOnInit(): void {
+    this.professionalNames.load();
     this.load();
   }
 
@@ -102,18 +105,15 @@ export default class TaskBoard implements OnInit {
   }
 
   /**
-   * The owner monogram. `Professional` has no name of its own — the name
-   * lives on its `Profile`, which the list projection does not carry — so
-   * this falls back to the licence number's initials, which is what the
-   * relationship actually exposes here.
+   * The owner's real name. `Professional` has no name of its own — it lives
+   * on the related `Profile` — so the relationship carries a licence number
+   * and this resolves it to something a person can read.
    */
+  ownerName(task: ITask): string {
+    return this.professionalNames.nameFor(task.owner?.id, task.owner?.licenceNumber);
+  }
+
   ownerInitials(task: ITask): string {
-    const licence = task.owner?.licenceNumber ?? '';
-    return (
-      licence
-        .replace(/[^A-Za-z]/g, '')
-        .slice(0, 2)
-        .toUpperCase() || '··'
-    );
+    return this.professionalNames.initialsFor(task.owner?.id, task.owner?.licenceNumber);
   }
 }

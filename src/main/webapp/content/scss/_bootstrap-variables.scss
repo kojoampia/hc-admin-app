@@ -28,12 +28,18 @@ $border-radius: 0.875rem;
 $border-radius-sm: 0.5rem;
 $border-radius-lg: 1.25rem;
 
-// Theme colours.
+// Theme colours. All six are mapped, not just the four the palette names:
+// the generated entity screens use `btn-info` for "Refresh list" and
+// `btn-light`/`btn-dark` in their toolbars, and Bootstrap's stock cyan and
+// greys are the one place unbranded colour reaches the console.
 $primary: $abf-navy;
 $secondary: $abf-gold;
 $success: $abf-ok;
 $warning: $abf-warn;
 $danger: $abf-danger;
+$info: $abf-navy-700;
+$light: $abf-cream;
+$dark: $abf-navy-900;
 
 // Body:
 // Settings for the `<body>` element.

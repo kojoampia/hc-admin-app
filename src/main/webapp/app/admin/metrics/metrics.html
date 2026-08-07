@@ -11,7 +11,7 @@
 
   @let metricsRef = metrics();
   @if (metricsRef && !updatingMetrics()) {
-    <div class="row">
+    <div class="abf-row">
       <abf-jvm-memory class="col-md-4" [updating]="updatingMetrics()" [jvmMemoryMetrics]="metricsRef.jvm" />
 
       <abf-jvm-threads class="col-md-4" [threads]="threads()" />

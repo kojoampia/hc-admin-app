@@ -44,7 +44,7 @@
     <dl class="meta">
       <div>
         <dt abfTranslate="taskBoard.dialog.owner">Owner</dt>
-        <dd>{{ current.owner?.licenceNumber ?? ('taskBoard.unassigned' | translate) }}</dd>
+        <dd>{{ ownerName() || ('taskBoard.unassigned' | translate) }}</dd>
       </div>
       <div>
         <dt abfTranslate="taskBoard.dialog.due">Due</dt>
@@ -56,7 +56,7 @@
       </div>
     </dl>
 
-    <div class="row gap-8 wrap pills">
+    <div class="abf-row gap-8 wrap pills">
       <abf-status-pill [status]="current.priority" />
       <abf-status-pill [status]="current.state" />
     </div>
@@ -68,7 +68,7 @@
       </p>
     }
 
-    <div class="field">
+    <div class="field" *abfHasAnyAuthority="adminOnly">
       <span class="seg-label" abfTranslate="taskBoard.dialog.moveTo">Move to</span>
       <div class="seg" role="group" [attr.aria-label]="'taskBoard.dialog.moveTo' | translate">
         @for (state of columns; track state) {
@@ -90,7 +90,7 @@
 <div class="modal-footer">
   <button type="button" class="btn btn-ghost" (click)="cancel()" abfTranslate="entity.action.cancel">Cancel</button>
   @if (isNew) {
-    <button type="button" class="btn btn-primary" [disabled]="isSaving()" (click)="save()">
+    <button type="button" class="btn btn-primary" [disabled]="isSaving()" (click)="save()" *abfHasAnyAuthority="adminOnly">
       <fa-icon icon="save" />
       <span abfTranslate="entity.action.save">Save</span>
     </button>

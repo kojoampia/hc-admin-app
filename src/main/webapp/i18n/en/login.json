@@ -6,7 +6,9 @@
       "password.placeholder": "Your password",
       "rememberme": "Remember me",
       "button": "Sign in",
-      "signInAs": "Sign in as"
+      "signInAs": "Sign in as",
+      "workEmail": "Work email",
+      "workEmail.placeholder": "name@abofonsa.care"
     },
     "messages": {
       "error": {

@@ -12,9 +12,9 @@
     </div>
   </div>
 
-  <nav class="nav" [attr.aria-label]="'global.menu.primary' | translate">
+  <nav class="abf-nav" [attr.aria-label]="'global.menu.primary' | translate">
     @for (group of groups(); track group.label) {
-      <div class="nav-lbl">{{ group.label | translate }}</div>
+      <div class="abf-nav-lbl">{{ group.label | translate }}</div>
       @for (item of group.items; track item.route) {
         <a [routerLink]="'/' + item.route" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }" (click)="close()">
           <fa-icon [icon]="item.icon" />
@@ -26,7 +26,7 @@
       }
     }
 
-    <div class="nav-lbl" abfTranslate="global.menu.group.session">Session</div>
+    <div class="abf-nav-lbl" abfTranslate="global.menu.group.session">Session</div>
     <a routerLink="/admin/user-management" routerLinkActive="active" *abfHasAnyAuthority="'ROLE_ADMIN'" (click)="close()">
       <fa-icon icon="users-cog" />
       <span abfTranslate="global.menu.admin.userManagement">User management</span>

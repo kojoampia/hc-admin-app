@@ -41,6 +41,10 @@
   gap: 11px;
   padding: 9px 0;
   border-bottom: 1px solid var(--abf-line);
+  /* Two planes sit side by side, so each row is narrow. Let the service name
+     wrap rather than truncate — "Professional Dashboard" and "Professional
+     Gateway" are indistinguishable once cut to "Professional ...". */
+  flex-wrap: wrap;
 
   &:last-child {
     border-bottom: none;
@@ -70,7 +74,7 @@
   }
 
   .grow {
-    flex: 1;
+    flex: 1 1 130px;
     min-width: 0;
   }
 

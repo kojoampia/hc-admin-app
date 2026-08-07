@@ -10,6 +10,10 @@ import { TaskService } from 'app/entities/operations/task/service/task.service';
 import { FormatMediumDatePipe } from 'app/shared/date';
 import { TranslateDirective } from 'app/shared/language';
 
+import HasAnyAuthorityDirective from 'app/shared/auth/has-any-authority.directive';
+import { ConsoleAuthority } from 'app/shared/auth/console-role';
+
+import { ProfessionalNamesService } from '../shared/professional-names.service';
 import { StatusPill } from '../shared/status-pill/status-pill';
 import { TASK_COLUMNS, TaskState } from './task-board';
 
@@ -25,12 +29,13 @@ import { TASK_COLUMNS, TaskState } from './task-board';
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './task-dialog.html',
   styleUrl: './task-dialog.scss',
-  imports: [FormsModule, FontAwesomeModule, TranslateDirective, TranslatePipe, FormatMediumDatePipe, StatusPill],
+  imports: [FormsModule, FontAwesomeModule, TranslateDirective, TranslatePipe, FormatMediumDatePipe, HasAnyAuthorityDirective, StatusPill],
 })
 export class TaskDialog {
   /** Set by the opener. `null` means "create". */
   task: ITask | null = null;
 
+  readonly adminOnly = [ConsoleAuthority.ADMIN];
   readonly columns = TASK_COLUMNS;
   readonly priorities = ['HIGH', 'NORMAL', 'LOW'];
 
@@ -42,6 +47,12 @@ export class TaskDialog {
 
   protected readonly activeModal = inject(NgbActiveModal);
   private readonly taskService = inject(TaskService);
+  private readonly professionalNames = inject(ProfessionalNamesService);
+
+  /** The owner's real name, resolved through Profile. */
+  ownerName(): string {
+    return this.professionalNames.nameFor(this.task?.owner?.id, this.task?.owner?.licenceNumber);
+  }
 
   get isNew(): boolean {
     return this.task === null;

@@ -11,7 +11,7 @@
   </div>
 </div>
 
-<div class="grid g-3 mb-18">
+<div class="abf-grid abf-g-3 mb-18">
   @for (status of STATUSES; track status) {
     <button type="button" class="stat" (click)="toggleChip('status', status)">
       <span class="ic" [class]="'ic--' + status.toLowerCase()"><fa-icon icon="envelope" /></span>

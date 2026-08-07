@@ -111,6 +111,14 @@
     background: #f5f8fc;
   }
 
+  /* The prototype strikes through a selected .opt because it uses that
+     component for completed checklist items. Here .sel means "this is the
+     role you are signed in as", which is the opposite of struck out. */
+  &.sel .tl {
+    text-decoration: none;
+    color: var(--abf-navy);
+  }
+
   .grow {
     flex: 1;
     min-width: 0;

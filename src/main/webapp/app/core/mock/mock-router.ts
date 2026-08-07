@@ -87,8 +87,11 @@ const dashboardMetrics = (): DashboardMetrics => {
     data.vendors.filter(row => row.status === 'PENDING').length;
 
   const assignedShifts = data['shift-assignments'].filter(shift => shift.shift !== 'OFF').length;
-  const rosteredStaff = new Set(data['shift-assignments'].map((shift): unknown => shift.professional?.id)).size;
-  // Seven days for each professional who appears on the roster at all.
+  // Rosterable staff is everyone but pending applicants — the same rule the
+  // duty-roster grid uses. Counting distinct professionals that happen to
+  // have an assignment would omit anyone with an entirely empty week and
+  // shrink the denominator, reporting better cover than there really is.
+  const rosteredStaff = data.professionals.filter(pro => pro.status !== 'PENDING').length;
   const rosterSlots = rosteredStaff * 7;
   const filledSlots = data['shift-assignments'].length;
 

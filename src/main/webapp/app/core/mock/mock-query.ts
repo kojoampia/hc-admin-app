@@ -60,14 +60,31 @@ const stringify = (value: unknown): string => {
   return '';
 };
 
-/** Reach into a row by dotted path, so `plan.name` sorts and filters. */
-export const valueAt = (row: unknown, path: string): unknown =>
+const walk = (row: unknown, path: string): unknown =>
   path.split('.').reduce<unknown>((value, key) => {
     if (value == null || typeof value !== 'object') {
       return undefined;
     }
     return (value as Record<string, unknown>)[key];
   }, row);
+
+/**
+ * Reach into a row by dotted path, so `plan.name` sorts and filters.
+ *
+ * Also honours JHipster's relationship-filter convention: the generated
+ * clients send `weekId.equals=1`, not `week.id.equals=1`, so a `<name>Id`
+ * field that does not exist literally falls back to `<name>.id`. Without
+ * this every relationship filter silently matches nothing — which reads as
+ * "there is no data" rather than "the filter was not understood".
+ */
+export const valueAt = (row: unknown, path: string): unknown => {
+  const direct = walk(row, path);
+  if (direct !== undefined) {
+    return direct;
+  }
+  const relationship = /^(.*)Id$/.exec(path);
+  return relationship ? walk(row, `${relationship[1]}.id`) : undefined;
+};
 
 const asComparable = (value: unknown): Comparable => {
   if (value == null) {

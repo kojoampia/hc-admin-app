@@ -17,7 +17,7 @@
         {{ thread.sentAt | formatMediumDatetime }}
       </div>
     </div>
-    <div class="row gap-8 wrap">
+    <div class="abf-row gap-8 wrap">
       <abf-status-pill [status]="thread.priority" />
       <abf-status-pill [status]="thread.status" />
     </div>
@@ -41,7 +41,7 @@
             [attr.placeholder]="'messageDesk.thread.replyPlaceholder' | translate"
           ></textarea>
         </div>
-        <div class="row gap-8 wrap">
+        <div class="abf-row gap-8 wrap">
           <button type="button" class="btn btn-primary" [disabled]="!reply().trim()" (click)="send()">
             <fa-icon icon="paper-plane" />
             <span abfTranslate="messageDesk.thread.send">Send reply</span>

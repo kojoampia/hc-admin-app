@@ -1,7 +1,7 @@
 import { Account } from 'app/core/auth/account.model';
 import { CONSOLE_ROLES, ConsoleRole, roleByKey } from 'app/shared/auth/console-role';
 
-import { DEMO_ME, DEMO_ORG } from './mock-db';
+import { DEMO_ME } from './mock-db';
 
 /**
  * `/api/authenticate` and `/api/account`.
@@ -99,14 +99,17 @@ export const accountFor = (role: ConsoleRole): Account => {
     };
   }
 
-  const [firstName, ...rest] = role.key === 'sup' ? ['Supervisor'] : ['Message', 'desk'];
+  // The prototype names only the operator; the other two roles are desks, not
+  // people. They get the desk's name and no surname — falling back to the
+  // organisation's name produced "Supervisor Abofonsa BridgeCare", which
+  // reads as a person who does not exist.
   return {
     activated: true,
     authorities: [...role.authorities],
     email: role.login,
-    firstName,
+    firstName: role.key === 'sup' ? 'Supervisor' : 'Message desk',
     langKey: 'en',
-    lastName: rest.join(' ') || DEMO_ORG.name,
+    lastName: null,
     login: role.login,
     imageUrl: null,
   };

@@ -5,7 +5,7 @@
   </div>
 </div>
 
-<div class="grid g-4 mb-18">
+<div class="abf-grid abf-g-4 mb-18">
   <div class="stat">
     <span class="ic ic--ok"><fa-icon icon="check" /></span>
     <b>{{ healthyCount() }}/{{ services().length }}</b>
@@ -28,7 +28,7 @@
   </div>
 </div>
 
-<div class="grid g-2">
+<div class="abf-grid abf-g-2">
   @for (group of planes(); track group.plane) {
     <section class="card card-pad">
       <h4 class="plane-title">
@@ -40,8 +40,8 @@
           <span class="dot" [class.dot--warn]="service.health !== 'HEALTHY'" aria-hidden="true"></span>
           <span class="port">{{ service.port }}</span>
           <span class="grow">
-            <span class="nm trunc">{{ service.name }}</span>
-            <span class="sb trunc">{{ service.host }}</span>
+            <span class="nm">{{ service.name }}</span>
+            <span class="sb">{{ service.host }}</span>
           </span>
           <abf-status-pill [status]="service.health" />
           <span class="ms">{{ service.responseMs }} ms</span>

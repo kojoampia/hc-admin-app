@@ -17,6 +17,7 @@ import { FormatMediumDatePipe, FormatMediumDatetimePipe } from 'app/shared/date'
 import { TranslateDirective } from 'app/shared/language';
 import { CONSOLE_ROLES, ConsoleRole, roleByAuthorities } from 'app/shared/auth/console-role';
 
+import { ProfessionalNamesService } from '../shared/professional-names.service';
 import { StatusPill } from '../shared/status-pill/status-pill';
 
 export type OrganisationTab = 'about' | 'address' | 'team' | 'security' | 'audit';
@@ -51,6 +52,7 @@ export default class OrganisationProfile implements OnInit {
   private readonly auditEntryService = inject(AuditEntryService);
   private readonly accountService = inject(AccountService);
   private readonly loginService = inject(LoginService);
+  private readonly professionalNames = inject(ProfessionalNamesService);
 
   // eslint-disable-next-line @typescript-eslint/member-ordering
   readonly account = this.accountService.account;
@@ -59,6 +61,8 @@ export default class OrganisationProfile implements OnInit {
   readonly currentRole = computed(() => roleByAuthorities(this.account()?.authorities));
 
   ngOnInit(): void {
+    this.professionalNames.load();
+
     this.organisationService
       .query({ page: 0, size: 1 })
       .pipe(map(response => response.body ?? []))
@@ -73,6 +77,11 @@ export default class OrganisationProfile implements OnInit {
       .query({ page: 0, size: 50, sort: ['occurredAt,desc'] })
       .pipe(map(response => response.body ?? []))
       .subscribe(entries => this.auditTrail.set(entries));
+  }
+
+  /** Supervisors are Professional references, so they arrive as licence numbers. */
+  supervisorName(team: ITeam): string {
+    return this.professionalNames.nameFor(team.supervisor?.id, team.supervisor?.licenceNumber) || '—';
   }
 
   selectTab(tab: OrganisationTab): void {
