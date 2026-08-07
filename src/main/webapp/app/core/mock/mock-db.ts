@@ -1230,7 +1230,7 @@ export const splitName = (fullName: string): { title: string | null; firstName: 
 // already keys its records 'p1', 'a3', 'm12', so the seed uses those instead
 // of inventing positions, and /patient/a3/view now names the same record the
 // prototype does.
-const proById = (key: string) => DEMO_PROS.find(p => p.id === key)!;
+const proById = (key: string): (typeof DEMO_PROS)[number] => DEMO_PROS.find(p => p.id === key)!;
 const planIdByName = (name: string): string => DEMO_PLANS.find(p => p.name === name)?.id ?? DEMO_PLANS[0].id;
 
 export const HUBS = ['Accra Hub', 'Kumasi Hub'];

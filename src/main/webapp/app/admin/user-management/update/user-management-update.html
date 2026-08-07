@@ -1,0 +1,92 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    <form name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">
+      <h2 abfTranslate="userManagement.home.createOrEditLabel" data-cy="userManagementCreateUpdateHeading">Create or edit a user</h2>
+
+      <div>
+        @if (editForm.value.id) {
+          <div class="mb-3">
+            <label class="form-label" for="user-id" abfTranslate="global.field.id">ID</label>
+            <input id="user-id" type="text" class="form-control" name="id" formControlName="id" readonly />
+          </div>
+        }
+
+        <div class="mb-3">
+          <label class="form-label" for="user-login" abfTranslate="userManagement.login">Login</label>
+          <input id="user-login" type="text" class="form-control" name="login" formControlName="login" data-cy="login" />
+          @if (editForm.get('login')!.invalid && (editForm.get('login')!.dirty || editForm.get('login')!.touched)) {
+            <div>
+              @if (editForm.get('login')?.errors?.required) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.required">This field is required.</small>
+              }
+              @if (editForm.get('login')?.errors?.maxlength) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.maxlength">This field cannot be longer than 50.</small>
+              }
+              @if (editForm.get('login')?.errors?.pattern) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.patternLogin"
+                  >This field can only contain letters, digits and email addresses.</small
+                >
+              }
+            </div>
+          }
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="user-firstName" abfTranslate="userManagement.firstName">First name</label>
+          <input id="user-firstName" type="text" class="form-control" name="firstName" formControlName="firstName" data-cy="firstName" />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="user-lastName" abfTranslate="userManagement.lastName">Last name</label>
+          <input id="user-lastName" type="text" class="form-control" name="lastName" formControlName="lastName" data-cy="lastName" />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="user-email" abfTranslate="userManagement.email">Email</label>
+          <input id="user-email" type="email" class="form-control" name="email" formControlName="email" data-cy="email" />
+          @if (editForm.get('email')!.invalid && (editForm.get('email')!.dirty || editForm.get('email')!.touched)) {
+            <div>
+              @if (editForm.get('email')?.errors?.required) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.required">This field is required.</small>
+              }
+              @if (editForm.get('email')?.errors?.email) {
+                <small class="form-text text-danger" abfTranslate="global.messages.validate.email.invalid">Your email is invalid.</small>
+              }
+            </div>
+          }
+        </div>
+
+        <div class="form-check mb-3">
+          <input class="form-check-input" type="checkbox" id="activated" name="activated" formControlName="activated" data-cy="activated" />
+          <label class="form-check-label" for="activated" abfTranslate="userManagement.activated">Activated</label>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="user-langKey" abfTranslate="userManagement.langKey">Language</label>
+          <select id="user-langKey" class="form-select" name="langKey" formControlName="langKey">
+            <option value="en">English</option>
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="user-profiles" abfTranslate="userManagement.profiles">Authorities</label>
+          <select id="user-profiles" class="form-select" multiple name="authority" formControlName="authorities" data-cy="authorities">
+            @for (authority of authorities(); track authority) {
+              <option [value]="authority">{{ authority }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <button type="button" class="btn btn-secondary" (click)="previousState()">
+          <span abfTranslate="entity.action.cancel">Cancel</span>
+        </button>
+
+        <button type="submit" [disabled]="editForm.invalid || isSaving()" class="btn btn-primary" data-cy="submit">
+          <span abfTranslate="entity.action.save">Save</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

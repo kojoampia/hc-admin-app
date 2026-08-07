@@ -65,6 +65,15 @@ export const SHELL_NAVIGATION: readonly ShellNavItem[] = [
   // themselves are already guarded by `data.authorities` in admin.routes.ts,
   // and a link that always 403s is worse than no link.
   {
+    // Gateway-owned. Listed first in the group because it is the only admin
+    // screen that manages records rather than reporting on the runtime.
+    route: 'admin/user-management',
+    label: 'global.menu.admin.userManagement',
+    icon: 'users-cog',
+    group: 'global.menu.group.administration',
+    authorities: [Authority.ADMIN],
+  },
+  {
     route: 'admin/health',
     label: 'global.menu.admin.health',
     icon: 'heart',

@@ -15,7 +15,7 @@
 // therefore already has the palette via _bootstrap-variables.scss.
 // ============================================================
 
-$abf-admin-hosts: 'abf-health, abf-metrics, abf-configuration, abf-logs, abf-docs';
+$abf-admin-hosts: 'abf-health, abf-metrics, abf-configuration, abf-logs, abf-docs, abf-user-mgmt, abf-user-mgmt-detail, abf-user-mgmt-update, abf-delete-user-dialog';
 
 #{$abf-admin-hosts} {
   display: block;
@@ -58,7 +58,6 @@ $abf-admin-hosts: 'abf-health, abf-metrics, abf-configuration, abf-logs, abf-doc
     border-radius: var(--abf-r);
     border-collapse: separate;
     border-spacing: 0;
-    overflow: hidden;
     font-size: 13.5px;
     margin-bottom: 18px;
 
@@ -90,8 +89,12 @@ $abf-admin-hosts: 'abf-health, abf-metrics, abf-configuration, abf-logs, abf-doc
     background-color: #fcfbf8;
   }
 
+  /* The rounded corners live here, not on .table: `overflow: hidden` on the
+     table itself clips the last column instead of trimming the corners, and
+     user-management's action group is exactly what falls off the edge. */
   .table-responsive {
     border-radius: var(--abf-r);
+    overflow-x: auto;
   }
 
   /* ---- status badges --------------------------------------------------- */
@@ -188,6 +191,48 @@ $abf-admin-hosts: 'abf-health, abf-metrics, abf-configuration, abf-logs, abf-doc
     color: #7a5c1c;
     padding: 1px 5px;
     border-radius: 4px;
+  }
+
+  /* User management renders its row actions as a .btn-group of three solid
+     buttons, which is a lot of weight for a table cell. Ghost them and let
+     the destructive one keep its colour. */
+  .btn-group .btn-sm {
+    background: #fff;
+    border: 1px solid var(--abf-line);
+    color: var(--abf-navy);
+
+    &:hover {
+      background: var(--abf-cream);
+    }
+
+    &.btn-danger {
+      color: var(--abf-danger);
+
+      &:hover {
+        background: var(--abf-danger-bg);
+      }
+    }
+
+    &[disabled] {
+      opacity: 0.45;
+    }
+  }
+
+  /* The activate / deactivate toggle is a button that reports state. Give it
+     the pill treatment so it reads like the status it is, not like an action
+     that is already running. */
+  .btn-success.btn-sm,
+  .btn-danger.btn-sm:not(.btn-group .btn-sm) {
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3.5px 12px;
+    border: 1px solid currentColor;
+  }
+
+  .btn-success.btn-sm {
+    background: var(--abf-ok-bg);
+    color: var(--abf-ok);
   }
 
   /* Numbers line up when they are tabular; metrics tables are mostly numbers. */

@@ -1,0 +1,119 @@
+<div>
+  <h2>
+    <span id="user-management-page-heading" data-cy="userManagementPageHeading" abfTranslate="userManagement.home.title">Users</span>
+
+    <div class="d-flex justify-content-end">
+      <button class="btn btn-info me-2" (click)="loadAll()" [disabled]="isLoading()">
+        <fa-icon icon="sync" [animation]="isLoading() ? 'spin' : undefined" />
+        <span abfTranslate="userManagement.home.refreshListLabel">Refresh list</span>
+      </button>
+      <a class="btn btn-primary jh-create-entity" routerLink="new" data-cy="entityCreateButton">
+        <fa-icon icon="plus" />
+        <span abfTranslate="userManagement.home.createLabel">Create a new user</span>
+      </a>
+    </div>
+  </h2>
+
+  <abf-alert-error />
+  <abf-alert />
+
+  @if (users(); as users) {
+    <div class="table-responsive">
+      <table class="table table-striped" aria-describedby="user-management-page-heading">
+        <thead>
+          <tr abfSort [(sortState)]="sortState" (sortChange)="navigateToWithComponentValues($event)">
+            <th scope="col" abfSortBy="id"><span abfTranslate="global.field.id">ID</span> <fa-icon [icon]="'sort'" /></th>
+            <th scope="col" abfSortBy="login"><span abfTranslate="userManagement.login">Login</span> <fa-icon [icon]="'sort'" /></th>
+            <th scope="col" abfSortBy="email"><span abfTranslate="userManagement.email">Email</span> <fa-icon [icon]="'sort'" /></th>
+            <th scope="col"></th>
+            <th scope="col" abfSortBy="langKey"><span abfTranslate="userManagement.langKey">Language</span> <fa-icon [icon]="'sort'" /></th>
+            <th scope="col"><span abfTranslate="userManagement.profiles">Authorities</span></th>
+            <th scope="col" abfSortBy="createdDate">
+              <span abfTranslate="userManagement.createdDate">Created</span> <fa-icon [icon]="'sort'" />
+            </th>
+            <th scope="col"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (user of users; track trackIdentity(user)) {
+            <tr>
+              <td>
+                <a [routerLink]="['./', user.login, 'view']">{{ user.id }}</a>
+              </td>
+              <td>{{ user.login }}</td>
+              <td>{{ user.email }}</td>
+              <td>
+                @if (user.activated) {
+                  <button
+                    class="btn btn-success btn-sm"
+                    (click)="setActive(user, false)"
+                    [disabled]="!canToggle(user)"
+                    [title]="canToggle(user) ? '' : ('userManagement.cannotDeactivateSelf' | translate)"
+                    abfTranslate="userManagement.activated"
+                  >
+                    Activated
+                  </button>
+                } @else {
+                  <button
+                    class="btn btn-danger btn-sm"
+                    (click)="setActive(user, true)"
+                    [disabled]="!canToggle(user)"
+                    abfTranslate="userManagement.deactivated"
+                  >
+                    Deactivated
+                  </button>
+                }
+              </td>
+              <td>{{ user.langKey }}</td>
+              <td>
+                @for (authority of user.authorities; track authority) {
+                  <span class="badge bg-info me-1">{{ authority }}</span>
+                }
+              </td>
+              <td>{{ user.createdDate | formatMediumDatetime }}</td>
+              <td class="text-end">
+                <div class="btn-group">
+                  <a [routerLink]="['./', user.login, 'view']" class="btn btn-info btn-sm">
+                    <fa-icon icon="eye" />
+                    <span class="d-none d-md-inline" abfTranslate="entity.action.view">View</span>
+                  </a>
+                  <a [routerLink]="['./', user.login, 'edit']" class="btn btn-primary btn-sm">
+                    <fa-icon icon="pencil-alt" />
+                    <span class="d-none d-md-inline" abfTranslate="entity.action.edit">Edit</span>
+                  </a>
+                  <button
+                    type="button"
+                    (click)="deleteUser(user)"
+                    class="btn btn-danger btn-sm"
+                    [disabled]="!canToggle(user)"
+                    data-cy="entityDeleteButton"
+                  >
+                    <fa-icon icon="times" />
+                    <span class="d-none d-md-inline" abfTranslate="entity.action.delete">Delete</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    @if (totalItems() > 0) {
+      <div class="d-flex justify-content-center">
+        <abf-item-count [params]="{ page: page(), totalItems: totalItems(), itemsPerPage: itemsPerPage }" />
+      </div>
+      <div class="d-flex justify-content-center">
+        <ngb-pagination
+          [collectionSize]="totalItems()"
+          [page]="page()"
+          [pageSize]="itemsPerPage"
+          [maxSize]="5"
+          [rotate]="true"
+          [boundaryLinks]="true"
+          (pageChange)="navigateToPage($event)"
+        />
+      </div>
+    }
+  }
+</div>

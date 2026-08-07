@@ -1,0 +1,23 @@
+<form name="deleteForm" (ngSubmit)="confirmDelete(user.login!)">
+  <div class="modal-header">
+    <h4 class="modal-title" abfTranslate="entity.delete.title">Confirm delete operation</h4>
+    <button type="button" class="btn-close" data-dismiss="modal" aria-hidden="true" (click)="cancel()"></button>
+  </div>
+
+  <div class="modal-body">
+    <abf-alert-error />
+    <p abfTranslate="userManagement.delete.question" [translateValues]="{ login: user.login }">
+      Are you sure you want to delete this user?
+    </p>
+  </div>
+
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="cancel()">
+      <span abfTranslate="entity.action.cancel">Cancel</span>
+    </button>
+
+    <button type="submit" class="btn btn-danger" data-cy="entityConfirmDeleteButton">
+      <span abfTranslate="entity.action.delete">Delete</span>
+    </button>
+  </div>
+</form>

@@ -21,6 +21,14 @@ const ADMIN_BREADCRUMB = 'global.menu.group.administration';
 
 const routes: Routes = [
   {
+    // Gateway-owned: Account and Authority live in hc-admin-gateway, not in
+    // hc-admin-service, so this module talks to /api/admin/users directly
+    // rather than through a /services/ microservice segment.
+    path: 'user-management',
+    loadChildren: () => import('./user-management/user-management.route'),
+    title: 'userManagement.home.title',
+  },
+  {
     path: 'docs',
     loadComponent: () => import('./docs/docs'),
     title: 'global.menu.admin.apidocs',

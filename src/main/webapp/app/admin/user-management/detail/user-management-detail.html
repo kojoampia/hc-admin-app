@@ -1,0 +1,47 @@
+<div>
+  @if (user(); as user) {
+    <h2>
+      <span abfTranslate="userManagement.detail.title">User</span> [<strong>{{ user.login }}</strong
+      >]
+    </h2>
+
+    <dl class="row-md jh-entity-details">
+      <dt><span abfTranslate="userManagement.login">Login</span></dt>
+      <dd>
+        <span>{{ user.login }}</span>
+        @if (user.activated) {
+          <span class="badge bg-success" abfTranslate="userManagement.activated">Activated</span>
+        } @else {
+          <span class="badge bg-danger" abfTranslate="userManagement.deactivated">Deactivated</span>
+        }
+      </dd>
+      <dt><span abfTranslate="userManagement.firstName">First name</span></dt>
+      <dd>{{ user.firstName }}</dd>
+      <dt><span abfTranslate="userManagement.lastName">Last name</span></dt>
+      <dd>{{ user.lastName }}</dd>
+      <dt><span abfTranslate="userManagement.email">Email</span></dt>
+      <dd>{{ user.email }}</dd>
+      <dt><span abfTranslate="userManagement.langKey">Language</span></dt>
+      <dd>{{ user.langKey }}</dd>
+      <dt><span abfTranslate="userManagement.createdBy">Created by</span></dt>
+      <dd>{{ user.createdBy }}</dd>
+      <dt><span abfTranslate="userManagement.createdDate">Created date</span></dt>
+      <dd>{{ user.createdDate | formatMediumDatetime }}</dd>
+      <dt><span abfTranslate="userManagement.lastModifiedBy">Modified by</span></dt>
+      <dd>{{ user.lastModifiedBy }}</dd>
+      <dt><span abfTranslate="userManagement.lastModifiedDate">Modified date</span></dt>
+      <dd>{{ user.lastModifiedDate | formatMediumDatetime }}</dd>
+      <dt><span abfTranslate="userManagement.profiles">Authorities</span></dt>
+      <dd>
+        @for (authority of user.authorities; track authority) {
+          <span class="badge bg-info me-1">{{ authority }}</span>
+        }
+      </dd>
+    </dl>
+
+    <button type="submit" routerLink="../../" class="btn btn-info">
+      <fa-icon icon="arrow-left" />
+      <span abfTranslate="entity.action.back">Back</span>
+    </button>
+  }
+</div>

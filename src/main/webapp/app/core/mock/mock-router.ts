@@ -8,6 +8,7 @@ import type { DashboardMetrics } from 'app/console/shared/console-metrics.servic
 import { accountFor, decodeToken, issueToken, resolveRole } from './mock-auth';
 import { DEMO_CAPS, DEMO_MESSAGE_VOLUME, DEMO_NET, DEMO_SPARKLINES, db, nextId, resetDatabase } from './mock-db';
 import { handleManagement } from './mock-management';
+import { handleUsers } from './mock-users';
 import { buildLinkHeader, queryCollection } from './mock-query';
 
 /**
@@ -176,6 +177,20 @@ export const handleRequest = (request: MockRequest): HttpResponse<any> => {
       throw new MockStatusError(401, 'Unauthorized');
     }
     return json<Account>(200, accountFor(resolveRole(claims.sub)));
+  }
+
+  // ---- gateway-owned: Account and Authority -----------------------------
+  // These are the only /api/ paths that hc-admin-gateway answers itself
+  // rather than proxying to hc-admin-service.
+  const gateway = handleUsers(method, path, params, body);
+  if (gateway) {
+    if (gateway.status >= 400) {
+      throw new MockStatusError(gateway.status, (gateway.body as { title?: string }).title ?? 'Request failed');
+    }
+    if (gateway.status === 204) {
+      return noContent();
+    }
+    return json(gateway.status, gateway.body, gateway.total === undefined ? {} : { [TOTAL_COUNT_HEADER]: String(gateway.total) });
   }
 
   if (path === 'dashboard/metrics' && method === 'GET') {
