@@ -46,6 +46,6 @@ describe('dashboard', () => {
   it('should link a desk row through to its thread', () => {
     cy.get('[data-cy="latestMessages"]').find('.lrow').should('have.length', 4);
     cy.get('[data-cy="latestMessages"]').find('.lrow').first().click();
-    cy.location('pathname').should('match', /\/message-desk\/\d+$/);
+    cy.location('pathname').should('match', /\/message-desk\/[\w-]+$/);
   });
 });

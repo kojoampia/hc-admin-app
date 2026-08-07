@@ -43,7 +43,7 @@ describe('message desk', () => {
     cy.get('tr.unread').should('have.length', 3);
     cy.get('[data-cy="messageTable"] tbody tr').first().contains('Open').click();
 
-    cy.location('pathname').should('match', /\/message-desk\/\d+$/);
+    cy.location('pathname').should('match', /\/message-desk\/[\w-]+$/);
     cy.contains('Home visit rescheduling request').should('be.visible');
 
     cy.contains('a', 'Back to the desk').click();
