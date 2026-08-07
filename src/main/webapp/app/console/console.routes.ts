@@ -1,0 +1,63 @@
+import { Routes } from '@angular/router';
+
+import { UserRouteAccessService } from 'app/core/auth/user-route-access.service';
+
+/**
+ * The six custom console screens.
+ *
+ * Each is lazy-loaded and each declares `pageTitle` and `breadcrumb` in route
+ * `data` — JHipster's own convention. `AppPageTitleStrategy` reads the first
+ * for the browser title and the topbar reads both, so one declaration drives
+ * the tab, the crumb and the heading.
+ *
+ * Every route is behind `UserRouteAccessService` but none names an authority:
+ * all three console roles may READ every screen. Write access is gated
+ * per-control with `*abfHasAnyAuthority`, which is what lets the supervisor
+ * see the whole console read-only rather than being bounced off half of it.
+ */
+const routes: Routes = [
+  {
+    path: 'dashboard',
+    data: { pageTitle: 'dashboard.pageTitle', breadcrumb: 'global.menu.group.operations' },
+    canActivate: [UserRouteAccessService],
+    loadComponent: () => import('./dashboard/dashboard'),
+  },
+  {
+    path: 'message-desk',
+    data: { pageTitle: 'messageDesk.pageTitle', breadcrumb: 'global.menu.group.operations' },
+    canActivate: [UserRouteAccessService],
+    loadComponent: () => import('./message-desk/message-desk'),
+  },
+  {
+    path: 'message-desk/:id',
+    data: { pageTitle: 'messageDesk.thread.pageTitle', breadcrumb: 'global.menu.console.messageDesk' },
+    canActivate: [UserRouteAccessService],
+    loadComponent: () => import('./message-desk/message-thread'),
+  },
+  {
+    path: 'duty-roster',
+    data: { pageTitle: 'dutyRoster.pageTitle', breadcrumb: 'global.menu.group.operations' },
+    canActivate: [UserRouteAccessService],
+    loadComponent: () => import('./duty-roster/duty-roster'),
+  },
+  {
+    path: 'task-board',
+    data: { pageTitle: 'taskBoard.pageTitle', breadcrumb: 'global.menu.group.operations' },
+    canActivate: [UserRouteAccessService],
+    loadComponent: () => import('./task-board/task-board'),
+  },
+  {
+    path: 'platform-health',
+    data: { pageTitle: 'platformHealth.pageTitle', breadcrumb: 'global.menu.group.catalogue' },
+    canActivate: [UserRouteAccessService],
+    loadComponent: () => import('./platform-health/platform-health'),
+  },
+  {
+    path: 'organisation-profile',
+    data: { pageTitle: 'organisation.pageTitle', breadcrumb: 'global.menu.group.account' },
+    canActivate: [UserRouteAccessService],
+    loadComponent: () => import('./organisation/organisation-profile'),
+  },
+];
+
+export default routes;

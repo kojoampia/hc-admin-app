@@ -1,43 +1,40 @@
-import { beforeEach, describe, expect, it, vitest } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, provideRouter } from '@angular/router';
 
 import { provideTranslateService } from '@ngx-translate/core';
-import { of } from 'rxjs';
 
 import { Account } from 'app/core/auth/account.model';
 import { AccountService } from 'app/core/auth/account.service';
-import { ProfileInfo } from 'app/layouts/profiles/profile-info.model';
-import { ProfileService } from 'app/layouts/profiles/profile.service';
 import { LoginService } from 'app/login/login.service';
+import { ConsoleAuthority } from 'app/shared/auth/console-role';
 
+import { SHELL_NAVIGATION } from '../shell-navigation';
 import Navbar from './navbar';
 
 describe('Navbar Component', () => {
   let comp: Navbar;
   let fixture: ComponentFixture<Navbar>;
   let accountService: AccountService;
-  let profileService: ProfileService;
-  const account: Account = {
+
+  const accountWith = (authorities: string[]): Account => ({
     activated: true,
-    authorities: [],
-    email: '',
-    firstName: 'John',
-    langKey: '',
-    lastName: 'Doe',
-    login: 'john.doe',
+    authorities,
+    email: 'efua.mensah@abofonsa.care',
+    firstName: 'Efua',
+    langKey: 'en',
+    lastName: 'Mensah',
+    login: 'efua.mensah@abofonsa.care',
     imageUrl: '',
-  };
+  });
 
   beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [
         provideTranslateService(),
-        {
-          provide: ActivatedRoute,
-          useValue: {},
-        },
+        provideRouter([]),
+        { provide: ActivatedRoute, useValue: {} },
         provideHttpClientTesting(),
         LoginService,
       ],
@@ -48,54 +45,55 @@ describe('Navbar Component', () => {
     fixture = TestBed.createComponent(Navbar);
     comp = fixture.componentInstance;
     accountService = TestBed.inject(AccountService);
-    profileService = TestBed.inject(ProfileService);
-  });
-
-  it('should call profileService.getProfileInfo on init', () => {
-    // GIVEN
-    vitest.spyOn(profileService, 'getProfileInfo').mockReturnValue(of(new ProfileInfo()));
-
-    // WHEN
-    comp.ngOnInit();
-
-    // THEN
-    expect(profileService.getProfileInfo).toHaveBeenCalled();
   });
 
   it('should hold current authenticated user in variable account', () => {
-    // WHEN
-    comp.ngOnInit();
-
-    // THEN
     expect(comp.account()).toBeNull();
 
-    // WHEN
+    const account = accountWith([ConsoleAuthority.ADMIN, ConsoleAuthority.USER]);
     accountService.authenticate(account);
-
-    // THEN
     expect(comp.account()).toEqual(account);
 
-    // WHEN
     accountService.authenticate(null);
-
-    // THEN
     expect(comp.account()).toBeNull();
   });
 
-  it('should hold current authenticated user in variable account if user is authenticated before page load', () => {
-    // GIVEN
-    accountService.authenticate(account);
+  it('should group the navigation in SHELL_NAVIGATION order without losing an item', () => {
+    accountService.authenticate(accountWith([ConsoleAuthority.ADMIN, ConsoleAuthority.USER]));
 
-    // WHEN
-    comp.ngOnInit();
+    const groups = comp.groups();
+    expect(groups.map(group => group.label)).toEqual([
+      'global.menu.group.operations',
+      'global.menu.group.directory',
+      'global.menu.group.catalogue',
+      'global.menu.group.account',
+    ]);
+    expect(groups.flatMap(group => group.items)).toEqual([...SHELL_NAVIGATION]);
+  });
 
-    // THEN
-    expect(comp.account()).toEqual(account);
+  it('should resolve the role chip from the authorities the token actually carries', () => {
+    accountService.authenticate(accountWith([ConsoleAuthority.SUPERVISOR, ConsoleAuthority.USER]));
+    expect(comp.roleTag()).toBe('global.role.sup.tag');
 
-    // WHEN
-    accountService.authenticate(null);
+    accountService.authenticate(accountWith([ConsoleAuthority.DESK, ConsoleAuthority.USER]));
+    expect(comp.roleTag()).toBe('global.role.desk.tag');
 
-    // THEN
-    expect(comp.account()).toBeNull();
+    accountService.authenticate(accountWith([ConsoleAuthority.ADMIN, ConsoleAuthority.USER]));
+    expect(comp.roleTag()).toBe('global.role.ops.tag');
+  });
+
+  it('should derive the display name and initials from the account', () => {
+    accountService.authenticate(accountWith([ConsoleAuthority.ADMIN]));
+    expect(comp.displayName()).toBe('Efua Mensah');
+    expect(comp.initials()).toBe('EM');
+  });
+
+  it('should suppress a badge that would render a zero', () => {
+    const badged = SHELL_NAVIGATION.find(item => item.badge)!;
+    // Nothing has been counted yet, so the counter service still reads 0.
+    expect(comp.badgeFor(badged)).toBeNull();
+
+    const unbadged = SHELL_NAVIGATION.find(item => !item.badge)!;
+    expect(comp.badgeFor(unbadged)).toBeNull();
   });
 });

@@ -1,0 +1,26 @@
+{
+  "dutyRoster": {
+    "pageTitle": "Duty roster",
+    "title": "Duty roster · {{ week }}",
+    "subtitle": "Click any cell to cycle the shift: unassigned → day → evening → night → off",
+    "tableCaption": "Duty roster grid: professionals down the side, days of the week across the top",
+    "autoFill": "Auto-fill gaps",
+    "resetWeek": "Reset week",
+    "publish": "Publish",
+    "unassigned": "Unassigned",
+    "onDuty": "On duty",
+    "understaffed": "Understaffed — fewer than three on duty",
+    "empty": "No professionals are rostered for this week.",
+    "column": {
+      "professional": "Professional"
+    },
+    "stat": {
+      "planned": "Week planned",
+      "unassigned": "Unassigned slots",
+      "needsAttention": "Needs attention",
+      "fullyCovered": "Fully covered",
+      "rosteredStaff": "Rostered staff",
+      "shifts": "Shifts this week"
+    }
+  }
+}

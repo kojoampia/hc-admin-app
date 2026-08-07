@@ -1,0 +1,190 @@
+@let org = organisation();
+
+<div class="sec-head">
+  <div>
+    <h3>{{ org?.name ?? ('organisation.title' | translate) }}</h3>
+    <p abfTranslate="organisation.subtitle">Trading identity, address, teams, access and the audit trail</p>
+  </div>
+</div>
+
+<div class="tabs no-print" role="tablist" [attr.aria-label]="'organisation.title' | translate">
+  @for (tab of tabs; track tab) {
+    <button
+      type="button"
+      role="tab"
+      [id]="'abf-tab-' + tab"
+      [attr.aria-selected]="activeTab() === tab"
+      [attr.aria-controls]="'abf-panel-' + tab"
+      [class.on]="activeTab() === tab"
+      (click)="selectTab(tab)"
+    >
+      {{ 'organisation.tab.' + tab | translate }}
+    </button>
+  }
+</div>
+
+<div class="tab-panel" role="tabpanel" [id]="'abf-panel-' + activeTab()" [attr.aria-labelledby]="'abf-tab-' + activeTab()">
+  @switch (activeTab()) {
+    @case ('about') {
+      <div class="grid g-2">
+        <section class="card card-pad">
+          <h4 abfTranslate="organisation.about.identity">Organisation</h4>
+          <dl class="kv-list">
+            <dt abfTranslate="organisation.about.tradingName">Trading name</dt>
+            <dd>{{ org?.name ?? '—' }}</dd>
+            <dt abfTranslate="organisation.about.legalEntity">Legal entity</dt>
+            <dd>{{ org?.legalName ?? '—' }}</dd>
+            <dt abfTranslate="organisation.about.registration">Registration</dt>
+            <dd>{{ org?.registrationNumber ?? '—' }}</dd>
+            <dt abfTranslate="organisation.about.tin">TIN</dt>
+            <dd>{{ org?.tin ?? '—' }}</dd>
+            <dt abfTranslate="organisation.about.founded">Founded</dt>
+            <dd>{{ org?.foundedOn ? (org!.foundedOn | formatMediumDate) : '—' }}</dd>
+          </dl>
+        </section>
+
+        <section class="card card-pad">
+          <h4 abfTranslate="organisation.about.contact">Contact</h4>
+          <dl class="kv-list">
+            <dt abfTranslate="organisation.about.switchboard">Switchboard</dt>
+            <dd>{{ org?.switchboard ?? '—' }}</dd>
+            <dt abfTranslate="organisation.about.email">Email</dt>
+            <dd>{{ org?.email ?? '—' }}</dd>
+            <dt abfTranslate="organisation.about.deskHours">Desk hours</dt>
+            <dd>{{ org?.deskHours ?? '—' }}</dd>
+          </dl>
+          @if (org?.description) {
+            <p class="desc">{{ org!.description }}</p>
+          }
+        </section>
+      </div>
+    }
+
+    @case ('address') {
+      <section class="card card-pad">
+        <h4 abfTranslate="organisation.address.title">Registered address</h4>
+        @if (org?.address; as address) {
+          <dl class="kv-list">
+            <dt abfTranslate="organisation.address.digital">Digital address</dt>
+            <dd>{{ address.digitalAddress ?? '—' }}</dd>
+          </dl>
+          <a class="btn btn-ghost btn-sm mt-12" [routerLink]="['/address', address.id, 'view']">
+            <fa-icon icon="eye" />
+            <span abfTranslate="organisation.address.open">Open the full address record</span>
+          </a>
+        } @else {
+          <p class="muted" abfTranslate="organisation.address.none">No address on file.</p>
+        }
+      </section>
+    }
+
+    @case ('team') {
+      <section class="card">
+        <div class="tbl-wrap">
+          <table class="tbl">
+            <thead>
+              <tr>
+                <th abfTranslate="organisation.team.name">Team</th>
+                <th abfTranslate="organisation.team.supervisor">Supervisor</th>
+                <th class="right" abfTranslate="organisation.team.open">Open</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (team of teams(); track team.id) {
+                <tr>
+                  <td>{{ team.name }}</td>
+                  <td class="muted">{{ team.supervisor?.licenceNumber ?? '—' }}</td>
+                  <td class="right">
+                    <a class="btn btn-ghost btn-sm" [routerLink]="['/team', team.id, 'view']">
+                      <fa-icon icon="eye" />
+                      <span abfTranslate="organisation.team.open">Open</span>
+                    </a>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="3"><div class="empty" abfTranslate="organisation.team.none">No teams on file.</div></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+    }
+
+    @case ('security') {
+      <div class="grid g-2">
+        <section class="card card-pad">
+          <h4 abfTranslate="organisation.security.signedIn">Signed in as</h4>
+          <dl class="kv-list">
+            <dt abfTranslate="organisation.security.account">Account</dt>
+            <dd>{{ account()?.login }}</dd>
+            <dt abfTranslate="organisation.security.role">Role</dt>
+            <dd>{{ currentRole().label | translate }}</dd>
+            <dt abfTranslate="organisation.security.authorities">Authorities</dt>
+            <dd>{{ account()?.authorities?.join(', ') }}</dd>
+          </dl>
+        </section>
+
+        <section class="card card-pad">
+          <h4 abfTranslate="organisation.security.switchRole">Switch role</h4>
+          <p class="muted small" abfTranslate="organisation.security.switchHint">
+            Switching re-issues the session token. Controls gated on an authority you no longer hold disappear immediately.
+          </p>
+          <div class="stack">
+            @for (role of roles; track role.key) {
+              <button
+                type="button"
+                class="opt"
+                [class.sel]="currentRole().key === role.key"
+                [disabled]="isSwitching()"
+                (click)="switchRole(role)"
+              >
+                <span class="grow">
+                  <span class="tl">{{ role.label | translate }}</span>
+                  <span class="st">{{ role.authorities.join(', ') }}</span>
+                </span>
+                @if (currentRole().key === role.key) {
+                  <fa-icon icon="check" />
+                }
+              </button>
+            }
+          </div>
+        </section>
+      </div>
+    }
+
+    @case ('audit') {
+      <section class="card">
+        <div class="tbl-wrap">
+          <table class="tbl">
+            <thead>
+              <tr>
+                <th abfTranslate="organisation.audit.when">When</th>
+                <th abfTranslate="organisation.audit.actor">Actor</th>
+                <th abfTranslate="organisation.audit.action">Action</th>
+                <th abfTranslate="organisation.audit.target">Target</th>
+                <th class="right" abfTranslate="organisation.audit.level">Level</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (entry of auditTrail(); track entry.id) {
+                <tr>
+                  <td class="nowrap">{{ entry.occurredAt | formatMediumDatetime }}</td>
+                  <td>{{ entry.actor }}</td>
+                  <td>{{ entry.action }}</td>
+                  <td class="muted">{{ entry.target ?? '—' }}</td>
+                  <td class="right"><abf-status-pill [status]="entry.level" /></td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="5"><div class="empty" abfTranslate="organisation.audit.none">The trail is empty.</div></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+    }
+  }
+</div>

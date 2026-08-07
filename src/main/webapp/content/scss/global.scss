@@ -2,42 +2,83 @@
 @import 'bootstrap/scss/functions';
 @import 'bootstrap/scss/variables';
 
-/* ==============================================================
-Bootstrap tweaks
-===============================================================*/
+/* ==========================================================================
+Design tokens, republished as custom properties
 
-body,
-h1,
-h2,
-h3,
-h4 {
-  font-weight: 300;
+_hc-tokens.scss is the Sass source of truth and reaches Bootstrap through
+_bootstrap-variables.scss. Component-scoped stylesheets cannot see Sass
+variables from here, so the same values are published as CSS custom
+properties: a component writes var(--abf-navy), never #0d3058.
+========================================================================== */
+:root {
+  --abf-navy: #{$abf-navy};
+  --abf-navy-700: #{$abf-navy-700};
+  --abf-navy-900: #{$abf-navy-900};
+  --abf-gold: #{$abf-gold};
+  --abf-gold-300: #{$abf-gold-300};
+  --abf-gold-050: #{$abf-gold-050};
+  --abf-cream: #{$abf-cream};
+  --abf-bg: #{$abf-bg};
+  --abf-ink: #{$abf-ink};
+  --abf-grey: #{$abf-grey};
+  --abf-grey-400: #{$abf-grey-400};
+  --abf-line: #{$abf-line};
+  --abf-card: #{$abf-card};
+  --abf-grid: #{$abf-grid};
+
+  --abf-ok: #{$abf-ok};
+  --abf-ok-bg: #{$abf-ok-bg};
+  --abf-warn: #{$abf-warn};
+  --abf-warn-bg: #{$abf-warn-bg};
+  --abf-danger: #{$abf-danger};
+  --abf-danger-bg: #{$abf-danger-bg};
+
+  --abf-series-1: #{$abf-series-1};
+  --abf-series-2: #{$abf-series-2};
+  --abf-series-3: #{$abf-series-3};
+
+  --abf-r-sm: #{$abf-r-sm};
+  --abf-r: #{$abf-r};
+  --abf-r-lg: #{$abf-r-lg};
+  --abf-r-xl: #{$abf-r-xl};
+  --abf-sh-sm: #{$abf-sh-sm};
+  --abf-sh: #{$abf-sh};
+  --abf-sh-lg: #{$abf-sh-lg};
+  --abf-sidebar-w: #{$abf-sidebar-w};
 }
 
-/* Increase contrast of links to get 100% on Lighthouse Accessibility Audit. Override this color if you want to change the link color, or use a Bootswatch theme */
-a {
-  color: #533f03;
-  font-weight: bold;
+/* ==========================================================================
+Base
+========================================================================== */
+html,
+body {
+  height: 100%;
 }
 
-/* override hover color for dropdown-item forced by bootstrap to all a:not([href]):not([tabindex]) elements in _reboot.scss */
-a:not([href]):not([tabindex]):hover.dropdown-item {
-  color: $dropdown-link-hover-color;
+body {
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
-/* override .dropdown-item.active background-color on hover */
-.dropdown-item.active:hover {
-  background-color: mix($dropdown-link-hover-bg, $dropdown-link-active-bg, 50%);
+img {
+  display: block;
+  max-width: 100%;
 }
 
-a:hover {
-  color: #533f03;
-  /* make sure browsers use the pointer cursor for anchors, even with no href */
-  cursor: pointer;
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
 }
 
-.dropdown-item:hover {
-  color: $dropdown-link-hover-color;
+::-webkit-scrollbar-thumb {
+  background: #d5d1c6;
+  border-radius: 10px;
+  border: 3px solid var(--abf-bg);
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
 }
 
 /* ==========================================================================
@@ -52,29 +93,32 @@ Browser Upgrade Prompt
 
 /* ==========================================================================
 Generic styles
+
+These are JHipster's own plumbing, not demo component styling. Generated
+entity screens reference them directly (.jh-card wraps every routed view,
+.jh-entity-details lays out every detail page, .alerts positions the toast
+stack, [abfsortby] carries the sortable-header cursor), so they stay. The
+prototype's bespoke component classes — .stat, .panel, .roster, .kcol,
+.plan, .plat, .svc, .viz — deliberately do NOT live here; each sits in a
+component-scoped stylesheet beside the component that owns it.
 ========================================================================== */
 
-/* Error highlight on input fields */
-.ng-valid[required],
-.ng-valid.required {
-  border-left: 5px solid green;
-}
-
+/* Invalid form fields get a red rail. The matching green rail on every
+   valid required field was pure generator noise and fought the palette. */
 .ng-invalid:not(form) {
-  border-left: 5px solid red;
+  border-left: 3px solid var(--abf-danger);
 }
-
-/* other generic styles */
 
 .jh-card {
-  padding: 1.5%;
-  margin-top: 20px;
+  padding: 0;
+  margin: 0;
   border: none;
+  background: transparent;
 }
 
 .error {
-  color: white;
-  background-color: red;
+  color: #fff;
+  background-color: var(--abf-danger);
 }
 
 .pad {
@@ -103,10 +147,6 @@ Generic styles
   opacity: 1;
 }
 
-.footer {
-  border-top: 1px solid rgba(0, 0, 0, 0.125);
-}
-
 .hand,
 [abfsortby] {
   cursor: pointer;
@@ -133,6 +173,7 @@ Custom alerts for notification
   .jhi-toast {
     position: fixed;
     width: 100%;
+    z-index: 1080;
     &.left {
       left: 5px;
     }
@@ -140,7 +181,7 @@ Custom alerts for notification
       right: 5px;
     }
     &.top {
-      top: 55px;
+      top: 72px;
     }
     &.bottom {
       bottom: 55px;
@@ -184,7 +225,7 @@ entity detail page css
       padding: 0.5em 0;
     }
     dd {
-      border-bottom: 1px solid #eee;
+      border-bottom: 1px solid var(--abf-line);
       padding: 0.5em 0;
       margin-left: 0;
     }
@@ -225,12 +266,53 @@ angular-cli removes postcss-rtl processed inline css, processed rules must be ad
   transform: rotate(-45deg);
 }
 
-/* navbar.scss */
-.navbar {
-  ul.navbar-nav {
-    .nav-item {
-      margin-left: 0.5em;
-    }
+/* ==========================================================================
+Print
+
+The topbar carries a print button and every screen is expected to print as
+a clean document: chrome off, cards flattened, backgrounds forced through.
+========================================================================== */
+@media print {
+  @page {
+    margin: 14mm;
+  }
+
+  body {
+    background: #fff !important;
+  }
+
+  .no-print,
+  .abf-sidebar,
+  .abf-tabbar,
+  .abf-topbar__actions,
+  .alerts,
+  .ribbon {
+    display: none !important;
+  }
+
+  .abf-shell {
+    grid-template-columns: 1fr !important;
+  }
+
+  .abf-content {
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .card,
+  .abf-card {
+    box-shadow: none !important;
+    border: 1px solid var(--abf-line) !important;
+    break-inside: avoid;
+  }
+
+  a[href]::after {
+    content: '';
   }
 }
 /* jhipster-needle-scss-add-main JHipster will add new css style */

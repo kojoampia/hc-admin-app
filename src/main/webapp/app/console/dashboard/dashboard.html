@@ -1,0 +1,236 @@
+@let data = metrics();
+
+<div class="hero">
+  <div class="ov"></div>
+  <div class="inner">
+    <div class="row between gap-16 wrap">
+      <div>
+        <h3>{{ 'dashboard.hero.greeting' | translate: { name: firstName() } }}</h3>
+        @if (data) {
+          <p>
+            {{
+              'dashboard.hero.summary'
+                | translate
+                  : {
+                      unread: data.unreadMessages,
+                      approvals: data.pendingApprovals,
+                      cover: data.roster.coverPercent,
+                      degraded: data.degradedServices.length,
+                    }
+            }}
+          </p>
+        }
+      </div>
+      <div class="row gap-8 wrap no-print">
+        <a class="btn btn-gold" routerLink="/message-desk">
+          <fa-icon icon="envelope" />
+          <span abfTranslate="dashboard.hero.openDesk">Open message desk</span>
+        </a>
+        <a class="btn btn-hero-ghost" routerLink="/duty-roster">
+          <fa-icon icon="calendar-alt" />
+          <span abfTranslate="dashboard.hero.dutyRoster">Duty roster</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="sec-head">
+  <div>
+    <h3 abfTranslate="dashboard.glance.title">Network at a glance</h3>
+    <p abfTranslate="dashboard.glance.subtitle">Live counts across the patient, professional and vendor systems</p>
+  </div>
+  <a class="btn-quiet sm" routerLink="/platform-health" abfTranslate="dashboard.glance.platformHealth">Platform health</a>
+</div>
+
+<div class="grid g-4">
+  @for (tile of kpis(); track tile.key) {
+    <button type="button" class="stat" (click)="openKpi(tile)">
+      <span class="ic" [class]="'ic--' + tile.tone"><fa-icon [icon]="tile.icon" /></span>
+      <b>{{ tile.value }}</b>
+      <span>{{ tile.label | translate }}</span>
+      <span class="dl" [class]="tile.direction">
+        <span aria-hidden="true">{{ tile.direction === 'up' ? '▲' : tile.direction === 'down' ? '▼' : '●' }}</span>
+        {{ tile.note | translate }}
+      </span>
+      <abf-sparkline [series]="tile.series" />
+    </button>
+  } @empty {
+    @if (isLoading()) {
+      <p class="muted" abfTranslate="console.loading">Loading…</p>
+    }
+  }
+</div>
+
+<div class="sec-head">
+  <div>
+    <h3 abfTranslate="dashboard.operations.title">Operations</h3>
+    <p abfTranslate="dashboard.operations.subtitle">Every chart has a table view — press Table to read the numbers</p>
+  </div>
+</div>
+
+<div class="grid g-2">
+  <abf-chart-card title="dashboard.charts.messages.title" subtitle="dashboard.charts.messages.subtitle">
+    <abf-line-chart chartFigure [points]="messageVolume()" [ariaLabel]="'dashboard.charts.messages.title' | translate" />
+    <table chartTable class="viz-tbl">
+      <thead>
+        <tr>
+          <th abfTranslate="dashboard.charts.messages.month">Month</th>
+          <th class="right" abfTranslate="dashboard.charts.messages.count">Messages</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (point of messageVolume(); track point.label) {
+          <tr>
+            <td>{{ point.label }} 2026</td>
+            <td class="right">{{ point.value }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </abf-chart-card>
+
+  <abf-chart-card title="dashboard.charts.mix.title" subtitle="dashboard.charts.mix.subtitle">
+    <abf-stacked-bar chartFigure [data]="accountMixSegments()" [ariaLabel]="'dashboard.charts.mix.title' | translate" />
+    <div chartLegend class="viz-legend">
+      @for (segment of accountMixSegments(); track segment.key; let i = $index) {
+        <span class="li">
+          <span class="sw" [style.background]="seriesColour(i)"></span>
+          {{ segment.label }} · {{ segment.value }}
+        </span>
+      }
+    </div>
+    <table chartTable class="viz-tbl">
+      <thead>
+        <tr>
+          <th abfTranslate="dashboard.charts.mix.type">Account type</th>
+          <th class="right" abfTranslate="dashboard.charts.mix.accounts">Accounts</th>
+          <th class="right" abfTranslate="dashboard.charts.mix.share">Share</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (segment of accountMixSegments(); track segment.key) {
+          <tr>
+            <td>{{ segment.label }}</td>
+            <td class="right">{{ segment.value }}</td>
+            <td class="right">{{ sharePercent(segment.value) }}%</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </abf-chart-card>
+</div>
+
+<div class="mt-16">
+  <abf-chart-card title="dashboard.charts.caseLoad.title" subtitle="dashboard.charts.caseLoad.subtitle">
+    <abf-grouped-bars chartFigure [data]="caseLoad()" [ariaLabel]="'dashboard.charts.caseLoad.title' | translate" />
+    <div chartLegend class="viz-legend">
+      <span class="li"
+        ><span class="sw" [style.background]="seriesColour(0)"></span>{{ 'dashboard.charts.caseLoad.cases' | translate }}</span
+      >
+      <span class="li"
+        ><span class="sw" [style.background]="seriesColour(1)"></span>{{ 'dashboard.charts.caseLoad.visits' | translate }}</span
+      >
+    </div>
+    <table chartTable class="viz-tbl">
+      <thead>
+        <tr>
+          <th abfTranslate="dashboard.charts.caseLoad.professional">Professional</th>
+          <th class="right" abfTranslate="dashboard.charts.caseLoad.cases">Cases</th>
+          <th class="right" abfTranslate="dashboard.charts.caseLoad.visits">Visits</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of caseLoad(); track row.label) {
+          <tr>
+            <td>{{ row.label }}</td>
+            <td class="right">{{ row.values[0] }}</td>
+            <td class="right">{{ row.values[1] }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </abf-chart-card>
+</div>
+
+<div class="grid g-2 mt-26">
+  <div>
+    <div class="sec-head">
+      <div><h3 abfTranslate="dashboard.approvals.title">Needs your approval</h3></div>
+      <a class="btn-quiet sm" routerLink="/task-board" abfTranslate="dashboard.approvals.allTasks">All tasks</a>
+    </div>
+    <div class="card">
+      @for (row of approvals(); track row.kind + row.id) {
+        <a class="lrow" [routerLink]="row.route">
+          <span class="mono-av">{{ initials(row.name) }}</span>
+          <span class="grow">
+            <span class="tl trunc">{{ row.name }}</span>
+            <span class="st trunc">{{ row.detail | translate }}</span>
+          </span>
+          <abf-status-pill status="PENDING" />
+          <span class="chev"><fa-icon icon="chevron-right" /></span>
+        </a>
+      } @empty {
+        <div class="empty">
+          <fa-icon icon="check" />
+          <b abfTranslate="dashboard.approvals.empty">Nothing waiting for approval</b>
+        </div>
+      }
+    </div>
+  </div>
+
+  <div>
+    <div class="sec-head">
+      <div><h3 abfTranslate="dashboard.desk.title">Latest at the desk</h3></div>
+      <a class="btn-quiet sm" routerLink="/message-desk" abfTranslate="dashboard.desk.allMessages">All messages</a>
+    </div>
+    <div class="card">
+      @for (message of latestMessages(); track message.id) {
+        <a class="lrow" [routerLink]="['/message-desk', message.id]">
+          <span class="mono-av">{{ initials(message.senderName ?? '') }}</span>
+          <span class="grow">
+            <span class="tl trunc">{{ message.subject }}</span>
+            <span class="st trunc">{{ message.senderName }} · {{ message.sentAt | formatMediumDate }}</span>
+          </span>
+          <abf-status-pill [status]="message.status" />
+          <span class="chev"><fa-icon icon="chevron-right" /></span>
+        </a>
+      } @empty {
+        <div class="empty">
+          <fa-icon icon="envelope" />
+          <b abfTranslate="dashboard.desk.empty">The desk is clear</b>
+        </div>
+      }
+    </div>
+  </div>
+</div>
+
+@if (data) {
+  <div class="sec-head">
+    <div>
+      <h3 abfTranslate="dashboard.core.title">Core platform</h3>
+      <p abfTranslate="dashboard.core.subtitle">The four services every dashboard sits on</p>
+    </div>
+  </div>
+  <div class="plat">
+    <div class="col">
+      @for (capability of data.capabilities.slice(0, 2); track capability.name) {
+        <div class="cap">
+          <fa-icon icon="circle-check" />
+          <span>{{ capability.name }}</span>
+          <span class="st">{{ capability.status }}</span>
+        </div>
+      }
+    </div>
+    <div class="core" abfTranslate="dashboard.core.badge">Core platform</div>
+    <div class="col">
+      @for (capability of data.capabilities.slice(2); track capability.name) {
+        <div class="cap">
+          <fa-icon icon="circle-check" />
+          <span>{{ capability.name }}</span>
+          <span class="st">{{ capability.status }}</span>
+        </div>
+      }
+    </div>
+  </div>
+}

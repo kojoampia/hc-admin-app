@@ -74,7 +74,7 @@ describe('Login', () => {
       expect(mockAccountService.isAuthenticated).toHaveBeenCalled();
     });
 
-    it('should navigate to home page on Init if authenticated=true', () => {
+    it('should navigate to the dashboard on Init if authenticated=true', () => {
       // GIVEN
       mockAccountService.identity = vitest.fn(() => of(null));
       mockAccountService.isAuthenticated = () => true;
@@ -83,7 +83,7 @@ describe('Login', () => {
       comp.ngOnInit();
 
       // THEN
-      expect(mockRouter.navigate).toHaveBeenCalledWith(['']);
+      expect(mockRouter.navigate).toHaveBeenCalledWith(['/dashboard']);
     });
   });
 
@@ -104,7 +104,7 @@ describe('Login', () => {
   });
 
   describe('login', () => {
-    it('should authenticate the user and navigate to home page', () => {
+    it('should authenticate the user and navigate to the dashboard', () => {
       // GIVEN
       const credentials = {
         username: 'admin',
@@ -124,10 +124,10 @@ describe('Login', () => {
       // THEN
       expect(comp.authenticationError()).toEqual(false);
       expect(mockLoginService.login).toHaveBeenCalledWith(credentials);
-      expect(mockRouter.navigate).toHaveBeenCalledWith(['']);
+      expect(mockRouter.navigate).toHaveBeenCalledWith(['/dashboard']);
     });
 
-    it('should authenticate the user but not navigate to home page if authentication process is already routing to cached url from localstorage', () => {
+    it('should authenticate the user but not navigate to the dashboard if authentication process is already routing to cached url from localstorage', () => {
       // GIVEN
       vitest.spyOn(mockRouter, 'currentNavigation').mockReturnValue({} as Navigation);
 

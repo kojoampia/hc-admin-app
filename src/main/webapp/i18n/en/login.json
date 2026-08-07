@@ -1,11 +1,12 @@
 {
   "login": {
-    "title": "Sign in",
+    "title": "Administrator sign in",
     "form": {
       "password": "Password",
       "password.placeholder": "Your password",
       "rememberme": "Remember me",
-      "button": "Sign in"
+      "button": "Sign in",
+      "signInAs": "Sign in as"
     },
     "messages": {
       "error": {
@@ -14,6 +15,21 @@
     },
     "password": {
       "forgot": "Did you forget your password?"
+    },
+    "subtitle": "Health Connect operator access.",
+    "brand": {
+      "tag": "Abofonsa BridgeCare · Admin services",
+      "headline": "The console behind",
+      "headlineAccent": "every bridge you build.",
+      "body": "Accounts, rosters, service plans, catalogue and the message desk — one operations console for the whole BridgeCare network, patient side and professional side.",
+      "patients": "Patient accounts",
+      "professionals": "Professionals",
+      "vendors": "Vendors",
+      "services": "Services live"
+    },
+    "hint": {
+      "title": "Interactive demo.",
+      "body": "Credentials are pre-filled — just press Sign in. Every screen, table, roster cell and form is clickable; no data leaves your browser."
     }
   }
 }

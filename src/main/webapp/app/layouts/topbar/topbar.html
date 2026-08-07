@@ -1,0 +1,56 @@
+<header class="abf-topbar">
+  <button
+    type="button"
+    class="icon-btn abf-topbar__menu"
+    (click)="toggleSidebar()"
+    [attr.aria-label]="'global.menu.toggle' | translate"
+    [attr.aria-expanded]="isSidebarOpen()"
+    aria-controls="abf-sidebar"
+  >
+    <fa-icon icon="bars" />
+  </button>
+
+  <div class="abf-topbar__heading">
+    <div class="crumb">{{ breadcrumb() | translate }}</div>
+    <h2>{{ pageTitle() | translate }}</h2>
+  </div>
+
+  <div class="abf-topbar__actions no-print">
+    <a
+      routerLink="/message-desk"
+      class="icon-btn abf-topbar__bell"
+      [attr.aria-label]="'global.menu.console.messageDesk' | translate"
+      [title]="'global.menu.console.messageDesk' | translate"
+    >
+      <fa-icon icon="bell" />
+      @if (unreadMessages() > 0) {
+        <span class="badge">{{ unreadMessages() }}</span>
+      }
+    </a>
+
+    <button
+      type="button"
+      class="icon-btn"
+      (click)="print()"
+      [attr.aria-label]="'global.action.print' | translate"
+      [title]="'global.action.print' | translate"
+    >
+      <fa-icon icon="print" />
+    </button>
+
+    <div ngbDropdown class="d-inline-block" *abfHasAnyAuthority="quickAddAuthorities">
+      <button type="button" class="btn btn-primary abf-topbar__new" ngbDropdownToggle id="abf-quick-add">
+        <fa-icon icon="plus" />
+        <span abfTranslate="global.action.new">New</span>
+      </button>
+      <div ngbDropdownMenu aria-labelledby="abf-quick-add" class="abf-topbar__new-menu">
+        @for (item of quickAdd; track item.route) {
+          <a ngbDropdownItem [routerLink]="item.route">
+            <fa-icon [icon]="item.icon" />
+            <span>{{ item.label | translate }}</span>
+          </a>
+        }
+      </div>
+    </div>
+  </div>
+</header>

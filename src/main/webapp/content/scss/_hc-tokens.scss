@@ -1,0 +1,61 @@
+// ============================================================
+// Abofonsa BridgeCare — design tokens
+//
+// The exact palette from admin-demo.html. This file is the single
+// source of truth for colour in the console: _bootstrap-variables.scss
+// feeds these into Bootstrap, and global.scss re-publishes them as CSS
+// custom properties so component-scoped SCSS can reach them without
+// importing anything.
+//
+// Nothing here is a suggestion. The data-viz roles in particular were
+// validated for lightness band, chroma floor and CVD separation — do
+// not substitute them for "nicer" hues.
+// ============================================================
+
+$abf-navy: #0d3058;
+$abf-navy-700: #12406f;
+$abf-navy-900: #092239;
+$abf-gold: #c59437;
+$abf-gold-300: #ddb868;
+$abf-gold-050: #fbf4e6;
+$abf-cream: #f7f4ee;
+$abf-bg: #f2f0ea;
+$abf-ink: #16202c;
+$abf-grey: #5b6470;
+$abf-grey-400: #8b939e;
+$abf-line: #e6e2d9;
+$abf-ok: #2e7d5b;
+$abf-warn: #b4741a;
+$abf-danger: #b3402f;
+
+// Data-viz roles — validated for lightness band, chroma floor and
+// CVD separation. Do not substitute.
+$abf-series-1: #256abf;
+$abf-series-2: #eda100;
+$abf-series-3: #1baf7a;
+
+// ---- supporting values the demo uses alongside the palette above ----
+// Status tints. Each is the wash behind its matching foreground colour;
+// they are what make the pills and stat icons legible at small sizes.
+$abf-ok-bg: #e7f3ed;
+$abf-warn-bg: #fdf3e2;
+$abf-danger-bg: #fbedea;
+$abf-card: #ffffff;
+$abf-grid: #e9e5dc;
+
+// Radii, shadows and the shell metric.
+$abf-r-sm: 8px;
+$abf-r: 14px;
+$abf-r-lg: 20px;
+$abf-r-xl: 28px;
+$abf-sh-sm:
+  0 1px 2px rgba(13, 48, 88, 0.06),
+  0 1px 3px rgba(13, 48, 88, 0.05);
+$abf-sh:
+  0 2px 6px rgba(13, 48, 88, 0.06),
+  0 8px 24px rgba(13, 48, 88, 0.07);
+$abf-sh-lg: 0 12px 40px rgba(13, 48, 88, 0.16);
+$abf-sidebar-w: 248px;
+
+// The viewport at which the sidebar gives way to the bottom tab bar.
+$abf-shell-bp: 940px;

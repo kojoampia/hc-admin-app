@@ -1,0 +1,11 @@
+<nav class="abf-tabbar no-print" [attr.aria-label]="'global.menu.secondary' | translate">
+  @for (item of tabs; track item.route) {
+    <a [routerLink]="'/' + item.route" routerLinkActive="active">
+      <fa-icon [icon]="item.icon" />
+      <span>{{ item.label | translate }}</span>
+      @if (badgeFor(item); as count) {
+        <span class="badge">{{ count }}</span>
+      }
+    </a>
+  }
+</nav>

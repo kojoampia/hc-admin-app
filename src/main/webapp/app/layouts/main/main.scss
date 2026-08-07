@@ -1,0 +1,33 @@
+@import 'hc-tokens';
+
+.abf-shell {
+  display: grid;
+  grid-template-columns: var(--abf-sidebar-w) 1fr;
+  min-height: 100vh;
+}
+
+.abf-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: var(--abf-bg);
+}
+
+.abf-content {
+  padding: clamp(18px, 2.6vw, 30px) clamp(18px, 3vw, 34px) 60px;
+  max-width: 1240px;
+  width: 100%;
+  flex: 1;
+}
+
+@media (max-width: $abf-shell-bp) {
+  .abf-shell {
+    /* The sidebar leaves the flow and becomes an overlay drawer. */
+    grid-template-columns: 1fr;
+  }
+
+  .abf-content {
+    /* Clear the fixed tab bar. */
+    padding-bottom: 96px;
+  }
+}

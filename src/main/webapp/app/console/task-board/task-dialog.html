@@ -1,0 +1,98 @@
+<div class="modal-header">
+  <h4 class="modal-title">
+    @if (isNew) {
+      <span abfTranslate="taskBoard.dialog.newTitle">New task</span>
+    } @else {
+      {{ task?.title }}
+    }
+  </h4>
+  <button type="button" class="btn-close" [attr.aria-label]="'entity.action.cancel' | translate" (click)="cancel()"></button>
+</div>
+
+<div class="modal-body">
+  @if (isNew) {
+    <div class="field">
+      <label for="abf-task-title" abfTranslate="taskBoard.dialog.taskTitle">Title</label>
+      <input
+        id="abf-task-title"
+        type="text"
+        class="form-control"
+        [class.is-invalid]="titleIsInvalid"
+        [value]="title()"
+        (input)="title.set($any($event.target).value)"
+        required
+      />
+      @if (titleIsInvalid) {
+        <div class="invalid-feedback d-block" abfTranslate="taskBoard.dialog.titleRequired">A title is required.</div>
+      }
+    </div>
+
+    <div class="field">
+      <label for="abf-task-tag" abfTranslate="taskBoard.dialog.tag">Tag</label>
+      <input id="abf-task-tag" type="text" class="form-control" [value]="tag()" (input)="tag.set($any($event.target).value)" />
+    </div>
+
+    <div class="field">
+      <label for="abf-task-priority" abfTranslate="taskBoard.dialog.priority">Priority</label>
+      <select id="abf-task-priority" class="form-select" [value]="priority()" (change)="priority.set($any($event.target).value)">
+        @for (option of priorities; track option) {
+          <option [value]="option">{{ 'console.status.' + option | translate }}</option>
+        }
+      </select>
+    </div>
+  } @else if (task; as current) {
+    <dl class="meta">
+      <div>
+        <dt abfTranslate="taskBoard.dialog.owner">Owner</dt>
+        <dd>{{ current.owner?.licenceNumber ?? ('taskBoard.unassigned' | translate) }}</dd>
+      </div>
+      <div>
+        <dt abfTranslate="taskBoard.dialog.due">Due</dt>
+        <dd>{{ current.dueOn ? (current.dueOn | formatMediumDate) : '—' }}</dd>
+      </div>
+      <div>
+        <dt abfTranslate="taskBoard.dialog.tag">Tag</dt>
+        <dd>{{ current.tag ?? '—' }}</dd>
+      </div>
+    </dl>
+
+    <div class="row gap-8 wrap pills">
+      <abf-status-pill [status]="current.priority" />
+      <abf-status-pill [status]="current.state" />
+    </div>
+
+    @if (current.sourceMessage) {
+      <p class="source">
+        {{ 'taskBoard.dialog.raisedFrom' | translate }}
+        <b>{{ current.sourceMessage.subject }}</b>
+      </p>
+    }
+
+    <div class="field">
+      <span class="seg-label" abfTranslate="taskBoard.dialog.moveTo">Move to</span>
+      <div class="seg" role="group" [attr.aria-label]="'taskBoard.dialog.moveTo' | translate">
+        @for (state of columns; track state) {
+          <button
+            type="button"
+            [class.on]="current.state === state"
+            [attr.aria-pressed]="current.state === state"
+            [disabled]="isSaving()"
+            (click)="move(state)"
+          >
+            {{ 'console.taskState.' + state | translate }}
+          </button>
+        }
+      </div>
+    </div>
+  }
+</div>
+
+<div class="modal-footer">
+  <button type="button" class="btn btn-ghost" (click)="cancel()" abfTranslate="entity.action.cancel">Cancel</button>
+  @if (isNew) {
+    <button type="button" class="btn btn-primary" [disabled]="isSaving()" (click)="save()">
+      <fa-icon icon="save" />
+      <span abfTranslate="entity.action.save">Save</span>
+    </button>
+  }
+</div>

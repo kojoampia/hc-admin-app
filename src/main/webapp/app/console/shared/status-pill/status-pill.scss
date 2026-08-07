@@ -1,0 +1,53 @@
+@import 'hc-tokens';
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3.5px 10px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.015em;
+  white-space: nowrap;
+}
+
+.dt {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  flex: none;
+}
+
+.pill-ok {
+  background: var(--abf-ok-bg);
+  color: var(--abf-ok);
+}
+
+.pill-warn {
+  background: var(--abf-warn-bg);
+  color: var(--abf-warn);
+}
+
+.pill-navy {
+  background: #e8edf4;
+  color: var(--abf-navy);
+}
+
+.pill-gold {
+  background: var(--abf-gold-050);
+  // Gold at full strength on its own tint fails AA; this is the darkened
+  // stop the prototype uses for text on gold-050. Never white on gold.
+  color: #8a6716;
+}
+
+.pill-grey {
+  background: #edebe5;
+  color: var(--abf-grey);
+}
+
+.pill-danger {
+  background: var(--abf-danger-bg);
+  color: var(--abf-danger);
+}

@@ -1,0 +1,79 @@
+<div class="sec-head">
+  <div>
+    <h3 abfTranslate="platformHealth.title">Service map</h3>
+    <p abfTranslate="platformHealth.subtitle">Dashboards, gateways and services from the Health Connect architecture</p>
+  </div>
+</div>
+
+<div class="grid g-4 mb-18">
+  <div class="stat">
+    <span class="ic ic--ok"><fa-icon icon="check" /></span>
+    <b>{{ healthyCount() }}/{{ services().length }}</b>
+    <span abfTranslate="platformHealth.stat.healthy">Services healthy</span>
+  </div>
+  <div class="stat">
+    <span class="ic ic--warn"><fa-icon icon="triangle-exclamation" /></span>
+    <b>{{ degradedCount() }}</b>
+    <span abfTranslate="platformHealth.stat.degraded">Degraded</span>
+  </div>
+  <div class="stat">
+    <span class="ic ic--navy"><fa-icon icon="gauge-high" /></span>
+    <b>{{ medianResponseMs() }} ms</b>
+    <span abfTranslate="platformHealth.stat.median">Median response</span>
+  </div>
+  <div class="stat">
+    <span class="ic ic--gold"><fa-icon icon="shield-halved" /></span>
+    <b>{{ services().length }}</b>
+    <span abfTranslate="platformHealth.stat.mapped">Services mapped</span>
+  </div>
+</div>
+
+<div class="grid g-2">
+  @for (group of planes(); track group.plane) {
+    <section class="card card-pad">
+      <h4 class="plane-title">
+        <fa-icon icon="gauge-high" />
+        <span>{{ group.plane }}</span>
+      </h4>
+      @for (service of group.services; track service.id) {
+        <div class="svc">
+          <span class="dot" [class.dot--warn]="service.health !== 'HEALTHY'" aria-hidden="true"></span>
+          <span class="port">{{ service.port }}</span>
+          <span class="grow">
+            <span class="nm trunc">{{ service.name }}</span>
+            <span class="sb trunc">{{ service.host }}</span>
+          </span>
+          <abf-status-pill [status]="service.health" />
+          <span class="ms">{{ service.responseMs }} ms</span>
+        </div>
+      }
+    </section>
+  }
+</div>
+
+@if (capabilities().length > 0) {
+  <div class="sec-head">
+    <div><h3 abfTranslate="platformHealth.core">Core platform capability</h3></div>
+  </div>
+  <div class="plat">
+    <div class="col">
+      @for (capability of capabilities().slice(0, 2); track capability.name) {
+        <div class="cap">
+          <fa-icon icon="circle-check" />
+          <span>{{ capability.name }}</span>
+          <span class="st">{{ capability.status }}</span>
+        </div>
+      }
+    </div>
+    <div class="core" abfTranslate="dashboard.core.badge">Core platform</div>
+    <div class="col">
+      @for (capability of capabilities().slice(2); track capability.name) {
+        <div class="cap">
+          <fa-icon icon="circle-check" />
+          <span>{{ capability.name }}</span>
+          <span class="st">{{ capability.status }}</span>
+        </div>
+      }
+    </div>
+  </div>
+}

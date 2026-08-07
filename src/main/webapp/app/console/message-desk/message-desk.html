@@ -1,0 +1,125 @@
+<div class="sec-head">
+  <div>
+    <h3 abfTranslate="messageDesk.title">Today at the desk</h3>
+    <p abfTranslate="messageDesk.subtitle">Patient app, professional app and vendor portal in one queue</p>
+  </div>
+  <div class="head-tools no-print">
+    <button type="button" class="btn btn-ghost btn-sm" (click)="markAllRead()" *abfHasAnyAuthority="adminOnly">
+      <fa-icon icon="check" />
+      <span abfTranslate="messageDesk.markAllRead">Mark all read</span>
+    </button>
+  </div>
+</div>
+
+<div class="grid g-3 mb-18">
+  @for (status of STATUSES; track status) {
+    <button type="button" class="stat" (click)="toggleChip('status', status)">
+      <span class="ic" [class]="'ic--' + status.toLowerCase()"><fa-icon icon="envelope" /></span>
+      <b>{{ counts()[status] }}</b>
+      <span>{{ 'console.status.' + status | translate }}</span>
+    </button>
+  }
+</div>
+
+<div class="tools no-print">
+  <label class="search">
+    <fa-icon icon="search" />
+    <input
+      type="search"
+      [attr.placeholder]="'messageDesk.searchPlaceholder' | translate"
+      [attr.aria-label]="'messageDesk.searchPlaceholder' | translate"
+      [value]="search()"
+      (input)="onSearch($any($event.target).value)"
+    />
+  </label>
+
+  <div class="chip-row">
+    @for (priority of PRIORITIES; track priority) {
+      <button type="button" class="chip" [class.on]="isChipActive('priority', priority)" (click)="toggleChip('priority', priority)">
+        {{ 'console.status.' + priority | translate }}
+      </button>
+    }
+  </div>
+</div>
+
+@if (chips().length > 0 || search()) {
+  <div class="chip-row applied no-print">
+    @for (chip of chips(); track chip.kind + chip.value) {
+      <button type="button" class="chip chip--applied" (click)="removeChip(chip)">
+        {{ 'console.status.' + chip.value | translate }}
+        <fa-icon icon="times" />
+      </button>
+    }
+    <button type="button" class="btn-quiet sm" (click)="clearFilters()" abfTranslate="console.filter.clear">Clear</button>
+  </div>
+}
+
+<div class="card">
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead>
+        <tr>
+          <th abfTranslate="messageDesk.column.date">Date</th>
+          <th abfTranslate="messageDesk.column.from">From</th>
+          <th abfTranslate="messageDesk.column.subject">Subject</th>
+          <th abfTranslate="messageDesk.column.channel">Channel</th>
+          <th abfTranslate="messageDesk.column.priority">Priority</th>
+          <th class="right" abfTranslate="messageDesk.column.status">Status</th>
+          <th class="right" abfTranslate="messageDesk.column.open">Open</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (message of messages(); track message.id) {
+          <tr [class.unread]="message.status === 'NEW'">
+            <td class="dt">
+              {{ message.sentAt | formatMediumDate }}
+              @if (message.status === 'NEW') {
+                <span class="unread-dot" [attr.aria-label]="'messageDesk.unread' | translate"></span>
+              }
+            </td>
+            <td class="nm">
+              {{ message.fromAddress }}
+              <div class="tiny muted">{{ message.senderName }}</div>
+            </td>
+            <td>{{ message.subject }}</td>
+            <td class="tiny muted">{{ 'console.channel.' + message.channel | translate }}</td>
+            <td><abf-status-pill [status]="message.priority" /></td>
+            <td class="right"><abf-status-pill [status]="message.status" /></td>
+            <td class="right">
+              <a class="btn btn-ghost btn-sm" [routerLink]="[message.id]">
+                <fa-icon icon="eye" />
+                <span abfTranslate="messageDesk.column.open">Open</span>
+              </a>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="7">
+              <div class="empty">
+                <fa-icon icon="search" />
+                <b abfTranslate="messageDesk.empty">No messages match this filter</b>
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
+
+@if (totalItems() > 0) {
+  <div class="pager no-print">
+    <div class="muted tiny">
+      {{ 'console.pagination.showing' | translate: { total: totalItems() } }}
+    </div>
+    <ngb-pagination
+      [collectionSize]="totalItems()"
+      [page]="page()"
+      [pageSize]="itemsPerPage"
+      [maxSize]="5"
+      [rotate]="true"
+      [boundaryLinks]="true"
+      (pageChange)="navigateToPage($event)"
+    />
+  </div>
+}

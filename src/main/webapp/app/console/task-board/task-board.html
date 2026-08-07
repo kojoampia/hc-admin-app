@@ -1,0 +1,59 @@
+<div class="sec-head">
+  <div>
+    <h3 abfTranslate="taskBoard.title">The board</h3>
+    <p abfTranslate="taskBoard.subtitle">Operational work across accounts, roster, vendors and the platform</p>
+  </div>
+  <button type="button" class="btn btn-primary btn-sm no-print" (click)="newTask()" *abfHasAnyAuthority="adminOnly">
+    <fa-icon icon="plus" />
+    <span abfTranslate="taskBoard.newTask">New task</span>
+  </button>
+</div>
+
+<div class="tools no-print">
+  <label class="search">
+    <fa-icon icon="search" />
+    <input
+      type="search"
+      [attr.placeholder]="'taskBoard.searchPlaceholder' | translate"
+      [attr.aria-label]="'taskBoard.searchPlaceholder' | translate"
+      [value]="search()"
+      (input)="onSearch($any($event.target).value)"
+    />
+  </label>
+</div>
+
+<div class="kan">
+  @for (column of board(); track column.state) {
+    <section class="kcol">
+      <h4>
+        {{ 'console.taskState.' + column.state | translate }}
+        <span class="n">{{ column.items.length }}</span>
+      </h4>
+
+      @for (task of column.items; track task.id) {
+        <button type="button" class="kcard" (click)="openTask(task)">
+          <span class="prio" [class]="'prio prio--' + (task.priority ?? 'NORMAL').toLowerCase()" aria-hidden="true"></span>
+          <span class="body">
+            <span class="tl">{{ task.title }}</span>
+            <span class="mt">
+              <span class="tiny-av">{{ ownerInitials(task) }}</span>
+              <span class="trunc">{{ task.owner?.licenceNumber ?? ('taskBoard.unassigned' | translate) }}</span>
+              @if (task.tag) {
+                <span class="tag">{{ task.tag }}</span>
+              }
+            </span>
+            @if (task.dueOn) {
+              <span class="mt due">
+                <fa-icon icon="calendar-alt" />
+                <span>{{ 'taskBoard.due' | translate: { date: '' } }} {{ task.dueOn | formatMediumDate }}</span>
+              </span>
+            }
+            <span class="visually-hidden">{{ 'console.status.' + task.priority | translate }}</span>
+          </span>
+        </button>
+      } @empty {
+        <div class="kempty" abfTranslate="taskBoard.emptyColumn">Empty</div>
+      }
+    </section>
+  }
+</div>

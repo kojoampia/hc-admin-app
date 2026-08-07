@@ -1,0 +1,14 @@
+{
+  "platformHealth": {
+    "pageTitle": "Platform health",
+    "title": "Service map",
+    "subtitle": "Dashboards, gateways and services from the Health Connect architecture",
+    "core": "Core platform capability",
+    "stat": {
+      "healthy": "Services healthy",
+      "degraded": "Degraded",
+      "median": "Median response",
+      "mapped": "Services mapped"
+    }
+  }
+}

@@ -1,0 +1,77 @@
+{
+  "console": {
+    "loading": "Loading…",
+    "status": {
+      "ACTIVE": "Active",
+      "PENDING": "Pending",
+      "SUSPENDED": "Suspended",
+      "ON_LEAVE": "On leave",
+      "UNDER_REVIEW": "Under review",
+      "VERIFIED": "Verified",
+      "REJECTED": "Rejected",
+      "NEW": "New",
+      "READ": "Read",
+      "REPLIED": "Replied",
+      "HIGH": "High",
+      "NORMAL": "Normal",
+      "LOW": "Low",
+      "TODO": "To do",
+      "DOING": "In progress",
+      "DONE": "Done",
+      "HEALTHY": "Healthy",
+      "DEGRADED": "Degraded",
+      "DOWN": "Down",
+      "INFO": "Info",
+      "WARN": "Warning",
+      "UNKNOWN": "Unknown"
+    },
+    "taskState": {
+      "TODO": "To do",
+      "DOING": "In progress",
+      "DONE": "Done"
+    },
+    "professionalRole": {
+      "CAREGIVER": "Caregiver",
+      "PARAMEDIC": "Paramedic",
+      "NURSE": "Nurse",
+      "DOCTOR": "Doctor"
+    },
+    "channel": {
+      "PATIENT_APP": "Patient app",
+      "PROFESSIONAL_APP": "Professional app",
+      "VENDOR_PORTAL": "Vendor portal",
+      "EMAIL": "Email"
+    },
+    "shift": {
+      "DAY": "Day shift",
+      "EVENING": "Evening shift",
+      "NIGHT": "Night shift",
+      "OFF": "Off"
+    },
+    "shiftCode": {
+      "DAY": "D",
+      "EVENING": "E",
+      "NIGHT": "N",
+      "OFF": "O"
+    },
+    "shiftHours": {
+      "DAY": "Day 07–15",
+      "EVENING": "Evening 15–23",
+      "NIGHT": "Night 23–07",
+      "OFF": "Off"
+    },
+    "filter": {
+      "clear": "Clear filters"
+    },
+    "pagination": {
+      "showing": "{{ total }} in this extract"
+    }
+  },
+  "viz": {
+    "toggle": {
+      "label": "Chart or table view",
+      "chart": "Chart",
+      "table": "Table"
+    }
+  }
+}

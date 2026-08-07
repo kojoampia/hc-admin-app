@@ -1,0 +1,30 @@
+@import 'hc-tokens';
+
+.viz-line {
+  position: relative;
+}
+
+.viz-tip {
+  position: absolute;
+  transform: translate(-50%, calc(-100% - 14px));
+  background: var(--abf-navy-900);
+  color: #fff;
+  border-radius: var(--abf-r-sm);
+  padding: 6px 10px;
+  font-size: 12px;
+  line-height: 1.3;
+  pointer-events: none;
+  white-space: nowrap;
+  box-shadow: var(--abf-sh);
+  z-index: 2;
+
+  b {
+    display: block;
+    font-size: 14px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  span {
+    color: #b9c8da;
+  }
+}

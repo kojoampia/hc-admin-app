@@ -1,0 +1,54 @@
+{
+  "organisation": {
+    "pageTitle": "Organisation profile",
+    "title": "Organisation",
+    "subtitle": "Trading identity, address, teams, access and the audit trail",
+    "tab": {
+      "about": "About",
+      "address": "Address",
+      "team": "Team & roles",
+      "security": "Security",
+      "audit": "Audit trail"
+    },
+    "about": {
+      "identity": "Organisation",
+      "tradingName": "Trading name",
+      "legalEntity": "Legal entity",
+      "registration": "Registration",
+      "tin": "TIN",
+      "founded": "Founded",
+      "contact": "Contact",
+      "switchboard": "Switchboard",
+      "email": "Email",
+      "deskHours": "Desk hours"
+    },
+    "address": {
+      "title": "Registered address",
+      "digital": "Digital address",
+      "open": "Open the full address record",
+      "none": "No address on file."
+    },
+    "team": {
+      "name": "Team",
+      "supervisor": "Supervisor",
+      "open": "Open",
+      "none": "No teams on file."
+    },
+    "security": {
+      "signedIn": "Signed in as",
+      "account": "Account",
+      "role": "Role",
+      "authorities": "Authorities",
+      "switchRole": "Switch role",
+      "switchHint": "Switching re-issues the session token. Controls gated on an authority you no longer hold disappear immediately."
+    },
+    "audit": {
+      "when": "When",
+      "actor": "Actor",
+      "action": "Action",
+      "target": "Target",
+      "level": "Level",
+      "none": "The trail is empty."
+    }
+  }
+}

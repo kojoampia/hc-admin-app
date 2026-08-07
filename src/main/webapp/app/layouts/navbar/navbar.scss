@@ -1,36 +1,258 @@
-@import 'bootstrap/scss/functions';
-@import 'bootstrap/scss/variables';
-
 /* ==========================================================================
-Navbar
+Sidebar
+
+The fixed navy rail. Under $abf-shell-bp it becomes an overlay drawer, which
+is the only place the shell's grid gives up its second column.
 ========================================================================== */
+@import 'hc-tokens';
 
-.navbar-version {
-  font-size: 0.65em;
-  color: $navbar-dark-color;
+.abf-sidebar {
+  background: var(--abf-navy);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  padding: 20px 14px;
 }
 
-.profile-image {
-  height: 1.75em;
-  width: 1.75em;
-}
+.side-brand {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 4px 8px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 14px;
 
-.navbar {
-  padding: 0.2rem 1rem;
+  img {
+    width: 40px;
+    height: 40px;
+    background: #fff;
+    border-radius: 50%;
+    padding: 2.5px;
+    flex: none;
+  }
 
-  a.nav-link {
-    font-weight: 400;
+  .nm {
+    font-weight: 800;
+    font-size: 14.5px;
+    line-height: 1.16;
+    letter-spacing: -0.012em;
+
+    span {
+      color: var(--abf-gold-300);
+    }
+  }
+
+  .sub {
+    font-size: 9.5px;
+    color: #8fa3bc;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-top: 2px;
+  }
+
+  .role-tag {
+    display: inline-block;
+    margin-top: 6px;
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--abf-gold-300);
+    background: rgba(197, 148, 55, 0.16);
+    border: 1px solid rgba(197, 148, 55, 0.34);
+    border-radius: 999px;
+    padding: 2px 8px;
   }
 }
 
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  overflow-y: auto;
+  margin: 0 -4px;
+  padding: 0 4px;
+
+  &::-webkit-scrollbar {
+    width: 0;
+  }
+
+  a {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 9.5px 11px;
+    border-radius: 10px;
+    color: #c3d2e4;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    position: relative;
+    transition:
+      background 0.14s,
+      color 0.14s;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.07);
+      color: #fff;
+    }
+
+    &.active {
+      background: var(--abf-gold);
+      color: #fff;
+      box-shadow: 0 2px 10px rgba(197, 148, 55, 0.32);
+    }
+
+    fa-icon {
+      width: 18px;
+      flex: none;
+      text-align: center;
+    }
+  }
+
+  .badge {
+    margin-left: auto;
+    background: var(--abf-danger);
+    color: #fff;
+    font-size: 10.5px;
+    font-weight: 800;
+    min-width: 19px;
+    height: 19px;
+    border-radius: 10px;
+    display: grid;
+    place-items: center;
+    padding: 0 5px;
+  }
+
+  a.active .badge {
+    background: rgba(255, 255, 255, 0.28);
+  }
+}
+
+.nav-lbl {
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #7189a6;
+  font-weight: 700;
+  padding: 16px 10px 6px;
+}
+
+.side-foot {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 12px;
+  margin-top: 8px;
+}
+
+.side-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  border-radius: 10px;
+  transition: background 0.14s;
+  width: 100%;
+  text-align: left;
+  text-decoration: none;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.07);
+  }
+
+  .grow {
+    min-width: 0;
+    display: block;
+    flex: 1;
+  }
+
+  .nm {
+    display: block;
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  .sub {
+    display: block;
+    font-size: 11px;
+    color: #8fa3bc;
+  }
+
+  .trunc {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+/* The monogram avatar. The prototype uses photographs where it has them and
+   falls back to initials; the console only ever has initials, so this is the
+   single avatar treatment. */
+.mono-av {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  flex: none;
+  font-size: 12.5px;
+  font-weight: 800;
+  color: #fff;
+  background: var(--abf-gold);
+  border: 2px solid rgba(255, 255, 255, 0.22);
+}
+
 /* ==========================================================================
-Logo styles
+Scrim — only ever visible while the drawer is open
 ========================================================================== */
-.logo-img {
-  height: 45px;
-  width: 45px;
-  display: inline-block;
-  vertical-align: middle;
-  background: url('/content/images/logo-jhipster.png') no-repeat center center;
-  background-size: contain;
+.abf-scrim {
+  display: none;
+}
+
+@media (max-width: $abf-shell-bp) {
+  .abf-sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 262px;
+    z-index: 80;
+    transform: translateX(-102%);
+    transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 0 50px rgba(0, 0, 0, 0.3);
+    height: 100dvh;
+
+    &--open {
+      transform: none;
+    }
+  }
+
+  .abf-scrim {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(9, 34, 57, 0.5);
+    z-index: 70;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s;
+    backdrop-filter: blur(2px);
+
+    &--on {
+      opacity: 1;
+      pointer-events: auto;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .abf-sidebar,
+  .abf-scrim {
+    transition: none;
+  }
 }

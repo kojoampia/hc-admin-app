@@ -1,0 +1,189 @@
+@import 'console-components';
+
+.mb-18 {
+  margin-bottom: 18px;
+}
+
+.stat .ic {
+  &.ic--new {
+    background: var(--abf-gold-050);
+    color: var(--abf-gold);
+  }
+  &.ic--read {
+    background: #e8edf4;
+    color: var(--abf-navy);
+  }
+  &.ic--replied {
+    background: var(--abf-ok-bg);
+    color: var(--abf-ok);
+  }
+}
+
+.tools {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 0 0 14px;
+}
+
+.search {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  background: #fff;
+  border: 1.5px solid var(--abf-line);
+  border-radius: var(--abf-r-sm);
+  padding: 9px 13px;
+  flex: 1;
+  min-width: 220px;
+  color: var(--abf-grey);
+
+  &:focus-within {
+    border-color: var(--abf-navy);
+    box-shadow: 0 0 0 3.5px rgba(13, 48, 88, 0.1);
+  }
+
+  input {
+    border: none;
+    outline: none;
+    background: none;
+    flex: 1;
+    min-width: 0;
+    font-size: 14px;
+    color: var(--abf-ink);
+  }
+}
+
+.chip-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+
+  &.applied {
+    margin-bottom: 14px;
+    align-items: center;
+  }
+}
+
+.chip {
+  border: 1.5px solid var(--abf-line);
+  background: #fff;
+  border-radius: 999px;
+  padding: 6px 13px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--abf-grey);
+  cursor: pointer;
+  transition:
+    border-color 0.14s,
+    color 0.14s,
+    background 0.14s;
+
+  &:hover {
+    border-color: var(--abf-navy);
+    color: var(--abf-navy);
+  }
+
+  &.on,
+  &--applied {
+    background: var(--abf-navy);
+    border-color: var(--abf-navy);
+    color: #fff;
+  }
+
+  &--applied {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+  }
+}
+
+.tbl-wrap {
+  overflow-x: auto;
+}
+
+.tbl {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+
+  th,
+  td {
+    padding: 12px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--abf-line);
+    vertical-align: middle;
+  }
+
+  th {
+    font-size: 11px;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--abf-grey);
+    font-weight: 700;
+    background: var(--abf-cream);
+    white-space: nowrap;
+  }
+
+  td.right,
+  th.right {
+    text-align: right;
+  }
+
+  tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  tbody tr:hover {
+    background: #fcfbf8;
+  }
+
+  /* Unread rows carry a gold dot AND a tint. The tint alone would be the
+     only signal, and it is too slight to rely on by itself. */
+  tr.unread {
+    background: var(--abf-gold-050);
+
+    td:nth-child(3) {
+      font-weight: 700;
+    }
+  }
+
+  .dt {
+    white-space: nowrap;
+    position: relative;
+  }
+
+  .nm {
+    max-width: 220px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+.unread-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--abf-gold);
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+.pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+
+.empty {
+  display: grid;
+  place-items: center;
+  gap: 8px;
+  padding: 30px 16px;
+  color: var(--abf-grey);
+}

@@ -43,6 +43,9 @@
             "scripts": [],
             "define": {
               "SERVER_API_URL": "''"
+            },
+            "stylePreprocessorOptions": {
+              "includePaths": ["src/main/webapp/content/scss"]
             }
           },
           "configurations": {
@@ -84,9 +87,9 @@
           "builder": "@angular-builders/custom-esbuild:dev-server",
           "options": {
             "buildTarget": "hc-admin:build:development",
-            "open": true,
+            "open": false,
             "proxyConfig": "proxy.config.mjs",
-            "port": 4200
+            "port": 9000
           },
           "configurations": {
             "production": {

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, DOCUMENT, OnInit, Renderer2, RendererFactory2, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DOCUMENT, OnInit, Renderer2, RendererFactory2, computed, inject } from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
 
 import { LangChangeEvent, TranslateService } from '@ngx-translate/core';
@@ -6,15 +6,26 @@ import dayjs from 'dayjs/esm';
 
 import { AppPageTitleStrategy } from 'app/app-page-title-strategy';
 import { AccountService } from 'app/core/auth/account.service';
-import Footer from '../footer/footer';
-import PageRibbon from '../profiles/page-ribbon';
+import Tabbar from '../tabbar/tabbar';
+import Topbar from '../topbar/topbar';
 
+/**
+ * The shell.
+ *
+ * Two columns on desktop — the navy sidebar rendered into the `navbar`
+ * outlet, and everything else — collapsing to one under 940px, where the
+ * sidebar becomes a drawer and the tab bar appears.
+ *
+ * Signed out, the shell renders nothing but the routed view: the login
+ * screen is a full-bleed two-panel page, not a page inside the console.
+ */
 @Component({
   selector: 'abf-main',
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './main.html',
+  styleUrl: './main.scss',
   providers: [AppPageTitleStrategy],
-  imports: [RouterOutlet, Footer, PageRibbon],
+  imports: [RouterOutlet, Topbar, Tabbar],
 })
 export default class Main implements OnInit {
   private readonly renderer: Renderer2;
@@ -26,6 +37,9 @@ export default class Main implements OnInit {
   private readonly document = inject(DOCUMENT);
   private readonly translateService = inject(TranslateService);
   private readonly rootRenderer = inject(RendererFactory2);
+
+  // eslint-disable-next-line @typescript-eslint/member-ordering
+  readonly isAuthenticated = computed(() => this.accountService.account() !== null);
 
   constructor() {
     this.htmlElement = this.document.documentElement;

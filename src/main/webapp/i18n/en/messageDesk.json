@@ -1,0 +1,38 @@
+{
+  "messageDesk": {
+    "pageTitle": "Message desk",
+    "title": "Today at the desk",
+    "subtitle": "Patient app, professional app and vendor portal in one queue",
+    "markAllRead": "Mark all read",
+    "searchPlaceholder": "Search sender, subject or body…",
+    "unread": "Unread",
+    "empty": "No messages match this filter",
+    "column": {
+      "date": "Date",
+      "from": "From",
+      "subject": "Subject",
+      "channel": "Channel",
+      "priority": "Priority",
+      "status": "Status",
+      "open": "Open"
+    },
+    "thread": {
+      "pageTitle": "Message",
+      "back": "Back to the desk",
+      "notFound": "That message no longer exists.",
+      "replyLabel": "Reply as Abofonsa BridgeCare",
+      "replyPlaceholder": "Type your reply…",
+      "send": "Send reply",
+      "raiseTask": "Raise a task",
+      "close": "Close",
+      "sender": "Sender",
+      "name": "Name",
+      "address": "Address",
+      "received": "Received",
+      "deskActions": "Desk actions",
+      "markReplied": "Mark replied",
+      "markUnread": "Mark unread",
+      "escalate": "Escalate"
+    }
+  }
+}

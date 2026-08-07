@@ -1,13 +1,17 @@
-<abf-page-ribbon />
+@if (isAuthenticated()) {
+  <div class="abf-shell">
+    <router-outlet name="navbar" />
 
-<div>
-  <router-outlet name="navbar" />
-</div>
-
-<div class="container-fluid">
-  <div class="card jh-card">
-    <router-outlet />
+    <div class="abf-main">
+      <abf-topbar />
+      <main class="abf-content">
+        <router-outlet />
+      </main>
+    </div>
   </div>
 
-  <abf-footer />
-</div>
+  <abf-tabbar />
+} @else {
+  <!-- Signed out: the login screen owns the whole viewport, no chrome. -->
+  <router-outlet />
+}

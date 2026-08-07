@@ -1,0 +1,23 @@
+{
+  "taskBoard": {
+    "pageTitle": "Task management",
+    "title": "The board",
+    "subtitle": "Operational work across accounts, roster, vendors and the platform",
+    "newTask": "New task",
+    "searchPlaceholder": "Search tasks, tags or owners…",
+    "emptyColumn": "Empty",
+    "unassigned": "Unassigned",
+    "due": "Due",
+    "dialog": {
+      "newTitle": "New task",
+      "taskTitle": "Title",
+      "titleRequired": "A title is required.",
+      "tag": "Tag",
+      "priority": "Priority",
+      "owner": "Owner",
+      "due": "Due",
+      "moveTo": "Move to",
+      "raisedFrom": "Raised from the message:"
+    }
+  }
+}

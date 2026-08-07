@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vitest } from 'vitest';
 import { DOCUMENT } from '@angular/common';
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Title } from '@angular/platform-browser';
 import { Router, TitleStrategy } from '@angular/router';
@@ -30,8 +30,13 @@ describe('Main', () => {
         Title,
         {
           provide: AccountService,
+          // `account` is a signal on the real service and the shell reads it
+          // to decide whether to render chrome at all, so the stub needs it
+          // too. Signed out (null) keeps these title tests on the bare
+          // <router-outlet> branch, which is what they exercise.
           useValue: {
             identity: vitest.fn(() => of(null)),
+            account: signal(null),
           },
         },
         { provide: TitleStrategy, useClass: AppPageTitleStrategy },

@@ -1,0 +1,118 @@
+@import 'hc-tokens';
+
+.abf-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  background: rgba(242, 240, 234, 0.86);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--abf-line);
+  padding: 13px clamp(18px, 3vw, 34px);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 62px;
+
+  h2 {
+    margin: 0;
+    font-size: 19px;
+    font-weight: 800;
+    letter-spacing: -0.022em;
+  }
+
+  .crumb {
+    font-size: 12px;
+    color: var(--abf-grey);
+    font-weight: 600;
+    margin-bottom: 1px;
+  }
+
+  &__heading {
+    flex: 1;
+    min-width: 0;
+  }
+
+  /* The drawer toggle only exists once the sidebar is a drawer. */
+  &__menu {
+    display: none;
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  &__bell {
+    position: relative;
+
+    .badge {
+      position: absolute;
+      top: 3px;
+      right: 3px;
+      background: var(--abf-danger);
+      color: #fff;
+      font-size: 9px;
+      font-weight: 800;
+      min-width: 15px;
+      height: 15px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      padding: 0 4px;
+    }
+  }
+
+  &__new {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    white-space: nowrap;
+
+    &::after {
+      display: none; /* the icon carries the affordance, not a caret */
+    }
+  }
+
+  &__new-menu a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+  }
+}
+
+.icon-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  color: var(--abf-grey);
+  background: none;
+  border: none;
+  text-decoration: none;
+  transition:
+    background 0.14s,
+    color 0.14s;
+  flex: none;
+
+  &:hover {
+    background: #e6e3da;
+    color: var(--abf-navy);
+  }
+}
+
+@media (max-width: $abf-shell-bp) {
+  .abf-topbar__menu {
+    display: grid;
+  }
+}
+
+@media (max-width: 560px) {
+  /* The label goes; the plus stays, so quick-add survives on a phone. */
+  .abf-topbar__new span {
+    display: none;
+  }
+}

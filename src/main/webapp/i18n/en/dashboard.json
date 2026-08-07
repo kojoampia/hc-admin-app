@@ -1,0 +1,73 @@
+{
+  "dashboard": {
+    "pageTitle": "Admin dashboard",
+    "hero": {
+      "greeting": "Good morning {{ name }} — the network is steady",
+      "summary": "{{ unread }} messages waiting at the desk, {{ approvals }} accounts pending approval and roster cover at {{ cover }}% for the week. {{ degraded }} service running degraded.",
+      "openDesk": "Open message desk",
+      "dutyRoster": "Duty roster"
+    },
+    "glance": {
+      "title": "Network at a glance",
+      "subtitle": "Live counts across the patient, professional and vendor systems",
+      "platformHealth": "Platform health"
+    },
+    "kpi": {
+      "patients": "Patient accounts",
+      "patientsNote": "+3 this week",
+      "professionals": "Professionals",
+      "professionalsNote": "+2 verified",
+      "unreadMessages": "Unread messages",
+      "unreadMessagesNote": "Desk backlog",
+      "openTasks": "Open tasks",
+      "openTasksNote": "Across 6 owners"
+    },
+    "operations": {
+      "title": "Operations",
+      "subtitle": "Every chart has a table view — press Table to read the numbers"
+    },
+    "charts": {
+      "messages": {
+        "title": "Messages handled",
+        "subtitle": "Desk volume per month, 2026",
+        "month": "Month",
+        "count": "Messages"
+      },
+      "mix": {
+        "title": "Account mix",
+        "subtitle": "Who holds an account on the platform",
+        "type": "Account type",
+        "accounts": "Accounts",
+        "share": "Share",
+        "patients": "Patients",
+        "professionals": "Professionals",
+        "vendors": "Vendors"
+      },
+      "caseLoad": {
+        "title": "Case load and visits per professional",
+        "subtitle": "Workload balance across the active roster",
+        "professional": "Professional",
+        "cases": "Cases",
+        "visits": "Visits"
+      }
+    },
+    "approvals": {
+      "title": "Needs your approval",
+      "allTasks": "All tasks",
+      "patient": "Patient registration",
+      "professional": "Professional application",
+      "vendor": "Vendor onboarding",
+      "empty": "Nothing waiting for approval"
+    },
+    "desk": {
+      "title": "Latest at the desk",
+      "allMessages": "All messages",
+      "empty": "The desk is clear"
+    },
+    "core": {
+      "title": "Core platform",
+      "subtitle": "The four services every dashboard sits on",
+      "badge": "Core platform"
+    }
+  }
+}

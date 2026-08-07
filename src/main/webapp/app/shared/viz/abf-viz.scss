@@ -1,0 +1,162 @@
+@import 'hc-tokens';
+
+.viz-card {
+  background: var(--abf-card);
+  border: 1px solid var(--abf-line);
+  border-radius: var(--abf-r);
+  box-shadow: var(--abf-sh-sm);
+  padding: 16px 16px 12px;
+}
+
+.viz-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+
+  h4 {
+    margin: 0;
+    font-size: 14.5px;
+    font-weight: 800;
+    letter-spacing: -0.012em;
+  }
+
+  p {
+    margin: 2px 0 0;
+    font-size: 12px;
+    color: var(--abf-grey);
+  }
+
+  .grow {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+.viz-toggle {
+  display: flex;
+  border: 1px solid var(--abf-line);
+  border-radius: var(--abf-r-sm);
+  overflow: hidden;
+  flex: none;
+
+  button {
+    background: #fff;
+    border: none;
+    padding: 5px 11px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--abf-grey);
+    cursor: pointer;
+    transition:
+      background 0.14s,
+      color 0.14s;
+
+    &:hover {
+      background: var(--abf-cream);
+    }
+
+    &.on {
+      background: var(--abf-navy);
+      color: #fff;
+    }
+  }
+}
+
+.viz-body {
+  position: relative;
+  min-height: 200px;
+
+  &--table {
+    min-height: 0;
+    overflow-x: auto;
+  }
+}
+
+/* Charts scale to their container; the aspect is fixed by the viewBox. */
+.viz-figure {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.viz-tbl {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+
+  th,
+  td {
+    padding: 7px 10px;
+    border-bottom: 1px solid var(--abf-line);
+    text-align: left;
+  }
+
+  th {
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--abf-grey);
+    font-weight: 700;
+  }
+
+  td.right,
+  th.right {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  tr:last-child td {
+    border-bottom: none;
+  }
+}
+
+.viz-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--abf-grey);
+  font-weight: 600;
+
+  .li {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .sw {
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+    flex: none;
+  }
+}
+
+/* Direct value labels. Every mark carries its number, so the chart is
+   readable without hovering and prints with its data intact. */
+.viz-value {
+  font-size: 10.5px;
+  font-weight: 700;
+  fill: var(--abf-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.viz-axis {
+  font-size: 10.5px;
+  font-weight: 600;
+  fill: var(--abf-grey-400);
+}
+
+.viz-axis--x {
+  font-size: 11px;
+  fill: var(--abf-grey);
+}
+
+.viz-grid {
+  stroke: var(--abf-grid);
+  stroke-width: 1;
+}

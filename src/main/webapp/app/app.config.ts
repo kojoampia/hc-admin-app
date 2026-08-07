@@ -20,6 +20,7 @@ import { authExpiredInterceptor } from 'app/core/interceptor/auth-expired.interc
 import { authInterceptor } from 'app/core/interceptor/auth.interceptor';
 import { errorHandlerInterceptor } from 'app/core/interceptor/error-handler.interceptor';
 import { notificationInterceptor } from 'app/core/interceptor/notification.interceptor';
+import { mockApiInterceptor } from 'app/core/mock/mock-api.interceptor';
 
 import './config/dayjs';
 import { provideTranslation } from 'app/shared/language/translation.provider';
@@ -53,7 +54,15 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes, ...routerFeatures),
     // Set this to true to enable service worker (PWA)
     provideServiceWorker('ngsw-worker.js', { enabled: false }),
-    provideHttpClient(withInterceptors([authInterceptor, authExpiredInterceptor, errorHandlerInterceptor, notificationInterceptor])),
+    // mockApiInterceptor is registered LAST on purpose. Every interceptor
+    // before it runs normally — auth still attaches the bearer token, the
+    // error and notification handlers still see real responses — and the mock
+    // simply never lets the request reach the network. Deleting this one entry
+    // and `app/core/mock/` points the client at a real gateway; see that
+    // folder's README.
+    provideHttpClient(
+      withInterceptors([authInterceptor, authExpiredInterceptor, errorHandlerInterceptor, notificationInterceptor, mockApiInterceptor]),
+    ),
     Title,
     { provide: LOCALE_ID, useValue: 'en' },
     { provide: NgbDateAdapter, useClass: NgbDateDayjsAdapter },

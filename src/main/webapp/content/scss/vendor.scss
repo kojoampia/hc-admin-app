@@ -9,4 +9,13 @@ eg $input-color: red;
 // Import Bootstrap source files from node_modules
 @import 'bootstrap/scss/bootstrap';
 
+// Inter, self-hosted through @fontsource rather than a Google Fonts <link>.
+// A remote <link> is a request to a third-party host on every page load and
+// the first thing a strict style-src/font-src CSP blocks — silently, and
+// only once deployed. Weights are limited to the four the console uses.
+@import '@fontsource/inter/400.css';
+@import '@fontsource/inter/500.css';
+@import '@fontsource/inter/600.css';
+@import '@fontsource/inter/700.css';
+
 /* jhipster-needle-scss-add-vendor JHipster will add new css style */

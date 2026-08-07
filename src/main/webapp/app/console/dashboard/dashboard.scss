@@ -1,0 +1,76 @@
+@import 'console-components';
+
+/* Tile icon tones. The prototype sets these inline per tile; as a class each
+   one is named after the role it plays rather than the colour it happens to
+   be, which is what lets the palette move without touching the template. */
+.stat .ic {
+  &.ic--gold {
+    background: var(--abf-gold-050);
+    color: var(--abf-gold);
+  }
+  &.ic--navy {
+    background: #e8edf4;
+    color: var(--abf-navy);
+  }
+  &.ic--warn {
+    background: var(--abf-warn-bg);
+    color: var(--abf-warn);
+  }
+  &.ic--ok {
+    background: var(--abf-ok-bg);
+    color: var(--abf-ok);
+  }
+}
+
+/* The hero's secondary button sits on navy, so it cannot use .btn-ghost's
+   white-on-white treatment. */
+.btn-hero-ghost {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  border: 1.5px solid rgba(255, 255, 255, 0.3);
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+  }
+}
+
+.mt-16 {
+  margin-top: 16px;
+}
+
+.mt-26 {
+  margin-top: 26px;
+}
+
+abf-sparkline {
+  margin-top: 10px;
+}
+
+.lrow {
+  text-decoration: none;
+  color: inherit;
+
+  .grow {
+    display: block;
+    min-width: 0;
+    flex: 1;
+  }
+
+  .tl,
+  .st {
+    display: block;
+  }
+}
+
+.empty {
+  display: grid;
+  place-items: center;
+  gap: 8px;
+  padding: 26px 16px;
+  color: var(--abf-grey);
+
+  b {
+    font-size: 13px;
+  }
+}

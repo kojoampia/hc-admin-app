@@ -1,0 +1,138 @@
+<div class="sec-head">
+  <div>
+    <h3>{{ 'dutyRoster.title' | translate: { week: week()?.label ?? '' } }}</h3>
+    <p abfTranslate="dutyRoster.subtitle">Click any cell to cycle the shift: unassigned → day → evening → night → off</p>
+  </div>
+  <div class="head-tools no-print" *abfHasAnyAuthority="adminOnly">
+    <button type="button" class="btn btn-ghost btn-sm" [disabled]="isSaving()" (click)="autoFill()">
+      <fa-icon icon="wrench" />
+      <span abfTranslate="dutyRoster.autoFill">Auto-fill gaps</span>
+    </button>
+    <button type="button" class="btn btn-ghost btn-sm" [disabled]="isSaving()" (click)="resetWeek()">
+      <fa-icon icon="sync" />
+      <span abfTranslate="dutyRoster.resetWeek">Reset week</span>
+    </button>
+    <button type="button" class="btn btn-primary btn-sm" [disabled]="isSaving() || week()?.published" (click)="publish()">
+      <fa-icon icon="save" />
+      <span abfTranslate="dutyRoster.publish">Publish</span>
+    </button>
+  </div>
+</div>
+
+<div class="grid g-4 mb-18">
+  <div class="stat">
+    <span class="ic ic--ok"><fa-icon icon="check" /></span>
+    <b>{{ coverPercent() }}%</b>
+    <span abfTranslate="dutyRoster.stat.planned">Week planned</span>
+    <div class="bar-track"><div class="bar-fill" [style.width.%]="coverPercent()"></div></div>
+  </div>
+  <div class="stat">
+    <span class="ic ic--warn"><fa-icon icon="triangle-exclamation" /></span>
+    <b>{{ unassignedSlots() }}</b>
+    <span abfTranslate="dutyRoster.stat.unassigned">Unassigned slots</span>
+    <div class="dl" [class.down]="unassignedSlots() > 0" [class.up]="unassignedSlots() === 0">
+      {{ (unassignedSlots() > 0 ? 'dutyRoster.stat.needsAttention' : 'dutyRoster.stat.fullyCovered') | translate }}
+    </div>
+  </div>
+  <div class="stat">
+    <span class="ic ic--navy"><fa-icon icon="stethoscope" /></span>
+    <b>{{ rows().length }}</b>
+    <span abfTranslate="dutyRoster.stat.rosteredStaff">Rostered staff</span>
+  </div>
+  <div class="stat">
+    <span class="ic ic--gold"><fa-icon icon="calendar-alt" /></span>
+    <b>{{ workedShifts() }}</b>
+    <span abfTranslate="dutyRoster.stat.shifts">Shifts this week</span>
+  </div>
+</div>
+
+<div class="card roster-card">
+  <div class="tbl-wrap">
+    <table class="roster">
+      <caption class="visually-hidden">
+        {{
+          'dutyRoster.tableCaption' | translate
+        }}
+      </caption>
+      <thead>
+        <tr>
+          <th class="who" scope="col" abfTranslate="dutyRoster.column.professional">Professional</th>
+          @for (day of dayLabels(); track $index) {
+            <th scope="col">{{ day.format('ddd DD') }}</th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of rows(); track row.professional.id) {
+          <tr>
+            <th class="who" scope="row">
+              <a [routerLink]="['/professional', row.professional.id, 'view']">
+                <span class="tl">{{ row.name }}</span>
+                <span class="tiny muted">
+                  {{ 'console.professionalRole.' + row.professional.role | translate }} · {{ row.professional.team?.name }}
+                </span>
+              </a>
+            </th>
+            @for (dayIndex of dayIndexes; track dayIndex) {
+              @let cell = cellFor(row, dayIndex);
+              <td>
+                <button
+                  type="button"
+                  class="cell"
+                  [class.on]="cell.shift !== null"
+                  [class]="cell.shift ? 'cell cell--' + cell.shift.toLowerCase() : 'cell'"
+                  [disabled]="isSaving()"
+                  (click)="cycle(row, dayIndex)"
+                  [attr.aria-label]="
+                    row.name +
+                    ' · ' +
+                    dayLabels()[dayIndex].format('ddd DD') +
+                    ' · ' +
+                    (cell.shift ? ('console.shift.' + cell.shift | translate) : ('dutyRoster.unassigned' | translate))
+                  "
+                >
+                  @if (cell.shift) {
+                    <span class="code">{{ 'console.shiftCode.' + cell.shift | translate }}</span>
+                    <span class="sh">{{ 'console.shiftHours.' + cell.shift | translate }}</span>
+                  } @else {
+                    <span aria-hidden="true">+</span>
+                  }
+                </button>
+              </td>
+            }
+          </tr>
+        } @empty {
+          <tr>
+            <td [attr.colspan]="dayIndexes.length + 1">
+              <div class="empty" abfTranslate="dutyRoster.empty">No professionals are rostered for this week.</div>
+            </td>
+          </tr>
+        }
+
+        @if (rows().length > 0) {
+          <tr class="tally">
+            <th class="who" scope="row" abfTranslate="dutyRoster.onDuty">On duty</th>
+            @for (count of onDutyPerDay(); track $index) {
+              <td class="tally-cell">
+                <!-- Under three on a day is understaffed; the number turns red
+                     and carries a text label so colour is not the only signal. -->
+                <b [class.short]="count < 3">{{ count }}</b>
+                @if (count < 3) {
+                  <span class="visually-hidden">{{ 'dutyRoster.understaffed' | translate }}</span>
+                }
+              </td>
+            }
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="legend">
+  <span class="li"><span class="sw sw--day"></span>{{ 'console.shiftHours.DAY' | translate }}</span>
+  <span class="li"><span class="sw sw--evening"></span>{{ 'console.shiftHours.EVENING' | translate }}</span>
+  <span class="li"><span class="sw sw--night"></span>{{ 'console.shiftHours.NIGHT' | translate }}</span>
+  <span class="li"><span class="sw sw--off"></span>{{ 'console.shiftHours.OFF' | translate }}</span>
+  <span class="li"><span class="sw sw--unassigned"></span>{{ 'dutyRoster.unassigned' | translate }}</span>
+</div>

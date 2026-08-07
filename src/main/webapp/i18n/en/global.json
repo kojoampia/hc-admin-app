@@ -1,6 +1,6 @@
 {
   "global": {
-    "title": "HcAdmin",
+    "title": "Abofonsa BridgeCare · Admin console",
     "browsehappy": "You are using an <strong>outdated</strong> browser. Please <a href=\"https://browsehappy.com/?locale=en\">upgrade your browser</a> to improve your experience.",
     "menu": {
       "home": "Home",
@@ -53,7 +53,37 @@
         "database": "Database",
         "jhipster-needle-menu-add-admin-element": "JHipster will add additional menu entries here (do not translate!)"
       },
-      "language": "Language"
+      "language": "Language",
+      "primary": "Primary navigation",
+      "secondary": "Quick navigation",
+      "toggle": "Toggle navigation",
+      "group": {
+        "operations": "Operations",
+        "directory": "Directory",
+        "catalogue": "Catalogue",
+        "account": "Account",
+        "session": "Session"
+      },
+      "console": {
+        "dashboard": "Dashboard",
+        "messageDesk": "Messages",
+        "dutyRoster": "Duty roster",
+        "taskBoard": "Tasks",
+        "patients": "Patients",
+        "professionals": "Professionals",
+        "vendors": "Vendors",
+        "servicePlans": "Service plans",
+        "catalog": "Catalog",
+        "platformHealth": "Platform health",
+        "organisation": "Organisation"
+      },
+      "quickAdd": {
+        "patient": "Patient account",
+        "professional": "Professional account",
+        "vendor": "Vendor",
+        "task": "Task",
+        "serviceActivity": "Catalogue activity"
+      }
     },
     "form": {
       "username.label": "Username",
@@ -108,7 +138,29 @@
     "ribbon": {
       "dev": "Development"
     },
-    "item-count": "Showing {{first}} - {{second}} of {{total}} items."
+    "item-count": "Showing {{first}} - {{second}} of {{total}} items.",
+    "brand": {
+      "product": "BridgeCare",
+      "console": "Admin console"
+    },
+    "action": {
+      "new": "New",
+      "print": "Print this screen"
+    },
+    "role": {
+      "ops": {
+        "label": "Operations administrator",
+        "tag": "Operations"
+      },
+      "sup": {
+        "label": "Supervisor (read only)",
+        "tag": "Supervisor"
+      },
+      "desk": {
+        "label": "Message desk officer",
+        "tag": "Message desk"
+      }
+    }
   },
   "entity": {
     "action": {

@@ -1,0 +1,92 @@
+<a class="btn-quiet sm back" routerLink="/message-desk">
+  <fa-icon icon="arrow-left" />
+  <span abfTranslate="messageDesk.thread.back">Back to the desk</span>
+</a>
+
+@if (notFound()) {
+  <div class="card card-pad">
+    <b abfTranslate="messageDesk.thread.notFound">That message no longer exists.</b>
+  </div>
+} @else if (message(); as thread) {
+  <div class="rec-head">
+    <span class="mono-av">{{ initials(thread.senderName ?? '') }}</span>
+    <div class="grow">
+      <div class="who trunc">{{ thread.subject }}</div>
+      <div class="sub trunc">
+        {{ thread.senderName }} &lt;{{ thread.fromAddress }}&gt; · {{ 'console.channel.' + thread.channel | translate }} ·
+        {{ thread.sentAt | formatMediumDatetime }}
+      </div>
+    </div>
+    <div class="row gap-8 wrap">
+      <abf-status-pill [status]="thread.priority" />
+      <abf-status-pill [status]="thread.status" />
+    </div>
+  </div>
+
+  <div class="thread-grid">
+    <div class="card card-pad">
+      <div class="prose">
+        @for (paragraph of paragraphs(); track $index) {
+          <p>{{ paragraph }}</p>
+        }
+      </div>
+
+      <div class="reply no-print" *abfHasAnyAuthority="adminOnly">
+        <div class="field">
+          <label for="abf-reply" abfTranslate="messageDesk.thread.replyLabel">Reply</label>
+          <textarea
+            id="abf-reply"
+            [value]="reply()"
+            (input)="reply.set($any($event.target).value)"
+            [attr.placeholder]="'messageDesk.thread.replyPlaceholder' | translate"
+          ></textarea>
+        </div>
+        <div class="row gap-8 wrap">
+          <button type="button" class="btn btn-primary" [disabled]="!reply().trim()" (click)="send()">
+            <fa-icon icon="paper-plane" />
+            <span abfTranslate="messageDesk.thread.send">Send reply</span>
+          </button>
+          <button type="button" class="btn btn-ghost" (click)="raiseTask()">
+            <fa-icon icon="clipboard-list" />
+            <span abfTranslate="messageDesk.thread.raiseTask">Raise a task</span>
+          </button>
+          <a class="btn btn-quiet" routerLink="/message-desk" abfTranslate="messageDesk.thread.close">Close</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="side">
+      <section class="card card-pad">
+        <h4 abfTranslate="messageDesk.thread.sender">Sender</h4>
+        <dl class="kv-list">
+          <dt abfTranslate="messageDesk.thread.name">Name</dt>
+          <dd>{{ thread.senderName }}</dd>
+          <dt abfTranslate="messageDesk.thread.address">Address</dt>
+          <dd>{{ thread.fromAddress }}</dd>
+          <dt abfTranslate="messageDesk.column.channel">Channel</dt>
+          <dd>{{ 'console.channel.' + thread.channel | translate }}</dd>
+          <dt abfTranslate="messageDesk.thread.received">Received</dt>
+          <dd>{{ thread.sentAt | formatMediumDatetime }}</dd>
+        </dl>
+      </section>
+
+      <section class="card card-pad no-print" *abfHasAnyAuthority="adminOnly">
+        <h4 abfTranslate="messageDesk.thread.deskActions">Desk actions</h4>
+        <div class="stack">
+          <button type="button" class="btn btn-ghost btn-sm" (click)="setStatus('REPLIED', false)">
+            <fa-icon icon="check" />
+            <span abfTranslate="messageDesk.thread.markReplied">Mark replied</span>
+          </button>
+          <button type="button" class="btn btn-ghost btn-sm" (click)="setStatus('NEW', false)">
+            <fa-icon icon="bell" />
+            <span abfTranslate="messageDesk.thread.markUnread">Mark unread</span>
+          </button>
+          <button type="button" class="btn btn-ghost btn-sm" (click)="escalate()">
+            <fa-icon icon="arrow-up" />
+            <span abfTranslate="messageDesk.thread.escalate">Escalate</span>
+          </button>
+        </div>
+      </section>
+    </div>
+  </div>
+}
