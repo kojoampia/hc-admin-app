@@ -30,7 +30,7 @@ describe('UserOption Service', () => {
       const returnedFromService = { ...requireRestSample };
       const expected = { ...sampleWithRequiredData };
 
-      service.find(123).subscribe(resp => (expectedResult = resp));
+      service.find('ABC').subscribe(resp => (expectedResult = resp));
 
       const req = httpMock.expectOne({ method: 'GET' });
       req.flush(returnedFromService);
@@ -87,7 +87,7 @@ describe('UserOption Service', () => {
     });
 
     it('should delete a UserOption', () => {
-      service.delete(123).subscribe();
+      service.delete('ABC').subscribe();
 
       const requests = httpMock.match({ method: 'DELETE' });
       expect(requests).toHaveLength(1);
@@ -158,7 +158,7 @@ describe('UserOption Service', () => {
       });
 
       it('should return false if one entity is null', () => {
-        const entity1 = { id: 6892 };
+        const entity1 = { id: '37e3f7e2-fac2-4a3b-bf2f-cb2526358f59' };
         const entity2 = null;
 
         const compareResult1 = service.compareUserOption(entity1, entity2);
@@ -169,8 +169,8 @@ describe('UserOption Service', () => {
       });
 
       it('should return false if primaryKey differs', () => {
-        const entity1 = { id: 6892 };
-        const entity2 = { id: 14345 };
+        const entity1 = { id: '37e3f7e2-fac2-4a3b-bf2f-cb2526358f59' };
+        const entity2 = { id: 'c7665922-3097-419d-8a5c-b73b3abef8c5' };
 
         const compareResult1 = service.compareUserOption(entity1, entity2);
         const compareResult2 = service.compareUserOption(entity2, entity1);
@@ -180,8 +180,8 @@ describe('UserOption Service', () => {
       });
 
       it('should return false if primaryKey matches', () => {
-        const entity1 = { id: 6892 };
-        const entity2 = { id: 6892 };
+        const entity1 = { id: '37e3f7e2-fac2-4a3b-bf2f-cb2526358f59' };
+        const entity2 = { id: '37e3f7e2-fac2-4a3b-bf2f-cb2526358f59' };
 
         const compareResult1 = service.compareUserOption(entity1, entity2);
         const compareResult2 = service.compareUserOption(entity2, entity1);

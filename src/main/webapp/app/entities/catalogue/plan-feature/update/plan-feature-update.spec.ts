@@ -48,11 +48,11 @@ describe('PlanFeature Management Update Component', () => {
 
   describe('ngOnInit', () => {
     it('should call ServicePlan query and add missing value', () => {
-      const planFeature: IPlanFeature = { id: 16120 };
-      const plan: IServicePlan = { id: 23672 };
+      const planFeature: IPlanFeature = { id: 'ce5058da-9e44-44ff-9cef-1fb4a8759e3d' };
+      const plan: IServicePlan = { id: 'b5e0e540-7a57-41f1-8c7d-7faaae191154' };
       planFeature.plan = plan;
 
-      const servicePlanCollection: IServicePlan[] = [{ id: 23672 }];
+      const servicePlanCollection: IServicePlan[] = [{ id: 'b5e0e540-7a57-41f1-8c7d-7faaae191154' }];
       vitest.spyOn(servicePlanService, 'query').mockReturnValue(of(new HttpResponse({ body: servicePlanCollection })));
       const additionalServicePlans = [plan];
       const expectedCollection: IServicePlan[] = [...additionalServicePlans, ...servicePlanCollection];
@@ -70,8 +70,8 @@ describe('PlanFeature Management Update Component', () => {
     });
 
     it('should update editForm', () => {
-      const planFeature: IPlanFeature = { id: 16120 };
-      const plan: IServicePlan = { id: 23672 };
+      const planFeature: IPlanFeature = { id: 'ce5058da-9e44-44ff-9cef-1fb4a8759e3d' };
+      const plan: IServicePlan = { id: 'b5e0e540-7a57-41f1-8c7d-7faaae191154' };
       planFeature.plan = plan;
 
       activatedRoute.data = of({ planFeature });
@@ -86,7 +86,7 @@ describe('PlanFeature Management Update Component', () => {
     it('should call update service on save for existing entity', () => {
       // GIVEN
       const saveSubject = new Subject<IPlanFeature>();
-      const planFeature = { id: 22331 };
+      const planFeature = { id: 'a73366f1-7565-451a-bcb4-0d1f695b69d4' };
       vitest.spyOn(planFeatureFormService, 'getPlanFeature').mockReturnValue(planFeature);
       vitest.spyOn(planFeatureService, 'update').mockReturnValue(saveSubject);
       vitest.spyOn(comp, 'previousState');
@@ -109,7 +109,7 @@ describe('PlanFeature Management Update Component', () => {
     it('should call create service on save for new entity', () => {
       // GIVEN
       const saveSubject = new Subject<IPlanFeature>();
-      const planFeature = { id: 22331 };
+      const planFeature = { id: 'a73366f1-7565-451a-bcb4-0d1f695b69d4' };
       vitest.spyOn(planFeatureFormService, 'getPlanFeature').mockReturnValue({ id: null });
       vitest.spyOn(planFeatureService, 'create').mockReturnValue(saveSubject);
       vitest.spyOn(comp, 'previousState');
@@ -132,7 +132,7 @@ describe('PlanFeature Management Update Component', () => {
     it('should set isSaving to false on error', () => {
       // GIVEN
       const saveSubject = new Subject<IPlanFeature>();
-      const planFeature = { id: 22331 };
+      const planFeature = { id: 'a73366f1-7565-451a-bcb4-0d1f695b69d4' };
       vitest.spyOn(planFeatureService, 'update').mockReturnValue(saveSubject);
       vitest.spyOn(comp, 'previousState');
       activatedRoute.data = of({ planFeature });
@@ -153,8 +153,8 @@ describe('PlanFeature Management Update Component', () => {
   describe('Compare relationships', () => {
     describe('compareServicePlan', () => {
       it('should forward to servicePlanService', () => {
-        const entity = { id: 23672 };
-        const entity2 = { id: 11825 };
+        const entity = { id: 'b5e0e540-7a57-41f1-8c7d-7faaae191154' };
+        const entity2 = { id: '674a82c7-e597-42ce-8bcb-558e5170756f' };
         vitest.spyOn(servicePlanService, 'compareServicePlan');
         comp.compareServicePlan(entity, entity2);
         expect(servicePlanService.compareServicePlan).toHaveBeenCalledWith(entity, entity2);

@@ -20,6 +20,7 @@ describe('Profile Form Service', () => {
         expect(formGroup.controls).toEqual(
           expect.objectContaining({
             id: expect.any(Object),
+            accountId: expect.any(Object),
             title: expect.any(Object),
             firstName: expect.any(Object),
             middleName: expect.any(Object),
@@ -41,6 +42,7 @@ describe('Profile Form Service', () => {
         expect(formGroup.controls).toEqual(
           expect.objectContaining({
             id: expect.any(Object),
+            accountId: expect.any(Object),
             title: expect.any(Object),
             firstName: expect.any(Object),
             middleName: expect.any(Object),

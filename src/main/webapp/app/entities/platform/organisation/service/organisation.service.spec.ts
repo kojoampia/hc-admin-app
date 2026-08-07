@@ -32,7 +32,7 @@ describe('Organisation Service', () => {
       const returnedFromService = { ...requireRestSample };
       const expected = { ...sampleWithRequiredData };
 
-      service.find(123).subscribe(resp => (expectedResult = resp));
+      service.find('ABC').subscribe(resp => (expectedResult = resp));
 
       const req = httpMock.expectOne({ method: 'GET' });
       req.flush(returnedFromService);
@@ -89,7 +89,7 @@ describe('Organisation Service', () => {
     });
 
     it('should delete a Organisation', () => {
-      service.delete(123).subscribe();
+      service.delete('ABC').subscribe();
 
       const requests = httpMock.match({ method: 'DELETE' });
       expect(requests).toHaveLength(1);
@@ -160,7 +160,7 @@ describe('Organisation Service', () => {
       });
 
       it('should return false if one entity is null', () => {
-        const entity1 = { id: 541 };
+        const entity1 = { id: '03a17a60-2a77-4a3e-80ff-b20de2261aa4' };
         const entity2 = null;
 
         const compareResult1 = service.compareOrganisation(entity1, entity2);
@@ -171,8 +171,8 @@ describe('Organisation Service', () => {
       });
 
       it('should return false if primaryKey differs', () => {
-        const entity1 = { id: 541 };
-        const entity2 = { id: 7272 };
+        const entity1 = { id: '03a17a60-2a77-4a3e-80ff-b20de2261aa4' };
+        const entity2 = { id: '1d06732c-bb67-4c26-ab50-d652c9e1f885' };
 
         const compareResult1 = service.compareOrganisation(entity1, entity2);
         const compareResult2 = service.compareOrganisation(entity2, entity1);
@@ -182,8 +182,8 @@ describe('Organisation Service', () => {
       });
 
       it('should return false if primaryKey matches', () => {
-        const entity1 = { id: 541 };
-        const entity2 = { id: 541 };
+        const entity1 = { id: '03a17a60-2a77-4a3e-80ff-b20de2261aa4' };
+        const entity2 = { id: '03a17a60-2a77-4a3e-80ff-b20de2261aa4' };
 
         const compareResult1 = service.compareOrganisation(entity1, entity2);
         const compareResult2 = service.compareOrganisation(entity2, entity1);

@@ -6,6 +6,10 @@
   "clientRootFolder": "platform",
   "fields": [
     {
+      "fieldName": "id",
+      "fieldType": "String"
+    },
+    {
       "fieldName": "occurredAt",
       "fieldType": "Instant",
       "fieldValidateRules": ["required"]

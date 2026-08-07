@@ -53,7 +53,7 @@ export class PlanFeatureService extends PlanFeaturesService {
     );
   }
 
-  find(id: number): Observable<IPlanFeature> {
+  find(id: string): Observable<IPlanFeature> {
     return this.http.get<IPlanFeature>(`${this.resourceUrl}/${encodeURIComponent(id)}`);
   }
 
@@ -62,11 +62,11 @@ export class PlanFeatureService extends PlanFeaturesService {
     return this.http.get<IPlanFeature[]>(this.resourceUrl, { params: options, observe: 'response' });
   }
 
-  delete(id: number): Observable<undefined> {
+  delete(id: string): Observable<undefined> {
     return this.http.delete<undefined>(`${this.resourceUrl}/${encodeURIComponent(id)}`);
   }
 
-  getPlanFeatureIdentifier(planFeature: Pick<IPlanFeature, 'id'>): number {
+  getPlanFeatureIdentifier(planFeature: Pick<IPlanFeature, 'id'>): string {
     return planFeature.id;
   }
 

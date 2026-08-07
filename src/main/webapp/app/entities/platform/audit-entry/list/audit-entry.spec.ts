@@ -71,12 +71,14 @@ describe('AuditEntry Management Component', () => {
     // WHEN
     TestBed.tick();
     const req = httpMock.expectOne({ method: 'GET' });
-    req.flush([{ id: 2778 }], { headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' } });
+    req.flush([{ id: '18e349fa-b6ee-46ed-99ec-d39c6acd50f3' }], {
+      headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' },
+    });
     await vitest.runAllTimersAsync();
 
     // THEN
     expect(comp.isLoading()).toEqual(false);
-    expect(comp.auditEntries()[0]).toEqual(expect.objectContaining({ id: 2778 }));
+    expect(comp.auditEntries()[0]).toEqual(expect.objectContaining({ id: '18e349fa-b6ee-46ed-99ec-d39c6acd50f3' }));
   });
 
   it('should cancel previous requests when loading a new page', async () => {
@@ -89,13 +91,15 @@ describe('AuditEntry Management Component', () => {
     comp.load();
     await vitest.runAllTimersAsync();
     const req2 = httpMock.expectOne({ method: 'GET' });
-    req2.flush([{ id: 2778 }], { headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' } });
+    req2.flush([{ id: '18e349fa-b6ee-46ed-99ec-d39c6acd50f3' }], {
+      headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' },
+    });
     await vitest.runAllTimersAsync();
 
     // THEN
     expect(req.cancelled).toBeTruthy();
     expect(comp.isLoading()).toEqual(false);
-    expect(comp.auditEntries()[0]).toEqual(expect.objectContaining({ id: 2778 }));
+    expect(comp.auditEntries()[0]).toEqual(expect.objectContaining({ id: '18e349fa-b6ee-46ed-99ec-d39c6acd50f3' }));
   });
 
   it('should not fail on resource error state', async () => {
@@ -113,16 +117,18 @@ describe('AuditEntry Management Component', () => {
     comp.load();
     TestBed.tick();
     const successReq = httpMock.expectOne({ method: 'GET' });
-    successReq.flush([{ id: 2778 }], { headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' } });
+    successReq.flush([{ id: '18e349fa-b6ee-46ed-99ec-d39c6acd50f3' }], {
+      headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' },
+    });
     await vitest.runAllTimersAsync();
 
     // THEN - subscription is still alive and second load succeeds
-    expect(comp.auditEntries()[0]).toEqual(expect.objectContaining({ id: 2778 }));
+    expect(comp.auditEntries()[0]).toEqual(expect.objectContaining({ id: '18e349fa-b6ee-46ed-99ec-d39c6acd50f3' }));
   });
 
   describe('trackId', () => {
     it('should forward to auditEntryService', () => {
-      const entity = { id: 2778 };
+      const entity = { id: '18e349fa-b6ee-46ed-99ec-d39c6acd50f3' };
       vitest.spyOn(service, 'getAuditEntryIdentifier');
       const id = comp.trackId(entity);
       expect(service.getAuditEntryIdentifier).toHaveBeenCalledWith(entity);

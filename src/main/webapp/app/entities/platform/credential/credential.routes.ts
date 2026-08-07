@@ -1,6 +1,5 @@
 import { Routes } from '@angular/router';
 
-import { ASC } from 'app/config/navigation.constants';
 import { UserRouteAccessService } from 'app/core/auth/user-route-access.service';
 
 import CredentialResolve from './route/credential-routing-resolve.service';
@@ -9,9 +8,7 @@ const credentialRoute: Routes = [
   {
     path: '',
     loadComponent: () => import('./list/credential').then(m => m.Credential),
-    data: {
-      defaultSort: `id,${ASC}`,
-    },
+    data: {},
     canActivate: [UserRouteAccessService],
   },
   {

@@ -23,7 +23,7 @@ describe('Hub Management Detail Component', () => {
             {
               path: '**',
               loadComponent: () => import('./hub-detail').then(m => m.HubDetail),
-              resolve: { hub: () => of({ id: 23336 }) },
+              resolve: { hub: () => of({ id: 'bb609620-c7ae-4900-948f-445397c053ae' }) },
             },
           ],
           withComponentInputBinding(),
@@ -46,7 +46,7 @@ describe('Hub Management Detail Component', () => {
       const instance = await harness.navigateByUrl('/', HubDetail);
 
       // THEN
-      expect(instance.hub()).toEqual(expect.objectContaining({ id: 23336 }));
+      expect(instance.hub()).toEqual(expect.objectContaining({ id: 'bb609620-c7ae-4900-948f-445397c053ae' }));
     });
   });
 

@@ -1,7 +1,7 @@
 import { ServiceHealth } from 'app/entities/enumerations/service-health.model';
 
 export interface IPlatformService {
-  id: number;
+  id: string;
   name?: string | null;
   host?: string | null;
   port?: number | null;

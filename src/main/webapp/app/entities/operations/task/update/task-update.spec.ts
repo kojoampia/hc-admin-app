@@ -52,11 +52,11 @@ describe('Task Management Update Component', () => {
 
   describe('ngOnInit', () => {
     it('should call Professional query and add missing value', () => {
-      const task: ITask = { id: 22244 };
-      const owner: IProfessional = { id: 4421 };
+      const task: ITask = { id: '59358286-4c96-4301-945b-e60ba7cd5403' };
+      const owner: IProfessional = { id: '2c613901-f64b-4441-b80a-f5fb03b8e466' };
       task.owner = owner;
 
-      const professionalCollection: IProfessional[] = [{ id: 4421 }];
+      const professionalCollection: IProfessional[] = [{ id: '2c613901-f64b-4441-b80a-f5fb03b8e466' }];
       vitest.spyOn(professionalService, 'query').mockReturnValue(of(new HttpResponse({ body: professionalCollection })));
       const additionalProfessionals = [owner];
       const expectedCollection: IProfessional[] = [...additionalProfessionals, ...professionalCollection];
@@ -74,11 +74,11 @@ describe('Task Management Update Component', () => {
     });
 
     it('should call Message query and add missing value', () => {
-      const task: ITask = { id: 22244 };
-      const sourceMessage: IMessage = { id: 6456 };
+      const task: ITask = { id: '59358286-4c96-4301-945b-e60ba7cd5403' };
+      const sourceMessage: IMessage = { id: '35ac2a14-31ca-4318-8e02-123f67ebfc01' };
       task.sourceMessage = sourceMessage;
 
-      const messageCollection: IMessage[] = [{ id: 6456 }];
+      const messageCollection: IMessage[] = [{ id: '35ac2a14-31ca-4318-8e02-123f67ebfc01' }];
       vitest.spyOn(messageService, 'query').mockReturnValue(of(new HttpResponse({ body: messageCollection })));
       const additionalMessages = [sourceMessage];
       const expectedCollection: IMessage[] = [...additionalMessages, ...messageCollection];
@@ -96,10 +96,10 @@ describe('Task Management Update Component', () => {
     });
 
     it('should update editForm', () => {
-      const task: ITask = { id: 22244 };
-      const owner: IProfessional = { id: 4421 };
+      const task: ITask = { id: '59358286-4c96-4301-945b-e60ba7cd5403' };
+      const owner: IProfessional = { id: '2c613901-f64b-4441-b80a-f5fb03b8e466' };
       task.owner = owner;
-      const sourceMessage: IMessage = { id: 6456 };
+      const sourceMessage: IMessage = { id: '35ac2a14-31ca-4318-8e02-123f67ebfc01' };
       task.sourceMessage = sourceMessage;
 
       activatedRoute.data = of({ task });
@@ -115,7 +115,7 @@ describe('Task Management Update Component', () => {
     it('should call update service on save for existing entity', () => {
       // GIVEN
       const saveSubject = new Subject<ITask>();
-      const task = { id: 25192 };
+      const task = { id: 'ca341530-545c-46df-8582-8232c8c59bdb' };
       vitest.spyOn(taskFormService, 'getTask').mockReturnValue(task);
       vitest.spyOn(taskService, 'update').mockReturnValue(saveSubject);
       vitest.spyOn(comp, 'previousState');
@@ -138,7 +138,7 @@ describe('Task Management Update Component', () => {
     it('should call create service on save for new entity', () => {
       // GIVEN
       const saveSubject = new Subject<ITask>();
-      const task = { id: 25192 };
+      const task = { id: 'ca341530-545c-46df-8582-8232c8c59bdb' };
       vitest.spyOn(taskFormService, 'getTask').mockReturnValue({ id: null });
       vitest.spyOn(taskService, 'create').mockReturnValue(saveSubject);
       vitest.spyOn(comp, 'previousState');
@@ -161,7 +161,7 @@ describe('Task Management Update Component', () => {
     it('should set isSaving to false on error', () => {
       // GIVEN
       const saveSubject = new Subject<ITask>();
-      const task = { id: 25192 };
+      const task = { id: 'ca341530-545c-46df-8582-8232c8c59bdb' };
       vitest.spyOn(taskService, 'update').mockReturnValue(saveSubject);
       vitest.spyOn(comp, 'previousState');
       activatedRoute.data = of({ task });
@@ -182,8 +182,8 @@ describe('Task Management Update Component', () => {
   describe('Compare relationships', () => {
     describe('compareProfessional', () => {
       it('should forward to professionalService', () => {
-        const entity = { id: 4421 };
-        const entity2 = { id: 25942 };
+        const entity = { id: '2c613901-f64b-4441-b80a-f5fb03b8e466' };
+        const entity2 = { id: '0e955bb7-9639-4125-b816-aa9d995e679e' };
         vitest.spyOn(professionalService, 'compareProfessional');
         comp.compareProfessional(entity, entity2);
         expect(professionalService.compareProfessional).toHaveBeenCalledWith(entity, entity2);
@@ -192,8 +192,8 @@ describe('Task Management Update Component', () => {
 
     describe('compareMessage', () => {
       it('should forward to messageService', () => {
-        const entity = { id: 6456 };
-        const entity2 = { id: 11110 };
+        const entity = { id: '35ac2a14-31ca-4318-8e02-123f67ebfc01' };
+        const entity2 = { id: '62dae599-15e8-4037-8773-418e989eba79' };
         vitest.spyOn(messageService, 'compareMessage');
         comp.compareMessage(entity, entity2);
         expect(messageService.compareMessage).toHaveBeenCalledWith(entity, entity2);

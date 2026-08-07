@@ -73,17 +73,19 @@ describe('Hub Management Component', () => {
     // WHEN
     TestBed.tick();
     const req = httpMock.expectOne({ method: 'GET' });
-    req.flush([{ id: 23336 }], { headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' } });
+    req.flush([{ id: 'bb609620-c7ae-4900-948f-445397c053ae' }], {
+      headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' },
+    });
     await vitest.runAllTimersAsync();
 
     // THEN
     expect(comp.isLoading()).toEqual(false);
-    expect(comp.hubs()[0]).toEqual(expect.objectContaining({ id: 23336 }));
+    expect(comp.hubs()[0]).toEqual(expect.objectContaining({ id: 'bb609620-c7ae-4900-948f-445397c053ae' }));
   });
 
   describe('trackId', () => {
     it('should forward to hubService', () => {
-      const entity = { id: 23336 };
+      const entity = { id: 'bb609620-c7ae-4900-948f-445397c053ae' };
       vitest.spyOn(service, 'getHubIdentifier');
       const id = comp.trackId(entity);
       expect(service.getHubIdentifier).toHaveBeenCalledWith(entity);

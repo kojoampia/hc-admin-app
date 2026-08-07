@@ -53,7 +53,7 @@ export class ServiceActivityService extends ServiceActivitiesService {
     );
   }
 
-  find(id: number): Observable<IServiceActivity> {
+  find(id: string): Observable<IServiceActivity> {
     return this.http.get<IServiceActivity>(`${this.resourceUrl}/${encodeURIComponent(id)}`);
   }
 
@@ -62,11 +62,11 @@ export class ServiceActivityService extends ServiceActivitiesService {
     return this.http.get<IServiceActivity[]>(this.resourceUrl, { params: options, observe: 'response' });
   }
 
-  delete(id: number): Observable<undefined> {
+  delete(id: string): Observable<undefined> {
     return this.http.delete<undefined>(`${this.resourceUrl}/${encodeURIComponent(id)}`);
   }
 
-  getServiceActivityIdentifier(serviceActivity: Pick<IServiceActivity, 'id'>): number {
+  getServiceActivityIdentifier(serviceActivity: Pick<IServiceActivity, 'id'>): string {
     return serviceActivity.id;
   }
 

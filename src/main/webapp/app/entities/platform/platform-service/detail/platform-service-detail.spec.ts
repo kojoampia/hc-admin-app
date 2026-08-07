@@ -23,7 +23,7 @@ describe('PlatformService Management Detail Component', () => {
             {
               path: '**',
               loadComponent: () => import('./platform-service-detail').then(m => m.PlatformServiceDetail),
-              resolve: { platformService: () => of({ id: 8202 }) },
+              resolve: { platformService: () => of({ id: '43c90406-e76d-4a32-b1b9-8e30686fe590' }) },
             },
           ],
           withComponentInputBinding(),
@@ -46,7 +46,7 @@ describe('PlatformService Management Detail Component', () => {
       const instance = await harness.navigateByUrl('/', PlatformServiceDetail);
 
       // THEN
-      expect(instance.platformService()).toEqual(expect.objectContaining({ id: 8202 }));
+      expect(instance.platformService()).toEqual(expect.objectContaining({ id: '43c90406-e76d-4a32-b1b9-8e30686fe590' }));
     });
   });
 

@@ -23,7 +23,7 @@ describe('Patient Management Detail Component', () => {
             {
               path: '**',
               loadComponent: () => import('./patient-detail').then(m => m.PatientDetail),
-              resolve: { patient: () => of({ id: 16668 }) },
+              resolve: { patient: () => of({ id: '88928db1-656e-430d-95c0-5cde75285e55' }) },
             },
           ],
           withComponentInputBinding(),
@@ -46,7 +46,7 @@ describe('Patient Management Detail Component', () => {
       const instance = await harness.navigateByUrl('/', PatientDetail);
 
       // THEN
-      expect(instance.patient()).toEqual(expect.objectContaining({ id: 16668 }));
+      expect(instance.patient()).toEqual(expect.objectContaining({ id: '88928db1-656e-430d-95c0-5cde75285e55' }));
     });
   });
 

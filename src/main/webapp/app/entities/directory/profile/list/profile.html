@@ -35,7 +35,14 @@
           <tr abfSort [(sortState)]="sortState" (sortChange)="navigateToWithComponentValues($event)">
             <th scope="col" abfSortBy="id">
               <div class="d-flex">
-                <span abfTranslate="global.field.id">ID</span>
+                <span abfTranslate="hcAdminApp.directoryProfile.id">Id</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="accountId">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.directoryProfile.accountId">Account Id</span>
 
                 <fa-icon class="p-1" icon="sort" />
               </div>
@@ -125,6 +132,7 @@
               <td>
                 <a [routerLink]="['/profile', profile.id, 'view']">{{ profile.id }}</a>
               </td>
+              <td>{{ profile.accountId }}</td>
               <td [abfTranslate]="'hcAdminApp.Title.' + (profile.title ?? 'null')">
                 {{ { null: '', MR: 'MR', MRS: 'MRS', MS: 'MS', DR: 'DR', PROF: 'PROF' }[profile.title ?? 'null'] }}
               </td>

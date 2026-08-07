@@ -43,7 +43,7 @@ describe('Category Management Update Component', () => {
 
   describe('ngOnInit', () => {
     it('should update editForm', () => {
-      const category: ICategory = { id: 4374 };
+      const category: ICategory = { id: '6e928816-99ce-488b-9609-4b7afe09aa38' };
 
       activatedRoute.data = of({ category });
       comp.ngOnInit();
@@ -56,7 +56,7 @@ describe('Category Management Update Component', () => {
     it('should call update service on save for existing entity', () => {
       // GIVEN
       const saveSubject = new Subject<ICategory>();
-      const category = { id: 6752 };
+      const category = { id: '32948133-0615-4b7d-82d4-7d0e6b590fb7' };
       vitest.spyOn(categoryFormService, 'getCategory').mockReturnValue(category);
       vitest.spyOn(categoryService, 'update').mockReturnValue(saveSubject);
       vitest.spyOn(comp, 'previousState');
@@ -79,7 +79,7 @@ describe('Category Management Update Component', () => {
     it('should call create service on save for new entity', () => {
       // GIVEN
       const saveSubject = new Subject<ICategory>();
-      const category = { id: 6752 };
+      const category = { id: '32948133-0615-4b7d-82d4-7d0e6b590fb7' };
       vitest.spyOn(categoryFormService, 'getCategory').mockReturnValue({ id: null });
       vitest.spyOn(categoryService, 'create').mockReturnValue(saveSubject);
       vitest.spyOn(comp, 'previousState');
@@ -102,7 +102,7 @@ describe('Category Management Update Component', () => {
     it('should set isSaving to false on error', () => {
       // GIVEN
       const saveSubject = new Subject<ICategory>();
-      const category = { id: 6752 };
+      const category = { id: '32948133-0615-4b7d-82d4-7d0e6b590fb7' };
       vitest.spyOn(categoryService, 'update').mockReturnValue(saveSubject);
       vitest.spyOn(comp, 'previousState');
       activatedRoute.data = of({ category });

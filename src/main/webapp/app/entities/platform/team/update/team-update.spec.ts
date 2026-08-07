@@ -48,11 +48,11 @@ describe('Team Management Update Component', () => {
 
   describe('ngOnInit', () => {
     it('should call Professional query and add missing value', () => {
-      const team: ITeam = { id: 14592 };
-      const supervisor: IProfessional = { id: 4421 };
+      const team: ITeam = { id: 'e82fb6d5-fe08-47fe-a516-8889cd5f9288' };
+      const supervisor: IProfessional = { id: '2c613901-f64b-4441-b80a-f5fb03b8e466' };
       team.supervisor = supervisor;
 
-      const professionalCollection: IProfessional[] = [{ id: 4421 }];
+      const professionalCollection: IProfessional[] = [{ id: '2c613901-f64b-4441-b80a-f5fb03b8e466' }];
       vitest.spyOn(professionalService, 'query').mockReturnValue(of(new HttpResponse({ body: professionalCollection })));
       const additionalProfessionals = [supervisor];
       const expectedCollection: IProfessional[] = [...additionalProfessionals, ...professionalCollection];
@@ -70,8 +70,8 @@ describe('Team Management Update Component', () => {
     });
 
     it('should update editForm', () => {
-      const team: ITeam = { id: 14592 };
-      const supervisor: IProfessional = { id: 4421 };
+      const team: ITeam = { id: 'e82fb6d5-fe08-47fe-a516-8889cd5f9288' };
+      const supervisor: IProfessional = { id: '2c613901-f64b-4441-b80a-f5fb03b8e466' };
       team.supervisor = supervisor;
 
       activatedRoute.data = of({ team });
@@ -86,7 +86,7 @@ describe('Team Management Update Component', () => {
     it('should call update service on save for existing entity', () => {
       // GIVEN
       const saveSubject = new Subject<ITeam>();
-      const team = { id: 1226 };
+      const team = { id: '07c2eeb9-6f13-455e-bbad-df15a9442470' };
       vitest.spyOn(teamFormService, 'getTeam').mockReturnValue(team);
       vitest.spyOn(teamService, 'update').mockReturnValue(saveSubject);
       vitest.spyOn(comp, 'previousState');
@@ -109,7 +109,7 @@ describe('Team Management Update Component', () => {
     it('should call create service on save for new entity', () => {
       // GIVEN
       const saveSubject = new Subject<ITeam>();
-      const team = { id: 1226 };
+      const team = { id: '07c2eeb9-6f13-455e-bbad-df15a9442470' };
       vitest.spyOn(teamFormService, 'getTeam').mockReturnValue({ id: null });
       vitest.spyOn(teamService, 'create').mockReturnValue(saveSubject);
       vitest.spyOn(comp, 'previousState');
@@ -132,7 +132,7 @@ describe('Team Management Update Component', () => {
     it('should set isSaving to false on error', () => {
       // GIVEN
       const saveSubject = new Subject<ITeam>();
-      const team = { id: 1226 };
+      const team = { id: '07c2eeb9-6f13-455e-bbad-df15a9442470' };
       vitest.spyOn(teamService, 'update').mockReturnValue(saveSubject);
       vitest.spyOn(comp, 'previousState');
       activatedRoute.data = of({ team });
@@ -153,8 +153,8 @@ describe('Team Management Update Component', () => {
   describe('Compare relationships', () => {
     describe('compareProfessional', () => {
       it('should forward to professionalService', () => {
-        const entity = { id: 4421 };
-        const entity2 = { id: 25942 };
+        const entity = { id: '2c613901-f64b-4441-b80a-f5fb03b8e466' };
+        const entity2 = { id: '0e955bb7-9639-4125-b816-aa9d995e679e' };
         vitest.spyOn(professionalService, 'compareProfessional');
         comp.compareProfessional(entity, entity2);
         expect(professionalService.compareProfessional).toHaveBeenCalledWith(entity, entity2);

@@ -189,7 +189,7 @@ describe('authority gating', () => {
       provideConsoleTesting([route]);
       signInAs(authorities);
       const fixture = TestBed.createComponent(MessageThread);
-      fixture.componentRef.setInput('id', '4');
+      fixture.componentRef.setInput('id', 'm4');
       fixture.componentInstance.ngOnInit();
       await settle(8);
       fixture.detectChanges();

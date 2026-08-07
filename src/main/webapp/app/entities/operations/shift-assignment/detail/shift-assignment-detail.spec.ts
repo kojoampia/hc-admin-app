@@ -23,7 +23,7 @@ describe('ShiftAssignment Management Detail Component', () => {
             {
               path: '**',
               loadComponent: () => import('./shift-assignment-detail').then(m => m.ShiftAssignmentDetail),
-              resolve: { shiftAssignment: () => of({ id: 24117 }) },
+              resolve: { shiftAssignment: () => of({ id: 'ba896828-02d4-4a87-8c48-9e1aad0801a7' }) },
             },
           ],
           withComponentInputBinding(),
@@ -46,7 +46,7 @@ describe('ShiftAssignment Management Detail Component', () => {
       const instance = await harness.navigateByUrl('/', ShiftAssignmentDetail);
 
       // THEN
-      expect(instance.shiftAssignment()).toEqual(expect.objectContaining({ id: 24117 }));
+      expect(instance.shiftAssignment()).toEqual(expect.objectContaining({ id: 'ba896828-02d4-4a87-8c48-9e1aad0801a7' }));
     });
   });
 

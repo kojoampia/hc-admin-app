@@ -77,7 +77,7 @@ export class PatientService extends PatientsService {
       .pipe(map(res => this.convertResponseFromServer(res)));
   }
 
-  find(id: number): Observable<IPatient> {
+  find(id: string): Observable<IPatient> {
     return this.http
       .get<RestPatient>(`${this.resourceUrl}/${encodeURIComponent(id)}`)
       .pipe(map(res => this.convertResponseFromServer(res)));
@@ -90,11 +90,11 @@ export class PatientService extends PatientsService {
       .pipe(map(res => res.clone({ body: this.convertResponseArrayFromServer(res.body!) })));
   }
 
-  delete(id: number): Observable<undefined> {
+  delete(id: string): Observable<undefined> {
     return this.http.delete<undefined>(`${this.resourceUrl}/${encodeURIComponent(id)}`);
   }
 
-  getPatientIdentifier(patient: Pick<IPatient, 'id'>): number {
+  getPatientIdentifier(patient: Pick<IPatient, 'id'>): string {
     return patient.id;
   }
 

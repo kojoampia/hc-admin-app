@@ -45,7 +45,7 @@ export class AngelService extends AngelsService {
     return this.http.patch<IAngel>(`${this.resourceUrl}/${encodeURIComponent(this.getAngelIdentifier(angel))}`, angel);
   }
 
-  find(id: number): Observable<IAngel> {
+  find(id: string): Observable<IAngel> {
     return this.http.get<IAngel>(`${this.resourceUrl}/${encodeURIComponent(id)}`);
   }
 
@@ -54,11 +54,11 @@ export class AngelService extends AngelsService {
     return this.http.get<IAngel[]>(this.resourceUrl, { params: options, observe: 'response' });
   }
 
-  delete(id: number): Observable<undefined> {
+  delete(id: string): Observable<undefined> {
     return this.http.delete<undefined>(`${this.resourceUrl}/${encodeURIComponent(id)}`);
   }
 
-  getAngelIdentifier(angel: Pick<IAngel, 'id'>): number {
+  getAngelIdentifier(angel: Pick<IAngel, 'id'>): string {
     return angel.id;
   }
 

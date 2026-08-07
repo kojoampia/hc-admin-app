@@ -52,7 +52,7 @@ export class Team implements OnInit {
     });
   }
 
-  trackId = (item: ITeam): number => this.teamService.getTeamIdentifier(item);
+  trackId = (item: ITeam): string => this.teamService.getTeamIdentifier(item);
 
   ngOnInit(): void {
     this.subscription = combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data])

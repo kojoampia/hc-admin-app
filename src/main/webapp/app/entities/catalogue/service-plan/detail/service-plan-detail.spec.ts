@@ -23,7 +23,7 @@ describe('ServicePlan Management Detail Component', () => {
             {
               path: '**',
               loadComponent: () => import('./service-plan-detail').then(m => m.ServicePlanDetail),
-              resolve: { servicePlan: () => of({ id: 23672 }) },
+              resolve: { servicePlan: () => of({ id: 'b5e0e540-7a57-41f1-8c7d-7faaae191154' }) },
             },
           ],
           withComponentInputBinding(),
@@ -46,7 +46,7 @@ describe('ServicePlan Management Detail Component', () => {
       const instance = await harness.navigateByUrl('/', ServicePlanDetail);
 
       // THEN
-      expect(instance.servicePlan()).toEqual(expect.objectContaining({ id: 23672 }));
+      expect(instance.servicePlan()).toEqual(expect.objectContaining({ id: 'b5e0e540-7a57-41f1-8c7d-7faaae191154' }));
     });
   });
 

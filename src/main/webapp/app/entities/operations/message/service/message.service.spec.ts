@@ -31,7 +31,7 @@ describe('Message Service', () => {
       const returnedFromService = { ...requireRestSample };
       const expected = { ...sampleWithRequiredData };
 
-      service.find(123).subscribe(resp => (expectedResult = resp));
+      service.find('ABC').subscribe(resp => (expectedResult = resp));
 
       const req = httpMock.expectOne({ method: 'GET' });
       req.flush(returnedFromService);
@@ -88,7 +88,7 @@ describe('Message Service', () => {
     });
 
     it('should delete a Message', () => {
-      service.delete(123).subscribe();
+      service.delete('ABC').subscribe();
 
       const requests = httpMock.match({ method: 'DELETE' });
       expect(requests).toHaveLength(1);
@@ -159,7 +159,7 @@ describe('Message Service', () => {
       });
 
       it('should return false if one entity is null', () => {
-        const entity1 = { id: 6456 };
+        const entity1 = { id: '35ac2a14-31ca-4318-8e02-123f67ebfc01' };
         const entity2 = null;
 
         const compareResult1 = service.compareMessage(entity1, entity2);
@@ -170,8 +170,8 @@ describe('Message Service', () => {
       });
 
       it('should return false if primaryKey differs', () => {
-        const entity1 = { id: 6456 };
-        const entity2 = { id: 11110 };
+        const entity1 = { id: '35ac2a14-31ca-4318-8e02-123f67ebfc01' };
+        const entity2 = { id: '62dae599-15e8-4037-8773-418e989eba79' };
 
         const compareResult1 = service.compareMessage(entity1, entity2);
         const compareResult2 = service.compareMessage(entity2, entity1);
@@ -181,8 +181,8 @@ describe('Message Service', () => {
       });
 
       it('should return false if primaryKey matches', () => {
-        const entity1 = { id: 6456 };
-        const entity2 = { id: 6456 };
+        const entity1 = { id: '35ac2a14-31ca-4318-8e02-123f67ebfc01' };
+        const entity2 = { id: '35ac2a14-31ca-4318-8e02-123f67ebfc01' };
 
         const compareResult1 = service.compareMessage(entity1, entity2);
         const compareResult2 = service.compareMessage(entity2, entity1);

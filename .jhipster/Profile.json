@@ -4,8 +4,18 @@
   },
   "applications": ["hcAdmin"],
   "clientRootFolder": "directory",
-  "documentation": "The shared person record behind both patients and professionals.",
+  "documentation": "The shared person record behind both patients and professionals.\\n\\n`accountId` is the identity link to the gateway's Account. It is a plain\\nString, not a relationship: Account lives in hc-admin-gateway's own\\ndatabase and this service cannot join across that boundary — the gateway\\nmints the id and puts it on the JWT so the api can stamp the right one.\\nA Profile with no accountId is a person no login can reach, so it is\\nrequired.",
   "fields": [
+    {
+      "fieldName": "id",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "accountId",
+      "fieldType": "String",
+      "fieldValidateRules": ["required", "maxlength"],
+      "fieldValidateRulesMaxlength": "60"
+    },
     {
       "fieldName": "title",
       "fieldType": "Title",

@@ -3,7 +3,7 @@ import dayjs from 'dayjs/esm';
 import { IAddress } from 'app/entities/directory/address/address.model';
 
 export interface IOrganisation {
-  id: number;
+  id: string;
   name?: string | null;
   legalName?: string | null;
   description?: string | null;

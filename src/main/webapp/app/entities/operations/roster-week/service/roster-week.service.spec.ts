@@ -33,7 +33,7 @@ describe('RosterWeek Service', () => {
       const returnedFromService = { ...requireRestSample };
       const expected = { ...sampleWithRequiredData };
 
-      service.find(123).subscribe(resp => (expectedResult = resp));
+      service.find('ABC').subscribe(resp => (expectedResult = resp));
 
       const req = httpMock.expectOne({ method: 'GET' });
       req.flush(returnedFromService);
@@ -90,7 +90,7 @@ describe('RosterWeek Service', () => {
     });
 
     it('should delete a RosterWeek', () => {
-      service.delete(123).subscribe();
+      service.delete('ABC').subscribe();
 
       const requests = httpMock.match({ method: 'DELETE' });
       expect(requests).toHaveLength(1);
@@ -161,7 +161,7 @@ describe('RosterWeek Service', () => {
       });
 
       it('should return false if one entity is null', () => {
-        const entity1 = { id: 20651 };
+        const entity1 = { id: 'ade462b2-f291-49db-a5f8-d4638f0545b4' };
         const entity2 = null;
 
         const compareResult1 = service.compareRosterWeek(entity1, entity2);
@@ -172,8 +172,8 @@ describe('RosterWeek Service', () => {
       });
 
       it('should return false if primaryKey differs', () => {
-        const entity1 = { id: 20651 };
-        const entity2 = { id: 27516 };
+        const entity1 = { id: 'ade462b2-f291-49db-a5f8-d4638f0545b4' };
+        const entity2 = { id: 'f8466048-f088-4ce3-9408-2613ebaefbdd' };
 
         const compareResult1 = service.compareRosterWeek(entity1, entity2);
         const compareResult2 = service.compareRosterWeek(entity2, entity1);
@@ -183,8 +183,8 @@ describe('RosterWeek Service', () => {
       });
 
       it('should return false if primaryKey matches', () => {
-        const entity1 = { id: 20651 };
-        const entity2 = { id: 20651 };
+        const entity1 = { id: 'ade462b2-f291-49db-a5f8-d4638f0545b4' };
+        const entity2 = { id: 'ade462b2-f291-49db-a5f8-d4638f0545b4' };
 
         const compareResult1 = service.compareRosterWeek(entity1, entity2);
         const compareResult2 = service.compareRosterWeek(entity2, entity1);

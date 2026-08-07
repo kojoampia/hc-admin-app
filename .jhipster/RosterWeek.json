@@ -7,6 +7,10 @@
   "documentation": "PDF: Roster (Name, Description, Patient, Date) — modelled as a\\nweek header so the grid in the demo has something to publish.",
   "fields": [
     {
+      "fieldName": "id",
+      "fieldType": "String"
+    },
+    {
       "fieldName": "label",
       "fieldType": "String",
       "fieldValidateRules": ["required", "maxlength"],

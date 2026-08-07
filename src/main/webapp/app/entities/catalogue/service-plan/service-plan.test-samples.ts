@@ -1,35 +1,35 @@
 import { IServicePlan, NewServicePlan } from './service-plan.model';
 
 export const sampleWithRequiredData: IServicePlan = {
-  id: 28333,
-  name: 'molasses',
-  tier: 'ESSENTIAL',
-  monthlyPrice: 5092.51,
-  currency: 'boo',
-  featured: false,
+  id: 'd324bb4e-932d-4274-8bb7-1dd1af35e49b',
+  name: 'strong brr',
+  tier: 'PLUS',
+  monthlyPrice: 17621.94,
+  currency: 'mmm',
+  featured: true,
 };
 
 export const sampleWithPartialData: IServicePlan = {
-  id: 10050,
-  name: 'unexpectedly',
+  id: '43bcc150-d77c-463a-8633-646c786724a5',
+  name: 'unless',
   tier: 'PLUS',
-  monthlyPrice: 16367.1,
-  currency: 'goa',
-  summary: 'knuckle',
-  featured: false,
-  subscriberCount: 30628,
+  monthlyPrice: 16499.76,
+  currency: 'ath',
+  summary: 'apropos omelet tomatillo',
+  featured: true,
+  subscriberCount: 13795,
 };
 
 export const sampleWithFullData: IServicePlan = {
-  id: 27283,
-  name: 'sequester',
+  id: 'd36daf0d-c4ba-43fd-be1d-be6b862581f3',
+  name: 'anxiously phooey',
   tier: 'ESSENTIAL',
-  tierLabel: 'towards huzzah prejudge',
-  monthlyPrice: 13009.57,
-  currency: 'kin',
-  summary: 'deployment hm',
-  featured: false,
-  subscriberCount: 24526,
+  tierLabel: 'actually tank whereas',
+  monthlyPrice: 11822.78,
+  currency: 'foo',
+  summary: 'hm before',
+  featured: true,
+  subscriberCount: 11464,
 };
 
 export const sampleWithNewData: NewServicePlan = {

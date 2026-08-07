@@ -43,7 +43,7 @@ describe('Angel Management Update Component', () => {
 
   describe('ngOnInit', () => {
     it('should update editForm', () => {
-      const angel: IAngel = { id: 4856 };
+      const angel: IAngel = { id: 'a848bf89-7dc8-4acc-9803-d42a457c8a33' };
 
       activatedRoute.data = of({ angel });
       comp.ngOnInit();
@@ -56,7 +56,7 @@ describe('Angel Management Update Component', () => {
     it('should call update service on save for existing entity', () => {
       // GIVEN
       const saveSubject = new Subject<IAngel>();
-      const angel = { id: 23186 };
+      const angel = { id: 'b2b45139-eede-4143-805e-4fb6b8885f54' };
       vitest.spyOn(angelFormService, 'getAngel').mockReturnValue(angel);
       vitest.spyOn(angelService, 'update').mockReturnValue(saveSubject);
       vitest.spyOn(comp, 'previousState');
@@ -79,7 +79,7 @@ describe('Angel Management Update Component', () => {
     it('should call create service on save for new entity', () => {
       // GIVEN
       const saveSubject = new Subject<IAngel>();
-      const angel = { id: 23186 };
+      const angel = { id: 'b2b45139-eede-4143-805e-4fb6b8885f54' };
       vitest.spyOn(angelFormService, 'getAngel').mockReturnValue({ id: null });
       vitest.spyOn(angelService, 'create').mockReturnValue(saveSubject);
       vitest.spyOn(comp, 'previousState');
@@ -102,7 +102,7 @@ describe('Angel Management Update Component', () => {
     it('should set isSaving to false on error', () => {
       // GIVEN
       const saveSubject = new Subject<IAngel>();
-      const angel = { id: 23186 };
+      const angel = { id: 'b2b45139-eede-4143-805e-4fb6b8885f54' };
       vitest.spyOn(angelService, 'update').mockReturnValue(saveSubject);
       vitest.spyOn(comp, 'previousState');
       activatedRoute.data = of({ angel });

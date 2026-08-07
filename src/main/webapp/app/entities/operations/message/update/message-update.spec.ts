@@ -43,7 +43,7 @@ describe('Message Management Update Component', () => {
 
   describe('ngOnInit', () => {
     it('should update editForm', () => {
-      const message: IMessage = { id: 11110 };
+      const message: IMessage = { id: '62dae599-15e8-4037-8773-418e989eba79' };
 
       activatedRoute.data = of({ message });
       comp.ngOnInit();
@@ -56,7 +56,7 @@ describe('Message Management Update Component', () => {
     it('should call update service on save for existing entity', () => {
       // GIVEN
       const saveSubject = new Subject<IMessage>();
-      const message = { id: 6456 };
+      const message = { id: '35ac2a14-31ca-4318-8e02-123f67ebfc01' };
       vitest.spyOn(messageFormService, 'getMessage').mockReturnValue(message);
       vitest.spyOn(messageService, 'update').mockReturnValue(saveSubject);
       vitest.spyOn(comp, 'previousState');
@@ -79,7 +79,7 @@ describe('Message Management Update Component', () => {
     it('should call create service on save for new entity', () => {
       // GIVEN
       const saveSubject = new Subject<IMessage>();
-      const message = { id: 6456 };
+      const message = { id: '35ac2a14-31ca-4318-8e02-123f67ebfc01' };
       vitest.spyOn(messageFormService, 'getMessage').mockReturnValue({ id: null });
       vitest.spyOn(messageService, 'create').mockReturnValue(saveSubject);
       vitest.spyOn(comp, 'previousState');
@@ -102,7 +102,7 @@ describe('Message Management Update Component', () => {
     it('should set isSaving to false on error', () => {
       // GIVEN
       const saveSubject = new Subject<IMessage>();
-      const message = { id: 6456 };
+      const message = { id: '35ac2a14-31ca-4318-8e02-123f67ebfc01' };
       vitest.spyOn(messageService, 'update').mockReturnValue(saveSubject);
       vitest.spyOn(comp, 'previousState');
       activatedRoute.data = of({ message });

@@ -75,7 +75,7 @@ export class ProfessionalService extends ProfessionalsService {
       .pipe(map(res => this.convertResponseFromServer(res)));
   }
 
-  find(id: number): Observable<IProfessional> {
+  find(id: string): Observable<IProfessional> {
     return this.http
       .get<RestProfessional>(`${this.resourceUrl}/${encodeURIComponent(id)}`)
       .pipe(map(res => this.convertResponseFromServer(res)));
@@ -88,11 +88,11 @@ export class ProfessionalService extends ProfessionalsService {
       .pipe(map(res => res.clone({ body: this.convertResponseArrayFromServer(res.body!) })));
   }
 
-  delete(id: number): Observable<undefined> {
+  delete(id: string): Observable<undefined> {
     return this.http.delete<undefined>(`${this.resourceUrl}/${encodeURIComponent(id)}`);
   }
 
-  getProfessionalIdentifier(professional: Pick<IProfessional, 'id'>): number {
+  getProfessionalIdentifier(professional: Pick<IProfessional, 'id'>): string {
     return professional.id;
   }
 

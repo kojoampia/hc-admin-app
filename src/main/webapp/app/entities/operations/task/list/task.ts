@@ -71,7 +71,7 @@ export class Task implements OnInit {
     });
   }
 
-  trackId = (item: ITask): number => this.taskService.getTaskIdentifier(item);
+  trackId = (item: ITask): string => this.taskService.getTaskIdentifier(item);
 
   ngOnInit(): void {
     this.subscription = combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data])

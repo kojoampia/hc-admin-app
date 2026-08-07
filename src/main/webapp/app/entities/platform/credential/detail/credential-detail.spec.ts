@@ -23,7 +23,7 @@ describe('Credential Management Detail Component', () => {
             {
               path: '**',
               loadComponent: () => import('./credential-detail').then(m => m.CredentialDetail),
-              resolve: { credential: () => of({ id: 6323 }) },
+              resolve: { credential: () => of({ id: '35b3b582-8e66-4c2d-9e4a-8ff9d99022d0' }) },
             },
           ],
           withComponentInputBinding(),
@@ -46,7 +46,7 @@ describe('Credential Management Detail Component', () => {
       const instance = await harness.navigateByUrl('/', CredentialDetail);
 
       // THEN
-      expect(instance.credential()).toEqual(expect.objectContaining({ id: 6323 }));
+      expect(instance.credential()).toEqual(expect.objectContaining({ id: '35b3b582-8e66-4c2d-9e4a-8ff9d99022d0' }));
     });
   });
 

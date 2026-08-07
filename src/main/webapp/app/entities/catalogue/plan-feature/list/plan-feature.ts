@@ -52,7 +52,7 @@ export class PlanFeature implements OnInit {
     });
   }
 
-  trackId = (item: IPlanFeature): number => this.planFeatureService.getPlanFeatureIdentifier(item);
+  trackId = (item: IPlanFeature): string => this.planFeatureService.getPlanFeatureIdentifier(item);
 
   ngOnInit(): void {
     this.subscription = combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data])

@@ -23,7 +23,7 @@ describe('Profile Management Detail Component', () => {
             {
               path: '**',
               loadComponent: () => import('./profile-detail').then(m => m.ProfileDetail),
-              resolve: { profile: () => of({ id: 32255 }) },
+              resolve: { profile: () => of({ id: 'f60e8f71-7b26-4f3d-8111-2c32dce7269d' }) },
             },
           ],
           withComponentInputBinding(),
@@ -46,7 +46,7 @@ describe('Profile Management Detail Component', () => {
       const instance = await harness.navigateByUrl('/', ProfileDetail);
 
       // THEN
-      expect(instance.profile()).toEqual(expect.objectContaining({ id: 32255 }));
+      expect(instance.profile()).toEqual(expect.objectContaining({ id: 'f60e8f71-7b26-4f3d-8111-2c32dce7269d' }));
     });
   });
 

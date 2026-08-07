@@ -23,7 +23,7 @@ describe('RosterWeek Management Detail Component', () => {
             {
               path: '**',
               loadComponent: () => import('./roster-week-detail').then(m => m.RosterWeekDetail),
-              resolve: { rosterWeek: () => of({ id: 20651 }) },
+              resolve: { rosterWeek: () => of({ id: 'ade462b2-f291-49db-a5f8-d4638f0545b4' }) },
             },
           ],
           withComponentInputBinding(),
@@ -46,7 +46,7 @@ describe('RosterWeek Management Detail Component', () => {
       const instance = await harness.navigateByUrl('/', RosterWeekDetail);
 
       // THEN
-      expect(instance.rosterWeek()).toEqual(expect.objectContaining({ id: 20651 }));
+      expect(instance.rosterWeek()).toEqual(expect.objectContaining({ id: 'ade462b2-f291-49db-a5f8-d4638f0545b4' }));
     });
   });
 

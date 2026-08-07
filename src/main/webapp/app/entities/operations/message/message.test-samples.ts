@@ -3,11 +3,11 @@ import dayjs from 'dayjs/esm';
 import { IMessage, NewMessage } from './message.model';
 
 export const sampleWithRequiredData: IMessage = {
-  id: 10168,
-  sentAt: dayjs('2023-12-10T23:46'),
-  fromAddress: 'voluntarily vacantly for',
-  senderName: 'probable anti huzzah',
-  subject: 'trusting once knuckle',
+  id: '42bfda03-0f8b-4ea3-a0e7-520813ec664a',
+  sentAt: dayjs('2023-12-11T11:04'),
+  fromAddress: 'uncork',
+  senderName: 'until',
+  subject: 'verbally animated motor',
   body: '../fake-data/blob/hipster.txt',
   channel: 'VENDOR_PORTAL',
   status: 'READ',
@@ -15,26 +15,26 @@ export const sampleWithRequiredData: IMessage = {
 };
 
 export const sampleWithPartialData: IMessage = {
-  id: 53,
-  sentAt: dayjs('2023-12-11T17:49'),
-  fromAddress: 'yahoo',
-  senderName: 'prioritize without',
-  subject: 'accidentally yum as',
+  id: '0e3af454-266b-4007-87fa-17e609fd9603',
+  sentAt: dayjs('2023-12-11T05:44'),
+  fromAddress: 'yum',
+  senderName: 'um',
+  subject: 'creaking lighthearted unto',
   body: '../fake-data/blob/hipster.txt',
-  channel: 'EMAIL',
+  channel: 'VENDOR_PORTAL',
   status: 'REPLIED',
   priority: 'HIGH',
 };
 
 export const sampleWithFullData: IMessage = {
-  id: 2775,
-  sentAt: dayjs('2023-12-11T16:06'),
-  fromAddress: 'midst comparison where',
-  senderName: 'what',
-  subject: 'little',
+  id: '1dbe3ed3-49c7-43ac-8029-cff4cc208105',
+  sentAt: dayjs('2023-12-11T13:16'),
+  fromAddress: 'little',
+  senderName: 'purple',
+  subject: 'besides',
   body: '../fake-data/blob/hipster.txt',
-  channel: 'PROFESSIONAL_APP',
-  status: 'NEW',
+  channel: 'PATIENT_APP',
+  status: 'READ',
   priority: 'LOW',
 };
 

@@ -9,7 +9,7 @@
       "detail": {
         "title": "Audit Entry"
       },
-      "id": "ID",
+      "id": "Id",
       "occurredAt": "Occurred At",
       "actor": "Actor",
       "action": "Action",

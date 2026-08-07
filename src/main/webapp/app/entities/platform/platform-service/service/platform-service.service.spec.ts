@@ -30,7 +30,7 @@ describe('PlatformService Service', () => {
       const returnedFromService = { ...requireRestSample };
       const expected = { ...sampleWithRequiredData };
 
-      service.find(123).subscribe(resp => (expectedResult = resp));
+      service.find('ABC').subscribe(resp => (expectedResult = resp));
 
       const req = httpMock.expectOne({ method: 'GET' });
       req.flush(returnedFromService);
@@ -115,7 +115,7 @@ describe('PlatformService Service', () => {
       });
 
       it('should return false if one entity is null', () => {
-        const entity1 = { id: 8202 };
+        const entity1 = { id: '43c90406-e76d-4a32-b1b9-8e30686fe590' };
         const entity2 = null;
 
         const compareResult1 = service.comparePlatformService(entity1, entity2);
@@ -126,8 +126,8 @@ describe('PlatformService Service', () => {
       });
 
       it('should return false if primaryKey differs', () => {
-        const entity1 = { id: 8202 };
-        const entity2 = { id: 7207 };
+        const entity1 = { id: '43c90406-e76d-4a32-b1b9-8e30686fe590' };
+        const entity2 = { id: 'b45b5e28-bbf2-4b61-bade-bb4075c8cdd5' };
 
         const compareResult1 = service.comparePlatformService(entity1, entity2);
         const compareResult2 = service.comparePlatformService(entity2, entity1);
@@ -137,8 +137,8 @@ describe('PlatformService Service', () => {
       });
 
       it('should return false if primaryKey matches', () => {
-        const entity1 = { id: 8202 };
-        const entity2 = { id: 8202 };
+        const entity1 = { id: '43c90406-e76d-4a32-b1b9-8e30686fe590' };
+        const entity2 = { id: '43c90406-e76d-4a32-b1b9-8e30686fe590' };
 
         const compareResult1 = service.comparePlatformService(entity1, entity2);
         const compareResult2 = service.comparePlatformService(entity2, entity1);

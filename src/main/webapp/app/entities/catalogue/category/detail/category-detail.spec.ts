@@ -23,7 +23,7 @@ describe('Category Management Detail Component', () => {
             {
               path: '**',
               loadComponent: () => import('./category-detail').then(m => m.CategoryDetail),
-              resolve: { category: () => of({ id: 6752 }) },
+              resolve: { category: () => of({ id: '32948133-0615-4b7d-82d4-7d0e6b590fb7' }) },
             },
           ],
           withComponentInputBinding(),
@@ -46,7 +46,7 @@ describe('Category Management Detail Component', () => {
       const instance = await harness.navigateByUrl('/', CategoryDetail);
 
       // THEN
-      expect(instance.category()).toEqual(expect.objectContaining({ id: 6752 }));
+      expect(instance.category()).toEqual(expect.objectContaining({ id: '32948133-0615-4b7d-82d4-7d0e6b590fb7' }));
     });
   });
 

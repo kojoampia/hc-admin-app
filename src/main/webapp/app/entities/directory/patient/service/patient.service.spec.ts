@@ -33,7 +33,7 @@ describe('Patient Service', () => {
       const returnedFromService = { ...requireRestSample };
       const expected = { ...sampleWithRequiredData };
 
-      service.find(123).subscribe(resp => (expectedResult = resp));
+      service.find('ABC').subscribe(resp => (expectedResult = resp));
 
       const req = httpMock.expectOne({ method: 'GET' });
       req.flush(returnedFromService);
@@ -90,7 +90,7 @@ describe('Patient Service', () => {
     });
 
     it('should delete a Patient', () => {
-      service.delete(123).subscribe();
+      service.delete('ABC').subscribe();
 
       const requests = httpMock.match({ method: 'DELETE' });
       expect(requests).toHaveLength(1);
@@ -161,7 +161,7 @@ describe('Patient Service', () => {
       });
 
       it('should return false if one entity is null', () => {
-        const entity1 = { id: 16668 };
+        const entity1 = { id: '88928db1-656e-430d-95c0-5cde75285e55' };
         const entity2 = null;
 
         const compareResult1 = service.comparePatient(entity1, entity2);
@@ -172,8 +172,8 @@ describe('Patient Service', () => {
       });
 
       it('should return false if primaryKey differs', () => {
-        const entity1 = { id: 16668 };
-        const entity2 = { id: 16914 };
+        const entity1 = { id: '88928db1-656e-430d-95c0-5cde75285e55' };
+        const entity2 = { id: '7ee13815-76c1-4cab-8865-cf9e177b6367' };
 
         const compareResult1 = service.comparePatient(entity1, entity2);
         const compareResult2 = service.comparePatient(entity2, entity1);
@@ -183,8 +183,8 @@ describe('Patient Service', () => {
       });
 
       it('should return false if primaryKey matches', () => {
-        const entity1 = { id: 16668 };
-        const entity2 = { id: 16668 };
+        const entity1 = { id: '88928db1-656e-430d-95c0-5cde75285e55' };
+        const entity2 = { id: '88928db1-656e-430d-95c0-5cde75285e55' };
 
         const compareResult1 = service.comparePatient(entity1, entity2);
         const compareResult2 = service.comparePatient(entity2, entity1);

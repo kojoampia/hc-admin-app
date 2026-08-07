@@ -1,28 +1,28 @@
 import { IServiceActivity, NewServiceActivity } from './service-activity.model';
 
 export const sampleWithRequiredData: IServiceActivity = {
-  id: 873,
-  name: 'whoever mallard crystallize',
-  unit: 'plump lest following',
-  unitPrice: 25464.49,
+  id: '0fe1274b-e13b-42eb-a84a-1dd53ebe36cf',
+  name: 'especially scruple positively',
+  unit: 'oof',
+  unitPrice: 2945.66,
   published: false,
 };
 
 export const sampleWithPartialData: IServiceActivity = {
-  id: 27718,
-  name: 'numeracy unit ultimate',
-  unit: 'reschedule why carefully',
-  unitPrice: 25459.07,
+  id: 'dcb034bd-9e43-4020-afef-a45eec50424b',
+  name: 'hm strictly sauerkraut',
+  unit: 'fictionalize knavishly blowgun',
+  unitPrice: 9648.33,
   published: false,
 };
 
 export const sampleWithFullData: IServiceActivity = {
-  id: 23108,
-  name: 'vibraphone aboard',
-  unit: 'enrich during',
-  unitPrice: 9646.81,
-  duration: 'though',
-  published: false,
+  id: 'b942b5d0-fe2c-4833-907d-58be243c3217',
+  name: 'when',
+  unit: 'following flawless',
+  unitPrice: 2515.01,
+  duration: 'cinch mmm unfurl',
+  published: true,
 };
 
 export const sampleWithNewData: NewServiceActivity = {

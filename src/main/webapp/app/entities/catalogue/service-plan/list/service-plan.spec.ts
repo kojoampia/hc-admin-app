@@ -73,17 +73,19 @@ describe('ServicePlan Management Component', () => {
     // WHEN
     TestBed.tick();
     const req = httpMock.expectOne({ method: 'GET' });
-    req.flush([{ id: 23672 }], { headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' } });
+    req.flush([{ id: 'b5e0e540-7a57-41f1-8c7d-7faaae191154' }], {
+      headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' },
+    });
     await vitest.runAllTimersAsync();
 
     // THEN
     expect(comp.isLoading()).toEqual(false);
-    expect(comp.servicePlans()[0]).toEqual(expect.objectContaining({ id: 23672 }));
+    expect(comp.servicePlans()[0]).toEqual(expect.objectContaining({ id: 'b5e0e540-7a57-41f1-8c7d-7faaae191154' }));
   });
 
   describe('trackId', () => {
     it('should forward to servicePlanService', () => {
-      const entity = { id: 23672 };
+      const entity = { id: 'b5e0e540-7a57-41f1-8c7d-7faaae191154' };
       vitest.spyOn(service, 'getServicePlanIdentifier');
       const id = comp.trackId(entity);
       expect(service.getServicePlanIdentifier).toHaveBeenCalledWith(entity);

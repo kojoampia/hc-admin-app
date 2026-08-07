@@ -48,11 +48,11 @@ describe('CareActivity Management Update Component', () => {
 
   describe('ngOnInit', () => {
     it('should call Patient query and add missing value', () => {
-      const careActivity: ICareActivity = { id: 16253 };
-      const patient: IPatient = { id: 16668 };
+      const careActivity: ICareActivity = { id: '9dc3ecf1-90f7-43f7-add7-26b39284ae38' };
+      const patient: IPatient = { id: '88928db1-656e-430d-95c0-5cde75285e55' };
       careActivity.patient = patient;
 
-      const patientCollection: IPatient[] = [{ id: 16668 }];
+      const patientCollection: IPatient[] = [{ id: '88928db1-656e-430d-95c0-5cde75285e55' }];
       vitest.spyOn(patientService, 'query').mockReturnValue(of(new HttpResponse({ body: patientCollection })));
       const additionalPatients = [patient];
       const expectedCollection: IPatient[] = [...additionalPatients, ...patientCollection];
@@ -70,8 +70,8 @@ describe('CareActivity Management Update Component', () => {
     });
 
     it('should update editForm', () => {
-      const careActivity: ICareActivity = { id: 16253 };
-      const patient: IPatient = { id: 16668 };
+      const careActivity: ICareActivity = { id: '9dc3ecf1-90f7-43f7-add7-26b39284ae38' };
+      const patient: IPatient = { id: '88928db1-656e-430d-95c0-5cde75285e55' };
       careActivity.patient = patient;
 
       activatedRoute.data = of({ careActivity });
@@ -86,7 +86,7 @@ describe('CareActivity Management Update Component', () => {
     it('should call update service on save for existing entity', () => {
       // GIVEN
       const saveSubject = new Subject<ICareActivity>();
-      const careActivity = { id: 21303 };
+      const careActivity = { id: 'a750ee1d-4eb4-4652-9233-b9cedc9cdcef' };
       vitest.spyOn(careActivityFormService, 'getCareActivity').mockReturnValue(careActivity);
       vitest.spyOn(careActivityService, 'update').mockReturnValue(saveSubject);
       vitest.spyOn(comp, 'previousState');
@@ -109,7 +109,7 @@ describe('CareActivity Management Update Component', () => {
     it('should call create service on save for new entity', () => {
       // GIVEN
       const saveSubject = new Subject<ICareActivity>();
-      const careActivity = { id: 21303 };
+      const careActivity = { id: 'a750ee1d-4eb4-4652-9233-b9cedc9cdcef' };
       vitest.spyOn(careActivityFormService, 'getCareActivity').mockReturnValue({ id: null });
       vitest.spyOn(careActivityService, 'create').mockReturnValue(saveSubject);
       vitest.spyOn(comp, 'previousState');
@@ -132,7 +132,7 @@ describe('CareActivity Management Update Component', () => {
     it('should set isSaving to false on error', () => {
       // GIVEN
       const saveSubject = new Subject<ICareActivity>();
-      const careActivity = { id: 21303 };
+      const careActivity = { id: 'a750ee1d-4eb4-4652-9233-b9cedc9cdcef' };
       vitest.spyOn(careActivityService, 'update').mockReturnValue(saveSubject);
       vitest.spyOn(comp, 'previousState');
       activatedRoute.data = of({ careActivity });
@@ -153,8 +153,8 @@ describe('CareActivity Management Update Component', () => {
   describe('Compare relationships', () => {
     describe('comparePatient', () => {
       it('should forward to patientService', () => {
-        const entity = { id: 16668 };
-        const entity2 = { id: 16914 };
+        const entity = { id: '88928db1-656e-430d-95c0-5cde75285e55' };
+        const entity2 = { id: '7ee13815-76c1-4cab-8865-cf9e177b6367' };
         vitest.spyOn(patientService, 'comparePatient');
         comp.comparePatient(entity, entity2);
         expect(patientService.comparePatient).toHaveBeenCalledWith(entity, entity2);

@@ -54,7 +54,7 @@ export class Organisation implements OnInit {
     });
   }
 
-  trackId = (item: IOrganisation): number => this.organisationService.getOrganisationIdentifier(item);
+  trackId = (item: IOrganisation): string => this.organisationService.getOrganisationIdentifier(item);
 
   ngOnInit(): void {
     this.subscription = combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data])

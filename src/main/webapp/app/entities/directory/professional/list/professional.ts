@@ -70,7 +70,7 @@ export class Professional implements OnInit {
     });
   }
 
-  trackId = (item: IProfessional): number => this.professionalService.getProfessionalIdentifier(item);
+  trackId = (item: IProfessional): string => this.professionalService.getProfessionalIdentifier(item);
 
   ngOnInit(): void {
     this.subscription = combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data])

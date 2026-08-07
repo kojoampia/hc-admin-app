@@ -56,7 +56,7 @@ export default class MessageThread implements OnInit {
   private readonly router = inject(Router);
 
   ngOnInit(): void {
-    this.messageService.find(Number(this.id())).subscribe({
+    this.messageService.find(this.id()).subscribe({
       next: message => {
         this.message.set(message);
         if (message.status === 'NEW') {

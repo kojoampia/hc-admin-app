@@ -32,7 +32,7 @@ describe('ShiftAssignment Service', () => {
       const returnedFromService = { ...requireRestSample };
       const expected = { ...sampleWithRequiredData };
 
-      service.find(123).subscribe(resp => (expectedResult = resp));
+      service.find('ABC').subscribe(resp => (expectedResult = resp));
 
       const req = httpMock.expectOne({ method: 'GET' });
       req.flush(returnedFromService);
@@ -89,7 +89,7 @@ describe('ShiftAssignment Service', () => {
     });
 
     it('should delete a ShiftAssignment', () => {
-      service.delete(123).subscribe();
+      service.delete('ABC').subscribe();
 
       const requests = httpMock.match({ method: 'DELETE' });
       expect(requests).toHaveLength(1);
@@ -160,7 +160,7 @@ describe('ShiftAssignment Service', () => {
       });
 
       it('should return false if one entity is null', () => {
-        const entity1 = { id: 24117 };
+        const entity1 = { id: 'ba896828-02d4-4a87-8c48-9e1aad0801a7' };
         const entity2 = null;
 
         const compareResult1 = service.compareShiftAssignment(entity1, entity2);
@@ -171,8 +171,8 @@ describe('ShiftAssignment Service', () => {
       });
 
       it('should return false if primaryKey differs', () => {
-        const entity1 = { id: 24117 };
-        const entity2 = { id: 21237 };
+        const entity1 = { id: 'ba896828-02d4-4a87-8c48-9e1aad0801a7' };
+        const entity2 = { id: 'bc933842-bb42-4958-8965-51ce81c7d1eb' };
 
         const compareResult1 = service.compareShiftAssignment(entity1, entity2);
         const compareResult2 = service.compareShiftAssignment(entity2, entity1);
@@ -182,8 +182,8 @@ describe('ShiftAssignment Service', () => {
       });
 
       it('should return false if primaryKey matches', () => {
-        const entity1 = { id: 24117 };
-        const entity2 = { id: 24117 };
+        const entity1 = { id: 'ba896828-02d4-4a87-8c48-9e1aad0801a7' };
+        const entity2 = { id: 'ba896828-02d4-4a87-8c48-9e1aad0801a7' };
 
         const compareResult1 = service.compareShiftAssignment(entity1, entity2);
         const compareResult2 = service.compareShiftAssignment(entity2, entity1);

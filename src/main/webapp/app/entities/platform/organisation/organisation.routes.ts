@@ -1,6 +1,5 @@
 import { Routes } from '@angular/router';
 
-import { ASC } from 'app/config/navigation.constants';
 import { UserRouteAccessService } from 'app/core/auth/user-route-access.service';
 
 import OrganisationResolve from './route/organisation-routing-resolve.service';
@@ -9,9 +8,7 @@ const organisationRoute: Routes = [
   {
     path: '',
     loadComponent: () => import('./list/organisation').then(m => m.Organisation),
-    data: {
-      defaultSort: `id,${ASC}`,
-    },
+    data: {},
     canActivate: [UserRouteAccessService],
   },
   {

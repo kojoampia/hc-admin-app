@@ -1,6 +1,5 @@
 import { Routes } from '@angular/router';
 
-import { ASC } from 'app/config/navigation.constants';
 import { UserRouteAccessService } from 'app/core/auth/user-route-access.service';
 
 import ProfileResolve from './route/profile-routing-resolve.service';
@@ -9,9 +8,7 @@ const profileRoute: Routes = [
   {
     path: '',
     loadComponent: () => import('./list/profile').then(m => m.Profile),
-    data: {
-      defaultSort: `id,${ASC}`,
-    },
+    data: {},
     canActivate: [UserRouteAccessService],
   },
   {

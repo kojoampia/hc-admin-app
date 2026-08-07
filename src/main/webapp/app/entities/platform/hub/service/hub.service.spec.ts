@@ -30,7 +30,7 @@ describe('Hub Service', () => {
       const returnedFromService = { ...requireRestSample };
       const expected = { ...sampleWithRequiredData };
 
-      service.find(123).subscribe(resp => (expectedResult = resp));
+      service.find('ABC').subscribe(resp => (expectedResult = resp));
 
       const req = httpMock.expectOne({ method: 'GET' });
       req.flush(returnedFromService);
@@ -87,7 +87,7 @@ describe('Hub Service', () => {
     });
 
     it('should delete a Hub', () => {
-      service.delete(123).subscribe();
+      service.delete('ABC').subscribe();
 
       const requests = httpMock.match({ method: 'DELETE' });
       expect(requests).toHaveLength(1);
@@ -158,7 +158,7 @@ describe('Hub Service', () => {
       });
 
       it('should return false if one entity is null', () => {
-        const entity1 = { id: 23336 };
+        const entity1 = { id: 'bb609620-c7ae-4900-948f-445397c053ae' };
         const entity2 = null;
 
         const compareResult1 = service.compareHub(entity1, entity2);
@@ -169,8 +169,8 @@ describe('Hub Service', () => {
       });
 
       it('should return false if primaryKey differs', () => {
-        const entity1 = { id: 23336 };
-        const entity2 = { id: 23512 };
+        const entity1 = { id: 'bb609620-c7ae-4900-948f-445397c053ae' };
+        const entity2 = { id: '143c62d2-b763-4122-b4a2-4f688eee63a5' };
 
         const compareResult1 = service.compareHub(entity1, entity2);
         const compareResult2 = service.compareHub(entity2, entity1);
@@ -180,8 +180,8 @@ describe('Hub Service', () => {
       });
 
       it('should return false if primaryKey matches', () => {
-        const entity1 = { id: 23336 };
-        const entity2 = { id: 23336 };
+        const entity1 = { id: 'bb609620-c7ae-4900-948f-445397c053ae' };
+        const entity2 = { id: 'bb609620-c7ae-4900-948f-445397c053ae' };
 
         const compareResult1 = service.compareHub(entity1, entity2);
         const compareResult2 = service.compareHub(entity2, entity1);

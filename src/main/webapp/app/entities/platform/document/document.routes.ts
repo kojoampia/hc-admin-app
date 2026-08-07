@@ -1,6 +1,5 @@
 import { Routes } from '@angular/router';
 
-import { ASC } from 'app/config/navigation.constants';
 import { UserRouteAccessService } from 'app/core/auth/user-route-access.service';
 
 import DocumentResolve from './route/document-routing-resolve.service';
@@ -9,9 +8,7 @@ const documentRoute: Routes = [
   {
     path: '',
     loadComponent: () => import('./list/document').then(m => m.Document),
-    data: {
-      defaultSort: `id,${ASC}`,
-    },
+    data: {},
     canActivate: [UserRouteAccessService],
   },
   {

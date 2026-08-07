@@ -1,6 +1,5 @@
 import { Routes } from '@angular/router';
 
-import { ASC } from 'app/config/navigation.constants';
 import { UserRouteAccessService } from 'app/core/auth/user-route-access.service';
 
 import AddressResolve from './route/address-routing-resolve.service';
@@ -9,9 +8,7 @@ const addressRoute: Routes = [
   {
     path: '',
     loadComponent: () => import('./list/address').then(m => m.Address),
-    data: {
-      defaultSort: `id,${ASC}`,
-    },
+    data: {},
     canActivate: [UserRouteAccessService],
   },
   {

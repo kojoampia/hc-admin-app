@@ -31,7 +31,7 @@ describe('Document Service', () => {
       const returnedFromService = { ...requireRestSample };
       const expected = { ...sampleWithRequiredData };
 
-      service.find(123).subscribe(resp => (expectedResult = resp));
+      service.find('ABC').subscribe(resp => (expectedResult = resp));
 
       const req = httpMock.expectOne({ method: 'GET' });
       req.flush(returnedFromService);
@@ -88,7 +88,7 @@ describe('Document Service', () => {
     });
 
     it('should delete a Document', () => {
-      service.delete(123).subscribe();
+      service.delete('ABC').subscribe();
 
       const requests = httpMock.match({ method: 'DELETE' });
       expect(requests).toHaveLength(1);
@@ -159,7 +159,7 @@ describe('Document Service', () => {
       });
 
       it('should return false if one entity is null', () => {
-        const entity1 = { id: 24703 };
+        const entity1 = { id: 'c1d4f1eb-eff0-4815-be04-c0d821e59542' };
         const entity2 = null;
 
         const compareResult1 = service.compareDocument(entity1, entity2);
@@ -170,8 +170,8 @@ describe('Document Service', () => {
       });
 
       it('should return false if primaryKey differs', () => {
-        const entity1 = { id: 24703 };
-        const entity2 = { id: 4007 };
+        const entity1 = { id: 'c1d4f1eb-eff0-4815-be04-c0d821e59542' };
+        const entity2 = { id: 'd72ebdf6-81bc-4a5d-8e29-45483c0d98b2' };
 
         const compareResult1 = service.compareDocument(entity1, entity2);
         const compareResult2 = service.compareDocument(entity2, entity1);
@@ -181,8 +181,8 @@ describe('Document Service', () => {
       });
 
       it('should return false if primaryKey matches', () => {
-        const entity1 = { id: 24703 };
-        const entity2 = { id: 24703 };
+        const entity1 = { id: 'c1d4f1eb-eff0-4815-be04-c0d821e59542' };
+        const entity2 = { id: 'c1d4f1eb-eff0-4815-be04-c0d821e59542' };
 
         const compareResult1 = service.compareDocument(entity1, entity2);
         const compareResult2 = service.compareDocument(entity2, entity1);

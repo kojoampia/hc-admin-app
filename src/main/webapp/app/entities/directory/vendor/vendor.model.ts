@@ -3,7 +3,7 @@ import dayjs from 'dayjs/esm';
 import { AccountStatus } from 'app/entities/enumerations/account-status.model';
 
 export interface IVendor {
-  id: number;
+  id: string;
   name?: string | null;
   category?: string | null;
   serviceSummary?: string | null;

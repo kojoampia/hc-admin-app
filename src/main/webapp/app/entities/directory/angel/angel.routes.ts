@@ -1,6 +1,5 @@
 import { Routes } from '@angular/router';
 
-import { ASC } from 'app/config/navigation.constants';
 import { UserRouteAccessService } from 'app/core/auth/user-route-access.service';
 
 import AngelResolve from './route/angel-routing-resolve.service';
@@ -9,9 +8,7 @@ const angelRoute: Routes = [
   {
     path: '',
     loadComponent: () => import('./list/angel').then(m => m.Angel),
-    data: {
-      defaultSort: `id,${ASC}`,
-    },
+    data: {},
     canActivate: [UserRouteAccessService],
   },
   {

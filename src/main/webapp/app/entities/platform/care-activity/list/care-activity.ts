@@ -70,7 +70,7 @@ export class CareActivity implements OnInit {
     });
   }
 
-  trackId = (item: ICareActivity): number => this.careActivityService.getCareActivityIdentifier(item);
+  trackId = (item: ICareActivity): string => this.careActivityService.getCareActivityIdentifier(item);
 
   ngOnInit(): void {
     this.subscription = combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data])

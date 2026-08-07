@@ -75,7 +75,7 @@ export class VendorService extends VendorsService {
       .pipe(map(res => this.convertResponseFromServer(res)));
   }
 
-  find(id: number): Observable<IVendor> {
+  find(id: string): Observable<IVendor> {
     return this.http.get<RestVendor>(`${this.resourceUrl}/${encodeURIComponent(id)}`).pipe(map(res => this.convertResponseFromServer(res)));
   }
 
@@ -86,11 +86,11 @@ export class VendorService extends VendorsService {
       .pipe(map(res => res.clone({ body: this.convertResponseArrayFromServer(res.body!) })));
   }
 
-  delete(id: number): Observable<undefined> {
+  delete(id: string): Observable<undefined> {
     return this.http.delete<undefined>(`${this.resourceUrl}/${encodeURIComponent(id)}`);
   }
 
-  getVendorIdentifier(vendor: Pick<IVendor, 'id'>): number {
+  getVendorIdentifier(vendor: Pick<IVendor, 'id'>): string {
     return vendor.id;
   }
 

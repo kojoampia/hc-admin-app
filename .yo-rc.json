@@ -7,6 +7,7 @@
     "clientTheme": "none",
     "creationTimestamp": 1702323318371,
     "databaseType": "no",
+    "defaultCommand": "app",
     "enableTranslation": true,
     "entities": [
       "Address",

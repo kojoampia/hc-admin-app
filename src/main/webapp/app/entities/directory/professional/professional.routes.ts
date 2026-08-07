@@ -1,6 +1,5 @@
 import { Routes } from '@angular/router';
 
-import { ASC } from 'app/config/navigation.constants';
 import { UserRouteAccessService } from 'app/core/auth/user-route-access.service';
 
 import ProfessionalResolve from './route/professional-routing-resolve.service';
@@ -9,9 +8,7 @@ const professionalRoute: Routes = [
   {
     path: '',
     loadComponent: () => import('./list/professional').then(m => m.Professional),
-    data: {
-      defaultSort: `id,${ASC}`,
-    },
+    data: {},
     canActivate: [UserRouteAccessService],
   },
   {

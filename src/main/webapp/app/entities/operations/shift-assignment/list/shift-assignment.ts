@@ -70,7 +70,7 @@ export class ShiftAssignment implements OnInit {
     });
   }
 
-  trackId = (item: IShiftAssignment): number => this.shiftAssignmentService.getShiftAssignmentIdentifier(item);
+  trackId = (item: IShiftAssignment): string => this.shiftAssignmentService.getShiftAssignmentIdentifier(item);
 
   ngOnInit(): void {
     this.subscription = combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data])

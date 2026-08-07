@@ -52,11 +52,11 @@ describe('ShiftAssignment Management Update Component', () => {
 
   describe('ngOnInit', () => {
     it('should call RosterWeek query and add missing value', () => {
-      const shiftAssignment: IShiftAssignment = { id: 21237 };
-      const week: IRosterWeek = { id: 20651 };
+      const shiftAssignment: IShiftAssignment = { id: 'bc933842-bb42-4958-8965-51ce81c7d1eb' };
+      const week: IRosterWeek = { id: 'ade462b2-f291-49db-a5f8-d4638f0545b4' };
       shiftAssignment.week = week;
 
-      const rosterWeekCollection: IRosterWeek[] = [{ id: 20651 }];
+      const rosterWeekCollection: IRosterWeek[] = [{ id: 'ade462b2-f291-49db-a5f8-d4638f0545b4' }];
       vitest.spyOn(rosterWeekService, 'query').mockReturnValue(of(new HttpResponse({ body: rosterWeekCollection })));
       const additionalRosterWeeks = [week];
       const expectedCollection: IRosterWeek[] = [...additionalRosterWeeks, ...rosterWeekCollection];
@@ -74,11 +74,11 @@ describe('ShiftAssignment Management Update Component', () => {
     });
 
     it('should call Professional query and add missing value', () => {
-      const shiftAssignment: IShiftAssignment = { id: 21237 };
-      const professional: IProfessional = { id: 4421 };
+      const shiftAssignment: IShiftAssignment = { id: 'bc933842-bb42-4958-8965-51ce81c7d1eb' };
+      const professional: IProfessional = { id: '2c613901-f64b-4441-b80a-f5fb03b8e466' };
       shiftAssignment.professional = professional;
 
-      const professionalCollection: IProfessional[] = [{ id: 4421 }];
+      const professionalCollection: IProfessional[] = [{ id: '2c613901-f64b-4441-b80a-f5fb03b8e466' }];
       vitest.spyOn(professionalService, 'query').mockReturnValue(of(new HttpResponse({ body: professionalCollection })));
       const additionalProfessionals = [professional];
       const expectedCollection: IProfessional[] = [...additionalProfessionals, ...professionalCollection];
@@ -96,10 +96,10 @@ describe('ShiftAssignment Management Update Component', () => {
     });
 
     it('should update editForm', () => {
-      const shiftAssignment: IShiftAssignment = { id: 21237 };
-      const week: IRosterWeek = { id: 20651 };
+      const shiftAssignment: IShiftAssignment = { id: 'bc933842-bb42-4958-8965-51ce81c7d1eb' };
+      const week: IRosterWeek = { id: 'ade462b2-f291-49db-a5f8-d4638f0545b4' };
       shiftAssignment.week = week;
-      const professional: IProfessional = { id: 4421 };
+      const professional: IProfessional = { id: '2c613901-f64b-4441-b80a-f5fb03b8e466' };
       shiftAssignment.professional = professional;
 
       activatedRoute.data = of({ shiftAssignment });
@@ -115,7 +115,7 @@ describe('ShiftAssignment Management Update Component', () => {
     it('should call update service on save for existing entity', () => {
       // GIVEN
       const saveSubject = new Subject<IShiftAssignment>();
-      const shiftAssignment = { id: 24117 };
+      const shiftAssignment = { id: 'ba896828-02d4-4a87-8c48-9e1aad0801a7' };
       vitest.spyOn(shiftAssignmentFormService, 'getShiftAssignment').mockReturnValue(shiftAssignment);
       vitest.spyOn(shiftAssignmentService, 'update').mockReturnValue(saveSubject);
       vitest.spyOn(comp, 'previousState');
@@ -138,7 +138,7 @@ describe('ShiftAssignment Management Update Component', () => {
     it('should call create service on save for new entity', () => {
       // GIVEN
       const saveSubject = new Subject<IShiftAssignment>();
-      const shiftAssignment = { id: 24117 };
+      const shiftAssignment = { id: 'ba896828-02d4-4a87-8c48-9e1aad0801a7' };
       vitest.spyOn(shiftAssignmentFormService, 'getShiftAssignment').mockReturnValue({ id: null });
       vitest.spyOn(shiftAssignmentService, 'create').mockReturnValue(saveSubject);
       vitest.spyOn(comp, 'previousState');
@@ -161,7 +161,7 @@ describe('ShiftAssignment Management Update Component', () => {
     it('should set isSaving to false on error', () => {
       // GIVEN
       const saveSubject = new Subject<IShiftAssignment>();
-      const shiftAssignment = { id: 24117 };
+      const shiftAssignment = { id: 'ba896828-02d4-4a87-8c48-9e1aad0801a7' };
       vitest.spyOn(shiftAssignmentService, 'update').mockReturnValue(saveSubject);
       vitest.spyOn(comp, 'previousState');
       activatedRoute.data = of({ shiftAssignment });
@@ -182,8 +182,8 @@ describe('ShiftAssignment Management Update Component', () => {
   describe('Compare relationships', () => {
     describe('compareRosterWeek', () => {
       it('should forward to rosterWeekService', () => {
-        const entity = { id: 20651 };
-        const entity2 = { id: 27516 };
+        const entity = { id: 'ade462b2-f291-49db-a5f8-d4638f0545b4' };
+        const entity2 = { id: 'f8466048-f088-4ce3-9408-2613ebaefbdd' };
         vitest.spyOn(rosterWeekService, 'compareRosterWeek');
         comp.compareRosterWeek(entity, entity2);
         expect(rosterWeekService.compareRosterWeek).toHaveBeenCalledWith(entity, entity2);
@@ -192,8 +192,8 @@ describe('ShiftAssignment Management Update Component', () => {
 
     describe('compareProfessional', () => {
       it('should forward to professionalService', () => {
-        const entity = { id: 4421 };
-        const entity2 = { id: 25942 };
+        const entity = { id: '2c613901-f64b-4441-b80a-f5fb03b8e466' };
+        const entity2 = { id: '0e955bb7-9639-4125-b816-aa9d995e679e' };
         vitest.spyOn(professionalService, 'compareProfessional');
         comp.compareProfessional(entity, entity2);
         expect(professionalService.compareProfessional).toHaveBeenCalledWith(entity, entity2);

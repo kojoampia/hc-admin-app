@@ -17,7 +17,7 @@
       "detail": {
         "title": "Patient"
       },
-      "id": "ID",
+      "id": "Id",
       "status": "Status",
       "joinedOn": "Joined On",
       "lastActiveOn": "Last Active On",

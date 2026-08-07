@@ -45,7 +45,7 @@ export class HubService extends HubsService {
     return this.http.patch<IHub>(`${this.resourceUrl}/${encodeURIComponent(this.getHubIdentifier(hub))}`, hub);
   }
 
-  find(id: number): Observable<IHub> {
+  find(id: string): Observable<IHub> {
     return this.http.get<IHub>(`${this.resourceUrl}/${encodeURIComponent(id)}`);
   }
 
@@ -54,11 +54,11 @@ export class HubService extends HubsService {
     return this.http.get<IHub[]>(this.resourceUrl, { params: options, observe: 'response' });
   }
 
-  delete(id: number): Observable<undefined> {
+  delete(id: string): Observable<undefined> {
     return this.http.delete<undefined>(`${this.resourceUrl}/${encodeURIComponent(id)}`);
   }
 
-  getHubIdentifier(hub: Pick<IHub, 'id'>): number {
+  getHubIdentifier(hub: Pick<IHub, 'id'>): string {
     return hub.id;
   }
 

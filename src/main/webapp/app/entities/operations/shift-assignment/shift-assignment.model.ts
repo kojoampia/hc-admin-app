@@ -5,7 +5,7 @@ import { ShiftType } from 'app/entities/enumerations/shift-type.model';
 import { IRosterWeek } from 'app/entities/operations/roster-week/roster-week.model';
 
 export interface IShiftAssignment {
-  id: number;
+  id: string;
   dayIndex?: number | null;
   shiftDate?: dayjs.Dayjs | null;
   shift?: keyof typeof ShiftType | null;

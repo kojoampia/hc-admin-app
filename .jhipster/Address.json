@@ -7,6 +7,10 @@
   "documentation": "Ghana digital address plus postal detail.",
   "fields": [
     {
+      "fieldName": "id",
+      "fieldType": "String"
+    },
+    {
       "fieldName": "digitalAddress",
       "fieldType": "String",
       "fieldValidateRules": ["required", "maxlength", "pattern"],

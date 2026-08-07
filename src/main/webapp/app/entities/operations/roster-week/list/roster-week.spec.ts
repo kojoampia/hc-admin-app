@@ -73,17 +73,19 @@ describe('RosterWeek Management Component', () => {
     // WHEN
     TestBed.tick();
     const req = httpMock.expectOne({ method: 'GET' });
-    req.flush([{ id: 20651 }], { headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' } });
+    req.flush([{ id: 'ade462b2-f291-49db-a5f8-d4638f0545b4' }], {
+      headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' },
+    });
     await vitest.runAllTimersAsync();
 
     // THEN
     expect(comp.isLoading()).toEqual(false);
-    expect(comp.rosterWeeks()[0]).toEqual(expect.objectContaining({ id: 20651 }));
+    expect(comp.rosterWeeks()[0]).toEqual(expect.objectContaining({ id: 'ade462b2-f291-49db-a5f8-d4638f0545b4' }));
   });
 
   describe('trackId', () => {
     it('should forward to rosterWeekService', () => {
-      const entity = { id: 20651 };
+      const entity = { id: 'ade462b2-f291-49db-a5f8-d4638f0545b4' };
       vitest.spyOn(service, 'getRosterWeekIdentifier');
       const id = comp.trackId(entity);
       expect(service.getRosterWeekIdentifier).toHaveBeenCalledWith(entity);

@@ -32,7 +32,7 @@ describe('Professional Service', () => {
       const returnedFromService = { ...requireRestSample };
       const expected = { ...sampleWithRequiredData };
 
-      service.find(123).subscribe(resp => (expectedResult = resp));
+      service.find('ABC').subscribe(resp => (expectedResult = resp));
 
       const req = httpMock.expectOne({ method: 'GET' });
       req.flush(returnedFromService);
@@ -89,7 +89,7 @@ describe('Professional Service', () => {
     });
 
     it('should delete a Professional', () => {
-      service.delete(123).subscribe();
+      service.delete('ABC').subscribe();
 
       const requests = httpMock.match({ method: 'DELETE' });
       expect(requests).toHaveLength(1);
@@ -160,7 +160,7 @@ describe('Professional Service', () => {
       });
 
       it('should return false if one entity is null', () => {
-        const entity1 = { id: 4421 };
+        const entity1 = { id: '2c613901-f64b-4441-b80a-f5fb03b8e466' };
         const entity2 = null;
 
         const compareResult1 = service.compareProfessional(entity1, entity2);
@@ -171,8 +171,8 @@ describe('Professional Service', () => {
       });
 
       it('should return false if primaryKey differs', () => {
-        const entity1 = { id: 4421 };
-        const entity2 = { id: 25942 };
+        const entity1 = { id: '2c613901-f64b-4441-b80a-f5fb03b8e466' };
+        const entity2 = { id: '0e955bb7-9639-4125-b816-aa9d995e679e' };
 
         const compareResult1 = service.compareProfessional(entity1, entity2);
         const compareResult2 = service.compareProfessional(entity2, entity1);
@@ -182,8 +182,8 @@ describe('Professional Service', () => {
       });
 
       it('should return false if primaryKey matches', () => {
-        const entity1 = { id: 4421 };
-        const entity2 = { id: 4421 };
+        const entity1 = { id: '2c613901-f64b-4441-b80a-f5fb03b8e466' };
+        const entity2 = { id: '2c613901-f64b-4441-b80a-f5fb03b8e466' };
 
         const compareResult1 = service.compareProfessional(entity1, entity2);
         const compareResult2 = service.compareProfessional(entity2, entity1);

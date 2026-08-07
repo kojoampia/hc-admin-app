@@ -52,7 +52,7 @@ export class Angel implements OnInit {
     });
   }
 
-  trackId = (item: IAngel): number => this.angelService.getAngelIdentifier(item);
+  trackId = (item: IAngel): string => this.angelService.getAngelIdentifier(item);
 
   ngOnInit(): void {
     this.subscription = combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data])

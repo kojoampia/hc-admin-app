@@ -1,7 +1,7 @@
 import dayjs from 'dayjs/esm';
 
 export interface IRosterWeek {
-  id: number;
+  id: string;
   label?: string | null;
   startDate?: dayjs.Dayjs | null;
   published?: boolean | null;

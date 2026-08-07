@@ -49,7 +49,7 @@ export class AuditEntriesService {
 export class AuditEntryService extends AuditEntriesService {
   protected readonly http = inject(HttpClient);
 
-  find(id: number): Observable<IAuditEntry> {
+  find(id: string): Observable<IAuditEntry> {
     return this.http
       .get<RestAuditEntry>(`${this.resourceUrl}/${encodeURIComponent(id)}`)
       .pipe(map(res => this.convertResponseFromServer(res)));
@@ -62,7 +62,7 @@ export class AuditEntryService extends AuditEntriesService {
       .pipe(map(res => res.clone({ body: this.convertResponseArrayFromServer(res.body!) })));
   }
 
-  getAuditEntryIdentifier(auditEntry: Pick<IAuditEntry, 'id'>): number {
+  getAuditEntryIdentifier(auditEntry: Pick<IAuditEntry, 'id'>): string {
     return auditEntry.id;
   }
 

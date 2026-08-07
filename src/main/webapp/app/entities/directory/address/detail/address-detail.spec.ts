@@ -23,7 +23,7 @@ describe('Address Management Detail Component', () => {
             {
               path: '**',
               loadComponent: () => import('./address-detail').then(m => m.AddressDetail),
-              resolve: { address: () => of({ id: 2318 }) },
+              resolve: { address: () => of({ id: '1976e7b1-8233-4a09-bdb3-fbe559c0d8c2' }) },
             },
           ],
           withComponentInputBinding(),
@@ -46,7 +46,7 @@ describe('Address Management Detail Component', () => {
       const instance = await harness.navigateByUrl('/', AddressDetail);
 
       // THEN
-      expect(instance.address()).toEqual(expect.objectContaining({ id: 2318 }));
+      expect(instance.address()).toEqual(expect.objectContaining({ id: '1976e7b1-8233-4a09-bdb3-fbe559c0d8c2' }));
     });
   });
 

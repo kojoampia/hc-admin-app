@@ -64,11 +64,11 @@ describe('Patient Management Update Component', () => {
 
   describe('ngOnInit', () => {
     it('should call profile query and add missing value', () => {
-      const patient: IPatient = { id: 16914 };
-      const profile: IProfile = { id: 32255 };
+      const patient: IPatient = { id: '7ee13815-76c1-4cab-8865-cf9e177b6367' };
+      const profile: IProfile = { id: 'f60e8f71-7b26-4f3d-8111-2c32dce7269d' };
       patient.profile = profile;
 
-      const profileCollection: IProfile[] = [{ id: 32255 }];
+      const profileCollection: IProfile[] = [{ id: 'f60e8f71-7b26-4f3d-8111-2c32dce7269d' }];
       vitest.spyOn(profileService, 'query').mockReturnValue(of(new HttpResponse({ body: profileCollection })));
       const expectedCollection: IProfile[] = [profile, ...profileCollection];
       vitest.spyOn(profileService, 'addProfileToCollectionIfMissing').mockReturnValue(expectedCollection);
@@ -82,11 +82,11 @@ describe('Patient Management Update Component', () => {
     });
 
     it('should call angel query and add missing value', () => {
-      const patient: IPatient = { id: 16914 };
-      const angel: IAngel = { id: 23186 };
+      const patient: IPatient = { id: '7ee13815-76c1-4cab-8865-cf9e177b6367' };
+      const angel: IAngel = { id: 'b2b45139-eede-4143-805e-4fb6b8885f54' };
       patient.angel = angel;
 
-      const angelCollection: IAngel[] = [{ id: 23186 }];
+      const angelCollection: IAngel[] = [{ id: 'b2b45139-eede-4143-805e-4fb6b8885f54' }];
       vitest.spyOn(angelService, 'query').mockReturnValue(of(new HttpResponse({ body: angelCollection })));
       const expectedCollection: IAngel[] = [angel, ...angelCollection];
       vitest.spyOn(angelService, 'addAngelToCollectionIfMissing').mockReturnValue(expectedCollection);
@@ -100,11 +100,11 @@ describe('Patient Management Update Component', () => {
     });
 
     it('should call ServicePlan query and add missing value', () => {
-      const patient: IPatient = { id: 16914 };
-      const plan: IServicePlan = { id: 23672 };
+      const patient: IPatient = { id: '7ee13815-76c1-4cab-8865-cf9e177b6367' };
+      const plan: IServicePlan = { id: 'b5e0e540-7a57-41f1-8c7d-7faaae191154' };
       patient.plan = plan;
 
-      const servicePlanCollection: IServicePlan[] = [{ id: 23672 }];
+      const servicePlanCollection: IServicePlan[] = [{ id: 'b5e0e540-7a57-41f1-8c7d-7faaae191154' }];
       vitest.spyOn(servicePlanService, 'query').mockReturnValue(of(new HttpResponse({ body: servicePlanCollection })));
       const additionalServicePlans = [plan];
       const expectedCollection: IServicePlan[] = [...additionalServicePlans, ...servicePlanCollection];
@@ -122,11 +122,11 @@ describe('Patient Management Update Component', () => {
     });
 
     it('should call Professional query and add missing value', () => {
-      const patient: IPatient = { id: 16914 };
-      const clinicalLead: IProfessional = { id: 4421 };
+      const patient: IPatient = { id: '7ee13815-76c1-4cab-8865-cf9e177b6367' };
+      const clinicalLead: IProfessional = { id: '2c613901-f64b-4441-b80a-f5fb03b8e466' };
       patient.clinicalLead = clinicalLead;
 
-      const professionalCollection: IProfessional[] = [{ id: 4421 }];
+      const professionalCollection: IProfessional[] = [{ id: '2c613901-f64b-4441-b80a-f5fb03b8e466' }];
       vitest.spyOn(professionalService, 'query').mockReturnValue(of(new HttpResponse({ body: professionalCollection })));
       const additionalProfessionals = [clinicalLead];
       const expectedCollection: IProfessional[] = [...additionalProfessionals, ...professionalCollection];
@@ -144,11 +144,11 @@ describe('Patient Management Update Component', () => {
     });
 
     it('should call Hub query and add missing value', () => {
-      const patient: IPatient = { id: 16914 };
-      const hub: IHub = { id: 23336 };
+      const patient: IPatient = { id: '7ee13815-76c1-4cab-8865-cf9e177b6367' };
+      const hub: IHub = { id: 'bb609620-c7ae-4900-948f-445397c053ae' };
       patient.hub = hub;
 
-      const hubCollection: IHub[] = [{ id: 23336 }];
+      const hubCollection: IHub[] = [{ id: 'bb609620-c7ae-4900-948f-445397c053ae' }];
       vitest.spyOn(hubService, 'query').mockReturnValue(of(new HttpResponse({ body: hubCollection })));
       const additionalHubs = [hub];
       const expectedCollection: IHub[] = [...additionalHubs, ...hubCollection];
@@ -166,16 +166,16 @@ describe('Patient Management Update Component', () => {
     });
 
     it('should update editForm', () => {
-      const patient: IPatient = { id: 16914 };
-      const profile: IProfile = { id: 32255 };
+      const patient: IPatient = { id: '7ee13815-76c1-4cab-8865-cf9e177b6367' };
+      const profile: IProfile = { id: 'f60e8f71-7b26-4f3d-8111-2c32dce7269d' };
       patient.profile = profile;
-      const angel: IAngel = { id: 23186 };
+      const angel: IAngel = { id: 'b2b45139-eede-4143-805e-4fb6b8885f54' };
       patient.angel = angel;
-      const plan: IServicePlan = { id: 23672 };
+      const plan: IServicePlan = { id: 'b5e0e540-7a57-41f1-8c7d-7faaae191154' };
       patient.plan = plan;
-      const clinicalLead: IProfessional = { id: 4421 };
+      const clinicalLead: IProfessional = { id: '2c613901-f64b-4441-b80a-f5fb03b8e466' };
       patient.clinicalLead = clinicalLead;
-      const hub: IHub = { id: 23336 };
+      const hub: IHub = { id: 'bb609620-c7ae-4900-948f-445397c053ae' };
       patient.hub = hub;
 
       activatedRoute.data = of({ patient });
@@ -194,7 +194,7 @@ describe('Patient Management Update Component', () => {
     it('should call update service on save for existing entity', () => {
       // GIVEN
       const saveSubject = new Subject<IPatient>();
-      const patient = { id: 16668 };
+      const patient = { id: '88928db1-656e-430d-95c0-5cde75285e55' };
       vitest.spyOn(patientFormService, 'getPatient').mockReturnValue(patient);
       vitest.spyOn(patientService, 'update').mockReturnValue(saveSubject);
       vitest.spyOn(comp, 'previousState');
@@ -217,7 +217,7 @@ describe('Patient Management Update Component', () => {
     it('should call create service on save for new entity', () => {
       // GIVEN
       const saveSubject = new Subject<IPatient>();
-      const patient = { id: 16668 };
+      const patient = { id: '88928db1-656e-430d-95c0-5cde75285e55' };
       vitest.spyOn(patientFormService, 'getPatient').mockReturnValue({ id: null });
       vitest.spyOn(patientService, 'create').mockReturnValue(saveSubject);
       vitest.spyOn(comp, 'previousState');
@@ -240,7 +240,7 @@ describe('Patient Management Update Component', () => {
     it('should set isSaving to false on error', () => {
       // GIVEN
       const saveSubject = new Subject<IPatient>();
-      const patient = { id: 16668 };
+      const patient = { id: '88928db1-656e-430d-95c0-5cde75285e55' };
       vitest.spyOn(patientService, 'update').mockReturnValue(saveSubject);
       vitest.spyOn(comp, 'previousState');
       activatedRoute.data = of({ patient });
@@ -261,8 +261,8 @@ describe('Patient Management Update Component', () => {
   describe('Compare relationships', () => {
     describe('compareProfile', () => {
       it('should forward to profileService', () => {
-        const entity = { id: 32255 };
-        const entity2 = { id: 13324 };
+        const entity = { id: 'f60e8f71-7b26-4f3d-8111-2c32dce7269d' };
+        const entity2 = { id: '5ac8ab7a-123d-4318-b51e-b9301878a25d' };
         vitest.spyOn(profileService, 'compareProfile');
         comp.compareProfile(entity, entity2);
         expect(profileService.compareProfile).toHaveBeenCalledWith(entity, entity2);
@@ -271,8 +271,8 @@ describe('Patient Management Update Component', () => {
 
     describe('compareAngel', () => {
       it('should forward to angelService', () => {
-        const entity = { id: 23186 };
-        const entity2 = { id: 4856 };
+        const entity = { id: 'b2b45139-eede-4143-805e-4fb6b8885f54' };
+        const entity2 = { id: 'a848bf89-7dc8-4acc-9803-d42a457c8a33' };
         vitest.spyOn(angelService, 'compareAngel');
         comp.compareAngel(entity, entity2);
         expect(angelService.compareAngel).toHaveBeenCalledWith(entity, entity2);
@@ -281,8 +281,8 @@ describe('Patient Management Update Component', () => {
 
     describe('compareServicePlan', () => {
       it('should forward to servicePlanService', () => {
-        const entity = { id: 23672 };
-        const entity2 = { id: 11825 };
+        const entity = { id: 'b5e0e540-7a57-41f1-8c7d-7faaae191154' };
+        const entity2 = { id: '674a82c7-e597-42ce-8bcb-558e5170756f' };
         vitest.spyOn(servicePlanService, 'compareServicePlan');
         comp.compareServicePlan(entity, entity2);
         expect(servicePlanService.compareServicePlan).toHaveBeenCalledWith(entity, entity2);
@@ -291,8 +291,8 @@ describe('Patient Management Update Component', () => {
 
     describe('compareProfessional', () => {
       it('should forward to professionalService', () => {
-        const entity = { id: 4421 };
-        const entity2 = { id: 25942 };
+        const entity = { id: '2c613901-f64b-4441-b80a-f5fb03b8e466' };
+        const entity2 = { id: '0e955bb7-9639-4125-b816-aa9d995e679e' };
         vitest.spyOn(professionalService, 'compareProfessional');
         comp.compareProfessional(entity, entity2);
         expect(professionalService.compareProfessional).toHaveBeenCalledWith(entity, entity2);
@@ -301,8 +301,8 @@ describe('Patient Management Update Component', () => {
 
     describe('compareHub', () => {
       it('should forward to hubService', () => {
-        const entity = { id: 23336 };
-        const entity2 = { id: 23512 };
+        const entity = { id: 'bb609620-c7ae-4900-948f-445397c053ae' };
+        const entity2 = { id: '143c62d2-b763-4122-b4a2-4f688eee63a5' };
         vitest.spyOn(hubService, 'compareHub');
         comp.compareHub(entity, entity2);
         expect(hubService.compareHub).toHaveBeenCalledWith(entity, entity2);

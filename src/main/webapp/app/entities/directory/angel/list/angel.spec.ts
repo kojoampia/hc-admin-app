@@ -73,17 +73,19 @@ describe('Angel Management Component', () => {
     // WHEN
     TestBed.tick();
     const req = httpMock.expectOne({ method: 'GET' });
-    req.flush([{ id: 23186 }], { headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' } });
+    req.flush([{ id: 'b2b45139-eede-4143-805e-4fb6b8885f54' }], {
+      headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' },
+    });
     await vitest.runAllTimersAsync();
 
     // THEN
     expect(comp.isLoading()).toEqual(false);
-    expect(comp.angels()[0]).toEqual(expect.objectContaining({ id: 23186 }));
+    expect(comp.angels()[0]).toEqual(expect.objectContaining({ id: 'b2b45139-eede-4143-805e-4fb6b8885f54' }));
   });
 
   describe('trackId', () => {
     it('should forward to angelService', () => {
-      const entity = { id: 23186 };
+      const entity = { id: 'b2b45139-eede-4143-805e-4fb6b8885f54' };
       vitest.spyOn(service, 'getAngelIdentifier');
       const id = comp.trackId(entity);
       expect(service.getAngelIdentifier).toHaveBeenCalledWith(entity);

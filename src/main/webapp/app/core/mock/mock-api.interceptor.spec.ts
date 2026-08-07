@@ -47,27 +47,28 @@ describe('mockApiInterceptor', () => {
     });
 
     it('should page rather than return the whole collection', async () => {
-      const page2 = await firstValueFrom(http.get<{ id: number }[]>(fast('/api/patients?page=1&size=5')));
+      const page2 = await firstValueFrom(http.get<{ id: string }[]>(fast('/api/patients?page=1&size=5')));
       expect(page2.length).toBe(5);
-      expect(page2[0].id).toBe(6);
+      expect(page2[0].id).toBe('a6');
     });
 
     it('should honour a sort parameter', async () => {
-      const rows = await firstValueFrom(http.get<{ id: number }[]>(fast('/api/patients?sort=id,desc&size=3')));
-      expect(rows.map(row => row.id)).toEqual([12, 11, 10]);
+      const rows = await firstValueFrom(http.get<{ id: string }[]>(fast('/api/patients?sort=id,desc&size=3')));
+      // Numeric-aware string sort: a12 > a11 > a10 > a9.
+      expect(rows.map(row => row.id)).toEqual(['a12', 'a11', 'a10']);
     });
   });
 
   describe('single records', () => {
     it('should return 404 for a missing id', async () => {
-      await expect(firstValueFrom(http.get(fast('/api/patients/9999')))).rejects.toSatisfy(
+      await expect(firstValueFrom(http.get(fast('/api/patients/nope')))).rejects.toSatisfy(
         (error: HttpErrorResponse) => error.status === 404,
       );
     });
 
     it('should return the record for a known id', async () => {
-      const patient = await firstValueFrom(http.get<{ id: number }>(fast('/api/patients/1')));
-      expect(patient.id).toBe(1);
+      const patient = await firstValueFrom(http.get<{ id: string }>(fast('/api/patients/a1')));
+      expect(patient.id).toBe('a1');
     });
   });
 
@@ -78,15 +79,15 @@ describe('mockApiInterceptor', () => {
       );
 
       expect(response.status).toBe(201);
-      const created = response.body as { id: number; title: string };
-      expect(created.id).toBeGreaterThan(13);
+      const created = response.body as { id: string; title: string };
+      expect(created.id).toMatch(/^tasks-new-\d+$/);
       expect(response.headers.get('Location')).toContain(`/api/tasks/${created.id}`);
     });
 
     it('should reject a create that already carries an id', async () => {
       // JHipster's REST contract: POST with an ID is a client error.
       await expect(
-        firstValueFrom(http.post(fast('/api/tasks'), { id: 5, title: 'Nope', state: 'TODO', priority: 'LOW' })),
+        firstValueFrom(http.post(fast('/api/tasks'), { id: 't5', title: 'Nope', state: 'TODO', priority: 'LOW' })),
       ).rejects.toSatisfy((error: HttpErrorResponse) => error.status === 400);
     });
 
@@ -100,21 +101,21 @@ describe('mockApiInterceptor', () => {
 
   describe('update', () => {
     it('should reject a PUT whose body id disagrees with the path', async () => {
-      await expect(firstValueFrom(http.put(fast('/api/tasks/1'), { id: 2, title: 'Mismatched' }))).rejects.toSatisfy(
+      await expect(firstValueFrom(http.put(fast('/api/tasks/t1'), { id: 't2', title: 'Mismatched' }))).rejects.toSatisfy(
         (error: HttpErrorResponse) => error.status === 400,
       );
     });
 
     it('should copy only the fields a PATCH actually sends', async () => {
-      const before = await firstValueFrom(http.get<{ title: string; tag: string }>(fast('/api/tasks/1')));
-      const patched = await firstValueFrom(http.patch<{ title: string; tag: string }>(fast('/api/tasks/1'), { id: 1, state: 'DONE' }));
+      const before = await firstValueFrom(http.get<{ title: string; tag: string }>(fast('/api/tasks/t1')));
+      const patched = await firstValueFrom(http.patch<{ title: string; tag: string }>(fast('/api/tasks/t1'), { id: 't1', state: 'DONE' }));
 
       expect(patched.title).toBe(before.title);
       expect(patched.tag).toBe(before.tag);
     });
 
     it('should return 404 when updating a record that does not exist', async () => {
-      await expect(firstValueFrom(http.put(fast('/api/tasks/9999'), { id: 9999 }))).rejects.toSatisfy(
+      await expect(firstValueFrom(http.put(fast('/api/tasks/nope'), { id: 'nope' }))).rejects.toSatisfy(
         (error: HttpErrorResponse) => error.status === 404,
       );
     });
@@ -122,14 +123,14 @@ describe('mockApiInterceptor', () => {
 
   describe('delete', () => {
     it('should return 204 and actually remove the row', async () => {
-      const response = await firstValueFrom(http.delete(fast('/api/tasks/1'), { observe: 'response' }));
+      const response = await firstValueFrom(http.delete(fast('/api/tasks/t1'), { observe: 'response' }));
       expect(response.status).toBe(204);
 
-      await expect(firstValueFrom(http.get(fast('/api/tasks/1')))).rejects.toSatisfy((error: HttpErrorResponse) => error.status === 404);
+      await expect(firstValueFrom(http.get(fast('/api/tasks/t1')))).rejects.toSatisfy((error: HttpErrorResponse) => error.status === 404);
     });
 
     it('should return 404 when deleting something already gone', async () => {
-      await expect(firstValueFrom(http.delete(fast('/api/tasks/9999')))).rejects.toSatisfy(
+      await expect(firstValueFrom(http.delete(fast('/api/tasks/nope')))).rejects.toSatisfy(
         (error: HttpErrorResponse) => error.status === 404,
       );
     });
@@ -140,7 +141,7 @@ describe('mockApiInterceptor', () => {
       await expect(firstValueFrom(http.post(fast('/api/platform-services'), { name: 'Rogue' }))).rejects.toSatisfy(
         (error: HttpErrorResponse) => error.status === 405,
       );
-      await expect(firstValueFrom(http.delete(fast('/api/audit-entries/1')))).rejects.toSatisfy(
+      await expect(firstValueFrom(http.delete(fast('/api/audit-entries/audit-1')))).rejects.toSatisfy(
         (error: HttpErrorResponse) => error.status === 405,
       );
     });

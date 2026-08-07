@@ -17,7 +17,8 @@
       "detail": {
         "title": "Profile"
       },
-      "id": "ID",
+      "id": "Id",
+      "accountId": "Account Id",
       "title": "Title",
       "firstName": "First Name",
       "middleName": "Middle Name",

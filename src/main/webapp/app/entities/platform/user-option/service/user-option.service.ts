@@ -47,7 +47,7 @@ export class UserOptionService extends UserOptionsService {
     return this.http.patch<IUserOption>(`${this.resourceUrl}/${encodeURIComponent(this.getUserOptionIdentifier(userOption))}`, userOption);
   }
 
-  find(id: number): Observable<IUserOption> {
+  find(id: string): Observable<IUserOption> {
     return this.http.get<IUserOption>(`${this.resourceUrl}/${encodeURIComponent(id)}`);
   }
 
@@ -56,11 +56,11 @@ export class UserOptionService extends UserOptionsService {
     return this.http.get<IUserOption[]>(this.resourceUrl, { params: options, observe: 'response' });
   }
 
-  delete(id: number): Observable<undefined> {
+  delete(id: string): Observable<undefined> {
     return this.http.delete<undefined>(`${this.resourceUrl}/${encodeURIComponent(id)}`);
   }
 
-  getUserOptionIdentifier(userOption: Pick<IUserOption, 'id'>): number {
+  getUserOptionIdentifier(userOption: Pick<IUserOption, 'id'>): string {
     return userOption.id;
   }
 

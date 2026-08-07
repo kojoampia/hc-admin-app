@@ -17,7 +17,7 @@
       "detail": {
         "title": "Service Plan"
       },
-      "id": "ID",
+      "id": "Id",
       "name": "Name",
       "tier": "Tier",
       "tierLabel": "Tier Label",

@@ -73,12 +73,14 @@ describe('Message Management Component', () => {
     // WHEN
     TestBed.tick();
     const req = httpMock.expectOne({ method: 'GET' });
-    req.flush([{ id: 6456 }], { headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' } });
+    req.flush([{ id: '35ac2a14-31ca-4318-8e02-123f67ebfc01' }], {
+      headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' },
+    });
     await vitest.runAllTimersAsync();
 
     // THEN
     expect(comp.isLoading()).toEqual(false);
-    expect(comp.messages()[0]).toEqual(expect.objectContaining({ id: 6456 }));
+    expect(comp.messages()[0]).toEqual(expect.objectContaining({ id: '35ac2a14-31ca-4318-8e02-123f67ebfc01' }));
   });
 
   it('should cancel previous requests when loading a new page', async () => {
@@ -91,13 +93,15 @@ describe('Message Management Component', () => {
     comp.load();
     await vitest.runAllTimersAsync();
     const req2 = httpMock.expectOne({ method: 'GET' });
-    req2.flush([{ id: 6456 }], { headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' } });
+    req2.flush([{ id: '35ac2a14-31ca-4318-8e02-123f67ebfc01' }], {
+      headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' },
+    });
     await vitest.runAllTimersAsync();
 
     // THEN
     expect(req.cancelled).toBeTruthy();
     expect(comp.isLoading()).toEqual(false);
-    expect(comp.messages()[0]).toEqual(expect.objectContaining({ id: 6456 }));
+    expect(comp.messages()[0]).toEqual(expect.objectContaining({ id: '35ac2a14-31ca-4318-8e02-123f67ebfc01' }));
   });
 
   it('should not fail on resource error state', async () => {
@@ -115,16 +119,18 @@ describe('Message Management Component', () => {
     comp.load();
     TestBed.tick();
     const successReq = httpMock.expectOne({ method: 'GET' });
-    successReq.flush([{ id: 6456 }], { headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' } });
+    successReq.flush([{ id: '35ac2a14-31ca-4318-8e02-123f67ebfc01' }], {
+      headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' },
+    });
     await vitest.runAllTimersAsync();
 
     // THEN - subscription is still alive and second load succeeds
-    expect(comp.messages()[0]).toEqual(expect.objectContaining({ id: 6456 }));
+    expect(comp.messages()[0]).toEqual(expect.objectContaining({ id: '35ac2a14-31ca-4318-8e02-123f67ebfc01' }));
   });
 
   describe('trackId', () => {
     it('should forward to messageService', () => {
-      const entity = { id: 6456 };
+      const entity = { id: '35ac2a14-31ca-4318-8e02-123f67ebfc01' };
       vitest.spyOn(service, 'getMessageIdentifier');
       const id = comp.trackId(entity);
       expect(service.getMessageIdentifier).toHaveBeenCalledWith(entity);

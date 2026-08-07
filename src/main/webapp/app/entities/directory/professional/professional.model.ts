@@ -9,7 +9,7 @@ import { IHub } from 'app/entities/platform/hub/hub.model';
 import { ITeam } from 'app/entities/platform/team/team.model';
 
 export interface IProfessional {
-  id: number;
+  id: string;
   role?: keyof typeof ProfessionalRole | null;
   speciality?: string | null;
   licenceNumber?: string | null;

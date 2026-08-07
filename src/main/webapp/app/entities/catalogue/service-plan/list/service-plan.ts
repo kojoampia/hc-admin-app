@@ -52,7 +52,7 @@ export class ServicePlan implements OnInit {
     });
   }
 
-  trackId = (item: IServicePlan): number => this.servicePlanService.getServicePlanIdentifier(item);
+  trackId = (item: IServicePlan): string => this.servicePlanService.getServicePlanIdentifier(item);
 
   ngOnInit(): void {
     this.subscription = combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data])

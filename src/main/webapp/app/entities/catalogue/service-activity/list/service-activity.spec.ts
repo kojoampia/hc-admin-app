@@ -73,12 +73,14 @@ describe('ServiceActivity Management Component', () => {
     // WHEN
     TestBed.tick();
     const req = httpMock.expectOne({ method: 'GET' });
-    req.flush([{ id: 29075 }], { headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' } });
+    req.flush([{ id: 'e58e53d8-3de4-4287-add1-bbf6e52730f0' }], {
+      headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' },
+    });
     await vitest.runAllTimersAsync();
 
     // THEN
     expect(comp.isLoading()).toEqual(false);
-    expect(comp.serviceActivities()[0]).toEqual(expect.objectContaining({ id: 29075 }));
+    expect(comp.serviceActivities()[0]).toEqual(expect.objectContaining({ id: 'e58e53d8-3de4-4287-add1-bbf6e52730f0' }));
   });
 
   it('should cancel previous requests when loading a new page', async () => {
@@ -91,13 +93,15 @@ describe('ServiceActivity Management Component', () => {
     comp.load();
     await vitest.runAllTimersAsync();
     const req2 = httpMock.expectOne({ method: 'GET' });
-    req2.flush([{ id: 29075 }], { headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' } });
+    req2.flush([{ id: 'e58e53d8-3de4-4287-add1-bbf6e52730f0' }], {
+      headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' },
+    });
     await vitest.runAllTimersAsync();
 
     // THEN
     expect(req.cancelled).toBeTruthy();
     expect(comp.isLoading()).toEqual(false);
-    expect(comp.serviceActivities()[0]).toEqual(expect.objectContaining({ id: 29075 }));
+    expect(comp.serviceActivities()[0]).toEqual(expect.objectContaining({ id: 'e58e53d8-3de4-4287-add1-bbf6e52730f0' }));
   });
 
   it('should not fail on resource error state', async () => {
@@ -115,16 +119,18 @@ describe('ServiceActivity Management Component', () => {
     comp.load();
     TestBed.tick();
     const successReq = httpMock.expectOne({ method: 'GET' });
-    successReq.flush([{ id: 29075 }], { headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' } });
+    successReq.flush([{ id: 'e58e53d8-3de4-4287-add1-bbf6e52730f0' }], {
+      headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' },
+    });
     await vitest.runAllTimersAsync();
 
     // THEN - subscription is still alive and second load succeeds
-    expect(comp.serviceActivities()[0]).toEqual(expect.objectContaining({ id: 29075 }));
+    expect(comp.serviceActivities()[0]).toEqual(expect.objectContaining({ id: 'e58e53d8-3de4-4287-add1-bbf6e52730f0' }));
   });
 
   describe('trackId', () => {
     it('should forward to serviceActivityService', () => {
-      const entity = { id: 29075 };
+      const entity = { id: 'e58e53d8-3de4-4287-add1-bbf6e52730f0' };
       vitest.spyOn(service, 'getServiceActivityIdentifier');
       const id = comp.trackId(entity);
       expect(service.getServiceActivityIdentifier).toHaveBeenCalledWith(entity);

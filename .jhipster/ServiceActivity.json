@@ -7,6 +7,10 @@
   "documentation": "A bookable, priced catalogue line. Named ServiceActivity to keep it\\ndistinct from CareActivity below — the PDF uses \"Activity\" for both\\nsenses and JDL has no namespaces.",
   "fields": [
     {
+      "fieldName": "id",
+      "fieldType": "String"
+    },
+    {
       "fieldName": "name",
       "fieldType": "String",
       "fieldValidateRules": ["required", "maxlength"],

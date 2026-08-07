@@ -75,7 +75,7 @@ export class TaskService extends TasksService {
       .pipe(map(res => this.convertResponseFromServer(res)));
   }
 
-  find(id: number): Observable<ITask> {
+  find(id: string): Observable<ITask> {
     return this.http.get<RestTask>(`${this.resourceUrl}/${encodeURIComponent(id)}`).pipe(map(res => this.convertResponseFromServer(res)));
   }
 
@@ -86,11 +86,11 @@ export class TaskService extends TasksService {
       .pipe(map(res => res.clone({ body: this.convertResponseArrayFromServer(res.body!) })));
   }
 
-  delete(id: number): Observable<undefined> {
+  delete(id: string): Observable<undefined> {
     return this.http.delete<undefined>(`${this.resourceUrl}/${encodeURIComponent(id)}`);
   }
 
-  getTaskIdentifier(task: Pick<ITask, 'id'>): number {
+  getTaskIdentifier(task: Pick<ITask, 'id'>): string {
     return task.id;
   }
 

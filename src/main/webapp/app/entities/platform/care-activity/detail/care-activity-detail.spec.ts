@@ -23,7 +23,7 @@ describe('CareActivity Management Detail Component', () => {
             {
               path: '**',
               loadComponent: () => import('./care-activity-detail').then(m => m.CareActivityDetail),
-              resolve: { careActivity: () => of({ id: 21303 }) },
+              resolve: { careActivity: () => of({ id: 'a750ee1d-4eb4-4652-9233-b9cedc9cdcef' }) },
             },
           ],
           withComponentInputBinding(),
@@ -46,7 +46,7 @@ describe('CareActivity Management Detail Component', () => {
       const instance = await harness.navigateByUrl('/', CareActivityDetail);
 
       // THEN
-      expect(instance.careActivity()).toEqual(expect.objectContaining({ id: 21303 }));
+      expect(instance.careActivity()).toEqual(expect.objectContaining({ id: 'a750ee1d-4eb4-4652-9233-b9cedc9cdcef' }));
     });
   });
 

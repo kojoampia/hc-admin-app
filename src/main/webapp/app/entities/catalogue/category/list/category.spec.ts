@@ -73,17 +73,19 @@ describe('Category Management Component', () => {
     // WHEN
     TestBed.tick();
     const req = httpMock.expectOne({ method: 'GET' });
-    req.flush([{ id: 6752 }], { headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' } });
+    req.flush([{ id: '32948133-0615-4b7d-82d4-7d0e6b590fb7' }], {
+      headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' },
+    });
     await vitest.runAllTimersAsync();
 
     // THEN
     expect(comp.isLoading()).toEqual(false);
-    expect(comp.categories()[0]).toEqual(expect.objectContaining({ id: 6752 }));
+    expect(comp.categories()[0]).toEqual(expect.objectContaining({ id: '32948133-0615-4b7d-82d4-7d0e6b590fb7' }));
   });
 
   describe('trackId', () => {
     it('should forward to categoryService', () => {
-      const entity = { id: 6752 };
+      const entity = { id: '32948133-0615-4b7d-82d4-7d0e6b590fb7' };
       vitest.spyOn(service, 'getCategoryIdentifier');
       const id = comp.trackId(entity);
       expect(service.getCategoryIdentifier).toHaveBeenCalledWith(entity);

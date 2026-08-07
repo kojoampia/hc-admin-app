@@ -74,7 +74,7 @@ export class CredentialService extends CredentialsService {
       .pipe(map(res => this.convertResponseFromServer(res)));
   }
 
-  find(id: number): Observable<ICredential> {
+  find(id: string): Observable<ICredential> {
     return this.http
       .get<RestCredential>(`${this.resourceUrl}/${encodeURIComponent(id)}`)
       .pipe(map(res => this.convertResponseFromServer(res)));
@@ -87,11 +87,11 @@ export class CredentialService extends CredentialsService {
       .pipe(map(res => res.clone({ body: this.convertResponseArrayFromServer(res.body!) })));
   }
 
-  delete(id: number): Observable<undefined> {
+  delete(id: string): Observable<undefined> {
     return this.http.delete<undefined>(`${this.resourceUrl}/${encodeURIComponent(id)}`);
   }
 
-  getCredentialIdentifier(credential: Pick<ICredential, 'id'>): number {
+  getCredentialIdentifier(credential: Pick<ICredential, 'id'>): string {
     return credential.id;
   }
 

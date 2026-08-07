@@ -23,7 +23,7 @@ describe('Vendor Management Detail Component', () => {
             {
               path: '**',
               loadComponent: () => import('./vendor-detail').then(m => m.VendorDetail),
-              resolve: { vendor: () => of({ id: 10199 }) },
+              resolve: { vendor: () => of({ id: '478690b5-4f10-43b0-b67e-1148991a8421' }) },
             },
           ],
           withComponentInputBinding(),
@@ -46,7 +46,7 @@ describe('Vendor Management Detail Component', () => {
       const instance = await harness.navigateByUrl('/', VendorDetail);
 
       // THEN
-      expect(instance.vendor()).toEqual(expect.objectContaining({ id: 10199 }));
+      expect(instance.vendor()).toEqual(expect.objectContaining({ id: '478690b5-4f10-43b0-b67e-1148991a8421' }));
     });
   });
 

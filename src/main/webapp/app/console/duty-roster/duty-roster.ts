@@ -31,7 +31,7 @@ export const nextShift = (current: ShiftKind | null): ShiftKind | null => {
 export interface RosterCell {
   readonly dayIndex: number;
   readonly shift: ShiftKind | null;
-  readonly assignmentId: number | null;
+  readonly assignmentId: string | null;
 }
 
 export interface RosterRow {
@@ -244,7 +244,7 @@ export default class DutyRoster implements OnInit {
 
   /** Drop every assignment for the week and reload it empty. */
   resetWeek(): void {
-    const ids = this.rows().flatMap(row => row.cells.map(cell => cell.assignmentId).filter((id): id is number => id !== null));
+    const ids = this.rows().flatMap(row => row.cells.map(cell => cell.assignmentId).filter((id): id is string => id !== null));
     if (ids.length === 0) {
       return;
     }
@@ -272,7 +272,7 @@ export default class DutyRoster implements OnInit {
     });
   }
 
-  private applyCell(row: RosterRow, dayIndex: number, shift: ShiftKind | null, assignmentId: number | null): void {
+  private applyCell(row: RosterRow, dayIndex: number, shift: ShiftKind | null, assignmentId: string | null): void {
     this.rows.update(rows =>
       rows.map(candidate =>
         candidate.professional.id === row.professional.id

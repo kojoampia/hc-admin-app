@@ -32,7 +32,7 @@ describe('CareActivity Service', () => {
       const returnedFromService = { ...requireRestSample };
       const expected = { ...sampleWithRequiredData };
 
-      service.find(123).subscribe(resp => (expectedResult = resp));
+      service.find('ABC').subscribe(resp => (expectedResult = resp));
 
       const req = httpMock.expectOne({ method: 'GET' });
       req.flush(returnedFromService);
@@ -89,7 +89,7 @@ describe('CareActivity Service', () => {
     });
 
     it('should delete a CareActivity', () => {
-      service.delete(123).subscribe();
+      service.delete('ABC').subscribe();
 
       const requests = httpMock.match({ method: 'DELETE' });
       expect(requests).toHaveLength(1);
@@ -160,7 +160,7 @@ describe('CareActivity Service', () => {
       });
 
       it('should return false if one entity is null', () => {
-        const entity1 = { id: 21303 };
+        const entity1 = { id: 'a750ee1d-4eb4-4652-9233-b9cedc9cdcef' };
         const entity2 = null;
 
         const compareResult1 = service.compareCareActivity(entity1, entity2);
@@ -171,8 +171,8 @@ describe('CareActivity Service', () => {
       });
 
       it('should return false if primaryKey differs', () => {
-        const entity1 = { id: 21303 };
-        const entity2 = { id: 16253 };
+        const entity1 = { id: 'a750ee1d-4eb4-4652-9233-b9cedc9cdcef' };
+        const entity2 = { id: '9dc3ecf1-90f7-43f7-add7-26b39284ae38' };
 
         const compareResult1 = service.compareCareActivity(entity1, entity2);
         const compareResult2 = service.compareCareActivity(entity2, entity1);
@@ -182,8 +182,8 @@ describe('CareActivity Service', () => {
       });
 
       it('should return false if primaryKey matches', () => {
-        const entity1 = { id: 21303 };
-        const entity2 = { id: 21303 };
+        const entity1 = { id: 'a750ee1d-4eb4-4652-9233-b9cedc9cdcef' };
+        const entity2 = { id: 'a750ee1d-4eb4-4652-9233-b9cedc9cdcef' };
 
         const compareResult1 = service.compareCareActivity(entity1, entity2);
         const compareResult2 = service.compareCareActivity(entity2, entity1);

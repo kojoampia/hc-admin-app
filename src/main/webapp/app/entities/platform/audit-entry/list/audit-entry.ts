@@ -67,7 +67,7 @@ export class AuditEntry implements OnInit {
     });
   }
 
-  trackId = (item: IAuditEntry): number => this.auditEntryService.getAuditEntryIdentifier(item);
+  trackId = (item: IAuditEntry): string => this.auditEntryService.getAuditEntryIdentifier(item);
 
   ngOnInit(): void {
     this.subscription = combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data])

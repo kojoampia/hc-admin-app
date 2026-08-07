@@ -74,7 +74,7 @@ export class MessageService extends MessagesService {
       .pipe(map(res => this.convertResponseFromServer(res)));
   }
 
-  find(id: number): Observable<IMessage> {
+  find(id: string): Observable<IMessage> {
     return this.http
       .get<RestMessage>(`${this.resourceUrl}/${encodeURIComponent(id)}`)
       .pipe(map(res => this.convertResponseFromServer(res)));
@@ -87,11 +87,11 @@ export class MessageService extends MessagesService {
       .pipe(map(res => res.clone({ body: this.convertResponseArrayFromServer(res.body!) })));
   }
 
-  delete(id: number): Observable<undefined> {
+  delete(id: string): Observable<undefined> {
     return this.http.delete<undefined>(`${this.resourceUrl}/${encodeURIComponent(id)}`);
   }
 
-  getMessageIdentifier(message: Pick<IMessage, 'id'>): number {
+  getMessageIdentifier(message: Pick<IMessage, 'id'>): string {
     return message.id;
   }
 

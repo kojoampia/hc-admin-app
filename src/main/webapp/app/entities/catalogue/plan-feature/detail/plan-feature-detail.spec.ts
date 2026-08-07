@@ -23,7 +23,7 @@ describe('PlanFeature Management Detail Component', () => {
             {
               path: '**',
               loadComponent: () => import('./plan-feature-detail').then(m => m.PlanFeatureDetail),
-              resolve: { planFeature: () => of({ id: 22331 }) },
+              resolve: { planFeature: () => of({ id: 'a73366f1-7565-451a-bcb4-0d1f695b69d4' }) },
             },
           ],
           withComponentInputBinding(),
@@ -46,7 +46,7 @@ describe('PlanFeature Management Detail Component', () => {
       const instance = await harness.navigateByUrl('/', PlanFeatureDetail);
 
       // THEN
-      expect(instance.planFeature()).toEqual(expect.objectContaining({ id: 22331 }));
+      expect(instance.planFeature()).toEqual(expect.objectContaining({ id: 'a73366f1-7565-451a-bcb4-0d1f695b69d4' }));
     });
   });
 

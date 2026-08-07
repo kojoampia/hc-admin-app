@@ -1,6 +1,5 @@
 import { Routes } from '@angular/router';
 
-import { ASC } from 'app/config/navigation.constants';
 import { UserRouteAccessService } from 'app/core/auth/user-route-access.service';
 
 import PatientResolve from './route/patient-routing-resolve.service';
@@ -9,9 +8,7 @@ const patientRoute: Routes = [
   {
     path: '',
     loadComponent: () => import('./list/patient').then(m => m.Patient),
-    data: {
-      defaultSort: `id,${ASC}`,
-    },
+    data: {},
     canActivate: [UserRouteAccessService],
   },
   {

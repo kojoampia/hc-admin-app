@@ -30,7 +30,7 @@ describe('Address Service', () => {
       const returnedFromService = { ...requireRestSample };
       const expected = { ...sampleWithRequiredData };
 
-      service.find(123).subscribe(resp => (expectedResult = resp));
+      service.find('ABC').subscribe(resp => (expectedResult = resp));
 
       const req = httpMock.expectOne({ method: 'GET' });
       req.flush(returnedFromService);
@@ -87,7 +87,7 @@ describe('Address Service', () => {
     });
 
     it('should delete a Address', () => {
-      service.delete(123).subscribe();
+      service.delete('ABC').subscribe();
 
       const requests = httpMock.match({ method: 'DELETE' });
       expect(requests).toHaveLength(1);
@@ -158,7 +158,7 @@ describe('Address Service', () => {
       });
 
       it('should return false if one entity is null', () => {
-        const entity1 = { id: 2318 };
+        const entity1 = { id: '1976e7b1-8233-4a09-bdb3-fbe559c0d8c2' };
         const entity2 = null;
 
         const compareResult1 = service.compareAddress(entity1, entity2);
@@ -169,8 +169,8 @@ describe('Address Service', () => {
       });
 
       it('should return false if primaryKey differs', () => {
-        const entity1 = { id: 2318 };
-        const entity2 = { id: 19327 };
+        const entity1 = { id: '1976e7b1-8233-4a09-bdb3-fbe559c0d8c2' };
+        const entity2 = { id: '1e8b2d0e-a55f-4f49-bda6-466ca50fc308' };
 
         const compareResult1 = service.compareAddress(entity1, entity2);
         const compareResult2 = service.compareAddress(entity2, entity1);
@@ -180,8 +180,8 @@ describe('Address Service', () => {
       });
 
       it('should return false if primaryKey matches', () => {
-        const entity1 = { id: 2318 };
-        const entity2 = { id: 2318 };
+        const entity1 = { id: '1976e7b1-8233-4a09-bdb3-fbe559c0d8c2' };
+        const entity2 = { id: '1976e7b1-8233-4a09-bdb3-fbe559c0d8c2' };
 
         const compareResult1 = service.compareAddress(entity1, entity2);
         const compareResult2 = service.compareAddress(entity2, entity1);

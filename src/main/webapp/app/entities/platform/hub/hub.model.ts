@@ -1,7 +1,7 @@
 import { IAddress } from 'app/entities/directory/address/address.model';
 
 export interface IHub {
-  id: number;
+  id: string;
   name?: string | null;
   staffCount?: number | null;
   address?: IAddress | null;

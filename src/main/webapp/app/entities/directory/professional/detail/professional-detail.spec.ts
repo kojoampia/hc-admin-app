@@ -23,7 +23,7 @@ describe('Professional Management Detail Component', () => {
             {
               path: '**',
               loadComponent: () => import('./professional-detail').then(m => m.ProfessionalDetail),
-              resolve: { professional: () => of({ id: 4421 }) },
+              resolve: { professional: () => of({ id: '2c613901-f64b-4441-b80a-f5fb03b8e466' }) },
             },
           ],
           withComponentInputBinding(),
@@ -46,7 +46,7 @@ describe('Professional Management Detail Component', () => {
       const instance = await harness.navigateByUrl('/', ProfessionalDetail);
 
       // THEN
-      expect(instance.professional()).toEqual(expect.objectContaining({ id: 4421 }));
+      expect(instance.professional()).toEqual(expect.objectContaining({ id: '2c613901-f64b-4441-b80a-f5fb03b8e466' }));
     });
   });
 

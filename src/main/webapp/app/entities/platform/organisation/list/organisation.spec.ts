@@ -73,17 +73,19 @@ describe('Organisation Management Component', () => {
     // WHEN
     TestBed.tick();
     const req = httpMock.expectOne({ method: 'GET' });
-    req.flush([{ id: 541 }], { headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' } });
+    req.flush([{ id: '03a17a60-2a77-4a3e-80ff-b20de2261aa4' }], {
+      headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' },
+    });
     await vitest.runAllTimersAsync();
 
     // THEN
     expect(comp.isLoading()).toEqual(false);
-    expect(comp.organisations()[0]).toEqual(expect.objectContaining({ id: 541 }));
+    expect(comp.organisations()[0]).toEqual(expect.objectContaining({ id: '03a17a60-2a77-4a3e-80ff-b20de2261aa4' }));
   });
 
   describe('trackId', () => {
     it('should forward to organisationService', () => {
-      const entity = { id: 541 };
+      const entity = { id: '03a17a60-2a77-4a3e-80ff-b20de2261aa4' };
       vitest.spyOn(service, 'getOrganisationIdentifier');
       const id = comp.trackId(entity);
       expect(service.getOrganisationIdentifier).toHaveBeenCalledWith(entity);

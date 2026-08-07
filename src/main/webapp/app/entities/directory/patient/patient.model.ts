@@ -8,7 +8,7 @@ import { AccountStatus } from 'app/entities/enumerations/account-status.model';
 import { IHub } from 'app/entities/platform/hub/hub.model';
 
 export interface IPatient {
-  id: number;
+  id: string;
   status?: keyof typeof AccountStatus | null;
   joinedOn?: dayjs.Dayjs | null;
   lastActiveOn?: dayjs.Dayjs | null;

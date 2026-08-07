@@ -43,7 +43,7 @@ describe('ServicePlan Management Update Component', () => {
 
   describe('ngOnInit', () => {
     it('should update editForm', () => {
-      const servicePlan: IServicePlan = { id: 11825 };
+      const servicePlan: IServicePlan = { id: '674a82c7-e597-42ce-8bcb-558e5170756f' };
 
       activatedRoute.data = of({ servicePlan });
       comp.ngOnInit();
@@ -56,7 +56,7 @@ describe('ServicePlan Management Update Component', () => {
     it('should call update service on save for existing entity', () => {
       // GIVEN
       const saveSubject = new Subject<IServicePlan>();
-      const servicePlan = { id: 23672 };
+      const servicePlan = { id: 'b5e0e540-7a57-41f1-8c7d-7faaae191154' };
       vitest.spyOn(servicePlanFormService, 'getServicePlan').mockReturnValue(servicePlan);
       vitest.spyOn(servicePlanService, 'update').mockReturnValue(saveSubject);
       vitest.spyOn(comp, 'previousState');
@@ -79,7 +79,7 @@ describe('ServicePlan Management Update Component', () => {
     it('should call create service on save for new entity', () => {
       // GIVEN
       const saveSubject = new Subject<IServicePlan>();
-      const servicePlan = { id: 23672 };
+      const servicePlan = { id: 'b5e0e540-7a57-41f1-8c7d-7faaae191154' };
       vitest.spyOn(servicePlanFormService, 'getServicePlan').mockReturnValue({ id: null });
       vitest.spyOn(servicePlanService, 'create').mockReturnValue(saveSubject);
       vitest.spyOn(comp, 'previousState');
@@ -102,7 +102,7 @@ describe('ServicePlan Management Update Component', () => {
     it('should set isSaving to false on error', () => {
       // GIVEN
       const saveSubject = new Subject<IServicePlan>();
-      const servicePlan = { id: 23672 };
+      const servicePlan = { id: 'b5e0e540-7a57-41f1-8c7d-7faaae191154' };
       vitest.spyOn(servicePlanService, 'update').mockReturnValue(saveSubject);
       vitest.spyOn(comp, 'previousState');
       activatedRoute.data = of({ servicePlan });

@@ -1,7 +1,7 @@
 import { PlanTier } from 'app/entities/enumerations/plan-tier.model';
 
 export interface IServicePlan {
-  id: number;
+  id: string;
   name?: string | null;
   tier?: keyof typeof PlanTier | null;
   tierLabel?: string | null;

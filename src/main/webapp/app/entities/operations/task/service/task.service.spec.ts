@@ -33,7 +33,7 @@ describe('Task Service', () => {
       const returnedFromService = { ...requireRestSample };
       const expected = { ...sampleWithRequiredData };
 
-      service.find(123).subscribe(resp => (expectedResult = resp));
+      service.find('ABC').subscribe(resp => (expectedResult = resp));
 
       const req = httpMock.expectOne({ method: 'GET' });
       req.flush(returnedFromService);
@@ -90,7 +90,7 @@ describe('Task Service', () => {
     });
 
     it('should delete a Task', () => {
-      service.delete(123).subscribe();
+      service.delete('ABC').subscribe();
 
       const requests = httpMock.match({ method: 'DELETE' });
       expect(requests).toHaveLength(1);
@@ -161,7 +161,7 @@ describe('Task Service', () => {
       });
 
       it('should return false if one entity is null', () => {
-        const entity1 = { id: 25192 };
+        const entity1 = { id: 'ca341530-545c-46df-8582-8232c8c59bdb' };
         const entity2 = null;
 
         const compareResult1 = service.compareTask(entity1, entity2);
@@ -172,8 +172,8 @@ describe('Task Service', () => {
       });
 
       it('should return false if primaryKey differs', () => {
-        const entity1 = { id: 25192 };
-        const entity2 = { id: 22244 };
+        const entity1 = { id: 'ca341530-545c-46df-8582-8232c8c59bdb' };
+        const entity2 = { id: '59358286-4c96-4301-945b-e60ba7cd5403' };
 
         const compareResult1 = service.compareTask(entity1, entity2);
         const compareResult2 = service.compareTask(entity2, entity1);
@@ -183,8 +183,8 @@ describe('Task Service', () => {
       });
 
       it('should return false if primaryKey matches', () => {
-        const entity1 = { id: 25192 };
-        const entity2 = { id: 25192 };
+        const entity1 = { id: 'ca341530-545c-46df-8582-8232c8c59bdb' };
+        const entity2 = { id: 'ca341530-545c-46df-8582-8232c8c59bdb' };
 
         const compareResult1 = service.compareTask(entity1, entity2);
         const compareResult2 = service.compareTask(entity2, entity1);

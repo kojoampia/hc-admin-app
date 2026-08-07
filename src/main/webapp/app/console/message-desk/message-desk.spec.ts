@@ -141,41 +141,41 @@ describe('MessageThread', () => {
   });
 
   it('should mark an unread thread read on open', async () => {
-    await openThread('1');
+    await openThread('m1');
 
     expect(component.message()?.status).toBe('READ');
     // Not just in the component — the change was persisted.
-    const stored = await firstValueFrom(messageService.find(1));
+    const stored = await firstValueFrom(messageService.find('m1'));
     expect(stored.status).toBe('READ');
   });
 
   it('should leave an already-replied thread alone', async () => {
-    await openThread('7');
+    await openThread('m7');
     expect(component.message()?.status).toBe('REPLIED');
   });
 
   it('should flip the thread to replied when a reply is sent', async () => {
-    await openThread('2');
+    await openThread('m2');
     component.reply.set('Thank you, the upgrade takes effect next month.');
     component.send();
     await settle(8);
 
-    const stored = await firstValueFrom(messageService.find(2));
+    const stored = await firstValueFrom(messageService.find('m2'));
     expect(stored.status).toBe('REPLIED');
   });
 
   it('should refuse to send an empty reply', async () => {
-    await openThread('3');
+    await openThread('m3');
     component.reply.set('   ');
     component.send();
     await settle(8);
 
-    const stored = await firstValueFrom(messageService.find(3));
+    const stored = await firstValueFrom(messageService.find('m3'));
     expect(stored.status).not.toBe('REPLIED');
   });
 
   it('should raise a task linked back to the message', async () => {
-    await openThread('1');
+    await openThread('m1');
     const before = await firstValueFrom(taskService.query({ page: 0, size: 200 }));
 
     component.raiseTask();
@@ -184,7 +184,7 @@ describe('MessageThread', () => {
     const after = await firstValueFrom(taskService.query({ page: 0, size: 200 }));
     expect((after.body ?? []).length).toBe((before.body ?? []).length + 1);
 
-    const raised = (after.body ?? []).find(task => task.sourceMessage?.id === 1);
+    const raised = (after.body ?? []).find(task => task.sourceMessage?.id === 'm1');
     expect(raised).toBeDefined();
     expect(raised?.state).toBe('TODO');
     expect(raised?.title).toContain('Home visit rescheduling request');
@@ -192,23 +192,23 @@ describe('MessageThread', () => {
 
   it('should lift a low-priority message to a normal-priority follow-up', async () => {
     // m7 is LOW. A low-priority thank-you still deserves a normal task.
-    await openThread('7');
+    await openThread('m7');
     component.raiseTask();
     await settle(8);
 
     const tasks = await firstValueFrom(taskService.query({ page: 0, size: 200 }));
-    const raised = (tasks.body ?? []).find(task => task.sourceMessage?.id === 7);
+    const raised = (tasks.body ?? []).find(task => task.sourceMessage?.id === 'm7');
     expect(raised?.priority).toBe('NORMAL');
   });
 
   it('should escalate by writing the priority, not by showing a toast', async () => {
-    await openThread('2');
+    await openThread('m2');
     expect(component.message()?.priority).toBe('NORMAL');
 
     component.escalate();
     await settle(8);
 
-    const stored = await firstValueFrom(messageService.find(2));
+    const stored = await firstValueFrom(messageService.find('m2'));
     expect(stored.priority).toBe('HIGH');
   });
 

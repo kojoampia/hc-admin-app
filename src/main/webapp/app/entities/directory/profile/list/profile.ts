@@ -54,7 +54,7 @@ export class Profile implements OnInit {
     });
   }
 
-  trackId = (item: IProfile): number => this.profileService.getProfileIdentifier(item);
+  trackId = (item: IProfile): string => this.profileService.getProfileIdentifier(item);
 
   ngOnInit(): void {
     this.subscription = combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data])

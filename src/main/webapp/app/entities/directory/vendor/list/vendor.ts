@@ -70,7 +70,7 @@ export class Vendor implements OnInit {
     });
   }
 
-  trackId = (item: IVendor): number => this.vendorService.getVendorIdentifier(item);
+  trackId = (item: IVendor): string => this.vendorService.getVendorIdentifier(item);
 
   ngOnInit(): void {
     this.subscription = combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data])

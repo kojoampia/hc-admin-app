@@ -1,5 +1,5 @@
 export interface IUserOption {
-  id: number;
+  id: string;
   category?: string | null;
   userRef?: string | null;
   metadata?: string | null;

@@ -75,7 +75,7 @@ export class ProfileService extends ProfilesService {
       .pipe(map(res => this.convertResponseFromServer(res)));
   }
 
-  find(id: number): Observable<IProfile> {
+  find(id: string): Observable<IProfile> {
     return this.http
       .get<RestProfile>(`${this.resourceUrl}/${encodeURIComponent(id)}`)
       .pipe(map(res => this.convertResponseFromServer(res)));
@@ -88,11 +88,11 @@ export class ProfileService extends ProfilesService {
       .pipe(map(res => res.clone({ body: this.convertResponseArrayFromServer(res.body!) })));
   }
 
-  delete(id: number): Observable<undefined> {
+  delete(id: string): Observable<undefined> {
     return this.http.delete<undefined>(`${this.resourceUrl}/${encodeURIComponent(id)}`);
   }
 
-  getProfileIdentifier(profile: Pick<IProfile, 'id'>): number {
+  getProfileIdentifier(profile: Pick<IProfile, 'id'>): string {
     return profile.id;
   }
 

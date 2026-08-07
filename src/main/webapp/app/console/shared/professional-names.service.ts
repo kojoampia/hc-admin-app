@@ -20,7 +20,7 @@ import { ProfessionalService } from 'app/entities/directory/professional/service
 export class ProfessionalNamesService {
   private readonly professionalService = inject(ProfessionalService);
   private readonly loaded = signal(false);
-  private readonly names = signal<Map<number, string>>(new Map());
+  private readonly names = signal<Map<string, string>>(new Map());
 
   // eslint-disable-next-line @typescript-eslint/member-ordering
   readonly byId = computed(() => this.names());
@@ -36,7 +36,7 @@ export class ProfessionalNamesService {
       .pipe(map(response => response.body ?? []))
       .subscribe({
         next: professionals => {
-          const names = new Map<number, string>();
+          const names = new Map<string, string>();
           for (const professional of professionals) {
             const full = [professional.profile?.firstName, professional.profile?.lastName].filter(Boolean).join(' ').trim();
             if (full) {
@@ -52,14 +52,14 @@ export class ProfessionalNamesService {
   }
 
   /** The name if known, otherwise whatever identifier we were given. */
-  nameFor(id: number | null | undefined, fallback: string | null | undefined): string {
+  nameFor(id: string | null | undefined, fallback: string | null | undefined): string {
     if (id == null) {
       return fallback ?? '';
     }
     return this.names().get(id) ?? fallback ?? '';
   }
 
-  initialsFor(id: number | null | undefined, fallback: string | null | undefined): string {
+  initialsFor(id: string | null | undefined, fallback: string | null | undefined): string {
     const name = this.nameFor(id, fallback);
     const words = name.split(/\s+/).filter(Boolean);
     if (words.length === 0) {

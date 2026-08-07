@@ -70,7 +70,7 @@ export class Patient implements OnInit {
     });
   }
 
-  trackId = (item: IPatient): number => this.patientService.getPatientIdentifier(item);
+  trackId = (item: IPatient): string => this.patientService.getPatientIdentifier(item);
 
   ngOnInit(): void {
     this.subscription = combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data])

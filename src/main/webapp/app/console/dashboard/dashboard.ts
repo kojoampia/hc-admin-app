@@ -36,7 +36,7 @@ interface KpiTile {
 
 interface ApprovalRow {
   readonly kind: 'patient' | 'professional' | 'vendor';
-  readonly id: number;
+  readonly id: string;
   readonly name: string;
   readonly detail: string;
   readonly route: string;

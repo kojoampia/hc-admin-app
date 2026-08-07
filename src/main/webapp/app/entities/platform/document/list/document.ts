@@ -70,7 +70,7 @@ export class Document implements OnInit {
     });
   }
 
-  trackId = (item: IDocument): number => this.documentService.getDocumentIdentifier(item);
+  trackId = (item: IDocument): string => this.documentService.getDocumentIdentifier(item);
 
   ngOnInit(): void {
     this.subscription = combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data])

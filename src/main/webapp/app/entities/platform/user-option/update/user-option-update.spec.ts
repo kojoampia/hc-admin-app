@@ -43,7 +43,7 @@ describe('UserOption Management Update Component', () => {
 
   describe('ngOnInit', () => {
     it('should update editForm', () => {
-      const userOption: IUserOption = { id: 14345 };
+      const userOption: IUserOption = { id: 'c7665922-3097-419d-8a5c-b73b3abef8c5' };
 
       activatedRoute.data = of({ userOption });
       comp.ngOnInit();
@@ -56,7 +56,7 @@ describe('UserOption Management Update Component', () => {
     it('should call update service on save for existing entity', () => {
       // GIVEN
       const saveSubject = new Subject<IUserOption>();
-      const userOption = { id: 6892 };
+      const userOption = { id: '37e3f7e2-fac2-4a3b-bf2f-cb2526358f59' };
       vitest.spyOn(userOptionFormService, 'getUserOption').mockReturnValue(userOption);
       vitest.spyOn(userOptionService, 'update').mockReturnValue(saveSubject);
       vitest.spyOn(comp, 'previousState');
@@ -79,7 +79,7 @@ describe('UserOption Management Update Component', () => {
     it('should call create service on save for new entity', () => {
       // GIVEN
       const saveSubject = new Subject<IUserOption>();
-      const userOption = { id: 6892 };
+      const userOption = { id: '37e3f7e2-fac2-4a3b-bf2f-cb2526358f59' };
       vitest.spyOn(userOptionFormService, 'getUserOption').mockReturnValue({ id: null });
       vitest.spyOn(userOptionService, 'create').mockReturnValue(saveSubject);
       vitest.spyOn(comp, 'previousState');
@@ -102,7 +102,7 @@ describe('UserOption Management Update Component', () => {
     it('should set isSaving to false on error', () => {
       // GIVEN
       const saveSubject = new Subject<IUserOption>();
-      const userOption = { id: 6892 };
+      const userOption = { id: '37e3f7e2-fac2-4a3b-bf2f-cb2526358f59' };
       vitest.spyOn(userOptionService, 'update').mockReturnValue(saveSubject);
       vitest.spyOn(comp, 'previousState');
       activatedRoute.data = of({ userOption });

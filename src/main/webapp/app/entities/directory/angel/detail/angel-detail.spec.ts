@@ -23,7 +23,7 @@ describe('Angel Management Detail Component', () => {
             {
               path: '**',
               loadComponent: () => import('./angel-detail').then(m => m.AngelDetail),
-              resolve: { angel: () => of({ id: 23186 }) },
+              resolve: { angel: () => of({ id: 'b2b45139-eede-4143-805e-4fb6b8885f54' }) },
             },
           ],
           withComponentInputBinding(),
@@ -46,7 +46,7 @@ describe('Angel Management Detail Component', () => {
       const instance = await harness.navigateByUrl('/', AngelDetail);
 
       // THEN
-      expect(instance.angel()).toEqual(expect.objectContaining({ id: 23186 }));
+      expect(instance.angel()).toEqual(expect.objectContaining({ id: 'b2b45139-eede-4143-805e-4fb6b8885f54' }));
     });
   });
 

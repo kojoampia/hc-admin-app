@@ -1,32 +1,32 @@
 import { IPlatformService } from './platform-service.model';
 
 export const sampleWithRequiredData: IPlatformService = {
-  id: 23287,
-  name: 'minus long-term',
-  host: 'hypothesise monster',
-  port: 31293,
-  plane: 'informal',
-  health: 'HEALTHY',
+  id: 'b8788501-9756-46d9-a781-c6ced605841d',
+  name: 'pear verify',
+  host: 'proliferate blah',
+  port: 19014,
+  plane: 'ick per',
+  health: 'DOWN',
 };
 
 export const sampleWithPartialData: IPlatformService = {
-  id: 23276,
-  name: 'more',
-  host: 'valiantly massage vacantly',
-  port: 16902,
-  plane: 'absent',
-  health: 'DEGRADED',
-  responseMs: 10030,
+  id: 'b319fd02-7caf-4d9d-b0e1-9b68c8182214',
+  name: 'adrenalin',
+  host: 'jot',
+  port: 56934,
+  plane: 'round however',
+  health: 'DOWN',
+  responseMs: 15882,
 };
 
 export const sampleWithFullData: IPlatformService = {
-  id: 32544,
-  name: 'gadzooks founder',
-  host: 'team',
-  port: 25330,
-  plane: 'ouch provided',
-  health: 'DEGRADED',
-  responseMs: 19216,
+  id: 'f93dd17c-a711-419e-b545-be34ce662772',
+  name: 'tabletop save',
+  host: 'flight density',
+  port: 42499,
+  plane: 'woefully',
+  health: 'DOWN',
+  responseMs: 23386,
 };
 Object.freeze(sampleWithRequiredData);
 Object.freeze(sampleWithPartialData);

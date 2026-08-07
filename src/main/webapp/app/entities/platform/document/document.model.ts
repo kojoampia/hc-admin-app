@@ -4,7 +4,7 @@ import { IPatient } from 'app/entities/directory/patient/patient.model';
 import { IVendor } from 'app/entities/directory/vendor/vendor.model';
 
 export interface IDocument {
-  id: number;
+  id: string;
   name?: string | null;
   description?: string | null;
   url?: string | null;

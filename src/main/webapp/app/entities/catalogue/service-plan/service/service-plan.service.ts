@@ -53,7 +53,7 @@ export class ServicePlanService extends ServicePlansService {
     );
   }
 
-  find(id: number): Observable<IServicePlan> {
+  find(id: string): Observable<IServicePlan> {
     return this.http.get<IServicePlan>(`${this.resourceUrl}/${encodeURIComponent(id)}`);
   }
 
@@ -62,11 +62,11 @@ export class ServicePlanService extends ServicePlansService {
     return this.http.get<IServicePlan[]>(this.resourceUrl, { params: options, observe: 'response' });
   }
 
-  delete(id: number): Observable<undefined> {
+  delete(id: string): Observable<undefined> {
     return this.http.delete<undefined>(`${this.resourceUrl}/${encodeURIComponent(id)}`);
   }
 
-  getServicePlanIdentifier(servicePlan: Pick<IServicePlan, 'id'>): number {
+  getServicePlanIdentifier(servicePlan: Pick<IServicePlan, 'id'>): string {
     return servicePlan.id;
   }
 

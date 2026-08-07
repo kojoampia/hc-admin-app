@@ -43,7 +43,7 @@ describe('RosterWeek Management Update Component', () => {
 
   describe('ngOnInit', () => {
     it('should update editForm', () => {
-      const rosterWeek: IRosterWeek = { id: 27516 };
+      const rosterWeek: IRosterWeek = { id: 'f8466048-f088-4ce3-9408-2613ebaefbdd' };
 
       activatedRoute.data = of({ rosterWeek });
       comp.ngOnInit();
@@ -56,7 +56,7 @@ describe('RosterWeek Management Update Component', () => {
     it('should call update service on save for existing entity', () => {
       // GIVEN
       const saveSubject = new Subject<IRosterWeek>();
-      const rosterWeek = { id: 20651 };
+      const rosterWeek = { id: 'ade462b2-f291-49db-a5f8-d4638f0545b4' };
       vitest.spyOn(rosterWeekFormService, 'getRosterWeek').mockReturnValue(rosterWeek);
       vitest.spyOn(rosterWeekService, 'update').mockReturnValue(saveSubject);
       vitest.spyOn(comp, 'previousState');
@@ -79,7 +79,7 @@ describe('RosterWeek Management Update Component', () => {
     it('should call create service on save for new entity', () => {
       // GIVEN
       const saveSubject = new Subject<IRosterWeek>();
-      const rosterWeek = { id: 20651 };
+      const rosterWeek = { id: 'ade462b2-f291-49db-a5f8-d4638f0545b4' };
       vitest.spyOn(rosterWeekFormService, 'getRosterWeek').mockReturnValue({ id: null });
       vitest.spyOn(rosterWeekService, 'create').mockReturnValue(saveSubject);
       vitest.spyOn(comp, 'previousState');
@@ -102,7 +102,7 @@ describe('RosterWeek Management Update Component', () => {
     it('should set isSaving to false on error', () => {
       // GIVEN
       const saveSubject = new Subject<IRosterWeek>();
-      const rosterWeek = { id: 20651 };
+      const rosterWeek = { id: 'ade462b2-f291-49db-a5f8-d4638f0545b4' };
       vitest.spyOn(rosterWeekService, 'update').mockReturnValue(saveSubject);
       vitest.spyOn(comp, 'previousState');
       activatedRoute.data = of({ rosterWeek });

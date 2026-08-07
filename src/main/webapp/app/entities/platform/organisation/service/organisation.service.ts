@@ -75,7 +75,7 @@ export class OrganisationService extends OrganisationsService {
       .pipe(map(res => this.convertResponseFromServer(res)));
   }
 
-  find(id: number): Observable<IOrganisation> {
+  find(id: string): Observable<IOrganisation> {
     return this.http
       .get<RestOrganisation>(`${this.resourceUrl}/${encodeURIComponent(id)}`)
       .pipe(map(res => this.convertResponseFromServer(res)));
@@ -88,11 +88,11 @@ export class OrganisationService extends OrganisationsService {
       .pipe(map(res => res.clone({ body: this.convertResponseArrayFromServer(res.body!) })));
   }
 
-  delete(id: number): Observable<undefined> {
+  delete(id: string): Observable<undefined> {
     return this.http.delete<undefined>(`${this.resourceUrl}/${encodeURIComponent(id)}`);
   }
 
-  getOrganisationIdentifier(organisation: Pick<IOrganisation, 'id'>): number {
+  getOrganisationIdentifier(organisation: Pick<IOrganisation, 'id'>): string {
     return organisation.id;
   }
 

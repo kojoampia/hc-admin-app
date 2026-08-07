@@ -6,6 +6,10 @@
   "clientRootFolder": "operations",
   "fields": [
     {
+      "fieldName": "id",
+      "fieldType": "String"
+    },
+    {
       "fieldName": "title",
       "fieldType": "String",
       "fieldValidateRules": ["required", "maxlength"],

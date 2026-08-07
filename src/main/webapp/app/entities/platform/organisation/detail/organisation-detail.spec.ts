@@ -23,7 +23,7 @@ describe('Organisation Management Detail Component', () => {
             {
               path: '**',
               loadComponent: () => import('./organisation-detail').then(m => m.OrganisationDetail),
-              resolve: { organisation: () => of({ id: 541 }) },
+              resolve: { organisation: () => of({ id: '03a17a60-2a77-4a3e-80ff-b20de2261aa4' }) },
             },
           ],
           withComponentInputBinding(),
@@ -46,7 +46,7 @@ describe('Organisation Management Detail Component', () => {
       const instance = await harness.navigateByUrl('/', OrganisationDetail);
 
       // THEN
-      expect(instance.organisation()).toEqual(expect.objectContaining({ id: 541 }));
+      expect(instance.organisation()).toEqual(expect.objectContaining({ id: '03a17a60-2a77-4a3e-80ff-b20de2261aa4' }));
     });
   });
 

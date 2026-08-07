@@ -5,7 +5,7 @@ import { MessageStatus } from 'app/entities/enumerations/message-status.model';
 import { Priority } from 'app/entities/enumerations/priority.model';
 
 export interface IMessage {
-  id: number;
+  id: string;
   sentAt?: dayjs.Dayjs | null;
   fromAddress?: string | null;
   senderName?: string | null;

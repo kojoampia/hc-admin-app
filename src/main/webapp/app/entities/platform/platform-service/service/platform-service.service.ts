@@ -33,7 +33,7 @@ export class PlatformServicesService {
 export class PlatformServiceService extends PlatformServicesService {
   protected readonly http = inject(HttpClient);
 
-  find(id: number): Observable<IPlatformService> {
+  find(id: string): Observable<IPlatformService> {
     return this.http.get<IPlatformService>(`${this.resourceUrl}/${encodeURIComponent(id)}`);
   }
 
@@ -42,7 +42,7 @@ export class PlatformServiceService extends PlatformServicesService {
     return this.http.get<IPlatformService[]>(this.resourceUrl, { params: options, observe: 'response' });
   }
 
-  getPlatformServiceIdentifier(platformService: Pick<IPlatformService, 'id'>): number {
+  getPlatformServiceIdentifier(platformService: Pick<IPlatformService, 'id'>): string {
     return platformService.id;
   }
 

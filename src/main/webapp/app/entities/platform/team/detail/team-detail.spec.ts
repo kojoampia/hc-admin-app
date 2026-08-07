@@ -23,7 +23,7 @@ describe('Team Management Detail Component', () => {
             {
               path: '**',
               loadComponent: () => import('./team-detail').then(m => m.TeamDetail),
-              resolve: { team: () => of({ id: 1226 }) },
+              resolve: { team: () => of({ id: '07c2eeb9-6f13-455e-bbad-df15a9442470' }) },
             },
           ],
           withComponentInputBinding(),
@@ -46,7 +46,7 @@ describe('Team Management Detail Component', () => {
       const instance = await harness.navigateByUrl('/', TeamDetail);
 
       // THEN
-      expect(instance.team()).toEqual(expect.objectContaining({ id: 1226 }));
+      expect(instance.team()).toEqual(expect.objectContaining({ id: '07c2eeb9-6f13-455e-bbad-df15a9442470' }));
     });
   });
 

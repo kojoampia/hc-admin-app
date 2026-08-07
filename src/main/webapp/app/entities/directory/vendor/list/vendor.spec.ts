@@ -73,12 +73,14 @@ describe('Vendor Management Component', () => {
     // WHEN
     TestBed.tick();
     const req = httpMock.expectOne({ method: 'GET' });
-    req.flush([{ id: 10199 }], { headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' } });
+    req.flush([{ id: '478690b5-4f10-43b0-b67e-1148991a8421' }], {
+      headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' },
+    });
     await vitest.runAllTimersAsync();
 
     // THEN
     expect(comp.isLoading()).toEqual(false);
-    expect(comp.vendors()[0]).toEqual(expect.objectContaining({ id: 10199 }));
+    expect(comp.vendors()[0]).toEqual(expect.objectContaining({ id: '478690b5-4f10-43b0-b67e-1148991a8421' }));
   });
 
   it('should cancel previous requests when loading a new page', async () => {
@@ -91,13 +93,15 @@ describe('Vendor Management Component', () => {
     comp.load();
     await vitest.runAllTimersAsync();
     const req2 = httpMock.expectOne({ method: 'GET' });
-    req2.flush([{ id: 10199 }], { headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' } });
+    req2.flush([{ id: '478690b5-4f10-43b0-b67e-1148991a8421' }], {
+      headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' },
+    });
     await vitest.runAllTimersAsync();
 
     // THEN
     expect(req.cancelled).toBeTruthy();
     expect(comp.isLoading()).toEqual(false);
-    expect(comp.vendors()[0]).toEqual(expect.objectContaining({ id: 10199 }));
+    expect(comp.vendors()[0]).toEqual(expect.objectContaining({ id: '478690b5-4f10-43b0-b67e-1148991a8421' }));
   });
 
   it('should not fail on resource error state', async () => {
@@ -115,16 +119,18 @@ describe('Vendor Management Component', () => {
     comp.load();
     TestBed.tick();
     const successReq = httpMock.expectOne({ method: 'GET' });
-    successReq.flush([{ id: 10199 }], { headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' } });
+    successReq.flush([{ id: '478690b5-4f10-43b0-b67e-1148991a8421' }], {
+      headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' },
+    });
     await vitest.runAllTimersAsync();
 
     // THEN - subscription is still alive and second load succeeds
-    expect(comp.vendors()[0]).toEqual(expect.objectContaining({ id: 10199 }));
+    expect(comp.vendors()[0]).toEqual(expect.objectContaining({ id: '478690b5-4f10-43b0-b67e-1148991a8421' }));
   });
 
   describe('trackId', () => {
     it('should forward to vendorService', () => {
-      const entity = { id: 10199 };
+      const entity = { id: '478690b5-4f10-43b0-b67e-1148991a8421' };
       vitest.spyOn(service, 'getVendorIdentifier');
       const id = comp.trackId(entity);
       expect(service.getVendorIdentifier).toHaveBeenCalledWith(entity);

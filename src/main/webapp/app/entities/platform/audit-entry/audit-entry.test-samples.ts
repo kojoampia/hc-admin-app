@@ -3,29 +3,29 @@ import dayjs from 'dayjs/esm';
 import { IAuditEntry } from './audit-entry.model';
 
 export const sampleWithRequiredData: IAuditEntry = {
-  id: 31156,
-  occurredAt: dayjs('2023-12-11T17:14'),
-  actor: 'pish before',
-  action: 'graffiti whoever greedily',
-  level: 'WARN',
+  id: 'fe55f06d-2e74-40d9-821b-28b4116c9ae7',
+  occurredAt: dayjs('2023-12-11T18:31'),
+  actor: 'silently besides',
+  action: 'inasmuch mentor',
+  level: 'INFO',
 };
 
 export const sampleWithPartialData: IAuditEntry = {
-  id: 22753,
-  occurredAt: dayjs('2023-12-11T11:42'),
-  actor: 'within the quintuple',
-  action: 'ditch nudge or',
-  target: 'supposing impartial worth',
+  id: 'baba7308-1fbb-4532-a2c1-9a77baf17bd8',
+  occurredAt: dayjs('2023-12-11T02:09'),
+  actor: 'unlike rosy supposing',
+  action: 'aha',
+  target: 'usable vice gadzooks',
   level: 'WARN',
 };
 
 export const sampleWithFullData: IAuditEntry = {
-  id: 12004,
-  occurredAt: dayjs('2023-12-11T02:39'),
-  actor: 'mechanic meadow authentic',
-  action: 'uselessly',
-  target: 'nougat delightfully',
-  level: 'WARN',
+  id: '54b49c73-0954-40bf-8a83-c5f7d04409db',
+  occurredAt: dayjs('2023-12-11T17:28'),
+  actor: 'nougat delightfully',
+  action: 'cumbersome cork schedule',
+  target: 'bourgeoisie mortise',
+  level: 'INFO',
 };
 Object.freeze(sampleWithRequiredData);
 Object.freeze(sampleWithPartialData);

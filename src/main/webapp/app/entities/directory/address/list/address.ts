@@ -52,7 +52,7 @@ export class Address implements OnInit {
     });
   }
 
-  trackId = (item: IAddress): number => this.addressService.getAddressIdentifier(item);
+  trackId = (item: IAddress): string => this.addressService.getAddressIdentifier(item);
 
   ngOnInit(): void {
     this.subscription = combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data])

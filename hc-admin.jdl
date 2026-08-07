@@ -71,7 +71,12 @@ enum ShiftType { DAY, EVENING, NIGHT, OFF }
 
 enum PlanTier { ESSENTIAL, PLUS, FAMILY }
 enum ServiceHealth { HEALTHY, DEGRADED, DOWN }
-enum CredentialRole { ADMIN, SUPERVISOR, DESK_OFFICER, PROFESSIONAL, PATIENT, VENDOR }
+// CredentialRole maps to the gateway's Authority, and Authority values carry
+// the ROLE_ prefix — ROLE_ADMIN, ROLE_USER, ROLE_XXXX. Storing a bare ADMIN
+// here would mean translating at every boundary and getting it wrong once:
+// the value that reaches `hasAnyAuthority` and the value on the JWT's `auth`
+// claim have to be the same string.
+enum CredentialRole { ROLE_ADMIN, ROLE_USER, ROLE_SUPERVISOR, ROLE_DESK, ROLE_PROFESSIONAL, ROLE_PATIENT, ROLE_VENDOR }
 enum AuditLevel { INFO, WARN }
 
 // ============================================================
@@ -80,6 +85,7 @@ enum AuditLevel { INFO, WARN }
 
 /** Ghana digital address plus postal detail. */
 entity Address {
+  id String
   digitalAddress String required maxlength(20) pattern(/^[A-Z]{2}-[0-9]{3}-[0-9]{4}$/)
   streetAddress String required maxlength(120)
   townDistrict String maxlength(60)
@@ -88,8 +94,19 @@ entity Address {
   country String required maxlength(60)
 }
 
-/** The shared person record behind both patients and professionals. */
+/**
+ * The shared person record behind both patients and professionals.
+ *
+ * `accountId` is the identity link to the gateway's Account. It is a plain
+ * String, not a relationship: Account lives in hc-admin-gateway's own
+ * database and this service cannot join across that boundary — the gateway
+ * mints the id and puts it on the JWT so the api can stamp the right one.
+ * A Profile with no accountId is a person no login can reach, so it is
+ * required.
+ */
 entity Profile {
+  id String
+  accountId String required maxlength(60)
   title Title
   firstName String required maxlength(50)
   middleName String maxlength(50)
@@ -104,6 +121,7 @@ entity Profile {
 
 /** PDF: Organisation. One row — Abofonsa BridgeCare itself. */
 entity Organisation {
+  id String
   name String required maxlength(80)
   legalName String required maxlength(120)
   description String maxlength(400)
@@ -116,6 +134,7 @@ entity Organisation {
 }
 
 entity Hub {
+  id String
   name String required maxlength(60)
   staffCount Integer min(0)
 }
@@ -127,6 +146,7 @@ entity Hub {
 /** Next of kin / diaspora sponsor. Called "Angel" throughout the
     Health Connect product language — keep the name. */
 entity Angel {
+  id String
   name String required maxlength(80)
   relationship String required maxlength(60)
   phone String required maxlength(24)
@@ -135,6 +155,7 @@ entity Angel {
 }
 
 entity Patient {
+  id String
   status AccountStatus required
   joinedOn LocalDate required
   lastActiveOn LocalDate
@@ -142,6 +163,7 @@ entity Patient {
 }
 
 entity Professional {
+  id String
   role ProfessionalRole required
   speciality String maxlength(80)
   licenceNumber String required maxlength(40)
@@ -156,11 +178,13 @@ entity Professional {
 
 /** PDF: Team (Name, Description, Supervisor). */
 entity Team {
+  id String
   name String required maxlength(60)
   description String maxlength(200)
 }
 
 entity Vendor {
+  id String
   name String required maxlength(100)
   category String required maxlength(40)
   serviceSummary String maxlength(200)
@@ -181,6 +205,7 @@ entity Vendor {
 // ============================================================
 
 entity Message {
+  id String
   sentAt Instant required
   fromAddress String required maxlength(120)
   senderName String required maxlength(80)
@@ -192,6 +217,7 @@ entity Message {
 }
 
 entity Task {
+  id String
   title String required maxlength(200)
   state TaskState required
   priority Priority required
@@ -203,6 +229,7 @@ entity Task {
 /** PDF: Roster (Name, Description, Patient, Date) — modelled as a
     week header so the grid in the demo has something to publish. */
 entity RosterWeek {
+  id String
   label String required maxlength(60)
   startDate LocalDate required
   published Boolean required
@@ -211,6 +238,7 @@ entity RosterWeek {
 
 /** One cell of the duty-roster grid. */
 entity ShiftAssignment {
+  id String
   dayIndex Integer required min(0) max(6)
   shiftDate LocalDate required
   shift ShiftType required
@@ -221,6 +249,7 @@ entity ShiftAssignment {
 // ============================================================
 
 entity ServicePlan {
+  id String
   name String required maxlength(60)
   tier PlanTier required
   tierLabel String maxlength(40)
@@ -232,12 +261,14 @@ entity ServicePlan {
 }
 
 entity PlanFeature {
+  id String
   label String required maxlength(120)
   position Integer required min(0)
 }
 
 /** PDF: Category (Name, Description). */
 entity Category {
+  id String
   name String required maxlength(60)
   description String maxlength(200)
   iconKey String maxlength(30)
@@ -247,6 +278,7 @@ entity Category {
     distinct from CareActivity below — the PDF uses "Activity" for both
     senses and JDL has no namespaces. */
 entity ServiceActivity {
+  id String
   name String required maxlength(100)
   unit String required maxlength(40)
   unitPrice BigDecimal required min(0)
@@ -256,6 +288,7 @@ entity ServiceActivity {
 
 /** PDF: Activity (Name, Description, Patient) — the care trail. */
 entity CareActivity {
+  id String
   name String required maxlength(120)
   description String maxlength(400)
   occurredOn LocalDate required
@@ -263,6 +296,7 @@ entity CareActivity {
 
 /** PDF: Document (Name, Description, URL, Timestamp). */
 entity Document {
+  id String
   name String required maxlength(120)
   description String maxlength(300)
   url String required maxlength(400)
@@ -274,7 +308,16 @@ entity Document {
 //                      architecture page → port map)
 // ============================================================
 
+/**
+ * The gateway's Account, seen from the console.
+ *
+ * User records are owned by hc-admin-gateway, not by this service: Credential
+ * is Account and CredentialRole is Authority. The console reads and writes
+ * them through the gateway's own /api/admin/users endpoints — see
+ * app/admin/user-management — and keeps this entity as the local shape.
+ */
 entity Credential {
+  id String
   email String required maxlength(120)
   phoneNumber String maxlength(24)
   passwordHash String maxlength(120)
@@ -286,12 +329,14 @@ entity Credential {
 /** PDF: Option (Category, User ID, Metadata). Renamed to avoid the
     bare word "Option" colliding with TS/Angular vocabulary. */
 entity UserOption {
+  id String
   category String required maxlength(60)
   userRef String required maxlength(60)
   metadata String maxlength(500)
 }
 
 entity PlatformService {
+  id String
   name String required maxlength(60)
   host String required maxlength(60)
   port Integer required min(1) max(65535)
@@ -301,6 +346,7 @@ entity PlatformService {
 }
 
 entity AuditEntry {
+  id String
   occurredAt Instant required
   actor String required maxlength(80)
   action String required maxlength(120)

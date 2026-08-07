@@ -73,12 +73,14 @@ describe('ShiftAssignment Management Component', () => {
     // WHEN
     TestBed.tick();
     const req = httpMock.expectOne({ method: 'GET' });
-    req.flush([{ id: 24117 }], { headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' } });
+    req.flush([{ id: 'ba896828-02d4-4a87-8c48-9e1aad0801a7' }], {
+      headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' },
+    });
     await vitest.runAllTimersAsync();
 
     // THEN
     expect(comp.isLoading()).toEqual(false);
-    expect(comp.shiftAssignments()[0]).toEqual(expect.objectContaining({ id: 24117 }));
+    expect(comp.shiftAssignments()[0]).toEqual(expect.objectContaining({ id: 'ba896828-02d4-4a87-8c48-9e1aad0801a7' }));
   });
 
   it('should cancel previous requests when loading a new page', async () => {
@@ -91,13 +93,15 @@ describe('ShiftAssignment Management Component', () => {
     comp.load();
     await vitest.runAllTimersAsync();
     const req2 = httpMock.expectOne({ method: 'GET' });
-    req2.flush([{ id: 24117 }], { headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' } });
+    req2.flush([{ id: 'ba896828-02d4-4a87-8c48-9e1aad0801a7' }], {
+      headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' },
+    });
     await vitest.runAllTimersAsync();
 
     // THEN
     expect(req.cancelled).toBeTruthy();
     expect(comp.isLoading()).toEqual(false);
-    expect(comp.shiftAssignments()[0]).toEqual(expect.objectContaining({ id: 24117 }));
+    expect(comp.shiftAssignments()[0]).toEqual(expect.objectContaining({ id: 'ba896828-02d4-4a87-8c48-9e1aad0801a7' }));
   });
 
   it('should not fail on resource error state', async () => {
@@ -115,16 +119,18 @@ describe('ShiftAssignment Management Component', () => {
     comp.load();
     TestBed.tick();
     const successReq = httpMock.expectOne({ method: 'GET' });
-    successReq.flush([{ id: 24117 }], { headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' } });
+    successReq.flush([{ id: 'ba896828-02d4-4a87-8c48-9e1aad0801a7' }], {
+      headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' },
+    });
     await vitest.runAllTimersAsync();
 
     // THEN - subscription is still alive and second load succeeds
-    expect(comp.shiftAssignments()[0]).toEqual(expect.objectContaining({ id: 24117 }));
+    expect(comp.shiftAssignments()[0]).toEqual(expect.objectContaining({ id: 'ba896828-02d4-4a87-8c48-9e1aad0801a7' }));
   });
 
   describe('trackId', () => {
     it('should forward to shiftAssignmentService', () => {
-      const entity = { id: 24117 };
+      const entity = { id: 'ba896828-02d4-4a87-8c48-9e1aad0801a7' };
       vitest.spyOn(service, 'getShiftAssignmentIdentifier');
       const id = comp.trackId(entity);
       expect(service.getShiftAssignmentIdentifier).toHaveBeenCalledWith(entity);

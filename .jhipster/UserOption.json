@@ -7,6 +7,10 @@
   "documentation": "PDF: Option (Category, User ID, Metadata). Renamed to avoid the\\nbare word \"Option\" colliding with TS/Angular vocabulary.",
   "fields": [
     {
+      "fieldName": "id",
+      "fieldType": "String"
+    },
+    {
       "fieldName": "category",
       "fieldType": "String",
       "fieldValidateRules": ["required", "maxlength"],

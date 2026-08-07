@@ -71,17 +71,19 @@ describe('PlatformService Management Component', () => {
     // WHEN
     TestBed.tick();
     const req = httpMock.expectOne({ method: 'GET' });
-    req.flush([{ id: 8202 }], { headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' } });
+    req.flush([{ id: '43c90406-e76d-4a32-b1b9-8e30686fe590' }], {
+      headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' },
+    });
     await vitest.runAllTimersAsync();
 
     // THEN
     expect(comp.isLoading()).toEqual(false);
-    expect(comp.platformServices()[0]).toEqual(expect.objectContaining({ id: 8202 }));
+    expect(comp.platformServices()[0]).toEqual(expect.objectContaining({ id: '43c90406-e76d-4a32-b1b9-8e30686fe590' }));
   });
 
   describe('trackId', () => {
     it('should forward to platformServiceService', () => {
-      const entity = { id: 8202 };
+      const entity = { id: '43c90406-e76d-4a32-b1b9-8e30686fe590' };
       vitest.spyOn(service, 'getPlatformServiceIdentifier');
       const id = comp.trackId(entity);
       expect(service.getPlatformServiceIdentifier).toHaveBeenCalledWith(entity);

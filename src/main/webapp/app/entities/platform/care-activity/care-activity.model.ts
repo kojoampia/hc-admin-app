@@ -3,7 +3,7 @@ import dayjs from 'dayjs/esm';
 import { IPatient } from 'app/entities/directory/patient/patient.model';
 
 export interface ICareActivity {
-  id: number;
+  id: string;
   name?: string | null;
   description?: string | null;
   occurredOn?: dayjs.Dayjs | null;

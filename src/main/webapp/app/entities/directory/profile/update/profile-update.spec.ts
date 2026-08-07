@@ -48,11 +48,11 @@ describe('Profile Management Update Component', () => {
 
   describe('ngOnInit', () => {
     it('should call address query and add missing value', () => {
-      const profile: IProfile = { id: 13324 };
-      const address: IAddress = { id: 2318 };
+      const profile: IProfile = { id: '5ac8ab7a-123d-4318-b51e-b9301878a25d' };
+      const address: IAddress = { id: '1976e7b1-8233-4a09-bdb3-fbe559c0d8c2' };
       profile.address = address;
 
-      const addressCollection: IAddress[] = [{ id: 2318 }];
+      const addressCollection: IAddress[] = [{ id: '1976e7b1-8233-4a09-bdb3-fbe559c0d8c2' }];
       vitest.spyOn(addressService, 'query').mockReturnValue(of(new HttpResponse({ body: addressCollection })));
       const expectedCollection: IAddress[] = [address, ...addressCollection];
       vitest.spyOn(addressService, 'addAddressToCollectionIfMissing').mockReturnValue(expectedCollection);
@@ -66,8 +66,8 @@ describe('Profile Management Update Component', () => {
     });
 
     it('should update editForm', () => {
-      const profile: IProfile = { id: 13324 };
-      const address: IAddress = { id: 2318 };
+      const profile: IProfile = { id: '5ac8ab7a-123d-4318-b51e-b9301878a25d' };
+      const address: IAddress = { id: '1976e7b1-8233-4a09-bdb3-fbe559c0d8c2' };
       profile.address = address;
 
       activatedRoute.data = of({ profile });
@@ -82,7 +82,7 @@ describe('Profile Management Update Component', () => {
     it('should call update service on save for existing entity', () => {
       // GIVEN
       const saveSubject = new Subject<IProfile>();
-      const profile = { id: 32255 };
+      const profile = { id: 'f60e8f71-7b26-4f3d-8111-2c32dce7269d' };
       vitest.spyOn(profileFormService, 'getProfile').mockReturnValue(profile);
       vitest.spyOn(profileService, 'update').mockReturnValue(saveSubject);
       vitest.spyOn(comp, 'previousState');
@@ -105,7 +105,7 @@ describe('Profile Management Update Component', () => {
     it('should call create service on save for new entity', () => {
       // GIVEN
       const saveSubject = new Subject<IProfile>();
-      const profile = { id: 32255 };
+      const profile = { id: 'f60e8f71-7b26-4f3d-8111-2c32dce7269d' };
       vitest.spyOn(profileFormService, 'getProfile').mockReturnValue({ id: null });
       vitest.spyOn(profileService, 'create').mockReturnValue(saveSubject);
       vitest.spyOn(comp, 'previousState');
@@ -128,7 +128,7 @@ describe('Profile Management Update Component', () => {
     it('should set isSaving to false on error', () => {
       // GIVEN
       const saveSubject = new Subject<IProfile>();
-      const profile = { id: 32255 };
+      const profile = { id: 'f60e8f71-7b26-4f3d-8111-2c32dce7269d' };
       vitest.spyOn(profileService, 'update').mockReturnValue(saveSubject);
       vitest.spyOn(comp, 'previousState');
       activatedRoute.data = of({ profile });
@@ -149,8 +149,8 @@ describe('Profile Management Update Component', () => {
   describe('Compare relationships', () => {
     describe('compareAddress', () => {
       it('should forward to addressService', () => {
-        const entity = { id: 2318 };
-        const entity2 = { id: 19327 };
+        const entity = { id: '1976e7b1-8233-4a09-bdb3-fbe559c0d8c2' };
+        const entity2 = { id: '1e8b2d0e-a55f-4f49-bda6-466ca50fc308' };
         vitest.spyOn(addressService, 'compareAddress');
         comp.compareAddress(entity, entity2);
         expect(addressService.compareAddress).toHaveBeenCalledWith(entity, entity2);

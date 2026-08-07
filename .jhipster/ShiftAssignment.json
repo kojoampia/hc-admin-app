@@ -7,6 +7,10 @@
   "documentation": "One cell of the duty-roster grid.",
   "fields": [
     {
+      "fieldName": "id",
+      "fieldType": "String"
+    },
+    {
       "fieldName": "dayIndex",
       "fieldType": "Integer",
       "fieldValidateRules": ["required", "min", "max"],

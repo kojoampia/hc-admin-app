@@ -6,6 +6,10 @@
   "clientRootFolder": "directory",
   "fields": [
     {
+      "fieldName": "id",
+      "fieldType": "String"
+    },
+    {
       "fieldName": "status",
       "fieldType": "AccountStatus",
       "fieldValidateRules": ["required"],

@@ -48,11 +48,11 @@ describe('Hub Management Update Component', () => {
 
   describe('ngOnInit', () => {
     it('should call address query and add missing value', () => {
-      const hub: IHub = { id: 23512 };
-      const address: IAddress = { id: 2318 };
+      const hub: IHub = { id: '143c62d2-b763-4122-b4a2-4f688eee63a5' };
+      const address: IAddress = { id: '1976e7b1-8233-4a09-bdb3-fbe559c0d8c2' };
       hub.address = address;
 
-      const addressCollection: IAddress[] = [{ id: 2318 }];
+      const addressCollection: IAddress[] = [{ id: '1976e7b1-8233-4a09-bdb3-fbe559c0d8c2' }];
       vitest.spyOn(addressService, 'query').mockReturnValue(of(new HttpResponse({ body: addressCollection })));
       const expectedCollection: IAddress[] = [address, ...addressCollection];
       vitest.spyOn(addressService, 'addAddressToCollectionIfMissing').mockReturnValue(expectedCollection);
@@ -66,8 +66,8 @@ describe('Hub Management Update Component', () => {
     });
 
     it('should update editForm', () => {
-      const hub: IHub = { id: 23512 };
-      const address: IAddress = { id: 2318 };
+      const hub: IHub = { id: '143c62d2-b763-4122-b4a2-4f688eee63a5' };
+      const address: IAddress = { id: '1976e7b1-8233-4a09-bdb3-fbe559c0d8c2' };
       hub.address = address;
 
       activatedRoute.data = of({ hub });
@@ -82,7 +82,7 @@ describe('Hub Management Update Component', () => {
     it('should call update service on save for existing entity', () => {
       // GIVEN
       const saveSubject = new Subject<IHub>();
-      const hub = { id: 23336 };
+      const hub = { id: 'bb609620-c7ae-4900-948f-445397c053ae' };
       vitest.spyOn(hubFormService, 'getHub').mockReturnValue(hub);
       vitest.spyOn(hubService, 'update').mockReturnValue(saveSubject);
       vitest.spyOn(comp, 'previousState');
@@ -105,7 +105,7 @@ describe('Hub Management Update Component', () => {
     it('should call create service on save for new entity', () => {
       // GIVEN
       const saveSubject = new Subject<IHub>();
-      const hub = { id: 23336 };
+      const hub = { id: 'bb609620-c7ae-4900-948f-445397c053ae' };
       vitest.spyOn(hubFormService, 'getHub').mockReturnValue({ id: null });
       vitest.spyOn(hubService, 'create').mockReturnValue(saveSubject);
       vitest.spyOn(comp, 'previousState');
@@ -128,7 +128,7 @@ describe('Hub Management Update Component', () => {
     it('should set isSaving to false on error', () => {
       // GIVEN
       const saveSubject = new Subject<IHub>();
-      const hub = { id: 23336 };
+      const hub = { id: 'bb609620-c7ae-4900-948f-445397c053ae' };
       vitest.spyOn(hubService, 'update').mockReturnValue(saveSubject);
       vitest.spyOn(comp, 'previousState');
       activatedRoute.data = of({ hub });
@@ -149,8 +149,8 @@ describe('Hub Management Update Component', () => {
   describe('Compare relationships', () => {
     describe('compareAddress', () => {
       it('should forward to addressService', () => {
-        const entity = { id: 2318 };
-        const entity2 = { id: 19327 };
+        const entity = { id: '1976e7b1-8233-4a09-bdb3-fbe559c0d8c2' };
+        const entity2 = { id: '1e8b2d0e-a55f-4f49-bda6-466ca50fc308' };
         vitest.spyOn(addressService, 'compareAddress');
         comp.compareAddress(entity, entity2);
         expect(addressService.compareAddress).toHaveBeenCalledWith(entity, entity2);

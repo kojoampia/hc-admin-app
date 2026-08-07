@@ -18,6 +18,7 @@ type ProfileFormDefaults = Pick<NewProfile, 'id'>;
 
 type ProfileFormGroupContent = {
   id: FormControl<IProfile['id'] | NewProfile['id']>;
+  accountId: FormControl<IProfile['accountId']>;
   title: FormControl<IProfile['title']>;
   firstName: FormControl<IProfile['firstName']>;
   middleName: FormControl<IProfile['middleName']>;
@@ -49,6 +50,9 @@ export class ProfileFormService {
           validators: [Validators.required],
         },
       ),
+      accountId: new FormControl(profileRawValue.accountId, {
+        validators: [Validators.required, Validators.maxLength(60)],
+      }),
       title: new FormControl(profileRawValue.title),
       firstName: new FormControl(profileRawValue.firstName, {
         validators: [Validators.required, Validators.maxLength(50)],

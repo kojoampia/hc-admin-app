@@ -17,7 +17,7 @@
       "detail": {
         "title": "Address"
       },
-      "id": "ID",
+      "id": "Id",
       "digitalAddress": "Digital Address",
       "streetAddress": "Street Address",
       "townDistrict": "Town District",

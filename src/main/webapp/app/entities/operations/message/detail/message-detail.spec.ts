@@ -26,7 +26,7 @@ describe('Message Management Detail Component', () => {
             {
               path: '**',
               loadComponent: () => import('./message-detail').then(m => m.MessageDetail),
-              resolve: { message: () => of({ id: 6456 }) },
+              resolve: { message: () => of({ id: '35ac2a14-31ca-4318-8e02-123f67ebfc01' }) },
             },
           ],
           withComponentInputBinding(),
@@ -51,7 +51,7 @@ describe('Message Management Detail Component', () => {
       const instance = await harness.navigateByUrl('/', MessageDetail);
 
       // THEN
-      expect(instance.message()).toEqual(expect.objectContaining({ id: 6456 }));
+      expect(instance.message()).toEqual(expect.objectContaining({ id: '35ac2a14-31ca-4318-8e02-123f67ebfc01' }));
     });
   });
 

@@ -7,6 +7,10 @@
   "documentation": "PDF: Document (Name, Description, URL, Timestamp).",
   "fields": [
     {
+      "fieldName": "id",
+      "fieldType": "String"
+    },
+    {
       "fieldName": "name",
       "fieldType": "String",
       "fieldValidateRules": ["required", "maxlength"],

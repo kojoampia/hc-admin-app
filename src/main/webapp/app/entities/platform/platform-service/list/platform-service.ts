@@ -49,7 +49,7 @@ export class PlatformService implements OnInit {
     });
   }
 
-  trackId = (item: IPlatformService): number => this.platformServiceService.getPlatformServiceIdentifier(item);
+  trackId = (item: IPlatformService): string => this.platformServiceService.getPlatformServiceIdentifier(item);
 
   ngOnInit(): void {
     this.subscription = combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data])

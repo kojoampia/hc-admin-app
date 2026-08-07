@@ -75,7 +75,7 @@ export class ShiftAssignmentService extends ShiftAssignmentsService {
       .pipe(map(res => this.convertResponseFromServer(res)));
   }
 
-  find(id: number): Observable<IShiftAssignment> {
+  find(id: string): Observable<IShiftAssignment> {
     return this.http
       .get<RestShiftAssignment>(`${this.resourceUrl}/${encodeURIComponent(id)}`)
       .pipe(map(res => this.convertResponseFromServer(res)));
@@ -88,11 +88,11 @@ export class ShiftAssignmentService extends ShiftAssignmentsService {
       .pipe(map(res => res.clone({ body: this.convertResponseArrayFromServer(res.body!) })));
   }
 
-  delete(id: number): Observable<undefined> {
+  delete(id: string): Observable<undefined> {
     return this.http.delete<undefined>(`${this.resourceUrl}/${encodeURIComponent(id)}`);
   }
 
-  getShiftAssignmentIdentifier(shiftAssignment: Pick<IShiftAssignment, 'id'>): number {
+  getShiftAssignmentIdentifier(shiftAssignment: Pick<IShiftAssignment, 'id'>): string {
     return shiftAssignment.id;
   }
 

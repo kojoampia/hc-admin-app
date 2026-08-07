@@ -6,6 +6,10 @@
   "clientRootFolder": "operations",
   "fields": [
     {
+      "fieldName": "id",
+      "fieldType": "String"
+    },
+    {
       "fieldName": "sentAt",
       "fieldType": "Instant",
       "fieldValidateRules": ["required"]

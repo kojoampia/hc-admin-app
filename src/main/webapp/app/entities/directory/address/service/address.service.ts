@@ -47,7 +47,7 @@ export class AddressService extends AddressesService {
     return this.http.patch<IAddress>(`${this.resourceUrl}/${encodeURIComponent(this.getAddressIdentifier(address))}`, address);
   }
 
-  find(id: number): Observable<IAddress> {
+  find(id: string): Observable<IAddress> {
     return this.http.get<IAddress>(`${this.resourceUrl}/${encodeURIComponent(id)}`);
   }
 
@@ -56,11 +56,11 @@ export class AddressService extends AddressesService {
     return this.http.get<IAddress[]>(this.resourceUrl, { params: options, observe: 'response' });
   }
 
-  delete(id: number): Observable<undefined> {
+  delete(id: string): Observable<undefined> {
     return this.http.delete<undefined>(`${this.resourceUrl}/${encodeURIComponent(id)}`);
   }
 
-  getAddressIdentifier(address: Pick<IAddress, 'id'>): number {
+  getAddressIdentifier(address: Pick<IAddress, 'id'>): string {
     return address.id;
   }
 

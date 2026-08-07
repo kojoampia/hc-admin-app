@@ -1,6 +1,5 @@
 import { Routes } from '@angular/router';
 
-import { ASC } from 'app/config/navigation.constants';
 import { UserRouteAccessService } from 'app/core/auth/user-route-access.service';
 
 import UserOptionResolve from './route/user-option-routing-resolve.service';
@@ -9,9 +8,7 @@ const userOptionRoute: Routes = [
   {
     path: '',
     loadComponent: () => import('./list/user-option').then(m => m.UserOption),
-    data: {
-      defaultSort: `id,${ASC}`,
-    },
+    data: {},
     canActivate: [UserRouteAccessService],
   },
   {

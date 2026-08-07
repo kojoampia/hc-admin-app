@@ -23,7 +23,7 @@ describe('Document Management Detail Component', () => {
             {
               path: '**',
               loadComponent: () => import('./document-detail').then(m => m.DocumentDetail),
-              resolve: { document: () => of({ id: 24703 }) },
+              resolve: { document: () => of({ id: 'c1d4f1eb-eff0-4815-be04-c0d821e59542' }) },
             },
           ],
           withComponentInputBinding(),
@@ -46,7 +46,7 @@ describe('Document Management Detail Component', () => {
       const instance = await harness.navigateByUrl('/', DocumentDetail);
 
       // THEN
-      expect(instance.document()).toEqual(expect.objectContaining({ id: 24703 }));
+      expect(instance.document()).toEqual(expect.objectContaining({ id: 'c1d4f1eb-eff0-4815-be04-c0d821e59542' }));
     });
   });
 

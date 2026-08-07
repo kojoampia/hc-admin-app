@@ -43,7 +43,7 @@ describe('Address Management Update Component', () => {
 
   describe('ngOnInit', () => {
     it('should update editForm', () => {
-      const address: IAddress = { id: 19327 };
+      const address: IAddress = { id: '1e8b2d0e-a55f-4f49-bda6-466ca50fc308' };
 
       activatedRoute.data = of({ address });
       comp.ngOnInit();
@@ -56,7 +56,7 @@ describe('Address Management Update Component', () => {
     it('should call update service on save for existing entity', () => {
       // GIVEN
       const saveSubject = new Subject<IAddress>();
-      const address = { id: 2318 };
+      const address = { id: '1976e7b1-8233-4a09-bdb3-fbe559c0d8c2' };
       vitest.spyOn(addressFormService, 'getAddress').mockReturnValue(address);
       vitest.spyOn(addressService, 'update').mockReturnValue(saveSubject);
       vitest.spyOn(comp, 'previousState');
@@ -79,7 +79,7 @@ describe('Address Management Update Component', () => {
     it('should call create service on save for new entity', () => {
       // GIVEN
       const saveSubject = new Subject<IAddress>();
-      const address = { id: 2318 };
+      const address = { id: '1976e7b1-8233-4a09-bdb3-fbe559c0d8c2' };
       vitest.spyOn(addressFormService, 'getAddress').mockReturnValue({ id: null });
       vitest.spyOn(addressService, 'create').mockReturnValue(saveSubject);
       vitest.spyOn(comp, 'previousState');
@@ -102,7 +102,7 @@ describe('Address Management Update Component', () => {
     it('should set isSaving to false on error', () => {
       // GIVEN
       const saveSubject = new Subject<IAddress>();
-      const address = { id: 2318 };
+      const address = { id: '1976e7b1-8233-4a09-bdb3-fbe559c0d8c2' };
       vitest.spyOn(addressService, 'update').mockReturnValue(saveSubject);
       vitest.spyOn(comp, 'previousState');
       activatedRoute.data = of({ address });

@@ -1,32 +1,32 @@
 import { IAddress, NewAddress } from './address.model';
 
 export const sampleWithRequiredData: IAddress = {
-  id: 2568,
-  digitalAddress: 'ML-373-5701',
-  streetAddress: 'aboard',
-  cityState: 'yuck forenenst',
-  region: 'ownership pace',
-  country: 'what mountain',
+  id: '1765b58b-0341-4b86-84d0-7a3416c09633',
+  digitalAddress: 'YM-419-2971',
+  streetAddress: 'pace schedule',
+  cityState: 'mountain fuzzy judicious',
+  region: 'whether outgoing schedule',
+  country: 'starboard',
 };
 
 export const sampleWithPartialData: IAddress = {
-  id: 18282,
-  digitalAddress: 'PR-067-0756',
-  streetAddress: 'aboard trial never',
-  townDistrict: 'for',
-  cityState: 'monumental joy',
-  region: 'yet warming deselect',
-  country: 'like',
+  id: '89a1ac1b-9bd5-4371-8e50-02ed8cebb784',
+  digitalAddress: 'ND-176-4181',
+  streetAddress: 'monumental joy',
+  townDistrict: 'yet warming deselect',
+  cityState: 'like',
+  region: 'volunteer inasmuch',
+  country: 'while ponder violently',
 };
 
 export const sampleWithFullData: IAddress = {
-  id: 16440,
-  digitalAddress: 'QE-285-1674',
-  streetAddress: 'hmph colorful',
-  townDistrict: 'under qua',
-  cityState: 'hmph blah',
-  region: 'sans opposite',
-  country: 'though',
+  id: '8924d93a-c664-4222-a9fd-a7bcd925bafb',
+  digitalAddress: 'LW-851-1977',
+  streetAddress: 'hmph blah',
+  townDistrict: 'sans opposite',
+  cityState: 'though',
+  region: 'but',
+  country: 'across',
 };
 
 export const sampleWithNewData: NewAddress = {

@@ -52,7 +52,7 @@ export class Category implements OnInit {
     });
   }
 
-  trackId = (item: ICategory): number => this.categoryService.getCategoryIdentifier(item);
+  trackId = (item: ICategory): string => this.categoryService.getCategoryIdentifier(item);
 
   ngOnInit(): void {
     this.subscription = combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data])

@@ -52,7 +52,7 @@ export class Hub implements OnInit {
     });
   }
 
-  trackId = (item: IHub): number => this.hubService.getHubIdentifier(item);
+  trackId = (item: IHub): string => this.hubService.getHubIdentifier(item);
 
   ngOnInit(): void {
     this.subscription = combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data])

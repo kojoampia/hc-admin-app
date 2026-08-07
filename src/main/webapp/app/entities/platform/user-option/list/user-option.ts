@@ -52,7 +52,7 @@ export class UserOption implements OnInit {
     });
   }
 
-  trackId = (item: IUserOption): number => this.userOptionService.getUserOptionIdentifier(item);
+  trackId = (item: IUserOption): string => this.userOptionService.getUserOptionIdentifier(item);
 
   ngOnInit(): void {
     this.subscription = combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data])

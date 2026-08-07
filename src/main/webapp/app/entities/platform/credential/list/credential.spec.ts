@@ -73,17 +73,19 @@ describe('Credential Management Component', () => {
     // WHEN
     TestBed.tick();
     const req = httpMock.expectOne({ method: 'GET' });
-    req.flush([{ id: 6323 }], { headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' } });
+    req.flush([{ id: '35b3b582-8e66-4c2d-9e4a-8ff9d99022d0' }], {
+      headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' },
+    });
     await vitest.runAllTimersAsync();
 
     // THEN
     expect(comp.isLoading()).toEqual(false);
-    expect(comp.credentials()[0]).toEqual(expect.objectContaining({ id: 6323 }));
+    expect(comp.credentials()[0]).toEqual(expect.objectContaining({ id: '35b3b582-8e66-4c2d-9e4a-8ff9d99022d0' }));
   });
 
   describe('trackId', () => {
     it('should forward to credentialService', () => {
-      const entity = { id: 6323 };
+      const entity = { id: '35b3b582-8e66-4c2d-9e4a-8ff9d99022d0' };
       vitest.spyOn(service, 'getCredentialIdentifier');
       const id = comp.trackId(entity);
       expect(service.getCredentialIdentifier).toHaveBeenCalledWith(entity);

@@ -7,6 +7,10 @@
   "documentation": "PDF: Team (Name, Description, Supervisor).",
   "fields": [
     {
+      "fieldName": "id",
+      "fieldType": "String"
+    },
+    {
       "fieldName": "name",
       "fieldType": "String",
       "fieldValidateRules": ["required", "maxlength"],

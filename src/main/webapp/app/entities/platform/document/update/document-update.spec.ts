@@ -52,11 +52,11 @@ describe('Document Management Update Component', () => {
 
   describe('ngOnInit', () => {
     it('should call Patient query and add missing value', () => {
-      const document: IDocument = { id: 4007 };
-      const patient: IPatient = { id: 16668 };
+      const document: IDocument = { id: 'd72ebdf6-81bc-4a5d-8e29-45483c0d98b2' };
+      const patient: IPatient = { id: '88928db1-656e-430d-95c0-5cde75285e55' };
       document.patient = patient;
 
-      const patientCollection: IPatient[] = [{ id: 16668 }];
+      const patientCollection: IPatient[] = [{ id: '88928db1-656e-430d-95c0-5cde75285e55' }];
       vitest.spyOn(patientService, 'query').mockReturnValue(of(new HttpResponse({ body: patientCollection })));
       const additionalPatients = [patient];
       const expectedCollection: IPatient[] = [...additionalPatients, ...patientCollection];
@@ -74,11 +74,11 @@ describe('Document Management Update Component', () => {
     });
 
     it('should call Vendor query and add missing value', () => {
-      const document: IDocument = { id: 4007 };
-      const vendor: IVendor = { id: 10199 };
+      const document: IDocument = { id: 'd72ebdf6-81bc-4a5d-8e29-45483c0d98b2' };
+      const vendor: IVendor = { id: '478690b5-4f10-43b0-b67e-1148991a8421' };
       document.vendor = vendor;
 
-      const vendorCollection: IVendor[] = [{ id: 10199 }];
+      const vendorCollection: IVendor[] = [{ id: '478690b5-4f10-43b0-b67e-1148991a8421' }];
       vitest.spyOn(vendorService, 'query').mockReturnValue(of(new HttpResponse({ body: vendorCollection })));
       const additionalVendors = [vendor];
       const expectedCollection: IVendor[] = [...additionalVendors, ...vendorCollection];
@@ -96,10 +96,10 @@ describe('Document Management Update Component', () => {
     });
 
     it('should update editForm', () => {
-      const document: IDocument = { id: 4007 };
-      const patient: IPatient = { id: 16668 };
+      const document: IDocument = { id: 'd72ebdf6-81bc-4a5d-8e29-45483c0d98b2' };
+      const patient: IPatient = { id: '88928db1-656e-430d-95c0-5cde75285e55' };
       document.patient = patient;
-      const vendor: IVendor = { id: 10199 };
+      const vendor: IVendor = { id: '478690b5-4f10-43b0-b67e-1148991a8421' };
       document.vendor = vendor;
 
       activatedRoute.data = of({ document });
@@ -115,7 +115,7 @@ describe('Document Management Update Component', () => {
     it('should call update service on save for existing entity', () => {
       // GIVEN
       const saveSubject = new Subject<IDocument>();
-      const document = { id: 24703 };
+      const document = { id: 'c1d4f1eb-eff0-4815-be04-c0d821e59542' };
       vitest.spyOn(documentFormService, 'getDocument').mockReturnValue(document);
       vitest.spyOn(documentService, 'update').mockReturnValue(saveSubject);
       vitest.spyOn(comp, 'previousState');
@@ -138,7 +138,7 @@ describe('Document Management Update Component', () => {
     it('should call create service on save for new entity', () => {
       // GIVEN
       const saveSubject = new Subject<IDocument>();
-      const document = { id: 24703 };
+      const document = { id: 'c1d4f1eb-eff0-4815-be04-c0d821e59542' };
       vitest.spyOn(documentFormService, 'getDocument').mockReturnValue({ id: null });
       vitest.spyOn(documentService, 'create').mockReturnValue(saveSubject);
       vitest.spyOn(comp, 'previousState');
@@ -161,7 +161,7 @@ describe('Document Management Update Component', () => {
     it('should set isSaving to false on error', () => {
       // GIVEN
       const saveSubject = new Subject<IDocument>();
-      const document = { id: 24703 };
+      const document = { id: 'c1d4f1eb-eff0-4815-be04-c0d821e59542' };
       vitest.spyOn(documentService, 'update').mockReturnValue(saveSubject);
       vitest.spyOn(comp, 'previousState');
       activatedRoute.data = of({ document });
@@ -182,8 +182,8 @@ describe('Document Management Update Component', () => {
   describe('Compare relationships', () => {
     describe('comparePatient', () => {
       it('should forward to patientService', () => {
-        const entity = { id: 16668 };
-        const entity2 = { id: 16914 };
+        const entity = { id: '88928db1-656e-430d-95c0-5cde75285e55' };
+        const entity2 = { id: '7ee13815-76c1-4cab-8865-cf9e177b6367' };
         vitest.spyOn(patientService, 'comparePatient');
         comp.comparePatient(entity, entity2);
         expect(patientService.comparePatient).toHaveBeenCalledWith(entity, entity2);
@@ -192,8 +192,8 @@ describe('Document Management Update Component', () => {
 
     describe('compareVendor', () => {
       it('should forward to vendorService', () => {
-        const entity = { id: 10199 };
-        const entity2 = { id: 14521 };
+        const entity = { id: '478690b5-4f10-43b0-b67e-1148991a8421' };
+        const entity2 = { id: '38a75b67-70c0-4716-bccf-c7d55a3a8179' };
         vitest.spyOn(vendorService, 'compareVendor');
         comp.compareVendor(entity, entity2);
         expect(vendorService.compareVendor).toHaveBeenCalledWith(entity, entity2);

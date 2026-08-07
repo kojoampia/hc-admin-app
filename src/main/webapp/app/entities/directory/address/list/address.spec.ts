@@ -73,17 +73,19 @@ describe('Address Management Component', () => {
     // WHEN
     TestBed.tick();
     const req = httpMock.expectOne({ method: 'GET' });
-    req.flush([{ id: 2318 }], { headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' } });
+    req.flush([{ id: '1976e7b1-8233-4a09-bdb3-fbe559c0d8c2' }], {
+      headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' },
+    });
     await vitest.runAllTimersAsync();
 
     // THEN
     expect(comp.isLoading()).toEqual(false);
-    expect(comp.addresses()[0]).toEqual(expect.objectContaining({ id: 2318 }));
+    expect(comp.addresses()[0]).toEqual(expect.objectContaining({ id: '1976e7b1-8233-4a09-bdb3-fbe559c0d8c2' }));
   });
 
   describe('trackId', () => {
     it('should forward to addressService', () => {
-      const entity = { id: 2318 };
+      const entity = { id: '1976e7b1-8233-4a09-bdb3-fbe559c0d8c2' };
       vitest.spyOn(service, 'getAddressIdentifier');
       const id = comp.trackId(entity);
       expect(service.getAddressIdentifier).toHaveBeenCalledWith(entity);

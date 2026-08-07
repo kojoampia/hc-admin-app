@@ -3,31 +3,31 @@ import dayjs from 'dayjs/esm';
 import { IOrganisation, NewOrganisation } from './organisation.model';
 
 export const sampleWithRequiredData: IOrganisation = {
-  id: 15652,
-  name: 'finally next',
-  legalName: 'blah',
+  id: '7a2100a0-377f-4e60-b904-54b581f865af',
+  name: 'ouch',
+  legalName: 'memorable meh',
 };
 
 export const sampleWithPartialData: IOrganisation = {
-  id: 31678,
-  name: 'er deeply wherever',
-  legalName: 'overreact shoulder exacerbate',
-  registrationNumber: 'private shout',
-  tin: 'yowza',
-  switchboard: 'once once',
+  id: 'fc032981-e812-4911-a220-1239ded984f6',
+  name: 'representation presell',
+  legalName: 'shoddy amid yowza',
+  registrationNumber: 'once once',
+  tin: 'task',
+  switchboard: 'around midst despite',
 };
 
 export const sampleWithFullData: IOrganisation = {
-  id: 3664,
-  name: 'bonfire',
-  legalName: 'for',
-  description: 'entrench vein',
-  registrationNumber: 'subtract',
-  tin: 'furiously after',
+  id: '126f2b88-1233-4be7-8036-3669e54075d0',
+  name: 'tomorrow yet before',
+  legalName: 'utterly until less',
+  description: 'heavy so able',
+  registrationNumber: 'how saloon',
+  tin: 'whether',
   foundedOn: dayjs('2023-12-11'),
-  switchboard: 'scare doubtfully mild',
-  email: 'travel underneath',
-  deskHours: 'than drat',
+  switchboard: 'meh',
+  email: 'jealously',
+  deskHours: 'knowingly geez',
 };
 
 export const sampleWithNewData: NewOrganisation = {

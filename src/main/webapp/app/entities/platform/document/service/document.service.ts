@@ -74,7 +74,7 @@ export class DocumentService extends DocumentsService {
       .pipe(map(res => this.convertResponseFromServer(res)));
   }
 
-  find(id: number): Observable<IDocument> {
+  find(id: string): Observable<IDocument> {
     return this.http
       .get<RestDocument>(`${this.resourceUrl}/${encodeURIComponent(id)}`)
       .pipe(map(res => this.convertResponseFromServer(res)));
@@ -87,11 +87,11 @@ export class DocumentService extends DocumentsService {
       .pipe(map(res => res.clone({ body: this.convertResponseArrayFromServer(res.body!) })));
   }
 
-  delete(id: number): Observable<undefined> {
+  delete(id: string): Observable<undefined> {
     return this.http.delete<undefined>(`${this.resourceUrl}/${encodeURIComponent(id)}`);
   }
 
-  getDocumentIdentifier(document: Pick<IDocument, 'id'>): number {
+  getDocumentIdentifier(document: Pick<IDocument, 'id'>): string {
     return document.id;
   }
 

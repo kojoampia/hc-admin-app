@@ -32,7 +32,7 @@ describe('Profile Service', () => {
       const returnedFromService = { ...requireRestSample };
       const expected = { ...sampleWithRequiredData };
 
-      service.find(123).subscribe(resp => (expectedResult = resp));
+      service.find('ABC').subscribe(resp => (expectedResult = resp));
 
       const req = httpMock.expectOne({ method: 'GET' });
       req.flush(returnedFromService);
@@ -89,7 +89,7 @@ describe('Profile Service', () => {
     });
 
     it('should delete a Profile', () => {
-      service.delete(123).subscribe();
+      service.delete('ABC').subscribe();
 
       const requests = httpMock.match({ method: 'DELETE' });
       expect(requests).toHaveLength(1);
@@ -160,7 +160,7 @@ describe('Profile Service', () => {
       });
 
       it('should return false if one entity is null', () => {
-        const entity1 = { id: 32255 };
+        const entity1 = { id: 'f60e8f71-7b26-4f3d-8111-2c32dce7269d' };
         const entity2 = null;
 
         const compareResult1 = service.compareProfile(entity1, entity2);
@@ -171,8 +171,8 @@ describe('Profile Service', () => {
       });
 
       it('should return false if primaryKey differs', () => {
-        const entity1 = { id: 32255 };
-        const entity2 = { id: 13324 };
+        const entity1 = { id: 'f60e8f71-7b26-4f3d-8111-2c32dce7269d' };
+        const entity2 = { id: '5ac8ab7a-123d-4318-b51e-b9301878a25d' };
 
         const compareResult1 = service.compareProfile(entity1, entity2);
         const compareResult2 = service.compareProfile(entity2, entity1);
@@ -182,8 +182,8 @@ describe('Profile Service', () => {
       });
 
       it('should return false if primaryKey matches', () => {
-        const entity1 = { id: 32255 };
-        const entity2 = { id: 32255 };
+        const entity1 = { id: 'f60e8f71-7b26-4f3d-8111-2c32dce7269d' };
+        const entity2 = { id: 'f60e8f71-7b26-4f3d-8111-2c32dce7269d' };
 
         const compareResult1 = service.compareProfile(entity1, entity2);
         const compareResult2 = service.compareProfile(entity2, entity1);

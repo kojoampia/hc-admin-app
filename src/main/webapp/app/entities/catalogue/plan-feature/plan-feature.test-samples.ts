@@ -1,21 +1,21 @@
 import { IPlanFeature, NewPlanFeature } from './plan-feature.model';
 
 export const sampleWithRequiredData: IPlanFeature = {
-  id: 26854,
-  label: 'before',
-  position: 10940,
+  id: 'd3d1e3a3-15ab-45ad-bebd-95d720ccd3fc',
+  label: 'at construe',
+  position: 25354,
 };
 
 export const sampleWithPartialData: IPlanFeature = {
-  id: 25939,
-  label: 'downright agitated ugh',
-  position: 15068,
+  id: 'cbc7b89d-3edd-49af-a0b5-90aa8755c4aa',
+  label: 'before though gosh',
+  position: 9553,
 };
 
 export const sampleWithFullData: IPlanFeature = {
-  id: 27410,
-  label: 'sugary',
-  position: 17374,
+  id: 'd18577cb-d8e9-45ab-a44c-115f6c33fc80',
+  label: 'optimistically once gee',
+  position: 18164,
 };
 
 export const sampleWithNewData: NewPlanFeature = {

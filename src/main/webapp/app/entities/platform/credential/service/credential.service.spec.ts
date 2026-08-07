@@ -31,7 +31,7 @@ describe('Credential Service', () => {
       const returnedFromService = { ...requireRestSample };
       const expected = { ...sampleWithRequiredData };
 
-      service.find(123).subscribe(resp => (expectedResult = resp));
+      service.find('ABC').subscribe(resp => (expectedResult = resp));
 
       const req = httpMock.expectOne({ method: 'GET' });
       req.flush(returnedFromService);
@@ -88,7 +88,7 @@ describe('Credential Service', () => {
     });
 
     it('should delete a Credential', () => {
-      service.delete(123).subscribe();
+      service.delete('ABC').subscribe();
 
       const requests = httpMock.match({ method: 'DELETE' });
       expect(requests).toHaveLength(1);
@@ -159,7 +159,7 @@ describe('Credential Service', () => {
       });
 
       it('should return false if one entity is null', () => {
-        const entity1 = { id: 6323 };
+        const entity1 = { id: '35b3b582-8e66-4c2d-9e4a-8ff9d99022d0' };
         const entity2 = null;
 
         const compareResult1 = service.compareCredential(entity1, entity2);
@@ -170,8 +170,8 @@ describe('Credential Service', () => {
       });
 
       it('should return false if primaryKey differs', () => {
-        const entity1 = { id: 6323 };
-        const entity2 = { id: 10754 };
+        const entity1 = { id: '35b3b582-8e66-4c2d-9e4a-8ff9d99022d0' };
+        const entity2 = { id: '37c978bd-bd74-4bba-a58a-e21267b95005' };
 
         const compareResult1 = service.compareCredential(entity1, entity2);
         const compareResult2 = service.compareCredential(entity2, entity1);
@@ -181,8 +181,8 @@ describe('Credential Service', () => {
       });
 
       it('should return false if primaryKey matches', () => {
-        const entity1 = { id: 6323 };
-        const entity2 = { id: 6323 };
+        const entity1 = { id: '35b3b582-8e66-4c2d-9e4a-8ff9d99022d0' };
+        const entity2 = { id: '35b3b582-8e66-4c2d-9e4a-8ff9d99022d0' };
 
         const compareResult1 = service.compareCredential(entity1, entity2);
         const compareResult2 = service.compareCredential(entity2, entity1);

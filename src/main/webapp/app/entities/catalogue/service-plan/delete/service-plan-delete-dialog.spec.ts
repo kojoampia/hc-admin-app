@@ -31,10 +31,10 @@ describe('ServicePlan Management Delete Component', () => {
       vitest.spyOn(mockActiveModal, 'close');
 
       // WHEN
-      comp.confirmDelete(123);
+      comp.confirmDelete('ABC');
 
       // THEN
-      expect(service.delete).toHaveBeenCalledWith(123);
+      expect(service.delete).toHaveBeenCalledWith('ABC');
       expect(mockActiveModal.close).toHaveBeenCalledWith('deleted');
     });
 

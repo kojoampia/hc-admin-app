@@ -225,8 +225,10 @@ export const handleRequest = (request: MockRequest): HttpResponse<any> => {
   }
 
   if (segments.length === 2) {
-    const id = Number(rawId);
-    const index = rows.findIndex(row => Number(row.id) === id);
+    // Ids are Strings: the api is a MongoDB microservice, and coercing an
+    // ObjectId through Number() yields NaN, which matches nothing.
+    const id = rawId;
+    const index = rows.findIndex(row => String(row.id) === id);
 
     if (method === 'GET') {
       if (index < 0) {
@@ -241,7 +243,7 @@ export const handleRequest = (request: MockRequest): HttpResponse<any> => {
 
     if (method === 'PUT' || method === 'PATCH') {
       // Path and body ids must agree, and the row must already exist.
-      if (body?.id == null || Number(body.id) !== id) {
+      if (body?.id == null || String(body.id) !== id) {
         throw new MockStatusError(400, 'Invalid ID');
       }
       if (index < 0) {

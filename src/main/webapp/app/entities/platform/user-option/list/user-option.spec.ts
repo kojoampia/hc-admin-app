@@ -73,17 +73,19 @@ describe('UserOption Management Component', () => {
     // WHEN
     TestBed.tick();
     const req = httpMock.expectOne({ method: 'GET' });
-    req.flush([{ id: 6892 }], { headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' } });
+    req.flush([{ id: '37e3f7e2-fac2-4a3b-bf2f-cb2526358f59' }], {
+      headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' },
+    });
     await vitest.runAllTimersAsync();
 
     // THEN
     expect(comp.isLoading()).toEqual(false);
-    expect(comp.userOptions()[0]).toEqual(expect.objectContaining({ id: 6892 }));
+    expect(comp.userOptions()[0]).toEqual(expect.objectContaining({ id: '37e3f7e2-fac2-4a3b-bf2f-cb2526358f59' }));
   });
 
   describe('trackId', () => {
     it('should forward to userOptionService', () => {
-      const entity = { id: 6892 };
+      const entity = { id: '37e3f7e2-fac2-4a3b-bf2f-cb2526358f59' };
       vitest.spyOn(service, 'getUserOptionIdentifier');
       const id = comp.trackId(entity);
       expect(service.getUserOptionIdentifier).toHaveBeenCalledWith(entity);

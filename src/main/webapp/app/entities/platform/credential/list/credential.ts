@@ -54,7 +54,7 @@ export class Credential implements OnInit {
     });
   }
 
-  trackId = (item: ICredential): number => this.credentialService.getCredentialIdentifier(item);
+  trackId = (item: ICredential): string => this.credentialService.getCredentialIdentifier(item);
 
   ngOnInit(): void {
     this.subscription = combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data])

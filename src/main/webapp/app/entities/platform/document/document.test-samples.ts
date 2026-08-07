@@ -3,25 +3,25 @@ import dayjs from 'dayjs/esm';
 import { IDocument, NewDocument } from './document.model';
 
 export const sampleWithRequiredData: IDocument = {
-  id: 26644,
-  name: 'incidentally before',
-  url: 'pish thankfully',
-  uploadedAt: dayjs('2023-12-11T14:26'),
+  id: 'd73fe592-5ffb-420c-b189-0e268e08fa56',
+  name: 'quirkily above and',
+  url: 'amongst quiet',
+  uploadedAt: dayjs('2023-12-10T19:55'),
 };
 
 export const sampleWithPartialData: IDocument = {
-  id: 9417,
-  name: 'as afterwards cleaner',
-  url: 'dereference vivaciously searchingly',
-  uploadedAt: dayjs('2023-12-11T09:55'),
+  id: '4c01a763-1782-4ef4-807f-b0f82c21feb4',
+  name: 'sprinkles overreact',
+  url: 'drat treble',
+  uploadedAt: dayjs('2023-12-11T09:39'),
 };
 
 export const sampleWithFullData: IDocument = {
-  id: 31599,
-  name: 'chasuble',
-  description: 'happy-go-lucky mallard forenenst',
-  url: 'an ugh our',
-  uploadedAt: dayjs('2023-12-11T08:37'),
+  id: 'f0e5752e-2dfa-4fee-9c52-1c7118905599',
+  name: 'an ugh our',
+  description: 'per iterate',
+  url: 'guidance more',
+  uploadedAt: dayjs('2023-12-11T12:15'),
 };
 
 export const sampleWithNewData: NewDocument = {

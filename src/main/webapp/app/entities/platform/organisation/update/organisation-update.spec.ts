@@ -48,11 +48,11 @@ describe('Organisation Management Update Component', () => {
 
   describe('ngOnInit', () => {
     it('should call address query and add missing value', () => {
-      const organisation: IOrganisation = { id: 7272 };
-      const address: IAddress = { id: 2318 };
+      const organisation: IOrganisation = { id: '1d06732c-bb67-4c26-ab50-d652c9e1f885' };
+      const address: IAddress = { id: '1976e7b1-8233-4a09-bdb3-fbe559c0d8c2' };
       organisation.address = address;
 
-      const addressCollection: IAddress[] = [{ id: 2318 }];
+      const addressCollection: IAddress[] = [{ id: '1976e7b1-8233-4a09-bdb3-fbe559c0d8c2' }];
       vitest.spyOn(addressService, 'query').mockReturnValue(of(new HttpResponse({ body: addressCollection })));
       const expectedCollection: IAddress[] = [address, ...addressCollection];
       vitest.spyOn(addressService, 'addAddressToCollectionIfMissing').mockReturnValue(expectedCollection);
@@ -66,8 +66,8 @@ describe('Organisation Management Update Component', () => {
     });
 
     it('should update editForm', () => {
-      const organisation: IOrganisation = { id: 7272 };
-      const address: IAddress = { id: 2318 };
+      const organisation: IOrganisation = { id: '1d06732c-bb67-4c26-ab50-d652c9e1f885' };
+      const address: IAddress = { id: '1976e7b1-8233-4a09-bdb3-fbe559c0d8c2' };
       organisation.address = address;
 
       activatedRoute.data = of({ organisation });
@@ -82,7 +82,7 @@ describe('Organisation Management Update Component', () => {
     it('should call update service on save for existing entity', () => {
       // GIVEN
       const saveSubject = new Subject<IOrganisation>();
-      const organisation = { id: 541 };
+      const organisation = { id: '03a17a60-2a77-4a3e-80ff-b20de2261aa4' };
       vitest.spyOn(organisationFormService, 'getOrganisation').mockReturnValue(organisation);
       vitest.spyOn(organisationService, 'update').mockReturnValue(saveSubject);
       vitest.spyOn(comp, 'previousState');
@@ -105,7 +105,7 @@ describe('Organisation Management Update Component', () => {
     it('should call create service on save for new entity', () => {
       // GIVEN
       const saveSubject = new Subject<IOrganisation>();
-      const organisation = { id: 541 };
+      const organisation = { id: '03a17a60-2a77-4a3e-80ff-b20de2261aa4' };
       vitest.spyOn(organisationFormService, 'getOrganisation').mockReturnValue({ id: null });
       vitest.spyOn(organisationService, 'create').mockReturnValue(saveSubject);
       vitest.spyOn(comp, 'previousState');
@@ -128,7 +128,7 @@ describe('Organisation Management Update Component', () => {
     it('should set isSaving to false on error', () => {
       // GIVEN
       const saveSubject = new Subject<IOrganisation>();
-      const organisation = { id: 541 };
+      const organisation = { id: '03a17a60-2a77-4a3e-80ff-b20de2261aa4' };
       vitest.spyOn(organisationService, 'update').mockReturnValue(saveSubject);
       vitest.spyOn(comp, 'previousState');
       activatedRoute.data = of({ organisation });
@@ -149,8 +149,8 @@ describe('Organisation Management Update Component', () => {
   describe('Compare relationships', () => {
     describe('compareAddress', () => {
       it('should forward to addressService', () => {
-        const entity = { id: 2318 };
-        const entity2 = { id: 19327 };
+        const entity = { id: '1976e7b1-8233-4a09-bdb3-fbe559c0d8c2' };
+        const entity2 = { id: '1e8b2d0e-a55f-4f49-bda6-466ca50fc308' };
         vitest.spyOn(addressService, 'compareAddress');
         comp.compareAddress(entity, entity2);
         expect(addressService.compareAddress).toHaveBeenCalledWith(entity, entity2);

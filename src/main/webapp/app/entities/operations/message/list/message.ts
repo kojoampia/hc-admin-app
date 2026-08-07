@@ -72,7 +72,7 @@ export class Message implements OnInit {
     });
   }
 
-  trackId = (item: IMessage): number => this.messageService.getMessageIdentifier(item);
+  trackId = (item: IMessage): string => this.messageService.getMessageIdentifier(item);
 
   ngOnInit(): void {
     this.subscription = combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data])

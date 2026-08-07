@@ -45,7 +45,7 @@ export class TeamService extends TeamsService {
     return this.http.patch<ITeam>(`${this.resourceUrl}/${encodeURIComponent(this.getTeamIdentifier(team))}`, team);
   }
 
-  find(id: number): Observable<ITeam> {
+  find(id: string): Observable<ITeam> {
     return this.http.get<ITeam>(`${this.resourceUrl}/${encodeURIComponent(id)}`);
   }
 
@@ -54,11 +54,11 @@ export class TeamService extends TeamsService {
     return this.http.get<ITeam[]>(this.resourceUrl, { params: options, observe: 'response' });
   }
 
-  delete(id: number): Observable<undefined> {
+  delete(id: string): Observable<undefined> {
     return this.http.delete<undefined>(`${this.resourceUrl}/${encodeURIComponent(id)}`);
   }
 
-  getTeamIdentifier(team: Pick<ITeam, 'id'>): number {
+  getTeamIdentifier(team: Pick<ITeam, 'id'>): string {
     return team.id;
   }
 

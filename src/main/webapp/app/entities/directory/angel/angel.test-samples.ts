@@ -1,27 +1,27 @@
 import { IAngel, NewAngel } from './angel.model';
 
 export const sampleWithRequiredData: IAngel = {
-  id: 32336,
-  name: 'shark yum encouragement',
-  relationship: 'towards',
-  phone: 'supposing aha',
+  id: 'fe603d41-c5cf-4635-b48f-3eb440f7fc3d',
+  name: 'supposing aha',
+  relationship: 'geez cap perfectly',
+  phone: 'tomorrow oh',
 };
 
 export const sampleWithPartialData: IAngel = {
-  id: 5088,
-  name: 'carefree lovable uh-huh',
-  relationship: 'soupy',
-  phone: 'whoa',
-  country: 'wiggly',
+  id: '2f245f68-167f-4c5e-b7e4-5547d3e4d4af',
+  name: 'whoa',
+  relationship: 'wiggly',
+  phone: 'an',
+  country: 'even',
 };
 
 export const sampleWithFullData: IAngel = {
-  id: 13922,
-  name: 'publicity',
-  relationship: 'impact gnaw',
-  phone: 'word',
-  email: 'forswear',
-  country: 'per',
+  id: '62efb624-b708-431d-8473-1bff5612e639',
+  name: 'yahoo dividend tenderly',
+  relationship: 'whose cow',
+  phone: 'before glass per',
+  email: 'intently worriedly since',
+  country: 'graceful bah',
 };
 
 export const sampleWithNewData: NewAngel = {

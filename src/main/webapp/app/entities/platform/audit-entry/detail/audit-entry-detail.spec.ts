@@ -23,7 +23,7 @@ describe('AuditEntry Management Detail Component', () => {
             {
               path: '**',
               loadComponent: () => import('./audit-entry-detail').then(m => m.AuditEntryDetail),
-              resolve: { auditEntry: () => of({ id: 2778 }) },
+              resolve: { auditEntry: () => of({ id: '18e349fa-b6ee-46ed-99ec-d39c6acd50f3' }) },
             },
           ],
           withComponentInputBinding(),
@@ -46,7 +46,7 @@ describe('AuditEntry Management Detail Component', () => {
       const instance = await harness.navigateByUrl('/', AuditEntryDetail);
 
       // THEN
-      expect(instance.auditEntry()).toEqual(expect.objectContaining({ id: 2778 }));
+      expect(instance.auditEntry()).toEqual(expect.objectContaining({ id: '18e349fa-b6ee-46ed-99ec-d39c6acd50f3' }));
     });
   });
 

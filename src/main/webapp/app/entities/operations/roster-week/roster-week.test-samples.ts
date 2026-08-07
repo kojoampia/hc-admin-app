@@ -3,26 +3,26 @@ import dayjs from 'dayjs/esm';
 import { IRosterWeek, NewRosterWeek } from './roster-week.model';
 
 export const sampleWithRequiredData: IRosterWeek = {
-  id: 4298,
-  label: 'carefully awkwardly highly',
+  id: '2ffd28b6-1018-41d2-902e-efd453b2dd93',
+  label: 'whether whoever',
   startDate: dayjs('2023-12-11'),
   published: false,
 };
 
 export const sampleWithPartialData: IRosterWeek = {
-  id: 9011,
-  label: 'millet undergo form',
+  id: '4d30066d-9c93-437e-9f58-a30d5a848423',
+  label: 'gleefully er',
   startDate: dayjs('2023-12-11'),
-  published: false,
-  publishedAt: dayjs('2023-12-11T02:10'),
+  published: true,
+  publishedAt: dayjs('2023-12-11T02:30'),
 };
 
 export const sampleWithFullData: IRosterWeek = {
-  id: 24888,
-  label: 'inside militate ha',
-  startDate: dayjs('2023-12-10'),
-  published: false,
-  publishedAt: dayjs('2023-12-11T12:54'),
+  id: 'cde81741-87c0-4269-9816-8953b0fb47a1',
+  label: 'tuxedo',
+  startDate: dayjs('2023-12-11'),
+  published: true,
+  publishedAt: dayjs('2023-12-10T23:43'),
 };
 
 export const sampleWithNewData: NewRosterWeek = {

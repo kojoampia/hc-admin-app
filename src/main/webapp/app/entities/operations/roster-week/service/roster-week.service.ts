@@ -77,7 +77,7 @@ export class RosterWeekService extends RosterWeeksService {
       .pipe(map(res => this.convertResponseFromServer(res)));
   }
 
-  find(id: number): Observable<IRosterWeek> {
+  find(id: string): Observable<IRosterWeek> {
     return this.http
       .get<RestRosterWeek>(`${this.resourceUrl}/${encodeURIComponent(id)}`)
       .pipe(map(res => this.convertResponseFromServer(res)));
@@ -90,11 +90,11 @@ export class RosterWeekService extends RosterWeeksService {
       .pipe(map(res => res.clone({ body: this.convertResponseArrayFromServer(res.body!) })));
   }
 
-  delete(id: number): Observable<undefined> {
+  delete(id: string): Observable<undefined> {
     return this.http.delete<undefined>(`${this.resourceUrl}/${encodeURIComponent(id)}`);
   }
 
-  getRosterWeekIdentifier(rosterWeek: Pick<IRosterWeek, 'id'>): number {
+  getRosterWeekIdentifier(rosterWeek: Pick<IRosterWeek, 'id'>): string {
     return rosterWeek.id;
   }
 

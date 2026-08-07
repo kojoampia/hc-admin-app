@@ -17,7 +17,7 @@
       "detail": {
         "title": "Category"
       },
-      "id": "ID",
+      "id": "Id",
       "name": "Name",
       "description": "Description",
       "iconKey": "Icon Key",

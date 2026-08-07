@@ -1,6 +1,5 @@
 import { Routes } from '@angular/router';
 
-import { ASC } from 'app/config/navigation.constants';
 import { UserRouteAccessService } from 'app/core/auth/user-route-access.service';
 
 import MessageResolve from './route/message-routing-resolve.service';
@@ -9,9 +8,7 @@ const messageRoute: Routes = [
   {
     path: '',
     loadComponent: () => import('./list/message').then(m => m.Message),
-    data: {
-      defaultSort: `id,${ASC}`,
-    },
+    data: {},
     canActivate: [UserRouteAccessService],
   },
   {

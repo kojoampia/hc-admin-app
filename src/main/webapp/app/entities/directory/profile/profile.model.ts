@@ -6,7 +6,8 @@ import { Sex } from 'app/entities/enumerations/sex.model';
 import { Title } from 'app/entities/enumerations/title.model';
 
 export interface IProfile {
-  id: number;
+  id: string;
+  accountId?: string | null;
   title?: keyof typeof Title | null;
   firstName?: string | null;
   middleName?: string | null;

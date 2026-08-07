@@ -75,7 +75,7 @@ export class CareActivityService extends CareActivitiesService {
       .pipe(map(res => this.convertResponseFromServer(res)));
   }
 
-  find(id: number): Observable<ICareActivity> {
+  find(id: string): Observable<ICareActivity> {
     return this.http
       .get<RestCareActivity>(`${this.resourceUrl}/${encodeURIComponent(id)}`)
       .pipe(map(res => this.convertResponseFromServer(res)));
@@ -88,11 +88,11 @@ export class CareActivityService extends CareActivitiesService {
       .pipe(map(res => res.clone({ body: this.convertResponseArrayFromServer(res.body!) })));
   }
 
-  delete(id: number): Observable<undefined> {
+  delete(id: string): Observable<undefined> {
     return this.http.delete<undefined>(`${this.resourceUrl}/${encodeURIComponent(id)}`);
   }
 
-  getCareActivityIdentifier(careActivity: Pick<ICareActivity, 'id'>): number {
+  getCareActivityIdentifier(careActivity: Pick<ICareActivity, 'id'>): string {
     return careActivity.id;
   }
 

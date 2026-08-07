@@ -3,7 +3,7 @@ import dayjs from 'dayjs/esm';
 import { AuditLevel } from 'app/entities/enumerations/audit-level.model';
 
 export interface IAuditEntry {
-  id: number;
+  id: string;
   occurredAt?: dayjs.Dayjs | null;
   actor?: string | null;
   action?: string | null;

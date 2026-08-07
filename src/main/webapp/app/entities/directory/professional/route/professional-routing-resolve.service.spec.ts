@@ -37,7 +37,7 @@ describe('Professional routing resolve service', () => {
     it('should return IProfessional returned by find', async () => {
       // GIVEN
       service.find = vitest.fn(id => of({ id }));
-      mockActivatedRouteSnapshot.params = { id: 123 };
+      mockActivatedRouteSnapshot.params = { id: 'ABC' };
 
       // WHEN
       await new Promise<void>(resolve => {
@@ -45,8 +45,8 @@ describe('Professional routing resolve service', () => {
           professionalResolve(mockActivatedRouteSnapshot).subscribe({
             next(result) {
               // THEN
-              expect(service.find).toHaveBeenCalledWith(123);
-              expect(result).toEqual({ id: 123 });
+              expect(service.find).toHaveBeenCalledWith('ABC');
+              expect(result).toEqual({ id: 'ABC' });
               resolve();
             },
           });
@@ -77,13 +77,13 @@ describe('Professional routing resolve service', () => {
     it('should route to 404 page if data not found in server', async () => {
       // GIVEN
       vitest.spyOn(service, 'find').mockReturnValue(throwError(() => new HttpErrorResponse({ status: 404, statusText: 'Not Found' })));
-      mockActivatedRouteSnapshot.params = { id: 123 };
+      mockActivatedRouteSnapshot.params = { id: 'ABC' };
 
       // WHEN
       await TestBed.runInInjectionContext(async () => {
         await expect(lastValueFrom(professionalResolve(mockActivatedRouteSnapshot))).rejects.toThrow('no elements in sequence');
         // THEN
-        expect(service.find).toHaveBeenCalledWith(123);
+        expect(service.find).toHaveBeenCalledWith('ABC');
         expect(mockRouter.navigate).toHaveBeenCalledWith(['404']);
       });
     });
@@ -93,13 +93,13 @@ describe('Professional routing resolve service', () => {
       vitest
         .spyOn(service, 'find')
         .mockReturnValue(throwError(() => new HttpErrorResponse({ status: 500, statusText: 'Internal Server Error' })));
-      mockActivatedRouteSnapshot.params = { id: 123 };
+      mockActivatedRouteSnapshot.params = { id: 'ABC' };
 
       // WHEN
       await TestBed.runInInjectionContext(async () => {
         await expect(lastValueFrom(professionalResolve(mockActivatedRouteSnapshot))).rejects.toThrow('no elements in sequence');
         // THEN
-        expect(service.find).toHaveBeenCalledWith(123);
+        expect(service.find).toHaveBeenCalledWith('ABC');
         expect(mockRouter.navigate).toHaveBeenCalledWith(['error']);
       });
     });

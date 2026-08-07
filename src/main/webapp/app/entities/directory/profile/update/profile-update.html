@@ -10,10 +10,28 @@
 
         @if (editForm.controls.id.value !== null) {
           <div class="mb-3">
-            <label class="form-label" for="field_id" abfTranslate="global.field.id">ID</label>
-            <input type="number" class="form-control" name="id" id="field_id" data-cy="id" formControlName="id" />
+            <label class="form-label" for="field_id" abfTranslate="hcAdminApp.directoryProfile.id">Id</label>
+            <input type="text" class="form-control" name="id" id="field_id" data-cy="id" formControlName="id" />
           </div>
         }
+
+        @let accountIdRef = editForm.get('accountId')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_accountId" abfTranslate="hcAdminApp.directoryProfile.accountId">Account Id</label>
+          <input type="text" class="form-control" name="accountId" id="field_accountId" data-cy="accountId" formControlName="accountId" />
+          @if (accountIdRef.invalid && (accountIdRef.dirty || accountIdRef.touched)) {
+            <div>
+              @if (accountIdRef.errors?.required) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.required">This field is required.</small>
+              }
+              @if (accountIdRef.errors?.maxlength) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.maxlength" [translateValues]="{ max: '60' }"
+                  >This field cannot be longer than 60 characters.</small
+                >
+              }
+            </div>
+          }
+        </div>
 
         <div class="mb-3">
           <label class="form-label" for="field_title" abfTranslate="hcAdminApp.directoryProfile.title">Title</label>

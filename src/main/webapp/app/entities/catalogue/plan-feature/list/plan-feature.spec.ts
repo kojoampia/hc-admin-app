@@ -73,17 +73,19 @@ describe('PlanFeature Management Component', () => {
     // WHEN
     TestBed.tick();
     const req = httpMock.expectOne({ method: 'GET' });
-    req.flush([{ id: 22331 }], { headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' } });
+    req.flush([{ id: 'a73366f1-7565-451a-bcb4-0d1f695b69d4' }], {
+      headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' },
+    });
     await vitest.runAllTimersAsync();
 
     // THEN
     expect(comp.isLoading()).toEqual(false);
-    expect(comp.planFeatures()[0]).toEqual(expect.objectContaining({ id: 22331 }));
+    expect(comp.planFeatures()[0]).toEqual(expect.objectContaining({ id: 'a73366f1-7565-451a-bcb4-0d1f695b69d4' }));
   });
 
   describe('trackId', () => {
     it('should forward to planFeatureService', () => {
-      const entity = { id: 22331 };
+      const entity = { id: 'a73366f1-7565-451a-bcb4-0d1f695b69d4' };
       vitest.spyOn(service, 'getPlanFeatureIdentifier');
       const id = comp.trackId(entity);
       expect(service.getPlanFeatureIdentifier).toHaveBeenCalledWith(entity);

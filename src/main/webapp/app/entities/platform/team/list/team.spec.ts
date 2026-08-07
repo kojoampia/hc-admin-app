@@ -73,17 +73,19 @@ describe('Team Management Component', () => {
     // WHEN
     TestBed.tick();
     const req = httpMock.expectOne({ method: 'GET' });
-    req.flush([{ id: 1226 }], { headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' } });
+    req.flush([{ id: '07c2eeb9-6f13-455e-bbad-df15a9442470' }], {
+      headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' },
+    });
     await vitest.runAllTimersAsync();
 
     // THEN
     expect(comp.isLoading()).toEqual(false);
-    expect(comp.teams()[0]).toEqual(expect.objectContaining({ id: 1226 }));
+    expect(comp.teams()[0]).toEqual(expect.objectContaining({ id: '07c2eeb9-6f13-455e-bbad-df15a9442470' }));
   });
 
   describe('trackId', () => {
     it('should forward to teamService', () => {
-      const entity = { id: 1226 };
+      const entity = { id: '07c2eeb9-6f13-455e-bbad-df15a9442470' };
       vitest.spyOn(service, 'getTeamIdentifier');
       const id = comp.trackId(entity);
       expect(service.getTeamIdentifier).toHaveBeenCalledWith(entity);

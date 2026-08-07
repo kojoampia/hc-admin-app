@@ -48,11 +48,11 @@ describe('ServiceActivity Management Update Component', () => {
 
   describe('ngOnInit', () => {
     it('should call Category query and add missing value', () => {
-      const serviceActivity: IServiceActivity = { id: 10442 };
-      const category: ICategory = { id: 6752 };
+      const serviceActivity: IServiceActivity = { id: '0838588b-421d-42a6-97a1-14b21853407e' };
+      const category: ICategory = { id: '32948133-0615-4b7d-82d4-7d0e6b590fb7' };
       serviceActivity.category = category;
 
-      const categoryCollection: ICategory[] = [{ id: 6752 }];
+      const categoryCollection: ICategory[] = [{ id: '32948133-0615-4b7d-82d4-7d0e6b590fb7' }];
       vitest.spyOn(categoryService, 'query').mockReturnValue(of(new HttpResponse({ body: categoryCollection })));
       const additionalCategories = [category];
       const expectedCollection: ICategory[] = [...additionalCategories, ...categoryCollection];
@@ -70,8 +70,8 @@ describe('ServiceActivity Management Update Component', () => {
     });
 
     it('should update editForm', () => {
-      const serviceActivity: IServiceActivity = { id: 10442 };
-      const category: ICategory = { id: 6752 };
+      const serviceActivity: IServiceActivity = { id: '0838588b-421d-42a6-97a1-14b21853407e' };
+      const category: ICategory = { id: '32948133-0615-4b7d-82d4-7d0e6b590fb7' };
       serviceActivity.category = category;
 
       activatedRoute.data = of({ serviceActivity });
@@ -86,7 +86,7 @@ describe('ServiceActivity Management Update Component', () => {
     it('should call update service on save for existing entity', () => {
       // GIVEN
       const saveSubject = new Subject<IServiceActivity>();
-      const serviceActivity = { id: 29075 };
+      const serviceActivity = { id: 'e58e53d8-3de4-4287-add1-bbf6e52730f0' };
       vitest.spyOn(serviceActivityFormService, 'getServiceActivity').mockReturnValue(serviceActivity);
       vitest.spyOn(serviceActivityService, 'update').mockReturnValue(saveSubject);
       vitest.spyOn(comp, 'previousState');
@@ -109,7 +109,7 @@ describe('ServiceActivity Management Update Component', () => {
     it('should call create service on save for new entity', () => {
       // GIVEN
       const saveSubject = new Subject<IServiceActivity>();
-      const serviceActivity = { id: 29075 };
+      const serviceActivity = { id: 'e58e53d8-3de4-4287-add1-bbf6e52730f0' };
       vitest.spyOn(serviceActivityFormService, 'getServiceActivity').mockReturnValue({ id: null });
       vitest.spyOn(serviceActivityService, 'create').mockReturnValue(saveSubject);
       vitest.spyOn(comp, 'previousState');
@@ -132,7 +132,7 @@ describe('ServiceActivity Management Update Component', () => {
     it('should set isSaving to false on error', () => {
       // GIVEN
       const saveSubject = new Subject<IServiceActivity>();
-      const serviceActivity = { id: 29075 };
+      const serviceActivity = { id: 'e58e53d8-3de4-4287-add1-bbf6e52730f0' };
       vitest.spyOn(serviceActivityService, 'update').mockReturnValue(saveSubject);
       vitest.spyOn(comp, 'previousState');
       activatedRoute.data = of({ serviceActivity });
@@ -153,8 +153,8 @@ describe('ServiceActivity Management Update Component', () => {
   describe('Compare relationships', () => {
     describe('compareCategory', () => {
       it('should forward to categoryService', () => {
-        const entity = { id: 6752 };
-        const entity2 = { id: 4374 };
+        const entity = { id: '32948133-0615-4b7d-82d4-7d0e6b590fb7' };
+        const entity2 = { id: '6e928816-99ce-488b-9609-4b7afe09aa38' };
         vitest.spyOn(categoryService, 'compareCategory');
         comp.compareCategory(entity, entity2);
         expect(categoryService.compareCategory).toHaveBeenCalledWith(entity, entity2);

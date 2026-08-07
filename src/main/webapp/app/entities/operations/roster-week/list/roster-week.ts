@@ -55,7 +55,7 @@ export class RosterWeek implements OnInit {
     });
   }
 
-  trackId = (item: IRosterWeek): number => this.rosterWeekService.getRosterWeekIdentifier(item);
+  trackId = (item: IRosterWeek): string => this.rosterWeekService.getRosterWeekIdentifier(item);
 
   ngOnInit(): void {
     this.subscription = combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data])

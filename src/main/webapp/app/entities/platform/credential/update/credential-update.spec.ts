@@ -43,7 +43,7 @@ describe('Credential Management Update Component', () => {
 
   describe('ngOnInit', () => {
     it('should update editForm', () => {
-      const credential: ICredential = { id: 10754 };
+      const credential: ICredential = { id: '37c978bd-bd74-4bba-a58a-e21267b95005' };
 
       activatedRoute.data = of({ credential });
       comp.ngOnInit();
@@ -56,7 +56,7 @@ describe('Credential Management Update Component', () => {
     it('should call update service on save for existing entity', () => {
       // GIVEN
       const saveSubject = new Subject<ICredential>();
-      const credential = { id: 6323 };
+      const credential = { id: '35b3b582-8e66-4c2d-9e4a-8ff9d99022d0' };
       vitest.spyOn(credentialFormService, 'getCredential').mockReturnValue(credential);
       vitest.spyOn(credentialService, 'update').mockReturnValue(saveSubject);
       vitest.spyOn(comp, 'previousState');
@@ -79,7 +79,7 @@ describe('Credential Management Update Component', () => {
     it('should call create service on save for new entity', () => {
       // GIVEN
       const saveSubject = new Subject<ICredential>();
-      const credential = { id: 6323 };
+      const credential = { id: '35b3b582-8e66-4c2d-9e4a-8ff9d99022d0' };
       vitest.spyOn(credentialFormService, 'getCredential').mockReturnValue({ id: null });
       vitest.spyOn(credentialService, 'create').mockReturnValue(saveSubject);
       vitest.spyOn(comp, 'previousState');
@@ -102,7 +102,7 @@ describe('Credential Management Update Component', () => {
     it('should set isSaving to false on error', () => {
       // GIVEN
       const saveSubject = new Subject<ICredential>();
-      const credential = { id: 6323 };
+      const credential = { id: '35b3b582-8e66-4c2d-9e4a-8ff9d99022d0' };
       vitest.spyOn(credentialService, 'update').mockReturnValue(saveSubject);
       vitest.spyOn(comp, 'previousState');
       activatedRoute.data = of({ credential });

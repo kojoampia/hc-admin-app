@@ -23,7 +23,7 @@ describe('ServiceActivity Management Detail Component', () => {
             {
               path: '**',
               loadComponent: () => import('./service-activity-detail').then(m => m.ServiceActivityDetail),
-              resolve: { serviceActivity: () => of({ id: 29075 }) },
+              resolve: { serviceActivity: () => of({ id: 'e58e53d8-3de4-4287-add1-bbf6e52730f0' }) },
             },
           ],
           withComponentInputBinding(),
@@ -46,7 +46,7 @@ describe('ServiceActivity Management Detail Component', () => {
       const instance = await harness.navigateByUrl('/', ServiceActivityDetail);
 
       // THEN
-      expect(instance.serviceActivity()).toEqual(expect.objectContaining({ id: 29075 }));
+      expect(instance.serviceActivity()).toEqual(expect.objectContaining({ id: 'e58e53d8-3de4-4287-add1-bbf6e52730f0' }));
     });
   });
 

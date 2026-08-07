@@ -1,5 +1,5 @@
 export interface IAngel {
-  id: number;
+  id: string;
   name?: string | null;
   relationship?: string | null;
   phone?: string | null;

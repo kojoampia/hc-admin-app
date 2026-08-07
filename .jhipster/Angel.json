@@ -7,6 +7,10 @@
   "documentation": "Next of kin / diaspora sponsor. Called \"Angel\" throughout the\\nHealth Connect product language — keep the name.",
   "fields": [
     {
+      "fieldName": "id",
+      "fieldType": "String"
+    },
+    {
       "fieldName": "name",
       "fieldType": "String",
       "fieldValidateRules": ["required", "maxlength"],

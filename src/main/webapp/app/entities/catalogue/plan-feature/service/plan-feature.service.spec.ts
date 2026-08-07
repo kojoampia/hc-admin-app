@@ -30,7 +30,7 @@ describe('PlanFeature Service', () => {
       const returnedFromService = { ...requireRestSample };
       const expected = { ...sampleWithRequiredData };
 
-      service.find(123).subscribe(resp => (expectedResult = resp));
+      service.find('ABC').subscribe(resp => (expectedResult = resp));
 
       const req = httpMock.expectOne({ method: 'GET' });
       req.flush(returnedFromService);
@@ -87,7 +87,7 @@ describe('PlanFeature Service', () => {
     });
 
     it('should delete a PlanFeature', () => {
-      service.delete(123).subscribe();
+      service.delete('ABC').subscribe();
 
       const requests = httpMock.match({ method: 'DELETE' });
       expect(requests).toHaveLength(1);
@@ -158,7 +158,7 @@ describe('PlanFeature Service', () => {
       });
 
       it('should return false if one entity is null', () => {
-        const entity1 = { id: 22331 };
+        const entity1 = { id: 'a73366f1-7565-451a-bcb4-0d1f695b69d4' };
         const entity2 = null;
 
         const compareResult1 = service.comparePlanFeature(entity1, entity2);
@@ -169,8 +169,8 @@ describe('PlanFeature Service', () => {
       });
 
       it('should return false if primaryKey differs', () => {
-        const entity1 = { id: 22331 };
-        const entity2 = { id: 16120 };
+        const entity1 = { id: 'a73366f1-7565-451a-bcb4-0d1f695b69d4' };
+        const entity2 = { id: 'ce5058da-9e44-44ff-9cef-1fb4a8759e3d' };
 
         const compareResult1 = service.comparePlanFeature(entity1, entity2);
         const compareResult2 = service.comparePlanFeature(entity2, entity1);
@@ -180,8 +180,8 @@ describe('PlanFeature Service', () => {
       });
 
       it('should return false if primaryKey matches', () => {
-        const entity1 = { id: 22331 };
-        const entity2 = { id: 22331 };
+        const entity1 = { id: 'a73366f1-7565-451a-bcb4-0d1f695b69d4' };
+        const entity2 = { id: 'a73366f1-7565-451a-bcb4-0d1f695b69d4' };
 
         const compareResult1 = service.comparePlanFeature(entity1, entity2);
         const compareResult2 = service.comparePlanFeature(entity2, entity1);

@@ -43,7 +43,7 @@ describe('Vendor Management Update Component', () => {
 
   describe('ngOnInit', () => {
     it('should update editForm', () => {
-      const vendor: IVendor = { id: 14521 };
+      const vendor: IVendor = { id: '38a75b67-70c0-4716-bccf-c7d55a3a8179' };
 
       activatedRoute.data = of({ vendor });
       comp.ngOnInit();
@@ -56,7 +56,7 @@ describe('Vendor Management Update Component', () => {
     it('should call update service on save for existing entity', () => {
       // GIVEN
       const saveSubject = new Subject<IVendor>();
-      const vendor = { id: 10199 };
+      const vendor = { id: '478690b5-4f10-43b0-b67e-1148991a8421' };
       vitest.spyOn(vendorFormService, 'getVendor').mockReturnValue(vendor);
       vitest.spyOn(vendorService, 'update').mockReturnValue(saveSubject);
       vitest.spyOn(comp, 'previousState');
@@ -79,7 +79,7 @@ describe('Vendor Management Update Component', () => {
     it('should call create service on save for new entity', () => {
       // GIVEN
       const saveSubject = new Subject<IVendor>();
-      const vendor = { id: 10199 };
+      const vendor = { id: '478690b5-4f10-43b0-b67e-1148991a8421' };
       vitest.spyOn(vendorFormService, 'getVendor').mockReturnValue({ id: null });
       vitest.spyOn(vendorService, 'create').mockReturnValue(saveSubject);
       vitest.spyOn(comp, 'previousState');
@@ -102,7 +102,7 @@ describe('Vendor Management Update Component', () => {
     it('should set isSaving to false on error', () => {
       // GIVEN
       const saveSubject = new Subject<IVendor>();
-      const vendor = { id: 10199 };
+      const vendor = { id: '478690b5-4f10-43b0-b67e-1148991a8421' };
       vitest.spyOn(vendorService, 'update').mockReturnValue(saveSubject);
       vitest.spyOn(comp, 'previousState');
       activatedRoute.data = of({ vendor });

@@ -73,12 +73,14 @@ describe('CareActivity Management Component', () => {
     // WHEN
     TestBed.tick();
     const req = httpMock.expectOne({ method: 'GET' });
-    req.flush([{ id: 21303 }], { headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' } });
+    req.flush([{ id: 'a750ee1d-4eb4-4652-9233-b9cedc9cdcef' }], {
+      headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' },
+    });
     await vitest.runAllTimersAsync();
 
     // THEN
     expect(comp.isLoading()).toEqual(false);
-    expect(comp.careActivities()[0]).toEqual(expect.objectContaining({ id: 21303 }));
+    expect(comp.careActivities()[0]).toEqual(expect.objectContaining({ id: 'a750ee1d-4eb4-4652-9233-b9cedc9cdcef' }));
   });
 
   it('should cancel previous requests when loading a new page', async () => {
@@ -91,13 +93,15 @@ describe('CareActivity Management Component', () => {
     comp.load();
     await vitest.runAllTimersAsync();
     const req2 = httpMock.expectOne({ method: 'GET' });
-    req2.flush([{ id: 21303 }], { headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' } });
+    req2.flush([{ id: 'a750ee1d-4eb4-4652-9233-b9cedc9cdcef' }], {
+      headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' },
+    });
     await vitest.runAllTimersAsync();
 
     // THEN
     expect(req.cancelled).toBeTruthy();
     expect(comp.isLoading()).toEqual(false);
-    expect(comp.careActivities()[0]).toEqual(expect.objectContaining({ id: 21303 }));
+    expect(comp.careActivities()[0]).toEqual(expect.objectContaining({ id: 'a750ee1d-4eb4-4652-9233-b9cedc9cdcef' }));
   });
 
   it('should not fail on resource error state', async () => {
@@ -115,16 +119,18 @@ describe('CareActivity Management Component', () => {
     comp.load();
     TestBed.tick();
     const successReq = httpMock.expectOne({ method: 'GET' });
-    successReq.flush([{ id: 21303 }], { headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' } });
+    successReq.flush([{ id: 'a750ee1d-4eb4-4652-9233-b9cedc9cdcef' }], {
+      headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' },
+    });
     await vitest.runAllTimersAsync();
 
     // THEN - subscription is still alive and second load succeeds
-    expect(comp.careActivities()[0]).toEqual(expect.objectContaining({ id: 21303 }));
+    expect(comp.careActivities()[0]).toEqual(expect.objectContaining({ id: 'a750ee1d-4eb4-4652-9233-b9cedc9cdcef' }));
   });
 
   describe('trackId', () => {
     it('should forward to careActivityService', () => {
-      const entity = { id: 21303 };
+      const entity = { id: 'a750ee1d-4eb4-4652-9233-b9cedc9cdcef' };
       vitest.spyOn(service, 'getCareActivityIdentifier');
       const id = comp.trackId(entity);
       expect(service.getCareActivityIdentifier).toHaveBeenCalledWith(entity);

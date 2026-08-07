@@ -47,7 +47,7 @@ export class CategoryService extends CategoriesService {
     return this.http.patch<ICategory>(`${this.resourceUrl}/${encodeURIComponent(this.getCategoryIdentifier(category))}`, category);
   }
 
-  find(id: number): Observable<ICategory> {
+  find(id: string): Observable<ICategory> {
     return this.http.get<ICategory>(`${this.resourceUrl}/${encodeURIComponent(id)}`);
   }
 
@@ -56,11 +56,11 @@ export class CategoryService extends CategoriesService {
     return this.http.get<ICategory[]>(this.resourceUrl, { params: options, observe: 'response' });
   }
 
-  delete(id: number): Observable<undefined> {
+  delete(id: string): Observable<undefined> {
     return this.http.delete<undefined>(`${this.resourceUrl}/${encodeURIComponent(id)}`);
   }
 
-  getCategoryIdentifier(category: Pick<ICategory, 'id'>): number {
+  getCategoryIdentifier(category: Pick<ICategory, 'id'>): string {
     return category.id;
   }
 

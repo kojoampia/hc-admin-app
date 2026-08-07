@@ -73,17 +73,19 @@ describe('Profile Management Component', () => {
     // WHEN
     TestBed.tick();
     const req = httpMock.expectOne({ method: 'GET' });
-    req.flush([{ id: 32255 }], { headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' } });
+    req.flush([{ id: 'f60e8f71-7b26-4f3d-8111-2c32dce7269d' }], {
+      headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' },
+    });
     await vitest.runAllTimersAsync();
 
     // THEN
     expect(comp.isLoading()).toEqual(false);
-    expect(comp.profiles()[0]).toEqual(expect.objectContaining({ id: 32255 }));
+    expect(comp.profiles()[0]).toEqual(expect.objectContaining({ id: 'f60e8f71-7b26-4f3d-8111-2c32dce7269d' }));
   });
 
   describe('trackId', () => {
     it('should forward to profileService', () => {
-      const entity = { id: 32255 };
+      const entity = { id: 'f60e8f71-7b26-4f3d-8111-2c32dce7269d' };
       vitest.spyOn(service, 'getProfileIdentifier');
       const id = comp.trackId(entity);
       expect(service.getProfileIdentifier).toHaveBeenCalledWith(entity);

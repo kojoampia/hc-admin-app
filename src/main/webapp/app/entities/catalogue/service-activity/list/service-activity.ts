@@ -68,7 +68,7 @@ export class ServiceActivity implements OnInit {
     });
   }
 
-  trackId = (item: IServiceActivity): number => this.serviceActivityService.getServiceActivityIdentifier(item);
+  trackId = (item: IServiceActivity): string => this.serviceActivityService.getServiceActivityIdentifier(item);
 
   ngOnInit(): void {
     this.subscription = combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data])

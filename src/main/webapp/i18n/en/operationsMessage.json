@@ -17,7 +17,7 @@
       "detail": {
         "title": "Message"
       },
-      "id": "ID",
+      "id": "Id",
       "sentAt": "Sent At",
       "fromAddress": "From Address",
       "senderName": "Sender Name",

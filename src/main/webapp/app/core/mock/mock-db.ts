@@ -1225,17 +1225,19 @@ export const splitName = (fullName: string): { title: string | null; firstName: 
 // the same graph, and the demo's own string keys ('p1', 'a3', 'm12') map onto
 // them through these helpers rather than being scattered through the file.
 
-const proId = (key: string): number => DEMO_PROS.findIndex(p => p.id === key) + 1;
-const patId = (key: string): number => DEMO_PATIENTS.findIndex(p => p.id === key) + 1;
-const msgId = (key: string): number => DEMO_MESSAGES.findIndex(m => m.id === key) + 1;
-const planIdByName = (name: string): number => DEMO_PLANS.findIndex(p => p.name === name) + 1;
-const catId = (key: string): number => DEMO_CATEGORIES.findIndex(c => c.id === key) + 1;
+// Ids are Strings — the api is a MongoDB microservice and its ids are
+// ObjectIds, not sequence numbers. That turns out to be a gift: the prototype
+// already keys its records 'p1', 'a3', 'm12', so the seed uses those instead
+// of inventing positions, and /patient/a3/view now names the same record the
+// prototype does.
+const proById = (key: string) => DEMO_PROS.find(p => p.id === key)!;
+const planIdByName = (name: string): string => DEMO_PLANS.find(p => p.name === name)?.id ?? DEMO_PLANS[0].id;
 
 export const HUBS = ['Accra Hub', 'Kumasi Hub'];
-const hubId = (name: string): number => HUBS.indexOf(name) + 1;
+const hubId = (name: string): string => `hub-${HUBS.indexOf(name) + 1}`;
 
 export const TEAMS = ['Clinical review', 'Home visits · North', 'Home visits · South', 'Rapid response'];
-const teamId = (name: string): number => TEAMS.indexOf(name) + 1;
+const teamId = (name: string): string => `team-${TEAMS.indexOf(name) + 1}`;
 
 /** The prototype's roster week: Monday 3 August 2026. */
 export const ROSTER_WEEK_START = '2026-08-03';
@@ -1254,8 +1256,8 @@ export type MockDatabase = Record<string, any[]>;
 export const buildDatabase = (): MockDatabase => {
   // Addresses: one per patient, plus the organisation's and one per hub.
   // Professionals have no address in the prototype and are given none.
-  const addresses = DEMO_PATIENTS.map((p, index) => ({
-    id: index + 1,
+  const addresses = DEMO_PATIENTS.map(p => ({
+    id: `addr-${p.id}`,
     digitalAddress: p.digital,
     streetAddress: p.street,
     townDistrict: p.town,
@@ -1264,7 +1266,7 @@ export const buildDatabase = (): MockDatabase => {
     country: p.country,
   }));
 
-  const orgAddressId = addresses.length + 1;
+  const orgAddressId = 'addr-org';
   addresses.push({
     id: orgAddressId,
     digitalAddress: DEMO_ORG.addr.digital,
@@ -1278,10 +1280,13 @@ export const buildDatabase = (): MockDatabase => {
   // Profiles: professionals first (ids 1..9), then patients, then the
   // signed-in operator. Patient profile ids are offset by the professional
   // count so both stay stable if either list grows.
-  const professionalProfiles = DEMO_PROS.map((pro, index) => {
+  const professionalProfiles = DEMO_PROS.map(pro => {
     const name = splitName(pro.name);
     return {
-      id: index + 1,
+      id: `profile-${pro.id}`,
+      // The gateway Account this person signs in as. Account ids are minted
+      // by the gateway; the console only ever carries the reference.
+      accountId: `cred-${pro.id}`,
       title: name.title,
       firstName: name.firstName,
       middleName: name.middleName,
@@ -1300,7 +1305,8 @@ export const buildDatabase = (): MockDatabase => {
   const patientProfiles = DEMO_PATIENTS.map((patient, index) => {
     const name = splitName(patient.name);
     return {
-      id: DEMO_PROS.length + index + 1,
+      id: `profile-${patient.id}`,
+      accountId: `cred-${patient.id}`,
       title: name.title,
       firstName: name.firstName,
       middleName: name.middleName,
@@ -1311,14 +1317,15 @@ export const buildDatabase = (): MockDatabase => {
       email: patient.email,
       idType: ID_TYPE[patient.idType] ?? null,
       idNumber: patient.idNo,
-      address: { id: index + 1 },
+      address: { id: `addr-${patient.id}` },
     };
   });
 
-  const operatorProfileId = DEMO_PROS.length + DEMO_PATIENTS.length + 1;
+  const operatorProfileId = 'profile-me';
   const operatorName = splitName(`${DEMO_ME.title} ${DEMO_ME.name}`);
   const operatorProfile = {
     id: operatorProfileId,
+    accountId: 'cred-me',
     title: operatorName.title,
     firstName: operatorName.firstName,
     middleName: operatorName.middleName,
@@ -1334,8 +1341,8 @@ export const buildDatabase = (): MockDatabase => {
 
   const profiles = [...professionalProfiles, ...patientProfiles, operatorProfile];
 
-  const angels = DEMO_PATIENTS.map((patient, index) => ({
-    id: index + 1,
+  const angels = DEMO_PATIENTS.map(patient => ({
+    id: `angel-${patient.id}`,
     name: patient.angel,
     relationship: patient.angelRel,
     phone: patient.angelPhone,
@@ -1347,36 +1354,56 @@ export const buildDatabase = (): MockDatabase => {
   }));
 
   const hubs = HUBS.map((name, index) => ({
-    id: index + 1,
+    id: `hub-${index + 1}`,
     name,
     staffCount: DEMO_PROS.filter(pro => pro.hub === name).length,
     address: null,
   }));
 
   const teams = TEAMS.map((name, index) => ({
-    id: index + 1,
+    id: `team-${index + 1}`,
     name,
     description: null,
     // Supervisor: the first verified, active professional on the team, which
     // is how the prototype's team column reads on the professionals screen.
     supervisor: (() => {
       const lead = DEMO_PROS.find(pro => pro.team === name && pro.verified === 'verified' && pro.status === 'active');
-      return lead ? { id: proId(lead.id), licenceNumber: lead.lic } : null;
+      return lead ? { id: lead.id, licenceNumber: lead.lic } : null;
     })(),
   }));
 
-  const credentials = DEMO_PROS.map((pro, index) => ({
-    id: index + 1,
-    email: pro.email,
-    phoneNumber: pro.phone,
-    passwordHash: null,
-    role: 'PROFESSIONAL',
-    enabled: pro.status === 'active',
-    lastLoginAt: null,
-  }));
+  const credentials = [
+    ...DEMO_PROS.map(pro => ({
+      id: `cred-${pro.id}`,
+      email: pro.email,
+      phoneNumber: pro.phone,
+      passwordHash: null,
+      role: 'ROLE_PROFESSIONAL',
+      enabled: pro.status === 'active',
+      lastLoginAt: null,
+    })),
+    ...DEMO_PATIENTS.map(patient => ({
+      id: `cred-${patient.id}`,
+      email: patient.email,
+      phoneNumber: patient.phone,
+      passwordHash: null,
+      role: 'ROLE_PATIENT',
+      enabled: patient.status === 'active',
+      lastLoginAt: null,
+    })),
+    {
+      id: 'cred-me',
+      email: DEMO_ME.email,
+      phoneNumber: DEMO_ME.phone,
+      passwordHash: null,
+      role: 'ROLE_ADMIN',
+      enabled: true,
+      lastLoginAt: null,
+    },
+  ];
 
   const professionals = DEMO_PROS.map((pro, index) => ({
-    id: index + 1,
+    id: pro.id,
     role: PROFESSIONAL_ROLE[pro.role],
     speciality: pro.spec,
     licenceNumber: pro.lic,
@@ -1387,14 +1414,18 @@ export const buildDatabase = (): MockDatabase => {
     visitCount: pro.visits,
     rating: pro.rating,
     joinedOn: toIsoDate(pro.joined),
-    profile: { id: index + 1, firstName: professionalProfiles[index].firstName, lastName: professionalProfiles[index].lastName },
-    credential: { id: index + 1, email: pro.email },
+    profile: {
+      id: `profile-${pro.id}`,
+      firstName: professionalProfiles[index].firstName,
+      lastName: professionalProfiles[index].lastName,
+    },
+    credential: { id: `cred-${pro.id}`, email: pro.email },
     team: { id: teamId(pro.team), name: pro.team },
     hub: { id: hubId(pro.hub), name: pro.hub },
   }));
 
-  const servicePlans = DEMO_PLANS.map((plan, index) => ({
-    id: index + 1,
+  const servicePlans = DEMO_PLANS.map(plan => ({
+    id: plan.id,
     name: plan.name,
     tier: PLAN_TIER[plan.name],
     tierLabel: plan.tier,
@@ -1406,17 +1437,17 @@ export const buildDatabase = (): MockDatabase => {
   }));
 
   let planFeatureId = 0;
-  const planFeatures = DEMO_PLANS.flatMap((plan, planIndex) =>
+  const planFeatures = DEMO_PLANS.flatMap(plan =>
     plan.items.map((label, position) => ({
-      id: ++planFeatureId,
+      id: `pf-${++planFeatureId}`,
       label,
       position,
-      plan: { id: planIndex + 1, name: plan.name },
+      plan: { id: plan.id, name: plan.name },
     })),
   );
 
   const patients = DEMO_PATIENTS.map((patient, index) => ({
-    id: index + 1,
+    id: patient.id,
     status: ACCOUNT_STATUS[patient.status],
     joinedOn: toIsoDate(patient.joined),
     lastActiveOn: toIsoDate(patient.last),
@@ -1426,18 +1457,18 @@ export const buildDatabase = (): MockDatabase => {
       firstName: patientProfiles[index].firstName,
       lastName: patientProfiles[index].lastName,
     },
-    angel: { id: index + 1, name: patient.angel },
+    angel: { id: `angel-${patient.id}`, name: patient.angel },
     plan: { id: planIdByName(patient.plan), name: patient.plan },
-    clinicalLead: { id: proId(patient.lead), licenceNumber: DEMO_PROS[proId(patient.lead) - 1].lic },
+    clinicalLead: { id: patient.lead, licenceNumber: proById(patient.lead).lic },
     // The prototype puts a patient in the hub of their clinical lead.
     hub: (() => {
-      const lead = DEMO_PROS[proId(patient.lead) - 1];
+      const lead = proById(patient.lead);
       return { id: hubId(lead.hub), name: lead.hub };
     })(),
   }));
 
-  const vendors = DEMO_VENDORS.map((vendor, index) => ({
-    id: index + 1,
+  const vendors = DEMO_VENDORS.map(vendor => ({
+    id: vendor.id,
     name: vendor.name,
     category: vendor.cat,
     serviceSummary: vendor.service,
@@ -1458,8 +1489,8 @@ export const buildDatabase = (): MockDatabase => {
     rating: vendor.rating,
   }));
 
-  const messages = DEMO_MESSAGES.map((message, index) => ({
-    id: index + 1,
+  const messages = DEMO_MESSAGES.map(message => ({
+    id: message.id,
     sentAt: toIsoInstant(message.d, message.tm),
     fromAddress: message.from,
     senderName: message.who,
@@ -1470,21 +1501,21 @@ export const buildDatabase = (): MockDatabase => {
     priority: message.prio.toUpperCase(),
   }));
 
-  const tasks = DEMO_TASKS.map((task, index) => ({
-    id: index + 1,
+  const tasks = DEMO_TASKS.map(task => ({
+    id: task.id,
     title: task.t,
     state: task.col === 'doing' ? 'DOING' : task.col.toUpperCase(),
     priority: task.prio.toUpperCase(),
     dueOn: toIsoDate(task.due),
     tag: task.tag,
     createdAt: null,
-    owner: { id: proId(task.own), licenceNumber: DEMO_PROS[proId(task.own) - 1].lic },
+    owner: { id: task.own, licenceNumber: proById(task.own).lic },
     sourceMessage: null,
   }));
 
   const rosterWeeks = [
     {
-      id: 1,
+      id: 'week-2026-08-03',
       label: ROSTER_WEEK_LABEL,
       startDate: ROSTER_WEEK_START,
       published: false,
@@ -1501,34 +1532,34 @@ export const buildDatabase = (): MockDatabase => {
       .map((shift, dayIndex) => ({ shift, dayIndex }))
       .filter(cell => cell.shift !== '')
       .map(cell => ({
-        id: ++shiftId,
+        id: `shift-${++shiftId}`,
         dayIndex: cell.dayIndex,
         shiftDate: rosterDate(cell.dayIndex),
         shift: SHIFT[cell.shift],
-        week: { id: 1, label: ROSTER_WEEK_LABEL },
-        professional: { id: proId(proKey), licenceNumber: DEMO_PROS[proId(proKey) - 1].lic },
+        week: { id: 'week-2026-08-03', label: ROSTER_WEEK_LABEL },
+        professional: { id: proKey, licenceNumber: proById(proKey).lic },
       })),
   );
 
-  const categories = DEMO_CATEGORIES.map((category, index) => ({
-    id: index + 1,
+  const categories = DEMO_CATEGORIES.map(category => ({
+    id: category.id,
     name: category.name,
     description: category.desc,
     iconKey: category.icon,
   }));
 
-  const serviceActivities = DEMO_ACTIVITIES.map((activity, index) => ({
-    id: index + 1,
+  const serviceActivities = DEMO_ACTIVITIES.map(activity => ({
+    id: activity.id,
     name: activity.name,
     unit: activity.unit,
     unitPrice: activity.price,
     duration: activity.dur,
     published: activity.active,
-    category: { id: catId(activity.cat), name: DEMO_CATEGORIES[catId(activity.cat) - 1].name },
+    category: { id: activity.cat, name: DEMO_CATEGORIES.find(c => c.id === activity.cat)!.name },
   }));
 
-  const platformServices = DEMO_SERVICES.map((service, index) => ({
-    id: index + 1,
+  const platformServices = DEMO_SERVICES.map(service => ({
+    id: `svc-${service.port}`,
     name: service.nm,
     host: service.host,
     port: service.port,
@@ -1538,7 +1569,7 @@ export const buildDatabase = (): MockDatabase => {
   }));
 
   const auditEntries = DEMO_AUDIT.map((entry, index) => ({
-    id: index + 1,
+    id: `audit-${index + 1}`,
     occurredAt: auditInstant(entry.ts),
     actor: entry.who,
     action: entry.act,
@@ -1548,7 +1579,7 @@ export const buildDatabase = (): MockDatabase => {
 
   const organisations = [
     {
-      id: 1,
+      id: 'org-1',
       name: DEMO_ORG.name,
       legalName: DEMO_ORG.legal,
       description: DEMO_ORG.desc,
@@ -1598,10 +1629,23 @@ export const db = (): MockDatabase => database;
 
 export const resetDatabase = (): void => {
   database = buildDatabase();
+  created = 0;
 };
 
-/** Next id for a collection: max + 1, so a create never collides with a seed row. */
-export const nextId = (collection: string): number => {
+/**
+ * Mint an id for a new row.
+ *
+ * Seed ids are meaningful strings ('a3', 'svc-5504'), not a sequence, so a
+ * created row cannot take max + 1. It gets a prefixed counter that cannot
+ * collide with a seeded key — the same guarantee an ObjectId gives on the
+ * real service.
+ */
+let created = 0;
+export const nextId = (collection: string): string => {
   const rows = database[collection] ?? [];
-  return rows.reduce((max: number, row: any) => Math.max(max, Number(row.id) || 0), 0) + 1;
+  let candidate: string;
+  do {
+    candidate = `${collection}-new-${++created}`;
+  } while (rows.some((row: any) => String(row.id) === candidate));
+  return candidate;
 };

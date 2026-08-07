@@ -6,7 +6,7 @@ import { TaskState } from 'app/entities/enumerations/task-state.model';
 import { IMessage } from 'app/entities/operations/message/message.model';
 
 export interface ITask {
-  id: number;
+  id: string;
   title?: string | null;
   state?: keyof typeof TaskState | null;
   priority?: keyof typeof Priority | null;

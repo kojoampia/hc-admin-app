@@ -23,7 +23,7 @@ describe('UserOption Management Detail Component', () => {
             {
               path: '**',
               loadComponent: () => import('./user-option-detail').then(m => m.UserOptionDetail),
-              resolve: { userOption: () => of({ id: 6892 }) },
+              resolve: { userOption: () => of({ id: '37e3f7e2-fac2-4a3b-bf2f-cb2526358f59' }) },
             },
           ],
           withComponentInputBinding(),
@@ -46,7 +46,7 @@ describe('UserOption Management Detail Component', () => {
       const instance = await harness.navigateByUrl('/', UserOptionDetail);
 
       // THEN
-      expect(instance.userOption()).toEqual(expect.objectContaining({ id: 6892 }));
+      expect(instance.userOption()).toEqual(expect.objectContaining({ id: '37e3f7e2-fac2-4a3b-bf2f-cb2526358f59' }));
     });
   });
 

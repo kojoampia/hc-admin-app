@@ -30,7 +30,7 @@ describe('Category Service', () => {
       const returnedFromService = { ...requireRestSample };
       const expected = { ...sampleWithRequiredData };
 
-      service.find(123).subscribe(resp => (expectedResult = resp));
+      service.find('ABC').subscribe(resp => (expectedResult = resp));
 
       const req = httpMock.expectOne({ method: 'GET' });
       req.flush(returnedFromService);
@@ -87,7 +87,7 @@ describe('Category Service', () => {
     });
 
     it('should delete a Category', () => {
-      service.delete(123).subscribe();
+      service.delete('ABC').subscribe();
 
       const requests = httpMock.match({ method: 'DELETE' });
       expect(requests).toHaveLength(1);
@@ -158,7 +158,7 @@ describe('Category Service', () => {
       });
 
       it('should return false if one entity is null', () => {
-        const entity1 = { id: 6752 };
+        const entity1 = { id: '32948133-0615-4b7d-82d4-7d0e6b590fb7' };
         const entity2 = null;
 
         const compareResult1 = service.compareCategory(entity1, entity2);
@@ -169,8 +169,8 @@ describe('Category Service', () => {
       });
 
       it('should return false if primaryKey differs', () => {
-        const entity1 = { id: 6752 };
-        const entity2 = { id: 4374 };
+        const entity1 = { id: '32948133-0615-4b7d-82d4-7d0e6b590fb7' };
+        const entity2 = { id: '6e928816-99ce-488b-9609-4b7afe09aa38' };
 
         const compareResult1 = service.compareCategory(entity1, entity2);
         const compareResult2 = service.compareCategory(entity2, entity1);
@@ -180,8 +180,8 @@ describe('Category Service', () => {
       });
 
       it('should return false if primaryKey matches', () => {
-        const entity1 = { id: 6752 };
-        const entity2 = { id: 6752 };
+        const entity1 = { id: '32948133-0615-4b7d-82d4-7d0e6b590fb7' };
+        const entity2 = { id: '32948133-0615-4b7d-82d4-7d0e6b590fb7' };
 
         const compareResult1 = service.compareCategory(entity1, entity2);
         const compareResult2 = service.compareCategory(entity2, entity1);

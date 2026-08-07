@@ -73,12 +73,14 @@ describe('Professional Management Component', () => {
     // WHEN
     TestBed.tick();
     const req = httpMock.expectOne({ method: 'GET' });
-    req.flush([{ id: 4421 }], { headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' } });
+    req.flush([{ id: '2c613901-f64b-4441-b80a-f5fb03b8e466' }], {
+      headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' },
+    });
     await vitest.runAllTimersAsync();
 
     // THEN
     expect(comp.isLoading()).toEqual(false);
-    expect(comp.professionals()[0]).toEqual(expect.objectContaining({ id: 4421 }));
+    expect(comp.professionals()[0]).toEqual(expect.objectContaining({ id: '2c613901-f64b-4441-b80a-f5fb03b8e466' }));
   });
 
   it('should cancel previous requests when loading a new page', async () => {
@@ -91,13 +93,15 @@ describe('Professional Management Component', () => {
     comp.load();
     await vitest.runAllTimersAsync();
     const req2 = httpMock.expectOne({ method: 'GET' });
-    req2.flush([{ id: 4421 }], { headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' } });
+    req2.flush([{ id: '2c613901-f64b-4441-b80a-f5fb03b8e466' }], {
+      headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' },
+    });
     await vitest.runAllTimersAsync();
 
     // THEN
     expect(req.cancelled).toBeTruthy();
     expect(comp.isLoading()).toEqual(false);
-    expect(comp.professionals()[0]).toEqual(expect.objectContaining({ id: 4421 }));
+    expect(comp.professionals()[0]).toEqual(expect.objectContaining({ id: '2c613901-f64b-4441-b80a-f5fb03b8e466' }));
   });
 
   it('should not fail on resource error state', async () => {
@@ -115,16 +119,18 @@ describe('Professional Management Component', () => {
     comp.load();
     TestBed.tick();
     const successReq = httpMock.expectOne({ method: 'GET' });
-    successReq.flush([{ id: 4421 }], { headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' } });
+    successReq.flush([{ id: '2c613901-f64b-4441-b80a-f5fb03b8e466' }], {
+      headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' },
+    });
     await vitest.runAllTimersAsync();
 
     // THEN - subscription is still alive and second load succeeds
-    expect(comp.professionals()[0]).toEqual(expect.objectContaining({ id: 4421 }));
+    expect(comp.professionals()[0]).toEqual(expect.objectContaining({ id: '2c613901-f64b-4441-b80a-f5fb03b8e466' }));
   });
 
   describe('trackId', () => {
     it('should forward to professionalService', () => {
-      const entity = { id: 4421 };
+      const entity = { id: '2c613901-f64b-4441-b80a-f5fb03b8e466' };
       vitest.spyOn(service, 'getProfessionalIdentifier');
       const id = comp.trackId(entity);
       expect(service.getProfessionalIdentifier).toHaveBeenCalledWith(entity);
