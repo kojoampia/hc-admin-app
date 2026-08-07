@@ -1,0 +1,174 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    <form name="editForm" novalidate (ngSubmit)="save()" [formGroup]="editForm">
+      <h2 id="abf-address-heading" data-cy="AddressCreateUpdateHeading" abfTranslate="hcAdminApp.directoryAddress.home.createOrEditLabel">
+        Create or edit a Address
+      </h2>
+
+      <div>
+        <abf-alert-error />
+
+        @if (editForm.controls.id.value !== null) {
+          <div class="mb-3">
+            <label class="form-label" for="field_id" abfTranslate="global.field.id">ID</label>
+            <input type="number" class="form-control" name="id" id="field_id" data-cy="id" formControlName="id" />
+          </div>
+        }
+
+        @let digitalAddressRef = editForm.get('digitalAddress')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_digitalAddress" abfTranslate="hcAdminApp.directoryAddress.digitalAddress"
+            >Digital Address</label
+          >
+          <input
+            type="text"
+            class="form-control"
+            name="digitalAddress"
+            id="field_digitalAddress"
+            data-cy="digitalAddress"
+            formControlName="digitalAddress"
+          />
+          @if (digitalAddressRef.invalid && (digitalAddressRef.dirty || digitalAddressRef.touched)) {
+            <div>
+              @if (digitalAddressRef.errors?.required) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.required">This field is required.</small>
+              }
+              @if (digitalAddressRef.errors?.maxlength) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.maxlength" [translateValues]="{ max: '20' }"
+                  >This field cannot be longer than 20 characters.</small
+                >
+              }
+              @if (digitalAddressRef.errors?.pattern) {
+                <small
+                  class="form-text text-danger"
+                  abfTranslate="entity.validation.pattern"
+                  [translateValues]="{ pattern: 'Digital Address' }"
+                  >This field should follow pattern for Digital Address.</small
+                >
+              }
+            </div>
+          }
+        </div>
+
+        @let streetAddressRef = editForm.get('streetAddress')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_streetAddress" abfTranslate="hcAdminApp.directoryAddress.streetAddress"
+            >Street Address</label
+          >
+          <input
+            type="text"
+            class="form-control"
+            name="streetAddress"
+            id="field_streetAddress"
+            data-cy="streetAddress"
+            formControlName="streetAddress"
+          />
+          @if (streetAddressRef.invalid && (streetAddressRef.dirty || streetAddressRef.touched)) {
+            <div>
+              @if (streetAddressRef.errors?.required) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.required">This field is required.</small>
+              }
+              @if (streetAddressRef.errors?.maxlength) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.maxlength" [translateValues]="{ max: '120' }"
+                  >This field cannot be longer than 120 characters.</small
+                >
+              }
+            </div>
+          }
+        </div>
+
+        @let townDistrictRef = editForm.get('townDistrict')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_townDistrict" abfTranslate="hcAdminApp.directoryAddress.townDistrict">Town District</label>
+          <input
+            type="text"
+            class="form-control"
+            name="townDistrict"
+            id="field_townDistrict"
+            data-cy="townDistrict"
+            formControlName="townDistrict"
+          />
+          @if (townDistrictRef.invalid && (townDistrictRef.dirty || townDistrictRef.touched)) {
+            <div>
+              @if (townDistrictRef.errors?.maxlength) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.maxlength" [translateValues]="{ max: '60' }"
+                  >This field cannot be longer than 60 characters.</small
+                >
+              }
+            </div>
+          }
+        </div>
+
+        @let cityStateRef = editForm.get('cityState')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_cityState" abfTranslate="hcAdminApp.directoryAddress.cityState">City State</label>
+          <input type="text" class="form-control" name="cityState" id="field_cityState" data-cy="cityState" formControlName="cityState" />
+          @if (cityStateRef.invalid && (cityStateRef.dirty || cityStateRef.touched)) {
+            <div>
+              @if (cityStateRef.errors?.required) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.required">This field is required.</small>
+              }
+              @if (cityStateRef.errors?.maxlength) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.maxlength" [translateValues]="{ max: '60' }"
+                  >This field cannot be longer than 60 characters.</small
+                >
+              }
+            </div>
+          }
+        </div>
+
+        @let regionRef = editForm.get('region')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_region" abfTranslate="hcAdminApp.directoryAddress.region">Region</label>
+          <input type="text" class="form-control" name="region" id="field_region" data-cy="region" formControlName="region" />
+          @if (regionRef.invalid && (regionRef.dirty || regionRef.touched)) {
+            <div>
+              @if (regionRef.errors?.required) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.required">This field is required.</small>
+              }
+              @if (regionRef.errors?.maxlength) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.maxlength" [translateValues]="{ max: '60' }"
+                  >This field cannot be longer than 60 characters.</small
+                >
+              }
+            </div>
+          }
+        </div>
+
+        @let countryRef = editForm.get('country')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_country" abfTranslate="hcAdminApp.directoryAddress.country">Country</label>
+          <input type="text" class="form-control" name="country" id="field_country" data-cy="country" formControlName="country" />
+          @if (countryRef.invalid && (countryRef.dirty || countryRef.touched)) {
+            <div>
+              @if (countryRef.errors?.required) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.required">This field is required.</small>
+              }
+              @if (countryRef.errors?.maxlength) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.maxlength" [translateValues]="{ max: '60' }"
+                  >This field cannot be longer than 60 characters.</small
+                >
+              }
+            </div>
+          }
+        </div>
+      </div>
+
+      <div>
+        <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary" (click)="previousState()">
+          <fa-icon icon="ban" />&nbsp;<span abfTranslate="entity.action.cancel">Cancel</span>
+        </button>
+
+        <button
+          type="submit"
+          id="save-entity"
+          data-cy="entityCreateSaveButton"
+          [disabled]="editForm.invalid || isSaving()"
+          class="btn btn-primary"
+        >
+          <fa-icon icon="save" />&nbsp;<span abfTranslate="entity.action.save">Save</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

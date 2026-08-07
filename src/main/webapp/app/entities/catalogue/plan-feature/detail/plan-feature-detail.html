@@ -1,0 +1,46 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    @if (planFeature(); as planFeatureRef) {
+      <div>
+        <h2 data-cy="planFeatureDetailsHeading"><span abfTranslate="hcAdminApp.cataloguePlanFeature.detail.title">Plan Feature</span></h2>
+
+        <hr />
+
+        <abf-alert-error />
+
+        <abf-alert />
+
+        <dl class="row-md jh-entity-details">
+          <dt><span abfTranslate="global.field.id">ID</span></dt>
+          <dd>
+            <span>{{ planFeatureRef.id }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.cataloguePlanFeature.label">Label</span></dt>
+          <dd>
+            <span>{{ planFeatureRef.label }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.cataloguePlanFeature.position">Position</span></dt>
+          <dd>
+            <span>{{ planFeatureRef.position }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.cataloguePlanFeature.plan">Plan</span></dt>
+          <dd>
+            @if (planFeature()!.plan) {
+              <div>
+                <a [routerLink]="['/service-plan', planFeature()!.plan?.id, 'view']">{{ planFeatureRef.plan?.name }}</a>
+              </div>
+            }
+          </dd>
+        </dl>
+
+        <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+          <fa-icon icon="arrow-left" />&nbsp;<span abfTranslate="entity.action.back">Back</span>
+        </button>
+
+        <button type="button" [routerLink]="['/plan-feature', planFeatureRef.id, 'edit']" class="btn btn-primary">
+          <fa-icon icon="pencil-alt" />&nbsp;<span abfTranslate="entity.action.edit">Edit</span>
+        </button>
+      </div>
+    }
+  </div>
+</div>

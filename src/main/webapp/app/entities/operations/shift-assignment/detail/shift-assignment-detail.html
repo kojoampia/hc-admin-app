@@ -1,0 +1,64 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    @if (shiftAssignment(); as shiftAssignmentRef) {
+      <div>
+        <h2 data-cy="shiftAssignmentDetailsHeading">
+          <span abfTranslate="hcAdminApp.operationsShiftAssignment.detail.title">Shift Assignment</span>
+        </h2>
+
+        <hr />
+
+        <abf-alert-error />
+
+        <abf-alert />
+
+        <dl class="row-md jh-entity-details">
+          <dt><span abfTranslate="global.field.id">ID</span></dt>
+          <dd>
+            <span>{{ shiftAssignmentRef.id }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.operationsShiftAssignment.dayIndex">Day Index</span></dt>
+          <dd>
+            <span>{{ shiftAssignmentRef.dayIndex }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.operationsShiftAssignment.shiftDate">Shift Date</span></dt>
+          <dd>
+            <span>{{ shiftAssignmentRef.shiftDate | formatMediumDate }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.operationsShiftAssignment.shift">Shift</span></dt>
+          <dd>
+            <span [abfTranslate]="'hcAdminApp.ShiftType.' + (shiftAssignmentRef.shift ?? 'null')">{{
+              { null: '', DAY: 'DAY', EVENING: 'EVENING', NIGHT: 'NIGHT', OFF: 'OFF' }[shiftAssignmentRef.shift ?? 'null']
+            }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.operationsShiftAssignment.week">Week</span></dt>
+          <dd>
+            @if (shiftAssignment()!.week) {
+              <div>
+                <a [routerLink]="['/roster-week', shiftAssignment()!.week?.id, 'view']">{{ shiftAssignmentRef.week?.label }}</a>
+              </div>
+            }
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.operationsShiftAssignment.professional">Professional</span></dt>
+          <dd>
+            @if (shiftAssignment()!.professional) {
+              <div>
+                <a [routerLink]="['/professional', shiftAssignment()!.professional?.id, 'view']">{{
+                  shiftAssignmentRef.professional?.licenceNumber
+                }}</a>
+              </div>
+            }
+          </dd>
+        </dl>
+
+        <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+          <fa-icon icon="arrow-left" />&nbsp;<span abfTranslate="entity.action.back">Back</span>
+        </button>
+
+        <button type="button" [routerLink]="['/shift-assignment', shiftAssignmentRef.id, 'edit']" class="btn btn-primary">
+          <fa-icon icon="pencil-alt" />&nbsp;<span abfTranslate="entity.action.edit">Edit</span>
+        </button>
+      </div>
+    }
+  </div>
+</div>

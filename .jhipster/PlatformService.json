@@ -1,0 +1,49 @@
+{
+  "annotations": {
+    "changelogDate": "20231211195718"
+  },
+  "applications": ["hcAdmin"],
+  "clientRootFolder": "platform",
+  "fields": [
+    {
+      "fieldName": "name",
+      "fieldType": "String",
+      "fieldValidateRules": ["required", "maxlength"],
+      "fieldValidateRulesMaxlength": "60"
+    },
+    {
+      "fieldName": "host",
+      "fieldType": "String",
+      "fieldValidateRules": ["required", "maxlength"],
+      "fieldValidateRulesMaxlength": "60"
+    },
+    {
+      "fieldName": "port",
+      "fieldType": "Integer",
+      "fieldValidateRules": ["required", "min", "max"],
+      "fieldValidateRulesMax": "65535",
+      "fieldValidateRulesMin": "1"
+    },
+    {
+      "fieldName": "plane",
+      "fieldType": "String",
+      "fieldValidateRules": ["required", "maxlength"],
+      "fieldValidateRulesMaxlength": "40"
+    },
+    {
+      "fieldName": "health",
+      "fieldType": "ServiceHealth",
+      "fieldValidateRules": ["required"],
+      "fieldValues": "HEALTHY,DEGRADED,DOWN"
+    },
+    {
+      "fieldName": "responseMs",
+      "fieldType": "Integer",
+      "fieldValidateRules": ["min"],
+      "fieldValidateRulesMin": "0"
+    }
+  ],
+  "name": "PlatformService",
+  "readOnly": true,
+  "relationships": []
+}

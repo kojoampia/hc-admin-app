@@ -1,0 +1,173 @@
+<div>
+  <h2 id="page-heading" data-cy="MessageHeading">
+    <span abfTranslate="hcAdminApp.operationsMessage.home.title">Messages</span>
+
+    <div class="d-flex justify-content-end">
+      <button class="btn btn-info me-2" (click)="load()" [disabled]="isLoading()">
+        <fa-icon icon="sync" [animation]="isLoading() ? 'spin' : undefined" />
+        <span abfTranslate="hcAdminApp.operationsMessage.home.refreshListLabel">Refresh list</span>
+      </button>
+
+      <button
+        id="jh-create-entity"
+        data-cy="entityCreateButton"
+        class="btn btn-primary jh-create-entity create-message"
+        [routerLink]="['/message/new']"
+      >
+        <fa-icon icon="plus" />
+        <span abfTranslate="hcAdminApp.operationsMessage.home.createLabel">Create a new Message</span>
+      </button>
+    </div>
+  </h2>
+
+  <abf-alert-error />
+
+  <abf-alert />
+
+  @if (messages().length === 0) {
+    <div class="alert alert-warning" id="no-result">
+      <span abfTranslate="hcAdminApp.operationsMessage.home.notFound">No Messages found</span>
+    </div>
+  } @else {
+    <div class="table-responsive table-entities" id="entities">
+      <table class="table table-striped" aria-describedby="page-heading">
+        <thead>
+          <tr abfSort [(sortState)]="sortState" (sortChange)="navigateToWithComponentValues($event)">
+            <th scope="col" abfSortBy="id">
+              <div class="d-flex">
+                <span abfTranslate="global.field.id">ID</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="sentAt">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.operationsMessage.sentAt">Sent At</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="fromAddress">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.operationsMessage.fromAddress">From Address</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="senderName">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.operationsMessage.senderName">Sender Name</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="subject">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.operationsMessage.subject">Subject</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="body">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.operationsMessage.body">Body</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="channel">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.operationsMessage.channel">Channel</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="status">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.operationsMessage.status">Status</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="priority">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.operationsMessage.priority">Priority</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (message of messages(); track trackId(message)) {
+            <tr data-cy="entityTable">
+              <td>
+                <a [routerLink]="['/message', message.id, 'view']">{{ message.id }}</a>
+              </td>
+              <td>{{ message.sentAt | formatMediumDatetime }}</td>
+              <td>{{ message.fromAddress }}</td>
+              <td>{{ message.senderName }}</td>
+              <td>{{ message.subject }}</td>
+              <td>{{ message.body }}</td>
+              <td [abfTranslate]="'hcAdminApp.MessageChannel.' + (message.channel ?? 'null')">
+                {{
+                  {
+                    null: '',
+                    PATIENT_APP: 'PATIENT_APP',
+                    PROFESSIONAL_APP: 'PROFESSIONAL_APP',
+                    VENDOR_PORTAL: 'VENDOR_PORTAL',
+                    EMAIL: 'EMAIL',
+                  }[message.channel ?? 'null']
+                }}
+              </td>
+              <td [abfTranslate]="'hcAdminApp.MessageStatus.' + (message.status ?? 'null')">
+                {{ { null: '', NEW: 'NEW', READ: 'READ', REPLIED: 'REPLIED' }[message.status ?? 'null'] }}
+              </td>
+              <td [abfTranslate]="'hcAdminApp.Priority.' + (message.priority ?? 'null')">
+                {{ { null: '', HIGH: 'HIGH', NORMAL: 'NORMAL', LOW: 'LOW' }[message.priority ?? 'null'] }}
+              </td>
+              <td class="text-end">
+                <div class="btn-group">
+                  <a [routerLink]="['/message', message.id, 'view']" class="btn btn-info btn-sm" data-cy="entityDetailsButton">
+                    <fa-icon icon="eye" />
+                    <span class="d-none d-md-inline" abfTranslate="entity.action.view">View</span>
+                  </a>
+
+                  <a [routerLink]="['/message', message.id, 'edit']" class="btn btn-primary btn-sm" data-cy="entityEditButton">
+                    <fa-icon icon="pencil-alt" />
+                    <span class="d-none d-md-inline" abfTranslate="entity.action.edit">Edit</span>
+                  </a>
+
+                  <button type="submit" (click)="delete(message)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
+                    <fa-icon icon="times" />
+                    <span class="d-none d-md-inline" abfTranslate="entity.action.delete">Delete</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+  @if (messages().length > 0) {
+    <div>
+      <div class="d-flex justify-content-center">
+        <abf-item-count [params]="{ page: page(), totalItems: totalItems(), itemsPerPage: itemsPerPage() }" />
+      </div>
+
+      <div class="d-flex justify-content-center">
+        <ngb-pagination
+          [collectionSize]="totalItems()"
+          [page]="page()"
+          [pageSize]="itemsPerPage()"
+          [maxSize]="5"
+          [rotate]="true"
+          [boundaryLinks]="true"
+          (pageChange)="navigateToPage($event)"
+        />
+      </div>
+    </div>
+  }
+</div>

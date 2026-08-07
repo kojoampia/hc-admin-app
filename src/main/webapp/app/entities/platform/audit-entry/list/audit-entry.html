@@ -1,0 +1,117 @@
+<div>
+  <h2 id="page-heading" data-cy="AuditEntryHeading">
+    <span abfTranslate="hcAdminApp.platformAuditEntry.home.title">Audit Entries</span>
+
+    <div class="d-flex justify-content-end">
+      <button class="btn btn-info me-2" (click)="load()" [disabled]="isLoading()">
+        <fa-icon icon="sync" [animation]="isLoading() ? 'spin' : undefined" />
+        <span abfTranslate="hcAdminApp.platformAuditEntry.home.refreshListLabel">Refresh list</span>
+      </button>
+    </div>
+  </h2>
+
+  <abf-alert-error />
+
+  <abf-alert />
+
+  @if (auditEntries().length === 0) {
+    <div class="alert alert-warning" id="no-result">
+      <span abfTranslate="hcAdminApp.platformAuditEntry.home.notFound">No Audit Entries found</span>
+    </div>
+  } @else {
+    <div class="table-responsive table-entities" id="entities">
+      <table class="table table-striped" aria-describedby="page-heading">
+        <thead>
+          <tr abfSort [(sortState)]="sortState" (sortChange)="navigateToWithComponentValues($event)">
+            <th scope="col" abfSortBy="id">
+              <div class="d-flex">
+                <span abfTranslate="global.field.id">ID</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="occurredAt">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.platformAuditEntry.occurredAt">Occurred At</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="actor">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.platformAuditEntry.actor">Actor</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="action">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.platformAuditEntry.action">Action</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="target">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.platformAuditEntry.target">Target</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="level">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.platformAuditEntry.level">Level</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (auditEntry of auditEntries(); track trackId(auditEntry)) {
+            <tr data-cy="entityTable">
+              <td>
+                <a [routerLink]="['/audit-entry', auditEntry.id, 'view']">{{ auditEntry.id }}</a>
+              </td>
+              <td>{{ auditEntry.occurredAt | formatMediumDatetime }}</td>
+              <td>{{ auditEntry.actor }}</td>
+              <td>{{ auditEntry.action }}</td>
+              <td>{{ auditEntry.target }}</td>
+              <td [abfTranslate]="'hcAdminApp.AuditLevel.' + (auditEntry.level ?? 'null')">
+                {{ { null: '', INFO: 'INFO', WARN: 'WARN' }[auditEntry.level ?? 'null'] }}
+              </td>
+              <td class="text-end">
+                <div class="btn-group">
+                  <a [routerLink]="['/audit-entry', auditEntry.id, 'view']" class="btn btn-info btn-sm" data-cy="entityDetailsButton">
+                    <fa-icon icon="eye" />
+                    <span class="d-none d-md-inline" abfTranslate="entity.action.view">View</span>
+                  </a>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+  @if (auditEntries().length > 0) {
+    <div>
+      <div class="d-flex justify-content-center">
+        <abf-item-count [params]="{ page: page(), totalItems: totalItems(), itemsPerPage: itemsPerPage() }" />
+      </div>
+
+      <div class="d-flex justify-content-center">
+        <ngb-pagination
+          [collectionSize]="totalItems()"
+          [page]="page()"
+          [pageSize]="itemsPerPage()"
+          [maxSize]="5"
+          [rotate]="true"
+          [boundaryLinks]="true"
+          (pageChange)="navigateToPage($event)"
+        />
+      </div>
+    </div>
+  }
+</div>

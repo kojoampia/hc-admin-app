@@ -1,0 +1,21 @@
+{
+  "hcAdminApp": {
+    "platformPlatformService": {
+      "home": {
+        "title": "Platform Services",
+        "refreshListLabel": "Refresh list",
+        "notFound": "No Platform Services found"
+      },
+      "detail": {
+        "title": "Platform Service"
+      },
+      "id": "ID",
+      "name": "Name",
+      "host": "Host",
+      "port": "Port",
+      "plane": "Plane",
+      "health": "Health",
+      "responseMs": "Response Ms"
+    }
+  }
+}

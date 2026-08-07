@@ -1,0 +1,29 @@
+{
+  "hcAdminApp": {
+    "directoryAngel": {
+      "home": {
+        "title": "Angels",
+        "refreshListLabel": "Refresh list",
+        "createLabel": "Create a new Angel",
+        "createOrEditLabel": "Create or edit a Angel",
+        "notFound": "No Angels found"
+      },
+      "created": "A new Angel is created with identifier {{ param }}",
+      "updated": "A Angel is updated with identifier {{ param }}",
+      "deleted": "A Angel is deleted with identifier {{ param }}",
+      "delete": {
+        "question": "Are you sure you want to delete Angel {{ id }}?"
+      },
+      "detail": {
+        "title": "Angel"
+      },
+      "id": "ID",
+      "name": "Name",
+      "relationship": "Relationship",
+      "phone": "Phone",
+      "email": "Email",
+      "country": "Country",
+      "patient": "Patient"
+    }
+  }
+}

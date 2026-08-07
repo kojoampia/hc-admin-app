@@ -1,0 +1,24 @@
+@if (vendor) {
+  <form name="deleteForm" (ngSubmit)="confirmDelete(vendor.id!)">
+    <div class="modal-header">
+      <h4 class="modal-title" data-cy="vendorDeleteDialogHeading" abfTranslate="entity.delete.title">Confirm delete operation</h4>
+    </div>
+
+    <div class="modal-body">
+      <abf-alert-error />
+      <p id="abf-delete-vendor-heading" abfTranslate="hcAdminApp.directoryVendor.delete.question" [translateValues]="{ id: vendor.id }">
+        Are you sure you want to delete Vendor {{ vendor.id }}?
+      </p>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" data-dismiss="modal" (click)="cancel()">
+        <fa-icon icon="ban" />&nbsp;<span abfTranslate="entity.action.cancel">Cancel</span>
+      </button>
+
+      <button id="abf-confirm-delete-vendor" data-cy="entityConfirmDeleteButton" type="submit" class="btn btn-danger">
+        <fa-icon icon="times" />&nbsp;<span abfTranslate="entity.action.delete">Delete</span>
+      </button>
+    </div>
+  </form>
+}

@@ -1,0 +1,105 @@
+<div>
+  <h2 id="page-heading" data-cy="PlanFeatureHeading">
+    <span abfTranslate="hcAdminApp.cataloguePlanFeature.home.title">Plan Features</span>
+
+    <div class="d-flex justify-content-end">
+      <button class="btn btn-info me-2" (click)="load()" [disabled]="isLoading()">
+        <fa-icon icon="sync" [animation]="isLoading() ? 'spin' : undefined" />
+        <span abfTranslate="hcAdminApp.cataloguePlanFeature.home.refreshListLabel">Refresh list</span>
+      </button>
+
+      <button
+        id="jh-create-entity"
+        data-cy="entityCreateButton"
+        class="btn btn-primary jh-create-entity create-plan-feature"
+        [routerLink]="['/plan-feature/new']"
+      >
+        <fa-icon icon="plus" />
+        <span abfTranslate="hcAdminApp.cataloguePlanFeature.home.createLabel">Create a new Plan Feature</span>
+      </button>
+    </div>
+  </h2>
+
+  <abf-alert-error />
+
+  <abf-alert />
+
+  @if (planFeatures().length === 0) {
+    <div class="alert alert-warning" id="no-result">
+      <span abfTranslate="hcAdminApp.cataloguePlanFeature.home.notFound">No Plan Features found</span>
+    </div>
+  } @else {
+    <div class="table-responsive table-entities" id="entities">
+      <table class="table table-striped" aria-describedby="page-heading">
+        <thead>
+          <tr abfSort [(sortState)]="sortState" (sortChange)="navigateToWithComponentValues($event)">
+            <th scope="col" abfSortBy="id">
+              <div class="d-flex">
+                <span abfTranslate="global.field.id">ID</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="label">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.cataloguePlanFeature.label">Label</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="position">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.cataloguePlanFeature.position">Position</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="plan.name">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.cataloguePlanFeature.plan">Plan</span>
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (planFeature of planFeatures(); track trackId(planFeature)) {
+            <tr data-cy="entityTable">
+              <td>
+                <a [routerLink]="['/plan-feature', planFeature.id, 'view']">{{ planFeature.id }}</a>
+              </td>
+              <td>{{ planFeature.label }}</td>
+              <td>{{ planFeature.position }}</td>
+              <td>
+                @if (planFeature.plan) {
+                  <div>
+                    <a [routerLink]="['/service-plan', planFeature.plan.id, 'view']">{{ planFeature.plan.name }}</a>
+                  </div>
+                }
+              </td>
+              <td class="text-end">
+                <div class="btn-group">
+                  <a [routerLink]="['/plan-feature', planFeature.id, 'view']" class="btn btn-info btn-sm" data-cy="entityDetailsButton">
+                    <fa-icon icon="eye" />
+                    <span class="d-none d-md-inline" abfTranslate="entity.action.view">View</span>
+                  </a>
+
+                  <a [routerLink]="['/plan-feature', planFeature.id, 'edit']" class="btn btn-primary btn-sm" data-cy="entityEditButton">
+                    <fa-icon icon="pencil-alt" />
+                    <span class="d-none d-md-inline" abfTranslate="entity.action.edit">Edit</span>
+                  </a>
+
+                  <button type="submit" (click)="delete(planFeature)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
+                    <fa-icon icon="times" />
+                    <span class="d-none d-md-inline" abfTranslate="entity.action.delete">Delete</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

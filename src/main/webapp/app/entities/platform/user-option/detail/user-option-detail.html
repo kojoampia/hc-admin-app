@@ -1,0 +1,42 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    @if (userOption(); as userOptionRef) {
+      <div>
+        <h2 data-cy="userOptionDetailsHeading"><span abfTranslate="hcAdminApp.platformUserOption.detail.title">User Option</span></h2>
+
+        <hr />
+
+        <abf-alert-error />
+
+        <abf-alert />
+
+        <dl class="row-md jh-entity-details">
+          <dt><span abfTranslate="global.field.id">ID</span></dt>
+          <dd>
+            <span>{{ userOptionRef.id }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.platformUserOption.category">Category</span></dt>
+          <dd>
+            <span>{{ userOptionRef.category }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.platformUserOption.userRef">User Ref</span></dt>
+          <dd>
+            <span>{{ userOptionRef.userRef }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.platformUserOption.metadata">Metadata</span></dt>
+          <dd>
+            <span>{{ userOptionRef.metadata }}</span>
+          </dd>
+        </dl>
+
+        <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+          <fa-icon icon="arrow-left" />&nbsp;<span abfTranslate="entity.action.back">Back</span>
+        </button>
+
+        <button type="button" [routerLink]="['/user-option', userOptionRef.id, 'edit']" class="btn btn-primary">
+          <fa-icon icon="pencil-alt" />&nbsp;<span abfTranslate="entity.action.edit">Edit</span>
+        </button>
+      </div>
+    }
+  </div>
+</div>

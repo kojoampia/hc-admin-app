@@ -1,0 +1,13 @@
+export enum CredentialRole {
+  ADMIN = 'ADMIN',
+
+  SUPERVISOR = 'SUPERVISOR',
+
+  DESK_OFFICER = 'DESK_OFFICER',
+
+  PROFESSIONAL = 'PROFESSIONAL',
+
+  PATIENT = 'PATIENT',
+
+  VENDOR = 'VENDOR',
+}

@@ -1,0 +1,32 @@
+{
+  "annotations": {
+    "changelogDate": "20231211194318"
+  },
+  "applications": ["hcAdmin"],
+  "clientRootFolder": "platform",
+  "documentation": "PDF: Team (Name, Description, Supervisor).",
+  "fields": [
+    {
+      "fieldName": "name",
+      "fieldType": "String",
+      "fieldValidateRules": ["required", "maxlength"],
+      "fieldValidateRulesMaxlength": "60"
+    },
+    {
+      "fieldName": "description",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "200"
+    }
+  ],
+  "name": "Team",
+  "relationships": [
+    {
+      "otherEntityField": "licenceNumber",
+      "otherEntityName": "professional",
+      "relationshipName": "supervisor",
+      "relationshipSide": "left",
+      "relationshipType": "many-to-one"
+    }
+  ]
+}

@@ -1,0 +1,108 @@
+<div>
+  <h2 id="page-heading" data-cy="RosterWeekHeading">
+    <span abfTranslate="hcAdminApp.operationsRosterWeek.home.title">Roster Weeks</span>
+
+    <div class="d-flex justify-content-end">
+      <button class="btn btn-info me-2" (click)="load()" [disabled]="isLoading()">
+        <fa-icon icon="sync" [animation]="isLoading() ? 'spin' : undefined" />
+        <span abfTranslate="hcAdminApp.operationsRosterWeek.home.refreshListLabel">Refresh list</span>
+      </button>
+
+      <button
+        id="jh-create-entity"
+        data-cy="entityCreateButton"
+        class="btn btn-primary jh-create-entity create-roster-week"
+        [routerLink]="['/roster-week/new']"
+      >
+        <fa-icon icon="plus" />
+        <span abfTranslate="hcAdminApp.operationsRosterWeek.home.createLabel">Create a new Roster Week</span>
+      </button>
+    </div>
+  </h2>
+
+  <abf-alert-error />
+
+  <abf-alert />
+
+  @if (rosterWeeks().length === 0) {
+    <div class="alert alert-warning" id="no-result">
+      <span abfTranslate="hcAdminApp.operationsRosterWeek.home.notFound">No Roster Weeks found</span>
+    </div>
+  } @else {
+    <div class="table-responsive table-entities" id="entities">
+      <table class="table table-striped" aria-describedby="page-heading">
+        <thead>
+          <tr abfSort [(sortState)]="sortState" (sortChange)="navigateToWithComponentValues($event)">
+            <th scope="col" abfSortBy="id">
+              <div class="d-flex">
+                <span abfTranslate="global.field.id">ID</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="label">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.operationsRosterWeek.label">Label</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="startDate">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.operationsRosterWeek.startDate">Start Date</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="published">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.operationsRosterWeek.published">Published</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="publishedAt">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.operationsRosterWeek.publishedAt">Published At</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (rosterWeek of rosterWeeks(); track trackId(rosterWeek)) {
+            <tr data-cy="entityTable">
+              <td>
+                <a [routerLink]="['/roster-week', rosterWeek.id, 'view']">{{ rosterWeek.id }}</a>
+              </td>
+              <td>{{ rosterWeek.label }}</td>
+              <td>{{ rosterWeek.startDate | formatMediumDate }}</td>
+              <td>{{ rosterWeek.published }}</td>
+              <td>{{ rosterWeek.publishedAt | formatMediumDatetime }}</td>
+              <td class="text-end">
+                <div class="btn-group">
+                  <a [routerLink]="['/roster-week', rosterWeek.id, 'view']" class="btn btn-info btn-sm" data-cy="entityDetailsButton">
+                    <fa-icon icon="eye" />
+                    <span class="d-none d-md-inline" abfTranslate="entity.action.view">View</span>
+                  </a>
+
+                  <a [routerLink]="['/roster-week', rosterWeek.id, 'edit']" class="btn btn-primary btn-sm" data-cy="entityEditButton">
+                    <fa-icon icon="pencil-alt" />
+                    <span class="d-none d-md-inline" abfTranslate="entity.action.edit">Edit</span>
+                  </a>
+
+                  <button type="submit" (click)="delete(rosterWeek)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
+                    <fa-icon icon="times" />
+                    <span class="d-none d-md-inline" abfTranslate="entity.action.delete">Delete</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

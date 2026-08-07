@@ -1,0 +1,28 @@
+@if (organisation) {
+  <form name="deleteForm" (ngSubmit)="confirmDelete(organisation.id!)">
+    <div class="modal-header">
+      <h4 class="modal-title" data-cy="organisationDeleteDialogHeading" abfTranslate="entity.delete.title">Confirm delete operation</h4>
+    </div>
+
+    <div class="modal-body">
+      <abf-alert-error />
+      <p
+        id="abf-delete-organisation-heading"
+        abfTranslate="hcAdminApp.platformOrganisation.delete.question"
+        [translateValues]="{ id: organisation.id }"
+      >
+        Are you sure you want to delete Organisation {{ organisation.id }}?
+      </p>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" data-dismiss="modal" (click)="cancel()">
+        <fa-icon icon="ban" />&nbsp;<span abfTranslate="entity.action.cancel">Cancel</span>
+      </button>
+
+      <button id="abf-confirm-delete-organisation" data-cy="entityConfirmDeleteButton" type="submit" class="btn btn-danger">
+        <fa-icon icon="times" />&nbsp;<span abfTranslate="entity.action.delete">Delete</span>
+      </button>
+    </div>
+  </form>
+}

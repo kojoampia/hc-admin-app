@@ -1,0 +1,124 @@
+<div>
+  <h2 id="page-heading" data-cy="AddressHeading">
+    <span abfTranslate="hcAdminApp.directoryAddress.home.title">Addresses</span>
+
+    <div class="d-flex justify-content-end">
+      <button class="btn btn-info me-2" (click)="load()" [disabled]="isLoading()">
+        <fa-icon icon="sync" [animation]="isLoading() ? 'spin' : undefined" />
+        <span abfTranslate="hcAdminApp.directoryAddress.home.refreshListLabel">Refresh list</span>
+      </button>
+
+      <button
+        id="jh-create-entity"
+        data-cy="entityCreateButton"
+        class="btn btn-primary jh-create-entity create-address"
+        [routerLink]="['/address/new']"
+      >
+        <fa-icon icon="plus" />
+        <span abfTranslate="hcAdminApp.directoryAddress.home.createLabel">Create a new Address</span>
+      </button>
+    </div>
+  </h2>
+
+  <abf-alert-error />
+
+  <abf-alert />
+
+  @if (addresses().length === 0) {
+    <div class="alert alert-warning" id="no-result">
+      <span abfTranslate="hcAdminApp.directoryAddress.home.notFound">No Addresses found</span>
+    </div>
+  } @else {
+    <div class="table-responsive table-entities" id="entities">
+      <table class="table table-striped" aria-describedby="page-heading">
+        <thead>
+          <tr abfSort [(sortState)]="sortState" (sortChange)="navigateToWithComponentValues($event)">
+            <th scope="col" abfSortBy="id">
+              <div class="d-flex">
+                <span abfTranslate="global.field.id">ID</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="digitalAddress">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.directoryAddress.digitalAddress">Digital Address</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="streetAddress">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.directoryAddress.streetAddress">Street Address</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="townDistrict">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.directoryAddress.townDistrict">Town District</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="cityState">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.directoryAddress.cityState">City State</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="region">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.directoryAddress.region">Region</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="country">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.directoryAddress.country">Country</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (address of addresses(); track trackId(address)) {
+            <tr data-cy="entityTable">
+              <td>
+                <a [routerLink]="['/address', address.id, 'view']">{{ address.id }}</a>
+              </td>
+              <td>{{ address.digitalAddress }}</td>
+              <td>{{ address.streetAddress }}</td>
+              <td>{{ address.townDistrict }}</td>
+              <td>{{ address.cityState }}</td>
+              <td>{{ address.region }}</td>
+              <td>{{ address.country }}</td>
+              <td class="text-end">
+                <div class="btn-group">
+                  <a [routerLink]="['/address', address.id, 'view']" class="btn btn-info btn-sm" data-cy="entityDetailsButton">
+                    <fa-icon icon="eye" />
+                    <span class="d-none d-md-inline" abfTranslate="entity.action.view">View</span>
+                  </a>
+
+                  <a [routerLink]="['/address', address.id, 'edit']" class="btn btn-primary btn-sm" data-cy="entityEditButton">
+                    <fa-icon icon="pencil-alt" />
+                    <span class="d-none d-md-inline" abfTranslate="entity.action.edit">Edit</span>
+                  </a>
+
+                  <button type="submit" (click)="delete(address)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
+                    <fa-icon icon="times" />
+                    <span class="d-none d-md-inline" abfTranslate="entity.action.delete">Delete</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

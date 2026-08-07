@@ -1,0 +1,29 @@
+{
+  "hcAdminApp": {
+    "catalogueServiceActivity": {
+      "home": {
+        "title": "Service Activities",
+        "refreshListLabel": "Refresh list",
+        "createLabel": "Create a new Service Activity",
+        "createOrEditLabel": "Create or edit a Service Activity",
+        "notFound": "No Service Activities found"
+      },
+      "created": "A new Service Activity is created with identifier {{ param }}",
+      "updated": "A Service Activity is updated with identifier {{ param }}",
+      "deleted": "A Service Activity is deleted with identifier {{ param }}",
+      "delete": {
+        "question": "Are you sure you want to delete Service Activity {{ id }}?"
+      },
+      "detail": {
+        "title": "Service Activity"
+      },
+      "id": "ID",
+      "name": "Name",
+      "unit": "Unit",
+      "unitPrice": "Unit Price",
+      "duration": "Duration",
+      "published": "Published",
+      "category": "Category"
+    }
+  }
+}

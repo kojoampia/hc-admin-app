@@ -1,0 +1,42 @@
+{
+  "annotations": {
+    "changelogDate": "20231211195818"
+  },
+  "applications": ["hcAdmin"],
+  "clientRootFolder": "platform",
+  "fields": [
+    {
+      "fieldName": "occurredAt",
+      "fieldType": "Instant",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "actor",
+      "fieldType": "String",
+      "fieldValidateRules": ["required", "maxlength"],
+      "fieldValidateRulesMaxlength": "80"
+    },
+    {
+      "fieldName": "action",
+      "fieldType": "String",
+      "fieldValidateRules": ["required", "maxlength"],
+      "fieldValidateRulesMaxlength": "120"
+    },
+    {
+      "fieldName": "target",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "160"
+    },
+    {
+      "fieldName": "level",
+      "fieldType": "AuditLevel",
+      "fieldValidateRules": ["required"],
+      "fieldValues": "INFO,WARN"
+    }
+  ],
+  "name": "AuditEntry",
+  "pagination": "pagination",
+  "readOnly": true,
+  "relationships": []
+}

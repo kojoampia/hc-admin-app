@@ -1,0 +1,110 @@
+<div>
+  <h2 id="page-heading" data-cy="PlatformServiceHeading">
+    <span abfTranslate="hcAdminApp.platformPlatformService.home.title">Platform Services</span>
+
+    <div class="d-flex justify-content-end">
+      <button class="btn btn-info me-2" (click)="load()" [disabled]="isLoading()">
+        <fa-icon icon="sync" [animation]="isLoading() ? 'spin' : undefined" />
+        <span abfTranslate="hcAdminApp.platformPlatformService.home.refreshListLabel">Refresh list</span>
+      </button>
+    </div>
+  </h2>
+
+  <abf-alert-error />
+
+  <abf-alert />
+
+  @if (platformServices().length === 0) {
+    <div class="alert alert-warning" id="no-result">
+      <span abfTranslate="hcAdminApp.platformPlatformService.home.notFound">No Platform Services found</span>
+    </div>
+  } @else {
+    <div class="table-responsive table-entities" id="entities">
+      <table class="table table-striped" aria-describedby="page-heading">
+        <thead>
+          <tr abfSort [(sortState)]="sortState" (sortChange)="navigateToWithComponentValues($event)">
+            <th scope="col" abfSortBy="id">
+              <div class="d-flex">
+                <span abfTranslate="global.field.id">ID</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="name">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.platformPlatformService.name">Name</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="host">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.platformPlatformService.host">Host</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="port">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.platformPlatformService.port">Port</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="plane">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.platformPlatformService.plane">Plane</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="health">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.platformPlatformService.health">Health</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="responseMs">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.platformPlatformService.responseMs">Response Ms</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (platformService of platformServices(); track trackId(platformService)) {
+            <tr data-cy="entityTable">
+              <td>
+                <a [routerLink]="['/platform-service', platformService.id, 'view']">{{ platformService.id }}</a>
+              </td>
+              <td>{{ platformService.name }}</td>
+              <td>{{ platformService.host }}</td>
+              <td>{{ platformService.port }}</td>
+              <td>{{ platformService.plane }}</td>
+              <td [abfTranslate]="'hcAdminApp.ServiceHealth.' + (platformService.health ?? 'null')">
+                {{ { null: '', HEALTHY: 'HEALTHY', DEGRADED: 'DEGRADED', DOWN: 'DOWN' }[platformService.health ?? 'null'] }}
+              </td>
+              <td>{{ platformService.responseMs }}</td>
+              <td class="text-end">
+                <div class="btn-group">
+                  <a
+                    [routerLink]="['/platform-service', platformService.id, 'view']"
+                    class="btn btn-info btn-sm"
+                    data-cy="entityDetailsButton"
+                  >
+                    <fa-icon icon="eye" />
+                    <span class="d-none d-md-inline" abfTranslate="entity.action.view">View</span>
+                  </a>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

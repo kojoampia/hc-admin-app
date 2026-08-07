@@ -1,0 +1,46 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    @if (rosterWeek(); as rosterWeekRef) {
+      <div>
+        <h2 data-cy="rosterWeekDetailsHeading"><span abfTranslate="hcAdminApp.operationsRosterWeek.detail.title">Roster Week</span></h2>
+
+        <hr />
+
+        <abf-alert-error />
+
+        <abf-alert />
+
+        <dl class="row-md jh-entity-details">
+          <dt><span abfTranslate="global.field.id">ID</span></dt>
+          <dd>
+            <span>{{ rosterWeekRef.id }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.operationsRosterWeek.label">Label</span></dt>
+          <dd>
+            <span>{{ rosterWeekRef.label }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.operationsRosterWeek.startDate">Start Date</span></dt>
+          <dd>
+            <span>{{ rosterWeekRef.startDate | formatMediumDate }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.operationsRosterWeek.published">Published</span></dt>
+          <dd>
+            <span>{{ rosterWeekRef.published }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.operationsRosterWeek.publishedAt">Published At</span></dt>
+          <dd>
+            <span>{{ rosterWeekRef.publishedAt | formatMediumDatetime }}</span>
+          </dd>
+        </dl>
+
+        <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+          <fa-icon icon="arrow-left" />&nbsp;<span abfTranslate="entity.action.back">Back</span>
+        </button>
+
+        <button type="button" [routerLink]="['/roster-week', rosterWeekRef.id, 'edit']" class="btn btn-primary">
+          <fa-icon icon="pencil-alt" />&nbsp;<span abfTranslate="entity.action.edit">Edit</span>
+        </button>
+      </div>
+    }
+  </div>
+</div>

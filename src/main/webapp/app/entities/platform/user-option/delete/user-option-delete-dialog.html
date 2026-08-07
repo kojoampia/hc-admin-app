@@ -1,0 +1,28 @@
+@if (userOption) {
+  <form name="deleteForm" (ngSubmit)="confirmDelete(userOption.id!)">
+    <div class="modal-header">
+      <h4 class="modal-title" data-cy="userOptionDeleteDialogHeading" abfTranslate="entity.delete.title">Confirm delete operation</h4>
+    </div>
+
+    <div class="modal-body">
+      <abf-alert-error />
+      <p
+        id="abf-delete-userOption-heading"
+        abfTranslate="hcAdminApp.platformUserOption.delete.question"
+        [translateValues]="{ id: userOption.id }"
+      >
+        Are you sure you want to delete User Option {{ userOption.id }}?
+      </p>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" data-dismiss="modal" (click)="cancel()">
+        <fa-icon icon="ban" />&nbsp;<span abfTranslate="entity.action.cancel">Cancel</span>
+      </button>
+
+      <button id="abf-confirm-delete-userOption" data-cy="entityConfirmDeleteButton" type="submit" class="btn btn-danger">
+        <fa-icon icon="times" />&nbsp;<span abfTranslate="entity.action.delete">Delete</span>
+      </button>
+    </div>
+  </form>
+}

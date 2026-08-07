@@ -1,0 +1,50 @@
+{
+  "annotations": {
+    "changelogDate": "20231211194818"
+  },
+  "applications": ["hcAdmin"],
+  "clientRootFolder": "operations",
+  "documentation": "One cell of the duty-roster grid.",
+  "fields": [
+    {
+      "fieldName": "dayIndex",
+      "fieldType": "Integer",
+      "fieldValidateRules": ["required", "min", "max"],
+      "fieldValidateRulesMax": "6",
+      "fieldValidateRulesMin": "0"
+    },
+    {
+      "fieldName": "shiftDate",
+      "fieldType": "LocalDate",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "shift",
+      "fieldType": "ShiftType",
+      "fieldValidateRules": ["required"],
+      "fieldValues": "DAY,EVENING,NIGHT,OFF"
+    }
+  ],
+  "name": "ShiftAssignment",
+  "pagination": "pagination",
+  "relationships": [
+    {
+      "otherEntityField": "label",
+      "otherEntityName": "rosterWeek",
+      "otherEntityRelationshipName": "assignment",
+      "relationshipName": "week",
+      "relationshipSide": "right",
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": "required"
+    },
+    {
+      "otherEntityField": "licenceNumber",
+      "otherEntityName": "professional",
+      "otherEntityRelationshipName": "assignment",
+      "relationshipName": "professional",
+      "relationshipSide": "right",
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": "required"
+    }
+  ]
+}

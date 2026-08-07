@@ -1,0 +1,248 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    <form name="editForm" novalidate (ngSubmit)="save()" [formGroup]="editForm">
+      <h2 id="abf-profile-heading" data-cy="ProfileCreateUpdateHeading" abfTranslate="hcAdminApp.directoryProfile.home.createOrEditLabel">
+        Create or edit a Profile
+      </h2>
+
+      <div>
+        <abf-alert-error />
+
+        @if (editForm.controls.id.value !== null) {
+          <div class="mb-3">
+            <label class="form-label" for="field_id" abfTranslate="global.field.id">ID</label>
+            <input type="number" class="form-control" name="id" id="field_id" data-cy="id" formControlName="id" />
+          </div>
+        }
+
+        <div class="mb-3">
+          <label class="form-label" for="field_title" abfTranslate="hcAdminApp.directoryProfile.title">Title</label>
+          <select class="form-control" name="title" formControlName="title" id="field_title" data-cy="title">
+            <option [ngValue]="null">{{ 'hcAdminApp.Title.null' | translate }}</option>
+            @for (title of titleValues; track $index) {
+              <option [value]="title">{{ 'hcAdminApp.Title.' + title | translate }}</option>
+            }
+          </select>
+        </div>
+
+        @let firstNameRef = editForm.get('firstName')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_firstName" abfTranslate="hcAdminApp.directoryProfile.firstName">First Name</label>
+          <input type="text" class="form-control" name="firstName" id="field_firstName" data-cy="firstName" formControlName="firstName" />
+          @if (firstNameRef.invalid && (firstNameRef.dirty || firstNameRef.touched)) {
+            <div>
+              @if (firstNameRef.errors?.required) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.required">This field is required.</small>
+              }
+              @if (firstNameRef.errors?.maxlength) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.maxlength" [translateValues]="{ max: '50' }"
+                  >This field cannot be longer than 50 characters.</small
+                >
+              }
+            </div>
+          }
+        </div>
+
+        @let middleNameRef = editForm.get('middleName')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_middleName" abfTranslate="hcAdminApp.directoryProfile.middleName">Middle Name</label>
+          <input
+            type="text"
+            class="form-control"
+            name="middleName"
+            id="field_middleName"
+            data-cy="middleName"
+            formControlName="middleName"
+          />
+          @if (middleNameRef.invalid && (middleNameRef.dirty || middleNameRef.touched)) {
+            <div>
+              @if (middleNameRef.errors?.maxlength) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.maxlength" [translateValues]="{ max: '50' }"
+                  >This field cannot be longer than 50 characters.</small
+                >
+              }
+            </div>
+          }
+        </div>
+
+        @let lastNameRef = editForm.get('lastName')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_lastName" abfTranslate="hcAdminApp.directoryProfile.lastName">Last Name</label>
+          <input type="text" class="form-control" name="lastName" id="field_lastName" data-cy="lastName" formControlName="lastName" />
+          @if (lastNameRef.invalid && (lastNameRef.dirty || lastNameRef.touched)) {
+            <div>
+              @if (lastNameRef.errors?.required) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.required">This field is required.</small>
+              }
+              @if (lastNameRef.errors?.maxlength) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.maxlength" [translateValues]="{ max: '50' }"
+                  >This field cannot be longer than 50 characters.</small
+                >
+              }
+            </div>
+          }
+        </div>
+
+        @let dateOfBirthRef = editForm.get('dateOfBirth')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_dateOfBirth" abfTranslate="hcAdminApp.directoryProfile.dateOfBirth">Date Of Birth</label>
+          <div class="input-group">
+            <input
+              id="field_dateOfBirth"
+              data-cy="dateOfBirth"
+              type="text"
+              class="form-control"
+              name="dateOfBirth"
+              ngbDatepicker
+              #dateOfBirthDp="ngbDatepicker"
+              formControlName="dateOfBirth"
+            />
+            <button type="button" class="btn btn-secondary" (click)="dateOfBirthDp.toggle()"><fa-icon icon="calendar-alt" /></button>
+          </div>
+          @if (dateOfBirthRef.invalid && (dateOfBirthRef.dirty || dateOfBirthRef.touched)) {
+            <div>
+              @if (dateOfBirthRef.errors?.required) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.required">This field is required.</small>
+              }
+            </div>
+          }
+        </div>
+
+        @let sexRef = editForm.get('sex')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_sex" abfTranslate="hcAdminApp.directoryProfile.sex">Sex</label>
+          <select class="form-control" name="sex" formControlName="sex" id="field_sex" data-cy="sex">
+            <option [ngValue]="null">{{ 'hcAdminApp.Sex.null' | translate }}</option>
+            @for (sex of sexValues; track $index) {
+              <option [value]="sex">{{ 'hcAdminApp.Sex.' + sex | translate }}</option>
+            }
+          </select>
+          @if (sexRef.invalid && (sexRef.dirty || sexRef.touched)) {
+            <div>
+              @if (sexRef.errors?.required) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.required">This field is required.</small>
+              }
+            </div>
+          }
+        </div>
+
+        @let mobilePhoneRef = editForm.get('mobilePhone')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_mobilePhone" abfTranslate="hcAdminApp.directoryProfile.mobilePhone">Mobile Phone</label>
+          <input
+            type="text"
+            class="form-control"
+            name="mobilePhone"
+            id="field_mobilePhone"
+            data-cy="mobilePhone"
+            formControlName="mobilePhone"
+          />
+          @if (mobilePhoneRef.invalid && (mobilePhoneRef.dirty || mobilePhoneRef.touched)) {
+            <div>
+              @if (mobilePhoneRef.errors?.required) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.required">This field is required.</small>
+              }
+              @if (mobilePhoneRef.errors?.maxlength) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.maxlength" [translateValues]="{ max: '24' }"
+                  >This field cannot be longer than 24 characters.</small
+                >
+              }
+            </div>
+          }
+        </div>
+
+        @let emailRef = editForm.get('email')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_email" abfTranslate="hcAdminApp.directoryProfile.email">Email</label>
+          <input type="text" class="form-control" name="email" id="field_email" data-cy="email" formControlName="email" />
+          @if (emailRef.invalid && (emailRef.dirty || emailRef.touched)) {
+            <div>
+              @if (emailRef.errors?.required) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.required">This field is required.</small>
+              }
+              @if (emailRef.errors?.maxlength) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.maxlength" [translateValues]="{ max: '120' }"
+                  >This field cannot be longer than 120 characters.</small
+                >
+              }
+              @if (emailRef.errors?.pattern) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.pattern" [translateValues]="{ pattern: 'Email' }"
+                  >This field should follow pattern for Email.</small
+                >
+              }
+            </div>
+          }
+        </div>
+
+        @let idTypeRef = editForm.get('idType')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_idType" abfTranslate="hcAdminApp.directoryProfile.idType">Id Type</label>
+          <select class="form-control" name="idType" formControlName="idType" id="field_idType" data-cy="idType">
+            <option [ngValue]="null">{{ 'hcAdminApp.IdType.null' | translate }}</option>
+            @for (idType of idTypeValues; track $index) {
+              <option [value]="idType">{{ 'hcAdminApp.IdType.' + idType | translate }}</option>
+            }
+          </select>
+          @if (idTypeRef.invalid && (idTypeRef.dirty || idTypeRef.touched)) {
+            <div>
+              @if (idTypeRef.errors?.required) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.required">This field is required.</small>
+              }
+            </div>
+          }
+        </div>
+
+        @let idNumberRef = editForm.get('idNumber')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_idNumber" abfTranslate="hcAdminApp.directoryProfile.idNumber">Id Number</label>
+          <input type="text" class="form-control" name="idNumber" id="field_idNumber" data-cy="idNumber" formControlName="idNumber" />
+          @if (idNumberRef.invalid && (idNumberRef.dirty || idNumberRef.touched)) {
+            <div>
+              @if (idNumberRef.errors?.required) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.required">This field is required.</small>
+              }
+              @if (idNumberRef.errors?.maxlength) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.maxlength" [translateValues]="{ max: '40' }"
+                  >This field cannot be longer than 40 characters.</small
+                >
+              }
+            </div>
+          }
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_address" abfTranslate="hcAdminApp.directoryProfile.address">Address</label>
+          <select
+            class="form-control"
+            id="field_address"
+            data-cy="address"
+            name="address"
+            formControlName="address"
+            [compareWith]="compareAddress"
+          >
+            <option [ngValue]="null"></option>
+            @for (addressOption of addressesCollection(); track $index) {
+              <option [ngValue]="addressOption">{{ addressOption.id }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary" (click)="previousState()">
+          <fa-icon icon="ban" />&nbsp;<span abfTranslate="entity.action.cancel">Cancel</span>
+        </button>
+
+        <button
+          type="submit"
+          id="save-entity"
+          data-cy="entityCreateSaveButton"
+          [disabled]="editForm.invalid || isSaving()"
+          class="btn btn-primary"
+        >
+          <fa-icon icon="save" />&nbsp;<span abfTranslate="entity.action.save">Save</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

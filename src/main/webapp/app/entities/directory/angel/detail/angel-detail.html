@@ -1,0 +1,50 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    @if (angel(); as angelRef) {
+      <div>
+        <h2 data-cy="angelDetailsHeading"><span abfTranslate="hcAdminApp.directoryAngel.detail.title">Angel</span></h2>
+
+        <hr />
+
+        <abf-alert-error />
+
+        <abf-alert />
+
+        <dl class="row-md jh-entity-details">
+          <dt><span abfTranslate="global.field.id">ID</span></dt>
+          <dd>
+            <span>{{ angelRef.id }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.directoryAngel.name">Name</span></dt>
+          <dd>
+            <span>{{ angelRef.name }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.directoryAngel.relationship">Relationship</span></dt>
+          <dd>
+            <span>{{ angelRef.relationship }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.directoryAngel.phone">Phone</span></dt>
+          <dd>
+            <span>{{ angelRef.phone }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.directoryAngel.email">Email</span></dt>
+          <dd>
+            <span>{{ angelRef.email }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.directoryAngel.country">Country</span></dt>
+          <dd>
+            <span>{{ angelRef.country }}</span>
+          </dd>
+        </dl>
+
+        <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+          <fa-icon icon="arrow-left" />&nbsp;<span abfTranslate="entity.action.back">Back</span>
+        </button>
+
+        <button type="button" [routerLink]="['/angel', angelRef.id, 'edit']" class="btn btn-primary">
+          <fa-icon icon="pencil-alt" />&nbsp;<span abfTranslate="entity.action.edit">Edit</span>
+        </button>
+      </div>
+    }
+  </div>
+</div>

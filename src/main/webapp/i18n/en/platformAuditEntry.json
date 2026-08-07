@@ -1,0 +1,20 @@
+{
+  "hcAdminApp": {
+    "platformAuditEntry": {
+      "home": {
+        "title": "Audit Entries",
+        "refreshListLabel": "Refresh list",
+        "notFound": "No Audit Entries found"
+      },
+      "detail": {
+        "title": "Audit Entry"
+      },
+      "id": "ID",
+      "occurredAt": "Occurred At",
+      "actor": "Actor",
+      "action": "Action",
+      "target": "Target",
+      "level": "Level"
+    }
+  }
+}

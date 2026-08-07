@@ -1,0 +1,39 @@
+{
+  "annotations": {
+    "changelogDate": "20231211195118"
+  },
+  "applications": ["hcAdmin"],
+  "clientRootFolder": "catalogue",
+  "documentation": "PDF: Category (Name, Description).",
+  "fields": [
+    {
+      "fieldName": "name",
+      "fieldType": "String",
+      "fieldValidateRules": ["required", "maxlength"],
+      "fieldValidateRulesMaxlength": "60"
+    },
+    {
+      "fieldName": "description",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "200"
+    },
+    {
+      "fieldName": "iconKey",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "30"
+    }
+  ],
+  "name": "Category",
+  "relationships": [
+    {
+      "otherEntityField": "name",
+      "otherEntityName": "serviceActivity",
+      "otherEntityRelationshipName": "category",
+      "relationshipName": "activity",
+      "relationshipSide": "left",
+      "relationshipType": "one-to-many"
+    }
+  ]
+}

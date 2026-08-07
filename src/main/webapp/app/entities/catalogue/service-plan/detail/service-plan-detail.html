@@ -1,0 +1,64 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    @if (servicePlan(); as servicePlanRef) {
+      <div>
+        <h2 data-cy="servicePlanDetailsHeading"><span abfTranslate="hcAdminApp.catalogueServicePlan.detail.title">Service Plan</span></h2>
+
+        <hr />
+
+        <abf-alert-error />
+
+        <abf-alert />
+
+        <dl class="row-md jh-entity-details">
+          <dt><span abfTranslate="global.field.id">ID</span></dt>
+          <dd>
+            <span>{{ servicePlanRef.id }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.catalogueServicePlan.name">Name</span></dt>
+          <dd>
+            <span>{{ servicePlanRef.name }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.catalogueServicePlan.tier">Tier</span></dt>
+          <dd>
+            <span [abfTranslate]="'hcAdminApp.PlanTier.' + (servicePlanRef.tier ?? 'null')">{{
+              { null: '', ESSENTIAL: 'ESSENTIAL', PLUS: 'PLUS', FAMILY: 'FAMILY' }[servicePlanRef.tier ?? 'null']
+            }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.catalogueServicePlan.tierLabel">Tier Label</span></dt>
+          <dd>
+            <span>{{ servicePlanRef.tierLabel }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.catalogueServicePlan.monthlyPrice">Monthly Price</span></dt>
+          <dd>
+            <span>{{ servicePlanRef.monthlyPrice }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.catalogueServicePlan.currency">Currency</span></dt>
+          <dd>
+            <span>{{ servicePlanRef.currency }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.catalogueServicePlan.summary">Summary</span></dt>
+          <dd>
+            <span>{{ servicePlanRef.summary }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.catalogueServicePlan.featured">Featured</span></dt>
+          <dd>
+            <span>{{ servicePlanRef.featured }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.catalogueServicePlan.subscriberCount">Subscriber Count</span></dt>
+          <dd>
+            <span>{{ servicePlanRef.subscriberCount }}</span>
+          </dd>
+        </dl>
+
+        <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+          <fa-icon icon="arrow-left" />&nbsp;<span abfTranslate="entity.action.back">Back</span>
+        </button>
+
+        <button type="button" [routerLink]="['/service-plan', servicePlanRef.id, 'edit']" class="btn btn-primary">
+          <fa-icon icon="pencil-alt" />&nbsp;<span abfTranslate="entity.action.edit">Edit</span>
+        </button>
+      </div>
+    }
+  </div>
+</div>

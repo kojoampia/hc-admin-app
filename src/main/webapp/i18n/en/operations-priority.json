@@ -1,0 +1,10 @@
+{
+  "hcAdminApp": {
+    "Priority": {
+      "null": "",
+      "HIGH": "HIGH",
+      "NORMAL": "NORMAL",
+      "LOW": "LOW"
+    }
+  }
+}

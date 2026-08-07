@@ -1,0 +1,157 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    <form name="editForm" novalidate (ngSubmit)="save()" [formGroup]="editForm">
+      <h2 id="abf-document-heading" data-cy="DocumentCreateUpdateHeading" abfTranslate="hcAdminApp.platformDocument.home.createOrEditLabel">
+        Create or edit a Document
+      </h2>
+
+      <div>
+        <abf-alert-error />
+
+        @if (editForm.controls.id.value !== null) {
+          <div class="mb-3">
+            <label class="form-label" for="field_id" abfTranslate="global.field.id">ID</label>
+            <input type="number" class="form-control" name="id" id="field_id" data-cy="id" formControlName="id" />
+          </div>
+        }
+
+        @let nameRef = editForm.get('name')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_name" abfTranslate="hcAdminApp.platformDocument.name">Name</label>
+          <input type="text" class="form-control" name="name" id="field_name" data-cy="name" formControlName="name" />
+          @if (nameRef.invalid && (nameRef.dirty || nameRef.touched)) {
+            <div>
+              @if (nameRef.errors?.required) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.required">This field is required.</small>
+              }
+              @if (nameRef.errors?.maxlength) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.maxlength" [translateValues]="{ max: '120' }"
+                  >This field cannot be longer than 120 characters.</small
+                >
+              }
+            </div>
+          }
+        </div>
+
+        @let descriptionRef = editForm.get('description')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_description" abfTranslate="hcAdminApp.platformDocument.description">Description</label>
+          <input
+            type="text"
+            class="form-control"
+            name="description"
+            id="field_description"
+            data-cy="description"
+            formControlName="description"
+          />
+          @if (descriptionRef.invalid && (descriptionRef.dirty || descriptionRef.touched)) {
+            <div>
+              @if (descriptionRef.errors?.maxlength) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.maxlength" [translateValues]="{ max: '300' }"
+                  >This field cannot be longer than 300 characters.</small
+                >
+              }
+            </div>
+          }
+        </div>
+
+        @let urlRef = editForm.get('url')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_url" abfTranslate="hcAdminApp.platformDocument.url">Url</label>
+          <input type="text" class="form-control" name="url" id="field_url" data-cy="url" formControlName="url" />
+          @if (urlRef.invalid && (urlRef.dirty || urlRef.touched)) {
+            <div>
+              @if (urlRef.errors?.required) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.required">This field is required.</small>
+              }
+              @if (urlRef.errors?.maxlength) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.maxlength" [translateValues]="{ max: '400' }"
+                  >This field cannot be longer than 400 characters.</small
+                >
+              }
+            </div>
+          }
+        </div>
+
+        @let uploadedAtRef = editForm.get('uploadedAt')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_uploadedAt" abfTranslate="hcAdminApp.platformDocument.uploadedAt">Uploaded At</label>
+          <div class="d-flex">
+            <input
+              id="field_uploadedAt"
+              data-cy="uploadedAt"
+              type="datetime-local"
+              class="form-control"
+              name="uploadedAt"
+              formControlName="uploadedAt"
+              placeholder="YYYY-MM-DD HH:mm"
+            />
+          </div>
+          @if (uploadedAtRef.invalid && (uploadedAtRef.dirty || uploadedAtRef.touched)) {
+            <div>
+              @if (uploadedAtRef.errors?.required) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.required">This field is required.</small>
+              }
+              <small
+                class="form-text text-danger"
+                [hidden]="!uploadedAtRef.errors?.datetimelocal"
+                abfTranslate="entity.validation.datetimelocal"
+                >This field should be a date and time.</small
+              >
+            </div>
+          }
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_patient" abfTranslate="hcAdminApp.platformDocument.patient">Patient</label>
+          <select
+            class="form-control"
+            id="field_patient"
+            data-cy="patient"
+            name="patient"
+            formControlName="patient"
+            [compareWith]="comparePatient"
+          >
+            <option [ngValue]="null"></option>
+            @for (patientOption of patientsSharedCollection(); track $index) {
+              <option [ngValue]="patientOption">{{ patientOption.id }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_vendor" abfTranslate="hcAdminApp.platformDocument.vendor">Vendor</label>
+          <select
+            class="form-control"
+            id="field_vendor"
+            data-cy="vendor"
+            name="vendor"
+            formControlName="vendor"
+            [compareWith]="compareVendor"
+          >
+            <option [ngValue]="null"></option>
+            @for (vendorOption of vendorsSharedCollection(); track $index) {
+              <option [ngValue]="vendorOption">{{ vendorOption.id }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary" (click)="previousState()">
+          <fa-icon icon="ban" />&nbsp;<span abfTranslate="entity.action.cancel">Cancel</span>
+        </button>
+
+        <button
+          type="submit"
+          id="save-entity"
+          data-cy="entityCreateSaveButton"
+          [disabled]="editForm.invalid || isSaving()"
+          class="btn btn-primary"
+        >
+          <fa-icon icon="save" />&nbsp;<span abfTranslate="entity.action.save">Save</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

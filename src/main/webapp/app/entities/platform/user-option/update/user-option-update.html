@@ -1,0 +1,91 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    <form name="editForm" novalidate (ngSubmit)="save()" [formGroup]="editForm">
+      <h2
+        id="abf-user-option-heading"
+        data-cy="UserOptionCreateUpdateHeading"
+        abfTranslate="hcAdminApp.platformUserOption.home.createOrEditLabel"
+      >
+        Create or edit a User Option
+      </h2>
+
+      <div>
+        <abf-alert-error />
+
+        @if (editForm.controls.id.value !== null) {
+          <div class="mb-3">
+            <label class="form-label" for="field_id" abfTranslate="global.field.id">ID</label>
+            <input type="number" class="form-control" name="id" id="field_id" data-cy="id" formControlName="id" />
+          </div>
+        }
+
+        @let categoryRef = editForm.get('category')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_category" abfTranslate="hcAdminApp.platformUserOption.category">Category</label>
+          <input type="text" class="form-control" name="category" id="field_category" data-cy="category" formControlName="category" />
+          @if (categoryRef.invalid && (categoryRef.dirty || categoryRef.touched)) {
+            <div>
+              @if (categoryRef.errors?.required) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.required">This field is required.</small>
+              }
+              @if (categoryRef.errors?.maxlength) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.maxlength" [translateValues]="{ max: '60' }"
+                  >This field cannot be longer than 60 characters.</small
+                >
+              }
+            </div>
+          }
+        </div>
+
+        @let userRefRef = editForm.get('userRef')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_userRef" abfTranslate="hcAdminApp.platformUserOption.userRef">User Ref</label>
+          <input type="text" class="form-control" name="userRef" id="field_userRef" data-cy="userRef" formControlName="userRef" />
+          @if (userRefRef.invalid && (userRefRef.dirty || userRefRef.touched)) {
+            <div>
+              @if (userRefRef.errors?.required) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.required">This field is required.</small>
+              }
+              @if (userRefRef.errors?.maxlength) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.maxlength" [translateValues]="{ max: '60' }"
+                  >This field cannot be longer than 60 characters.</small
+                >
+              }
+            </div>
+          }
+        </div>
+
+        @let metadataRef = editForm.get('metadata')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_metadata" abfTranslate="hcAdminApp.platformUserOption.metadata">Metadata</label>
+          <input type="text" class="form-control" name="metadata" id="field_metadata" data-cy="metadata" formControlName="metadata" />
+          @if (metadataRef.invalid && (metadataRef.dirty || metadataRef.touched)) {
+            <div>
+              @if (metadataRef.errors?.maxlength) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.maxlength" [translateValues]="{ max: '500' }"
+                  >This field cannot be longer than 500 characters.</small
+                >
+              }
+            </div>
+          }
+        </div>
+      </div>
+
+      <div>
+        <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary" (click)="previousState()">
+          <fa-icon icon="ban" />&nbsp;<span abfTranslate="entity.action.cancel">Cancel</span>
+        </button>
+
+        <button
+          type="submit"
+          id="save-entity"
+          data-cy="entityCreateSaveButton"
+          [disabled]="editForm.invalid || isSaving()"
+          class="btn btn-primary"
+        >
+          <fa-icon icon="save" />&nbsp;<span abfTranslate="entity.action.save">Save</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,74 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    @if (message(); as messageRef) {
+      <div>
+        <h2 data-cy="messageDetailsHeading"><span abfTranslate="hcAdminApp.operationsMessage.detail.title">Message</span></h2>
+
+        <hr />
+
+        <abf-alert-error />
+
+        <abf-alert />
+
+        <dl class="row-md jh-entity-details">
+          <dt><span abfTranslate="global.field.id">ID</span></dt>
+          <dd>
+            <span>{{ messageRef.id }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.operationsMessage.sentAt">Sent At</span></dt>
+          <dd>
+            <span>{{ messageRef.sentAt | formatMediumDatetime }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.operationsMessage.fromAddress">From Address</span></dt>
+          <dd>
+            <span>{{ messageRef.fromAddress }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.operationsMessage.senderName">Sender Name</span></dt>
+          <dd>
+            <span>{{ messageRef.senderName }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.operationsMessage.subject">Subject</span></dt>
+          <dd>
+            <span>{{ messageRef.subject }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.operationsMessage.body">Body</span></dt>
+          <dd>
+            <span>{{ messageRef.body }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.operationsMessage.channel">Channel</span></dt>
+          <dd>
+            <span [abfTranslate]="'hcAdminApp.MessageChannel.' + (messageRef.channel ?? 'null')">{{
+              {
+                null: '',
+                PATIENT_APP: 'PATIENT_APP',
+                PROFESSIONAL_APP: 'PROFESSIONAL_APP',
+                VENDOR_PORTAL: 'VENDOR_PORTAL',
+                EMAIL: 'EMAIL',
+              }[messageRef.channel ?? 'null']
+            }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.operationsMessage.status">Status</span></dt>
+          <dd>
+            <span [abfTranslate]="'hcAdminApp.MessageStatus.' + (messageRef.status ?? 'null')">{{
+              { null: '', NEW: 'NEW', READ: 'READ', REPLIED: 'REPLIED' }[messageRef.status ?? 'null']
+            }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.operationsMessage.priority">Priority</span></dt>
+          <dd>
+            <span [abfTranslate]="'hcAdminApp.Priority.' + (messageRef.priority ?? 'null')">{{
+              { null: '', HIGH: 'HIGH', NORMAL: 'NORMAL', LOW: 'LOW' }[messageRef.priority ?? 'null']
+            }}</span>
+          </dd>
+        </dl>
+
+        <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+          <fa-icon icon="arrow-left" />&nbsp;<span abfTranslate="entity.action.back">Back</span>
+        </button>
+
+        <button type="button" [routerLink]="['/message', messageRef.id, 'edit']" class="btn btn-primary">
+          <fa-icon icon="pencil-alt" />&nbsp;<span abfTranslate="entity.action.edit">Edit</span>
+        </button>
+      </div>
+    }
+  </div>
+</div>

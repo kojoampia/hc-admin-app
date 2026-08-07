@@ -1,0 +1,28 @@
+@if (servicePlan) {
+  <form name="deleteForm" (ngSubmit)="confirmDelete(servicePlan.id!)">
+    <div class="modal-header">
+      <h4 class="modal-title" data-cy="servicePlanDeleteDialogHeading" abfTranslate="entity.delete.title">Confirm delete operation</h4>
+    </div>
+
+    <div class="modal-body">
+      <abf-alert-error />
+      <p
+        id="abf-delete-servicePlan-heading"
+        abfTranslate="hcAdminApp.catalogueServicePlan.delete.question"
+        [translateValues]="{ id: servicePlan.id }"
+      >
+        Are you sure you want to delete Service Plan {{ servicePlan.id }}?
+      </p>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" data-dismiss="modal" (click)="cancel()">
+        <fa-icon icon="ban" />&nbsp;<span abfTranslate="entity.action.cancel">Cancel</span>
+      </button>
+
+      <button id="abf-confirm-delete-servicePlan" data-cy="entityConfirmDeleteButton" type="submit" class="btn btn-danger">
+        <fa-icon icon="times" />&nbsp;<span abfTranslate="entity.action.delete">Delete</span>
+      </button>
+    </div>
+  </form>
+}

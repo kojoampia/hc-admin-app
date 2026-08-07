@@ -1,0 +1,9 @@
+export enum IdType {
+  GHANA_CARD = 'GHANA_CARD',
+
+  PASSPORT = 'PASSPORT',
+
+  VOTER_ID = 'VOTER_ID',
+
+  DRIVERS_LICENCE = 'DRIVERS_LICENCE',
+}

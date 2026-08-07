@@ -1,0 +1,203 @@
+<div>
+  <h2 id="page-heading" data-cy="PatientHeading">
+    <span abfTranslate="hcAdminApp.directoryPatient.home.title">Patients</span>
+
+    <div class="d-flex justify-content-end">
+      <button class="btn btn-info me-2" (click)="load()" [disabled]="isLoading()">
+        <fa-icon icon="sync" [animation]="isLoading() ? 'spin' : undefined" />
+        <span abfTranslate="hcAdminApp.directoryPatient.home.refreshListLabel">Refresh list</span>
+      </button>
+
+      <button
+        id="jh-create-entity"
+        data-cy="entityCreateButton"
+        class="btn btn-primary jh-create-entity create-patient"
+        [routerLink]="['/patient/new']"
+      >
+        <fa-icon icon="plus" />
+        <span abfTranslate="hcAdminApp.directoryPatient.home.createLabel">Create a new Patient</span>
+      </button>
+    </div>
+  </h2>
+
+  <abf-alert-error />
+
+  <abf-alert />
+
+  @if (patients().length === 0) {
+    <div class="alert alert-warning" id="no-result">
+      <span abfTranslate="hcAdminApp.directoryPatient.home.notFound">No Patients found</span>
+    </div>
+  } @else {
+    <div class="table-responsive table-entities" id="entities">
+      <table class="table table-striped" aria-describedby="page-heading">
+        <thead>
+          <tr abfSort [(sortState)]="sortState" (sortChange)="navigateToWithComponentValues($event)">
+            <th scope="col" abfSortBy="id">
+              <div class="d-flex">
+                <span abfTranslate="global.field.id">ID</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="status">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.directoryPatient.status">Status</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="joinedOn">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.directoryPatient.joinedOn">Joined On</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="lastActiveOn">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.directoryPatient.lastActiveOn">Last Active On</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="caseCount">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.directoryPatient.caseCount">Case Count</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="profile.id">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.directoryPatient.profile">Profile</span>
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="angel.id">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.directoryPatient.angel">Angel</span>
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="plan.name">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.directoryPatient.plan">Plan</span>
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="clinicalLead.licenceNumber">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.directoryPatient.clinicalLead">Clinical Lead</span>
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="hub.name">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.directoryPatient.hub">Hub</span>
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (patient of patients(); track trackId(patient)) {
+            <tr data-cy="entityTable">
+              <td>
+                <a [routerLink]="['/patient', patient.id, 'view']">{{ patient.id }}</a>
+              </td>
+              <td [abfTranslate]="'hcAdminApp.AccountStatus.' + (patient.status ?? 'null')">
+                {{
+                  {
+                    null: '',
+                    ACTIVE: 'ACTIVE',
+                    PENDING: 'PENDING',
+                    SUSPENDED: 'SUSPENDED',
+                    ON_LEAVE: 'ON_LEAVE',
+                    UNDER_REVIEW: 'UNDER_REVIEW',
+                  }[patient.status ?? 'null']
+                }}
+              </td>
+              <td>{{ patient.joinedOn | formatMediumDate }}</td>
+              <td>{{ patient.lastActiveOn | formatMediumDate }}</td>
+              <td>{{ patient.caseCount }}</td>
+              <td>
+                @if (patient.profile) {
+                  <div>
+                    <a [routerLink]="['/profile', patient.profile.id, 'view']">{{ patient.profile.id }}</a>
+                  </div>
+                }
+              </td>
+              <td>
+                @if (patient.angel) {
+                  <div>
+                    <a [routerLink]="['/angel', patient.angel.id, 'view']">{{ patient.angel.id }}</a>
+                  </div>
+                }
+              </td>
+              <td>
+                @if (patient.plan) {
+                  <div>
+                    <a [routerLink]="['/service-plan', patient.plan.id, 'view']">{{ patient.plan.name }}</a>
+                  </div>
+                }
+              </td>
+              <td>
+                @if (patient.clinicalLead) {
+                  <div>
+                    <a [routerLink]="['/professional', patient.clinicalLead.id, 'view']">{{ patient.clinicalLead.licenceNumber }}</a>
+                  </div>
+                }
+              </td>
+              <td>
+                @if (patient.hub) {
+                  <div>
+                    <a [routerLink]="['/hub', patient.hub.id, 'view']">{{ patient.hub.name }}</a>
+                  </div>
+                }
+              </td>
+              <td class="text-end">
+                <div class="btn-group">
+                  <a [routerLink]="['/patient', patient.id, 'view']" class="btn btn-info btn-sm" data-cy="entityDetailsButton">
+                    <fa-icon icon="eye" />
+                    <span class="d-none d-md-inline" abfTranslate="entity.action.view">View</span>
+                  </a>
+
+                  <a [routerLink]="['/patient', patient.id, 'edit']" class="btn btn-primary btn-sm" data-cy="entityEditButton">
+                    <fa-icon icon="pencil-alt" />
+                    <span class="d-none d-md-inline" abfTranslate="entity.action.edit">Edit</span>
+                  </a>
+
+                  <button type="submit" (click)="delete(patient)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
+                    <fa-icon icon="times" />
+                    <span class="d-none d-md-inline" abfTranslate="entity.action.delete">Delete</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+  @if (patients().length > 0) {
+    <div>
+      <div class="d-flex justify-content-center">
+        <abf-item-count [params]="{ page: page(), totalItems: totalItems(), itemsPerPage: itemsPerPage() }" />
+      </div>
+
+      <div class="d-flex justify-content-center">
+        <ngb-pagination
+          [collectionSize]="totalItems()"
+          [page]="page()"
+          [pageSize]="itemsPerPage()"
+          [maxSize]="5"
+          [rotate]="true"
+          [boundaryLinks]="true"
+          (pageChange)="navigateToPage($event)"
+        />
+      </div>
+    </div>
+  }
+</div>

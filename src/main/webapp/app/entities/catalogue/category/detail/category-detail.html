@@ -1,0 +1,42 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    @if (category(); as categoryRef) {
+      <div>
+        <h2 data-cy="categoryDetailsHeading"><span abfTranslate="hcAdminApp.catalogueCategory.detail.title">Category</span></h2>
+
+        <hr />
+
+        <abf-alert-error />
+
+        <abf-alert />
+
+        <dl class="row-md jh-entity-details">
+          <dt><span abfTranslate="global.field.id">ID</span></dt>
+          <dd>
+            <span>{{ categoryRef.id }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.catalogueCategory.name">Name</span></dt>
+          <dd>
+            <span>{{ categoryRef.name }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.catalogueCategory.description">Description</span></dt>
+          <dd>
+            <span>{{ categoryRef.description }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.catalogueCategory.iconKey">Icon Key</span></dt>
+          <dd>
+            <span>{{ categoryRef.iconKey }}</span>
+          </dd>
+        </dl>
+
+        <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+          <fa-icon icon="arrow-left" />&nbsp;<span abfTranslate="entity.action.back">Back</span>
+        </button>
+
+        <button type="button" [routerLink]="['/category', categoryRef.id, 'edit']" class="btn btn-primary">
+          <fa-icon icon="pencil-alt" />&nbsp;<span abfTranslate="entity.action.edit">Edit</span>
+        </button>
+      </div>
+    }
+  </div>
+</div>

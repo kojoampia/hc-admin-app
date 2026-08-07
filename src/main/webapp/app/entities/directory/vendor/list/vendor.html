@@ -1,0 +1,210 @@
+<div>
+  <h2 id="page-heading" data-cy="VendorHeading">
+    <span abfTranslate="hcAdminApp.directoryVendor.home.title">Vendors</span>
+
+    <div class="d-flex justify-content-end">
+      <button class="btn btn-info me-2" (click)="load()" [disabled]="isLoading()">
+        <fa-icon icon="sync" [animation]="isLoading() ? 'spin' : undefined" />
+        <span abfTranslate="hcAdminApp.directoryVendor.home.refreshListLabel">Refresh list</span>
+      </button>
+
+      <button
+        id="jh-create-entity"
+        data-cy="entityCreateButton"
+        class="btn btn-primary jh-create-entity create-vendor"
+        [routerLink]="['/vendor/new']"
+      >
+        <fa-icon icon="plus" />
+        <span abfTranslate="hcAdminApp.directoryVendor.home.createLabel">Create a new Vendor</span>
+      </button>
+    </div>
+  </h2>
+
+  <abf-alert-error />
+
+  <abf-alert />
+
+  @if (vendors().length === 0) {
+    <div class="alert alert-warning" id="no-result">
+      <span abfTranslate="hcAdminApp.directoryVendor.home.notFound">No Vendors found</span>
+    </div>
+  } @else {
+    <div class="table-responsive table-entities" id="entities">
+      <table class="table table-striped" aria-describedby="page-heading">
+        <thead>
+          <tr abfSort [(sortState)]="sortState" (sortChange)="navigateToWithComponentValues($event)">
+            <th scope="col" abfSortBy="id">
+              <div class="d-flex">
+                <span abfTranslate="global.field.id">ID</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="name">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.directoryVendor.name">Name</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="category">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.directoryVendor.category">Category</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="serviceSummary">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.directoryVendor.serviceSummary">Service Summary</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="contactName">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.directoryVendor.contactName">Contact Name</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="phone">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.directoryVendor.phone">Phone</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="email">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.directoryVendor.email">Email</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="city">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.directoryVendor.city">City</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="status">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.directoryVendor.status">Status</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="contractNote">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.directoryVendor.contractNote">Contract Note</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="contractRenewsOn">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.directoryVendor.contractRenewsOn">Contract Renews On</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="orderCount">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.directoryVendor.orderCount">Order Count</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="spendToDate">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.directoryVendor.spendToDate">Spend To Date</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="rating">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.directoryVendor.rating">Rating</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (vendor of vendors(); track trackId(vendor)) {
+            <tr data-cy="entityTable">
+              <td>
+                <a [routerLink]="['/vendor', vendor.id, 'view']">{{ vendor.id }}</a>
+              </td>
+              <td>{{ vendor.name }}</td>
+              <td>{{ vendor.category }}</td>
+              <td>{{ vendor.serviceSummary }}</td>
+              <td>{{ vendor.contactName }}</td>
+              <td>{{ vendor.phone }}</td>
+              <td>{{ vendor.email }}</td>
+              <td>{{ vendor.city }}</td>
+              <td [abfTranslate]="'hcAdminApp.AccountStatus.' + (vendor.status ?? 'null')">
+                {{
+                  {
+                    null: '',
+                    ACTIVE: 'ACTIVE',
+                    PENDING: 'PENDING',
+                    SUSPENDED: 'SUSPENDED',
+                    ON_LEAVE: 'ON_LEAVE',
+                    UNDER_REVIEW: 'UNDER_REVIEW',
+                  }[vendor.status ?? 'null']
+                }}
+              </td>
+              <td>{{ vendor.contractNote }}</td>
+              <td>{{ vendor.contractRenewsOn | formatMediumDate }}</td>
+              <td>{{ vendor.orderCount }}</td>
+              <td>{{ vendor.spendToDate }}</td>
+              <td>{{ vendor.rating }}</td>
+              <td class="text-end">
+                <div class="btn-group">
+                  <a [routerLink]="['/vendor', vendor.id, 'view']" class="btn btn-info btn-sm" data-cy="entityDetailsButton">
+                    <fa-icon icon="eye" />
+                    <span class="d-none d-md-inline" abfTranslate="entity.action.view">View</span>
+                  </a>
+
+                  <a [routerLink]="['/vendor', vendor.id, 'edit']" class="btn btn-primary btn-sm" data-cy="entityEditButton">
+                    <fa-icon icon="pencil-alt" />
+                    <span class="d-none d-md-inline" abfTranslate="entity.action.edit">Edit</span>
+                  </a>
+
+                  <button type="submit" (click)="delete(vendor)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
+                    <fa-icon icon="times" />
+                    <span class="d-none d-md-inline" abfTranslate="entity.action.delete">Delete</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+  @if (vendors().length > 0) {
+    <div>
+      <div class="d-flex justify-content-center">
+        <abf-item-count [params]="{ page: page(), totalItems: totalItems(), itemsPerPage: itemsPerPage() }" />
+      </div>
+
+      <div class="d-flex justify-content-center">
+        <ngb-pagination
+          [collectionSize]="totalItems()"
+          [page]="page()"
+          [pageSize]="itemsPerPage()"
+          [maxSize]="5"
+          [rotate]="true"
+          [boundaryLinks]="true"
+          (pageChange)="navigateToPage($event)"
+        />
+      </div>
+    </div>
+  }
+</div>

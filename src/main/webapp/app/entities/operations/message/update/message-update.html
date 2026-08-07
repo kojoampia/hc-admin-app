@@ -1,0 +1,200 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    <form name="editForm" novalidate (ngSubmit)="save()" [formGroup]="editForm">
+      <h2 id="abf-message-heading" data-cy="MessageCreateUpdateHeading" abfTranslate="hcAdminApp.operationsMessage.home.createOrEditLabel">
+        Create or edit a Message
+      </h2>
+
+      <div>
+        <abf-alert-error />
+
+        @if (editForm.controls.id.value !== null) {
+          <div class="mb-3">
+            <label class="form-label" for="field_id" abfTranslate="global.field.id">ID</label>
+            <input type="number" class="form-control" name="id" id="field_id" data-cy="id" formControlName="id" />
+          </div>
+        }
+
+        @let sentAtRef = editForm.get('sentAt')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_sentAt" abfTranslate="hcAdminApp.operationsMessage.sentAt">Sent At</label>
+          <div class="d-flex">
+            <input
+              id="field_sentAt"
+              data-cy="sentAt"
+              type="datetime-local"
+              class="form-control"
+              name="sentAt"
+              formControlName="sentAt"
+              placeholder="YYYY-MM-DD HH:mm"
+            />
+          </div>
+          @if (sentAtRef.invalid && (sentAtRef.dirty || sentAtRef.touched)) {
+            <div>
+              @if (sentAtRef.errors?.required) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.required">This field is required.</small>
+              }
+              <small
+                class="form-text text-danger"
+                [hidden]="!sentAtRef.errors?.datetimelocal"
+                abfTranslate="entity.validation.datetimelocal"
+                >This field should be a date and time.</small
+              >
+            </div>
+          }
+        </div>
+
+        @let fromAddressRef = editForm.get('fromAddress')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_fromAddress" abfTranslate="hcAdminApp.operationsMessage.fromAddress">From Address</label>
+          <input
+            type="text"
+            class="form-control"
+            name="fromAddress"
+            id="field_fromAddress"
+            data-cy="fromAddress"
+            formControlName="fromAddress"
+          />
+          @if (fromAddressRef.invalid && (fromAddressRef.dirty || fromAddressRef.touched)) {
+            <div>
+              @if (fromAddressRef.errors?.required) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.required">This field is required.</small>
+              }
+              @if (fromAddressRef.errors?.maxlength) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.maxlength" [translateValues]="{ max: '120' }"
+                  >This field cannot be longer than 120 characters.</small
+                >
+              }
+            </div>
+          }
+        </div>
+
+        @let senderNameRef = editForm.get('senderName')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_senderName" abfTranslate="hcAdminApp.operationsMessage.senderName">Sender Name</label>
+          <input
+            type="text"
+            class="form-control"
+            name="senderName"
+            id="field_senderName"
+            data-cy="senderName"
+            formControlName="senderName"
+          />
+          @if (senderNameRef.invalid && (senderNameRef.dirty || senderNameRef.touched)) {
+            <div>
+              @if (senderNameRef.errors?.required) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.required">This field is required.</small>
+              }
+              @if (senderNameRef.errors?.maxlength) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.maxlength" [translateValues]="{ max: '80' }"
+                  >This field cannot be longer than 80 characters.</small
+                >
+              }
+            </div>
+          }
+        </div>
+
+        @let subjectRef = editForm.get('subject')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_subject" abfTranslate="hcAdminApp.operationsMessage.subject">Subject</label>
+          <input type="text" class="form-control" name="subject" id="field_subject" data-cy="subject" formControlName="subject" />
+          @if (subjectRef.invalid && (subjectRef.dirty || subjectRef.touched)) {
+            <div>
+              @if (subjectRef.errors?.required) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.required">This field is required.</small>
+              }
+              @if (subjectRef.errors?.maxlength) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.maxlength" [translateValues]="{ max: '160' }"
+                  >This field cannot be longer than 160 characters.</small
+                >
+              }
+            </div>
+          }
+        </div>
+
+        @let bodyRef = editForm.get('body')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_body" abfTranslate="hcAdminApp.operationsMessage.body">Body</label>
+          <textarea class="form-control" name="body" id="field_body" data-cy="body" formControlName="body"></textarea>
+          @if (bodyRef.invalid && (bodyRef.dirty || bodyRef.touched)) {
+            <div>
+              @if (bodyRef.errors?.required) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.required">This field is required.</small>
+              }
+            </div>
+          }
+        </div>
+
+        @let channelRef = editForm.get('channel')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_channel" abfTranslate="hcAdminApp.operationsMessage.channel">Channel</label>
+          <select class="form-control" name="channel" formControlName="channel" id="field_channel" data-cy="channel">
+            <option [ngValue]="null">{{ 'hcAdminApp.MessageChannel.null' | translate }}</option>
+            @for (messageChannel of messageChannelValues; track $index) {
+              <option [value]="messageChannel">{{ 'hcAdminApp.MessageChannel.' + messageChannel | translate }}</option>
+            }
+          </select>
+          @if (channelRef.invalid && (channelRef.dirty || channelRef.touched)) {
+            <div>
+              @if (channelRef.errors?.required) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.required">This field is required.</small>
+              }
+            </div>
+          }
+        </div>
+
+        @let statusRef = editForm.get('status')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_status" abfTranslate="hcAdminApp.operationsMessage.status">Status</label>
+          <select class="form-control" name="status" formControlName="status" id="field_status" data-cy="status">
+            <option [ngValue]="null">{{ 'hcAdminApp.MessageStatus.null' | translate }}</option>
+            @for (messageStatus of messageStatusValues; track $index) {
+              <option [value]="messageStatus">{{ 'hcAdminApp.MessageStatus.' + messageStatus | translate }}</option>
+            }
+          </select>
+          @if (statusRef.invalid && (statusRef.dirty || statusRef.touched)) {
+            <div>
+              @if (statusRef.errors?.required) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.required">This field is required.</small>
+              }
+            </div>
+          }
+        </div>
+
+        @let priorityRef = editForm.get('priority')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_priority" abfTranslate="hcAdminApp.operationsMessage.priority">Priority</label>
+          <select class="form-control" name="priority" formControlName="priority" id="field_priority" data-cy="priority">
+            <option [ngValue]="null">{{ 'hcAdminApp.Priority.null' | translate }}</option>
+            @for (priority of priorityValues; track $index) {
+              <option [value]="priority">{{ 'hcAdminApp.Priority.' + priority | translate }}</option>
+            }
+          </select>
+          @if (priorityRef.invalid && (priorityRef.dirty || priorityRef.touched)) {
+            <div>
+              @if (priorityRef.errors?.required) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.required">This field is required.</small>
+              }
+            </div>
+          }
+        </div>
+      </div>
+
+      <div>
+        <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary" (click)="previousState()">
+          <fa-icon icon="ban" />&nbsp;<span abfTranslate="entity.action.cancel">Cancel</span>
+        </button>
+
+        <button
+          type="submit"
+          id="save-entity"
+          data-cy="entityCreateSaveButton"
+          [disabled]="editForm.invalid || isSaving()"
+          class="btn btn-primary"
+        >
+          <fa-icon icon="save" />&nbsp;<span abfTranslate="entity.action.save">Save</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,115 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    @if (professional(); as professionalRef) {
+      <div>
+        <h2 data-cy="professionalDetailsHeading"><span abfTranslate="hcAdminApp.directoryProfessional.detail.title">Professional</span></h2>
+
+        <hr />
+
+        <abf-alert-error />
+
+        <abf-alert />
+
+        <dl class="row-md jh-entity-details">
+          <dt><span abfTranslate="global.field.id">ID</span></dt>
+          <dd>
+            <span>{{ professionalRef.id }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.directoryProfessional.role">Role</span></dt>
+          <dd>
+            <span [abfTranslate]="'hcAdminApp.ProfessionalRole.' + (professionalRef.role ?? 'null')">{{
+              { null: '', CAREGIVER: 'CAREGIVER', PARAMEDIC: 'PARAMEDIC', NURSE: 'NURSE', DOCTOR: 'DOCTOR' }[professionalRef.role ?? 'null']
+            }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.directoryProfessional.speciality">Speciality</span></dt>
+          <dd>
+            <span>{{ professionalRef.speciality }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.directoryProfessional.licenceNumber">Licence Number</span></dt>
+          <dd>
+            <span>{{ professionalRef.licenceNumber }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.directoryProfessional.verification">Verification</span></dt>
+          <dd>
+            <span [abfTranslate]="'hcAdminApp.VerificationStatus.' + (professionalRef.verification ?? 'null')">{{
+              { null: '', VERIFIED: 'VERIFIED', PENDING: 'PENDING', REJECTED: 'REJECTED' }[professionalRef.verification ?? 'null']
+            }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.directoryProfessional.status">Status</span></dt>
+          <dd>
+            <span [abfTranslate]="'hcAdminApp.AccountStatus.' + (professionalRef.status ?? 'null')">{{
+              {
+                null: '',
+                ACTIVE: 'ACTIVE',
+                PENDING: 'PENDING',
+                SUSPENDED: 'SUSPENDED',
+                ON_LEAVE: 'ON_LEAVE',
+                UNDER_REVIEW: 'UNDER_REVIEW',
+              }[professionalRef.status ?? 'null']
+            }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.directoryProfessional.patientCount">Patient Count</span></dt>
+          <dd>
+            <span>{{ professionalRef.patientCount }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.directoryProfessional.caseCount">Case Count</span></dt>
+          <dd>
+            <span>{{ professionalRef.caseCount }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.directoryProfessional.visitCount">Visit Count</span></dt>
+          <dd>
+            <span>{{ professionalRef.visitCount }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.directoryProfessional.rating">Rating</span></dt>
+          <dd>
+            <span>{{ professionalRef.rating }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.directoryProfessional.joinedOn">Joined On</span></dt>
+          <dd>
+            <span>{{ professionalRef.joinedOn | formatMediumDate }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.directoryProfessional.profile">Profile</span></dt>
+          <dd>
+            @if (professional()!.profile) {
+              <div>
+                <a [routerLink]="['/profile', professional()!.profile?.id, 'view']">{{ professionalRef.profile?.id }}</a>
+              </div>
+            }
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.directoryProfessional.credential">Credential</span></dt>
+          <dd>
+            @if (professional()!.credential) {
+              <div>
+                <a [routerLink]="['/credential', professional()!.credential?.id, 'view']">{{ professionalRef.credential?.id }}</a>
+              </div>
+            }
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.directoryProfessional.team">Team</span></dt>
+          <dd>
+            @if (professional()!.team) {
+              <div>
+                <a [routerLink]="['/team', professional()!.team?.id, 'view']">{{ professionalRef.team?.name }}</a>
+              </div>
+            }
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.directoryProfessional.hub">Hub</span></dt>
+          <dd>
+            @if (professional()!.hub) {
+              <div>
+                <a [routerLink]="['/hub', professional()!.hub?.id, 'view']">{{ professionalRef.hub?.name }}</a>
+              </div>
+            }
+          </dd>
+        </dl>
+
+        <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+          <fa-icon icon="arrow-left" />&nbsp;<span abfTranslate="entity.action.back">Back</span>
+        </button>
+
+        <button type="button" [routerLink]="['/professional', professionalRef.id, 'edit']" class="btn btn-primary">
+          <fa-icon icon="pencil-alt" />&nbsp;<span abfTranslate="entity.action.edit">Edit</span>
+        </button>
+      </div>
+    }
+  </div>
+</div>

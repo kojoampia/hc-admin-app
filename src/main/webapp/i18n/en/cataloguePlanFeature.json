@@ -1,0 +1,26 @@
+{
+  "hcAdminApp": {
+    "cataloguePlanFeature": {
+      "home": {
+        "title": "Plan Features",
+        "refreshListLabel": "Refresh list",
+        "createLabel": "Create a new Plan Feature",
+        "createOrEditLabel": "Create or edit a Plan Feature",
+        "notFound": "No Plan Features found"
+      },
+      "created": "A new Plan Feature is created with identifier {{ param }}",
+      "updated": "A Plan Feature is updated with identifier {{ param }}",
+      "deleted": "A Plan Feature is deleted with identifier {{ param }}",
+      "delete": {
+        "question": "Are you sure you want to delete Plan Feature {{ id }}?"
+      },
+      "detail": {
+        "title": "Plan Feature"
+      },
+      "id": "ID",
+      "label": "Label",
+      "position": "Position",
+      "plan": "Plan"
+    }
+  }
+}

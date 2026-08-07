@@ -1,0 +1,28 @@
+@if (category) {
+  <form name="deleteForm" (ngSubmit)="confirmDelete(category.id!)">
+    <div class="modal-header">
+      <h4 class="modal-title" data-cy="categoryDeleteDialogHeading" abfTranslate="entity.delete.title">Confirm delete operation</h4>
+    </div>
+
+    <div class="modal-body">
+      <abf-alert-error />
+      <p
+        id="abf-delete-category-heading"
+        abfTranslate="hcAdminApp.catalogueCategory.delete.question"
+        [translateValues]="{ id: category.id }"
+      >
+        Are you sure you want to delete Category {{ category.id }}?
+      </p>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" data-dismiss="modal" (click)="cancel()">
+        <fa-icon icon="ban" />&nbsp;<span abfTranslate="entity.action.cancel">Cancel</span>
+      </button>
+
+      <button id="abf-confirm-delete-category" data-cy="entityConfirmDeleteButton" type="submit" class="btn btn-danger">
+        <fa-icon icon="times" />&nbsp;<span abfTranslate="entity.action.delete">Delete</span>
+      </button>
+    </div>
+  </form>
+}

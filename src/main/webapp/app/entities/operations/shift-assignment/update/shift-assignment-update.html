@@ -1,0 +1,158 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    <form name="editForm" novalidate (ngSubmit)="save()" [formGroup]="editForm">
+      <h2
+        id="abf-shift-assignment-heading"
+        data-cy="ShiftAssignmentCreateUpdateHeading"
+        abfTranslate="hcAdminApp.operationsShiftAssignment.home.createOrEditLabel"
+      >
+        Create or edit a Shift Assignment
+      </h2>
+
+      <div>
+        <abf-alert-error />
+
+        @if (editForm.controls.id.value !== null) {
+          <div class="mb-3">
+            <label class="form-label" for="field_id" abfTranslate="global.field.id">ID</label>
+            <input type="number" class="form-control" name="id" id="field_id" data-cy="id" formControlName="id" />
+          </div>
+        }
+
+        @let dayIndexRef = editForm.get('dayIndex')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_dayIndex" abfTranslate="hcAdminApp.operationsShiftAssignment.dayIndex">Day Index</label>
+          <input type="number" class="form-control" name="dayIndex" id="field_dayIndex" data-cy="dayIndex" formControlName="dayIndex" />
+          @if (dayIndexRef.invalid && (dayIndexRef.dirty || dayIndexRef.touched)) {
+            <div>
+              @if (dayIndexRef.errors?.required) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.required">This field is required.</small>
+              }
+              @if (dayIndexRef.errors?.min) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.min" [translateValues]="{ min: '0' }"
+                  >This field should be at least 0.</small
+                >
+              }
+              @if (dayIndexRef.errors?.max) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.max" [translateValues]="{ max: '6' }"
+                  >This field cannot be more than 6.</small
+                >
+              }
+              <small class="form-text text-danger" [hidden]="!dayIndexRef.errors?.number" abfTranslate="entity.validation.number"
+                >This field should be a number.</small
+              >
+            </div>
+          }
+        </div>
+
+        @let shiftDateRef = editForm.get('shiftDate')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_shiftDate" abfTranslate="hcAdminApp.operationsShiftAssignment.shiftDate">Shift Date</label>
+          <div class="input-group">
+            <input
+              id="field_shiftDate"
+              data-cy="shiftDate"
+              type="text"
+              class="form-control"
+              name="shiftDate"
+              ngbDatepicker
+              #shiftDateDp="ngbDatepicker"
+              formControlName="shiftDate"
+            />
+            <button type="button" class="btn btn-secondary" (click)="shiftDateDp.toggle()"><fa-icon icon="calendar-alt" /></button>
+          </div>
+          @if (shiftDateRef.invalid && (shiftDateRef.dirty || shiftDateRef.touched)) {
+            <div>
+              @if (shiftDateRef.errors?.required) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.required">This field is required.</small>
+              }
+            </div>
+          }
+        </div>
+
+        @let shiftRef = editForm.get('shift')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_shift" abfTranslate="hcAdminApp.operationsShiftAssignment.shift">Shift</label>
+          <select class="form-control" name="shift" formControlName="shift" id="field_shift" data-cy="shift">
+            <option [ngValue]="null">{{ 'hcAdminApp.ShiftType.null' | translate }}</option>
+            @for (shiftType of shiftTypeValues; track $index) {
+              <option [value]="shiftType">{{ 'hcAdminApp.ShiftType.' + shiftType | translate }}</option>
+            }
+          </select>
+          @if (shiftRef.invalid && (shiftRef.dirty || shiftRef.touched)) {
+            <div>
+              @if (shiftRef.errors?.required) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.required">This field is required.</small>
+              }
+            </div>
+          }
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_week" abfTranslate="hcAdminApp.operationsShiftAssignment.week">Week</label>
+          <select class="form-control" id="field_week" data-cy="week" name="week" formControlName="week" [compareWith]="compareRosterWeek">
+            @if (editForm.get(['week'])!.value === null) {
+              <option [ngValue]="null" selected></option>
+            }
+            @for (rosterWeekOption of rosterWeeksSharedCollection(); track $index) {
+              <option [ngValue]="rosterWeekOption">{{ rosterWeekOption.label }}</option>
+            }
+          </select>
+        </div>
+        @if (editForm.get(['week'])!.invalid && (editForm.get(['week'])!.dirty || editForm.get(['week'])!.touched)) {
+          <div>
+            @if (editForm.get(['week'])?.errors?.required) {
+              <small class="form-text text-danger" abfTranslate="entity.validation.required">This field is required.</small>
+            }
+          </div>
+        }
+
+        <div class="mb-3">
+          <label class="form-label" for="field_professional" abfTranslate="hcAdminApp.operationsShiftAssignment.professional"
+            >Professional</label
+          >
+          <select
+            class="form-control"
+            id="field_professional"
+            data-cy="professional"
+            name="professional"
+            formControlName="professional"
+            [compareWith]="compareProfessional"
+          >
+            @if (editForm.get(['professional'])!.value === null) {
+              <option [ngValue]="null" selected></option>
+            }
+            @for (professionalOption of professionalsSharedCollection(); track $index) {
+              <option [ngValue]="professionalOption">{{ professionalOption.licenceNumber }}</option>
+            }
+          </select>
+        </div>
+        @if (
+          editForm.get(['professional'])!.invalid && (editForm.get(['professional'])!.dirty || editForm.get(['professional'])!.touched)
+        ) {
+          <div>
+            @if (editForm.get(['professional'])?.errors?.required) {
+              <small class="form-text text-danger" abfTranslate="entity.validation.required">This field is required.</small>
+            }
+          </div>
+        }
+      </div>
+
+      <div>
+        <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary" (click)="previousState()">
+          <fa-icon icon="ban" />&nbsp;<span abfTranslate="entity.action.cancel">Cancel</span>
+        </button>
+
+        <button
+          type="submit"
+          id="save-entity"
+          data-cy="entityCreateSaveButton"
+          [disabled]="editForm.invalid || isSaving()"
+          class="btn btn-primary"
+        >
+          <fa-icon icon="save" />&nbsp;<span abfTranslate="entity.action.save">Save</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

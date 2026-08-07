@@ -1,0 +1,246 @@
+<div>
+  <h2 id="page-heading" data-cy="ProfessionalHeading">
+    <span abfTranslate="hcAdminApp.directoryProfessional.home.title">Professionals</span>
+
+    <div class="d-flex justify-content-end">
+      <button class="btn btn-info me-2" (click)="load()" [disabled]="isLoading()">
+        <fa-icon icon="sync" [animation]="isLoading() ? 'spin' : undefined" />
+        <span abfTranslate="hcAdminApp.directoryProfessional.home.refreshListLabel">Refresh list</span>
+      </button>
+
+      <button
+        id="jh-create-entity"
+        data-cy="entityCreateButton"
+        class="btn btn-primary jh-create-entity create-professional"
+        [routerLink]="['/professional/new']"
+      >
+        <fa-icon icon="plus" />
+        <span abfTranslate="hcAdminApp.directoryProfessional.home.createLabel">Create a new Professional</span>
+      </button>
+    </div>
+  </h2>
+
+  <abf-alert-error />
+
+  <abf-alert />
+
+  @if (professionals().length === 0) {
+    <div class="alert alert-warning" id="no-result">
+      <span abfTranslate="hcAdminApp.directoryProfessional.home.notFound">No Professionals found</span>
+    </div>
+  } @else {
+    <div class="table-responsive table-entities" id="entities">
+      <table class="table table-striped" aria-describedby="page-heading">
+        <thead>
+          <tr abfSort [(sortState)]="sortState" (sortChange)="navigateToWithComponentValues($event)">
+            <th scope="col" abfSortBy="id">
+              <div class="d-flex">
+                <span abfTranslate="global.field.id">ID</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="role">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.directoryProfessional.role">Role</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="speciality">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.directoryProfessional.speciality">Speciality</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="licenceNumber">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.directoryProfessional.licenceNumber">Licence Number</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="verification">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.directoryProfessional.verification">Verification</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="status">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.directoryProfessional.status">Status</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="patientCount">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.directoryProfessional.patientCount">Patient Count</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="caseCount">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.directoryProfessional.caseCount">Case Count</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="visitCount">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.directoryProfessional.visitCount">Visit Count</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="rating">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.directoryProfessional.rating">Rating</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="joinedOn">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.directoryProfessional.joinedOn">Joined On</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="profile.id">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.directoryProfessional.profile">Profile</span>
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="credential.id">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.directoryProfessional.credential">Credential</span>
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="team.name">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.directoryProfessional.team">Team</span>
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="hub.name">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.directoryProfessional.hub">Hub</span>
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (professional of professionals(); track trackId(professional)) {
+            <tr data-cy="entityTable">
+              <td>
+                <a [routerLink]="['/professional', professional.id, 'view']">{{ professional.id }}</a>
+              </td>
+              <td [abfTranslate]="'hcAdminApp.ProfessionalRole.' + (professional.role ?? 'null')">
+                {{
+                  { null: '', CAREGIVER: 'CAREGIVER', PARAMEDIC: 'PARAMEDIC', NURSE: 'NURSE', DOCTOR: 'DOCTOR' }[
+                    professional.role ?? 'null'
+                  ]
+                }}
+              </td>
+              <td>{{ professional.speciality }}</td>
+              <td>{{ professional.licenceNumber }}</td>
+              <td [abfTranslate]="'hcAdminApp.VerificationStatus.' + (professional.verification ?? 'null')">
+                {{ { null: '', VERIFIED: 'VERIFIED', PENDING: 'PENDING', REJECTED: 'REJECTED' }[professional.verification ?? 'null'] }}
+              </td>
+              <td [abfTranslate]="'hcAdminApp.AccountStatus.' + (professional.status ?? 'null')">
+                {{
+                  {
+                    null: '',
+                    ACTIVE: 'ACTIVE',
+                    PENDING: 'PENDING',
+                    SUSPENDED: 'SUSPENDED',
+                    ON_LEAVE: 'ON_LEAVE',
+                    UNDER_REVIEW: 'UNDER_REVIEW',
+                  }[professional.status ?? 'null']
+                }}
+              </td>
+              <td>{{ professional.patientCount }}</td>
+              <td>{{ professional.caseCount }}</td>
+              <td>{{ professional.visitCount }}</td>
+              <td>{{ professional.rating }}</td>
+              <td>{{ professional.joinedOn | formatMediumDate }}</td>
+              <td>
+                @if (professional.profile) {
+                  <div>
+                    <a [routerLink]="['/profile', professional.profile.id, 'view']">{{ professional.profile.id }}</a>
+                  </div>
+                }
+              </td>
+              <td>
+                @if (professional.credential) {
+                  <div>
+                    <a [routerLink]="['/credential', professional.credential.id, 'view']">{{ professional.credential.id }}</a>
+                  </div>
+                }
+              </td>
+              <td>
+                @if (professional.team) {
+                  <div>
+                    <a [routerLink]="['/team', professional.team.id, 'view']">{{ professional.team.name }}</a>
+                  </div>
+                }
+              </td>
+              <td>
+                @if (professional.hub) {
+                  <div>
+                    <a [routerLink]="['/hub', professional.hub.id, 'view']">{{ professional.hub.name }}</a>
+                  </div>
+                }
+              </td>
+              <td class="text-end">
+                <div class="btn-group">
+                  <a [routerLink]="['/professional', professional.id, 'view']" class="btn btn-info btn-sm" data-cy="entityDetailsButton">
+                    <fa-icon icon="eye" />
+                    <span class="d-none d-md-inline" abfTranslate="entity.action.view">View</span>
+                  </a>
+
+                  <a [routerLink]="['/professional', professional.id, 'edit']" class="btn btn-primary btn-sm" data-cy="entityEditButton">
+                    <fa-icon icon="pencil-alt" />
+                    <span class="d-none d-md-inline" abfTranslate="entity.action.edit">Edit</span>
+                  </a>
+
+                  <button type="submit" (click)="delete(professional)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
+                    <fa-icon icon="times" />
+                    <span class="d-none d-md-inline" abfTranslate="entity.action.delete">Delete</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+  @if (professionals().length > 0) {
+    <div>
+      <div class="d-flex justify-content-center">
+        <abf-item-count [params]="{ page: page(), totalItems: totalItems(), itemsPerPage: itemsPerPage() }" />
+      </div>
+
+      <div class="d-flex justify-content-center">
+        <ngb-pagination
+          [collectionSize]="totalItems()"
+          [page]="page()"
+          [pageSize]="itemsPerPage()"
+          [maxSize]="5"
+          [rotate]="true"
+          [boundaryLinks]="true"
+          (pageChange)="navigateToPage($event)"
+        />
+      </div>
+    </div>
+  }
+</div>

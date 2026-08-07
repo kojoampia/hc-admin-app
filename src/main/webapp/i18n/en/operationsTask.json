@@ -1,0 +1,31 @@
+{
+  "hcAdminApp": {
+    "operationsTask": {
+      "home": {
+        "title": "Tasks",
+        "refreshListLabel": "Refresh list",
+        "createLabel": "Create a new Task",
+        "createOrEditLabel": "Create or edit a Task",
+        "notFound": "No Tasks found"
+      },
+      "created": "A new Task is created with identifier {{ param }}",
+      "updated": "A Task is updated with identifier {{ param }}",
+      "deleted": "A Task is deleted with identifier {{ param }}",
+      "delete": {
+        "question": "Are you sure you want to delete Task {{ id }}?"
+      },
+      "detail": {
+        "title": "Task"
+      },
+      "id": "ID",
+      "title": "Title",
+      "state": "State",
+      "priority": "Priority",
+      "dueOn": "Due On",
+      "tag": "Tag",
+      "createdAt": "Created At",
+      "owner": "Owner",
+      "sourceMessage": "Source Message"
+    }
+  }
+}

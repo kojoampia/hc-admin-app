@@ -1,0 +1,9 @@
+{
+  "hcAdminApp": {
+    "Sex": {
+      "null": "",
+      "MALE": "MALE",
+      "FEMALE": "FEMALE"
+    }
+  }
+}

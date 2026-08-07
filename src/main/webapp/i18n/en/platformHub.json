@@ -1,0 +1,26 @@
+{
+  "hcAdminApp": {
+    "platformHub": {
+      "home": {
+        "title": "Hubs",
+        "refreshListLabel": "Refresh list",
+        "createLabel": "Create a new Hub",
+        "createOrEditLabel": "Create or edit a Hub",
+        "notFound": "No Hubs found"
+      },
+      "created": "A new Hub is created with identifier {{ param }}",
+      "updated": "A Hub is updated with identifier {{ param }}",
+      "deleted": "A Hub is deleted with identifier {{ param }}",
+      "delete": {
+        "question": "Are you sure you want to delete Hub {{ id }}?"
+      },
+      "detail": {
+        "title": "Hub"
+      },
+      "id": "ID",
+      "name": "Name",
+      "staffCount": "Staff Count",
+      "address": "Address"
+    }
+  }
+}

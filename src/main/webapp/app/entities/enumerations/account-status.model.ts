@@ -1,0 +1,11 @@
+export enum AccountStatus {
+  ACTIVE = 'ACTIVE',
+
+  PENDING = 'PENDING',
+
+  SUSPENDED = 'SUSPENDED',
+
+  ON_LEAVE = 'ON_LEAVE',
+
+  UNDER_REVIEW = 'UNDER_REVIEW',
+}

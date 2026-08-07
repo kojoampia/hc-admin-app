@@ -1,0 +1,59 @@
+{
+  "annotations": {
+    "changelogDate": "20231211194618"
+  },
+  "applications": ["hcAdmin"],
+  "clientRootFolder": "operations",
+  "fields": [
+    {
+      "fieldName": "title",
+      "fieldType": "String",
+      "fieldValidateRules": ["required", "maxlength"],
+      "fieldValidateRulesMaxlength": "200"
+    },
+    {
+      "fieldName": "state",
+      "fieldType": "TaskState",
+      "fieldValidateRules": ["required"],
+      "fieldValues": "TODO,DOING,DONE"
+    },
+    {
+      "fieldName": "priority",
+      "fieldType": "Priority",
+      "fieldValidateRules": ["required"],
+      "fieldValues": "HIGH,NORMAL,LOW"
+    },
+    {
+      "fieldName": "dueOn",
+      "fieldType": "LocalDate"
+    },
+    {
+      "fieldName": "tag",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "40"
+    },
+    {
+      "fieldName": "createdAt",
+      "fieldType": "Instant"
+    }
+  ],
+  "name": "Task",
+  "pagination": "pagination",
+  "relationships": [
+    {
+      "otherEntityField": "licenceNumber",
+      "otherEntityName": "professional",
+      "relationshipName": "owner",
+      "relationshipSide": "left",
+      "relationshipType": "many-to-one"
+    },
+    {
+      "otherEntityField": "subject",
+      "otherEntityName": "message",
+      "relationshipName": "sourceMessage",
+      "relationshipSide": "left",
+      "relationshipType": "many-to-one"
+    }
+  ]
+}

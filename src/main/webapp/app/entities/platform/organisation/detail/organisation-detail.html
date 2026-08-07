@@ -1,0 +1,74 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    @if (organisation(); as organisationRef) {
+      <div>
+        <h2 data-cy="organisationDetailsHeading"><span abfTranslate="hcAdminApp.platformOrganisation.detail.title">Organisation</span></h2>
+
+        <hr />
+
+        <abf-alert-error />
+
+        <abf-alert />
+
+        <dl class="row-md jh-entity-details">
+          <dt><span abfTranslate="global.field.id">ID</span></dt>
+          <dd>
+            <span>{{ organisationRef.id }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.platformOrganisation.name">Name</span></dt>
+          <dd>
+            <span>{{ organisationRef.name }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.platformOrganisation.legalName">Legal Name</span></dt>
+          <dd>
+            <span>{{ organisationRef.legalName }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.platformOrganisation.description">Description</span></dt>
+          <dd>
+            <span>{{ organisationRef.description }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.platformOrganisation.registrationNumber">Registration Number</span></dt>
+          <dd>
+            <span>{{ organisationRef.registrationNumber }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.platformOrganisation.tin">Tin</span></dt>
+          <dd>
+            <span>{{ organisationRef.tin }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.platformOrganisation.foundedOn">Founded On</span></dt>
+          <dd>
+            <span>{{ organisationRef.foundedOn | formatMediumDate }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.platformOrganisation.switchboard">Switchboard</span></dt>
+          <dd>
+            <span>{{ organisationRef.switchboard }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.platformOrganisation.email">Email</span></dt>
+          <dd>
+            <span>{{ organisationRef.email }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.platformOrganisation.deskHours">Desk Hours</span></dt>
+          <dd>
+            <span>{{ organisationRef.deskHours }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.platformOrganisation.address">Address</span></dt>
+          <dd>
+            @if (organisation()!.address) {
+              <div>
+                <a [routerLink]="['/address', organisation()!.address?.id, 'view']">{{ organisationRef.address?.id }}</a>
+              </div>
+            }
+          </dd>
+        </dl>
+
+        <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+          <fa-icon icon="arrow-left" />&nbsp;<span abfTranslate="entity.action.back">Back</span>
+        </button>
+
+        <button type="button" [routerLink]="['/organisation', organisationRef.id, 'edit']" class="btn btn-primary">
+          <fa-icon icon="pencil-alt" />&nbsp;<span abfTranslate="entity.action.edit">Edit</span>
+        </button>
+      </div>
+    }
+  </div>
+</div>

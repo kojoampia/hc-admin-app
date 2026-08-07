@@ -1,0 +1,50 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    @if (careActivity(); as careActivityRef) {
+      <div>
+        <h2 data-cy="careActivityDetailsHeading"><span abfTranslate="hcAdminApp.platformCareActivity.detail.title">Care Activity</span></h2>
+
+        <hr />
+
+        <abf-alert-error />
+
+        <abf-alert />
+
+        <dl class="row-md jh-entity-details">
+          <dt><span abfTranslate="global.field.id">ID</span></dt>
+          <dd>
+            <span>{{ careActivityRef.id }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.platformCareActivity.name">Name</span></dt>
+          <dd>
+            <span>{{ careActivityRef.name }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.platformCareActivity.description">Description</span></dt>
+          <dd>
+            <span>{{ careActivityRef.description }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.platformCareActivity.occurredOn">Occurred On</span></dt>
+          <dd>
+            <span>{{ careActivityRef.occurredOn | formatMediumDate }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.platformCareActivity.patient">Patient</span></dt>
+          <dd>
+            @if (careActivity()!.patient) {
+              <div>
+                <a [routerLink]="['/patient', careActivity()!.patient?.id, 'view']">{{ careActivityRef.patient?.id }}</a>
+              </div>
+            }
+          </dd>
+        </dl>
+
+        <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+          <fa-icon icon="arrow-left" />&nbsp;<span abfTranslate="entity.action.back">Back</span>
+        </button>
+
+        <button type="button" [routerLink]="['/care-activity', careActivityRef.id, 'edit']" class="btn btn-primary">
+          <fa-icon icon="pencil-alt" />&nbsp;<span abfTranslate="entity.action.edit">Edit</span>
+        </button>
+      </div>
+    }
+  </div>
+</div>

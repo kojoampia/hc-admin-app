@@ -1,0 +1,74 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    @if (task(); as taskRef) {
+      <div>
+        <h2 data-cy="taskDetailsHeading"><span abfTranslate="hcAdminApp.operationsTask.detail.title">Task</span></h2>
+
+        <hr />
+
+        <abf-alert-error />
+
+        <abf-alert />
+
+        <dl class="row-md jh-entity-details">
+          <dt><span abfTranslate="global.field.id">ID</span></dt>
+          <dd>
+            <span>{{ taskRef.id }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.operationsTask.title">Title</span></dt>
+          <dd>
+            <span>{{ taskRef.title }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.operationsTask.state">State</span></dt>
+          <dd>
+            <span [abfTranslate]="'hcAdminApp.TaskState.' + (taskRef.state ?? 'null')">{{
+              { null: '', TODO: 'TODO', DOING: 'DOING', DONE: 'DONE' }[taskRef.state ?? 'null']
+            }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.operationsTask.priority">Priority</span></dt>
+          <dd>
+            <span [abfTranslate]="'hcAdminApp.Priority.' + (taskRef.priority ?? 'null')">{{
+              { null: '', HIGH: 'HIGH', NORMAL: 'NORMAL', LOW: 'LOW' }[taskRef.priority ?? 'null']
+            }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.operationsTask.dueOn">Due On</span></dt>
+          <dd>
+            <span>{{ taskRef.dueOn | formatMediumDate }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.operationsTask.tag">Tag</span></dt>
+          <dd>
+            <span>{{ taskRef.tag }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.operationsTask.createdAt">Created At</span></dt>
+          <dd>
+            <span>{{ taskRef.createdAt | formatMediumDatetime }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.operationsTask.owner">Owner</span></dt>
+          <dd>
+            @if (task()!.owner) {
+              <div>
+                <a [routerLink]="['/professional', task()!.owner?.id, 'view']">{{ taskRef.owner?.licenceNumber }}</a>
+              </div>
+            }
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.operationsTask.sourceMessage">Source Message</span></dt>
+          <dd>
+            @if (task()!.sourceMessage) {
+              <div>
+                <a [routerLink]="['/message', task()!.sourceMessage?.id, 'view']">{{ taskRef.sourceMessage?.subject }}</a>
+              </div>
+            }
+          </dd>
+        </dl>
+
+        <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+          <fa-icon icon="arrow-left" />&nbsp;<span abfTranslate="entity.action.back">Back</span>
+        </button>
+
+        <button type="button" [routerLink]="['/task', taskRef.id, 'edit']" class="btn btn-primary">
+          <fa-icon icon="pencil-alt" />&nbsp;<span abfTranslate="entity.action.edit">Edit</span>
+        </button>
+      </div>
+    }
+  </div>
+</div>

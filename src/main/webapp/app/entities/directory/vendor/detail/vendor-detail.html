@@ -1,0 +1,91 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    @if (vendor(); as vendorRef) {
+      <div>
+        <h2 data-cy="vendorDetailsHeading"><span abfTranslate="hcAdminApp.directoryVendor.detail.title">Vendor</span></h2>
+
+        <hr />
+
+        <abf-alert-error />
+
+        <abf-alert />
+
+        <dl class="row-md jh-entity-details">
+          <dt><span abfTranslate="global.field.id">ID</span></dt>
+          <dd>
+            <span>{{ vendorRef.id }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.directoryVendor.name">Name</span></dt>
+          <dd>
+            <span>{{ vendorRef.name }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.directoryVendor.category">Category</span></dt>
+          <dd>
+            <span>{{ vendorRef.category }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.directoryVendor.serviceSummary">Service Summary</span></dt>
+          <dd>
+            <span>{{ vendorRef.serviceSummary }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.directoryVendor.contactName">Contact Name</span></dt>
+          <dd>
+            <span>{{ vendorRef.contactName }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.directoryVendor.phone">Phone</span></dt>
+          <dd>
+            <span>{{ vendorRef.phone }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.directoryVendor.email">Email</span></dt>
+          <dd>
+            <span>{{ vendorRef.email }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.directoryVendor.city">City</span></dt>
+          <dd>
+            <span>{{ vendorRef.city }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.directoryVendor.status">Status</span></dt>
+          <dd>
+            <span [abfTranslate]="'hcAdminApp.AccountStatus.' + (vendorRef.status ?? 'null')">{{
+              {
+                null: '',
+                ACTIVE: 'ACTIVE',
+                PENDING: 'PENDING',
+                SUSPENDED: 'SUSPENDED',
+                ON_LEAVE: 'ON_LEAVE',
+                UNDER_REVIEW: 'UNDER_REVIEW',
+              }[vendorRef.status ?? 'null']
+            }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.directoryVendor.contractNote">Contract Note</span></dt>
+          <dd>
+            <span>{{ vendorRef.contractNote }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.directoryVendor.contractRenewsOn">Contract Renews On</span></dt>
+          <dd>
+            <span>{{ vendorRef.contractRenewsOn | formatMediumDate }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.directoryVendor.orderCount">Order Count</span></dt>
+          <dd>
+            <span>{{ vendorRef.orderCount }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.directoryVendor.spendToDate">Spend To Date</span></dt>
+          <dd>
+            <span>{{ vendorRef.spendToDate }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.directoryVendor.rating">Rating</span></dt>
+          <dd>
+            <span>{{ vendorRef.rating }}</span>
+          </dd>
+        </dl>
+
+        <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+          <fa-icon icon="arrow-left" />&nbsp;<span abfTranslate="entity.action.back">Back</span>
+        </button>
+
+        <button type="button" [routerLink]="['/vendor', vendorRef.id, 'edit']" class="btn btn-primary">
+          <fa-icon icon="pencil-alt" />&nbsp;<span abfTranslate="entity.action.edit">Edit</span>
+        </button>
+      </div>
+    }
+  </div>
+</div>

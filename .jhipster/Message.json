@@ -1,0 +1,58 @@
+{
+  "annotations": {
+    "changelogDate": "20231211194518"
+  },
+  "applications": ["hcAdmin"],
+  "clientRootFolder": "operations",
+  "fields": [
+    {
+      "fieldName": "sentAt",
+      "fieldType": "Instant",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "fromAddress",
+      "fieldType": "String",
+      "fieldValidateRules": ["required", "maxlength"],
+      "fieldValidateRulesMaxlength": "120"
+    },
+    {
+      "fieldName": "senderName",
+      "fieldType": "String",
+      "fieldValidateRules": ["required", "maxlength"],
+      "fieldValidateRulesMaxlength": "80"
+    },
+    {
+      "fieldName": "subject",
+      "fieldType": "String",
+      "fieldValidateRules": ["required", "maxlength"],
+      "fieldValidateRulesMaxlength": "160"
+    },
+    {
+      "fieldName": "body",
+      "fieldType": "TextBlob",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "channel",
+      "fieldType": "MessageChannel",
+      "fieldValidateRules": ["required"],
+      "fieldValues": "PATIENT_APP,PROFESSIONAL_APP,VENDOR_PORTAL,EMAIL"
+    },
+    {
+      "fieldName": "status",
+      "fieldType": "MessageStatus",
+      "fieldValidateRules": ["required"],
+      "fieldValues": "NEW,READ,REPLIED"
+    },
+    {
+      "fieldName": "priority",
+      "fieldType": "Priority",
+      "fieldValidateRules": ["required"],
+      "fieldValues": "HIGH,NORMAL,LOW"
+    }
+  ],
+  "name": "Message",
+  "pagination": "pagination",
+  "relationships": []
+}

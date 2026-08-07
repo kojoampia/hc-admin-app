@@ -1,0 +1,95 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    @if (patient(); as patientRef) {
+      <div>
+        <h2 data-cy="patientDetailsHeading"><span abfTranslate="hcAdminApp.directoryPatient.detail.title">Patient</span></h2>
+
+        <hr />
+
+        <abf-alert-error />
+
+        <abf-alert />
+
+        <dl class="row-md jh-entity-details">
+          <dt><span abfTranslate="global.field.id">ID</span></dt>
+          <dd>
+            <span>{{ patientRef.id }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.directoryPatient.status">Status</span></dt>
+          <dd>
+            <span [abfTranslate]="'hcAdminApp.AccountStatus.' + (patientRef.status ?? 'null')">{{
+              {
+                null: '',
+                ACTIVE: 'ACTIVE',
+                PENDING: 'PENDING',
+                SUSPENDED: 'SUSPENDED',
+                ON_LEAVE: 'ON_LEAVE',
+                UNDER_REVIEW: 'UNDER_REVIEW',
+              }[patientRef.status ?? 'null']
+            }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.directoryPatient.joinedOn">Joined On</span></dt>
+          <dd>
+            <span>{{ patientRef.joinedOn | formatMediumDate }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.directoryPatient.lastActiveOn">Last Active On</span></dt>
+          <dd>
+            <span>{{ patientRef.lastActiveOn | formatMediumDate }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.directoryPatient.caseCount">Case Count</span></dt>
+          <dd>
+            <span>{{ patientRef.caseCount }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.directoryPatient.profile">Profile</span></dt>
+          <dd>
+            @if (patient()!.profile) {
+              <div>
+                <a [routerLink]="['/profile', patient()!.profile?.id, 'view']">{{ patientRef.profile?.id }}</a>
+              </div>
+            }
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.directoryPatient.angel">Angel</span></dt>
+          <dd>
+            @if (patient()!.angel) {
+              <div>
+                <a [routerLink]="['/angel', patient()!.angel?.id, 'view']">{{ patientRef.angel?.id }}</a>
+              </div>
+            }
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.directoryPatient.plan">Plan</span></dt>
+          <dd>
+            @if (patient()!.plan) {
+              <div>
+                <a [routerLink]="['/service-plan', patient()!.plan?.id, 'view']">{{ patientRef.plan?.name }}</a>
+              </div>
+            }
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.directoryPatient.clinicalLead">Clinical Lead</span></dt>
+          <dd>
+            @if (patient()!.clinicalLead) {
+              <div>
+                <a [routerLink]="['/professional', patient()!.clinicalLead?.id, 'view']">{{ patientRef.clinicalLead?.licenceNumber }}</a>
+              </div>
+            }
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.directoryPatient.hub">Hub</span></dt>
+          <dd>
+            @if (patient()!.hub) {
+              <div>
+                <a [routerLink]="['/hub', patient()!.hub?.id, 'view']">{{ patientRef.hub?.name }}</a>
+              </div>
+            }
+          </dd>
+        </dl>
+
+        <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+          <fa-icon icon="arrow-left" />&nbsp;<span abfTranslate="entity.action.back">Back</span>
+        </button>
+
+        <button type="button" [routerLink]="['/patient', patientRef.id, 'edit']" class="btn btn-primary">
+          <fa-icon icon="pencil-alt" />&nbsp;<span abfTranslate="entity.action.edit">Edit</span>
+        </button>
+      </div>
+    }
+  </div>
+</div>

@@ -1,0 +1,171 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    <form name="editForm" novalidate (ngSubmit)="save()" [formGroup]="editForm">
+      <h2 id="abf-task-heading" data-cy="TaskCreateUpdateHeading" abfTranslate="hcAdminApp.operationsTask.home.createOrEditLabel">
+        Create or edit a Task
+      </h2>
+
+      <div>
+        <abf-alert-error />
+
+        @if (editForm.controls.id.value !== null) {
+          <div class="mb-3">
+            <label class="form-label" for="field_id" abfTranslate="global.field.id">ID</label>
+            <input type="number" class="form-control" name="id" id="field_id" data-cy="id" formControlName="id" />
+          </div>
+        }
+
+        @let titleRef = editForm.get('title')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_title" abfTranslate="hcAdminApp.operationsTask.title">Title</label>
+          <input type="text" class="form-control" name="title" id="field_title" data-cy="title" formControlName="title" />
+          @if (titleRef.invalid && (titleRef.dirty || titleRef.touched)) {
+            <div>
+              @if (titleRef.errors?.required) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.required">This field is required.</small>
+              }
+              @if (titleRef.errors?.maxlength) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.maxlength" [translateValues]="{ max: '200' }"
+                  >This field cannot be longer than 200 characters.</small
+                >
+              }
+            </div>
+          }
+        </div>
+
+        @let stateRef = editForm.get('state')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_state" abfTranslate="hcAdminApp.operationsTask.state">State</label>
+          <select class="form-control" name="state" formControlName="state" id="field_state" data-cy="state">
+            <option [ngValue]="null">{{ 'hcAdminApp.TaskState.null' | translate }}</option>
+            @for (taskState of taskStateValues; track $index) {
+              <option [value]="taskState">{{ 'hcAdminApp.TaskState.' + taskState | translate }}</option>
+            }
+          </select>
+          @if (stateRef.invalid && (stateRef.dirty || stateRef.touched)) {
+            <div>
+              @if (stateRef.errors?.required) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.required">This field is required.</small>
+              }
+            </div>
+          }
+        </div>
+
+        @let priorityRef = editForm.get('priority')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_priority" abfTranslate="hcAdminApp.operationsTask.priority">Priority</label>
+          <select class="form-control" name="priority" formControlName="priority" id="field_priority" data-cy="priority">
+            <option [ngValue]="null">{{ 'hcAdminApp.Priority.null' | translate }}</option>
+            @for (priority of priorityValues; track $index) {
+              <option [value]="priority">{{ 'hcAdminApp.Priority.' + priority | translate }}</option>
+            }
+          </select>
+          @if (priorityRef.invalid && (priorityRef.dirty || priorityRef.touched)) {
+            <div>
+              @if (priorityRef.errors?.required) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.required">This field is required.</small>
+              }
+            </div>
+          }
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_dueOn" abfTranslate="hcAdminApp.operationsTask.dueOn">Due On</label>
+          <div class="input-group">
+            <input
+              id="field_dueOn"
+              data-cy="dueOn"
+              type="text"
+              class="form-control"
+              name="dueOn"
+              ngbDatepicker
+              #dueOnDp="ngbDatepicker"
+              formControlName="dueOn"
+            />
+            <button type="button" class="btn btn-secondary" (click)="dueOnDp.toggle()"><fa-icon icon="calendar-alt" /></button>
+          </div>
+        </div>
+
+        @let tagRef = editForm.get('tag')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_tag" abfTranslate="hcAdminApp.operationsTask.tag">Tag</label>
+          <input type="text" class="form-control" name="tag" id="field_tag" data-cy="tag" formControlName="tag" />
+          @if (tagRef.invalid && (tagRef.dirty || tagRef.touched)) {
+            <div>
+              @if (tagRef.errors?.maxlength) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.maxlength" [translateValues]="{ max: '40' }"
+                  >This field cannot be longer than 40 characters.</small
+                >
+              }
+            </div>
+          }
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_createdAt" abfTranslate="hcAdminApp.operationsTask.createdAt">Created At</label>
+          <div class="d-flex">
+            <input
+              id="field_createdAt"
+              data-cy="createdAt"
+              type="datetime-local"
+              class="form-control"
+              name="createdAt"
+              formControlName="createdAt"
+              placeholder="YYYY-MM-DD HH:mm"
+            />
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_owner" abfTranslate="hcAdminApp.operationsTask.owner">Owner</label>
+          <select
+            class="form-control"
+            id="field_owner"
+            data-cy="owner"
+            name="owner"
+            formControlName="owner"
+            [compareWith]="compareProfessional"
+          >
+            <option [ngValue]="null"></option>
+            @for (professionalOption of professionalsSharedCollection(); track $index) {
+              <option [ngValue]="professionalOption">{{ professionalOption.licenceNumber }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_sourceMessage" abfTranslate="hcAdminApp.operationsTask.sourceMessage">Source Message</label>
+          <select
+            class="form-control"
+            id="field_sourceMessage"
+            data-cy="sourceMessage"
+            name="sourceMessage"
+            formControlName="sourceMessage"
+            [compareWith]="compareMessage"
+          >
+            <option [ngValue]="null"></option>
+            @for (messageOption of messagesSharedCollection(); track $index) {
+              <option [ngValue]="messageOption">{{ messageOption.subject }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary" (click)="previousState()">
+          <fa-icon icon="ban" />&nbsp;<span abfTranslate="entity.action.cancel">Cancel</span>
+        </button>
+
+        <button
+          type="submit"
+          id="save-entity"
+          data-cy="entityCreateSaveButton"
+          [disabled]="editForm.invalid || isSaving()"
+          class="btn btn-primary"
+        >
+          <fa-icon icon="save" />&nbsp;<span abfTranslate="entity.action.save">Save</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

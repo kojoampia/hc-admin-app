@@ -1,0 +1,60 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    @if (serviceActivity(); as serviceActivityRef) {
+      <div>
+        <h2 data-cy="serviceActivityDetailsHeading">
+          <span abfTranslate="hcAdminApp.catalogueServiceActivity.detail.title">Service Activity</span>
+        </h2>
+
+        <hr />
+
+        <abf-alert-error />
+
+        <abf-alert />
+
+        <dl class="row-md jh-entity-details">
+          <dt><span abfTranslate="global.field.id">ID</span></dt>
+          <dd>
+            <span>{{ serviceActivityRef.id }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.catalogueServiceActivity.name">Name</span></dt>
+          <dd>
+            <span>{{ serviceActivityRef.name }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.catalogueServiceActivity.unit">Unit</span></dt>
+          <dd>
+            <span>{{ serviceActivityRef.unit }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.catalogueServiceActivity.unitPrice">Unit Price</span></dt>
+          <dd>
+            <span>{{ serviceActivityRef.unitPrice }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.catalogueServiceActivity.duration">Duration</span></dt>
+          <dd>
+            <span>{{ serviceActivityRef.duration }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.catalogueServiceActivity.published">Published</span></dt>
+          <dd>
+            <span>{{ serviceActivityRef.published }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.catalogueServiceActivity.category">Category</span></dt>
+          <dd>
+            @if (serviceActivity()!.category) {
+              <div>
+                <a [routerLink]="['/category', serviceActivity()!.category?.id, 'view']">{{ serviceActivityRef.category?.name }}</a>
+              </div>
+            }
+          </dd>
+        </dl>
+
+        <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+          <fa-icon icon="arrow-left" />&nbsp;<span abfTranslate="entity.action.back">Back</span>
+        </button>
+
+        <button type="button" [routerLink]="['/service-activity', serviceActivityRef.id, 'edit']" class="btn btn-primary">
+          <fa-icon icon="pencil-alt" />&nbsp;<span abfTranslate="entity.action.edit">Edit</span>
+        </button>
+      </div>
+    }
+  </div>
+</div>

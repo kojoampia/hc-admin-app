@@ -1,0 +1,33 @@
+{
+  "annotations": {
+    "changelogDate": "20231211195018"
+  },
+  "applications": ["hcAdmin"],
+  "clientRootFolder": "catalogue",
+  "fields": [
+    {
+      "fieldName": "label",
+      "fieldType": "String",
+      "fieldValidateRules": ["required", "maxlength"],
+      "fieldValidateRulesMaxlength": "120"
+    },
+    {
+      "fieldName": "position",
+      "fieldType": "Integer",
+      "fieldValidateRules": ["required", "min"],
+      "fieldValidateRulesMin": "0"
+    }
+  ],
+  "name": "PlanFeature",
+  "relationships": [
+    {
+      "otherEntityField": "name",
+      "otherEntityName": "servicePlan",
+      "otherEntityRelationshipName": "feature",
+      "relationshipName": "plan",
+      "relationshipSide": "right",
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": "required"
+    }
+  ]
+}

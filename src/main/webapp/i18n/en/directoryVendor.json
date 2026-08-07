@@ -1,0 +1,37 @@
+{
+  "hcAdminApp": {
+    "directoryVendor": {
+      "home": {
+        "title": "Vendors",
+        "refreshListLabel": "Refresh list",
+        "createLabel": "Create a new Vendor",
+        "createOrEditLabel": "Create or edit a Vendor",
+        "notFound": "No Vendors found"
+      },
+      "created": "A new Vendor is created with identifier {{ param }}",
+      "updated": "A Vendor is updated with identifier {{ param }}",
+      "deleted": "A Vendor is deleted with identifier {{ param }}",
+      "delete": {
+        "question": "Are you sure you want to delete Vendor {{ id }}?"
+      },
+      "detail": {
+        "title": "Vendor"
+      },
+      "id": "ID",
+      "name": "Name",
+      "category": "Category",
+      "serviceSummary": "Service Summary",
+      "contactName": "Contact Name",
+      "phone": "Phone",
+      "email": "Email",
+      "city": "City",
+      "status": "Status",
+      "contractNote": "Contract Note",
+      "contractRenewsOn": "Contract Renews On",
+      "orderCount": "Order Count",
+      "spendToDate": "Spend To Date",
+      "rating": "Rating",
+      "document": "Document"
+    }
+  }
+}

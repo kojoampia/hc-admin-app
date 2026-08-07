@@ -1,0 +1,98 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    <form name="editForm" novalidate (ngSubmit)="save()" [formGroup]="editForm">
+      <h2
+        id="abf-plan-feature-heading"
+        data-cy="PlanFeatureCreateUpdateHeading"
+        abfTranslate="hcAdminApp.cataloguePlanFeature.home.createOrEditLabel"
+      >
+        Create or edit a Plan Feature
+      </h2>
+
+      <div>
+        <abf-alert-error />
+
+        @if (editForm.controls.id.value !== null) {
+          <div class="mb-3">
+            <label class="form-label" for="field_id" abfTranslate="global.field.id">ID</label>
+            <input type="number" class="form-control" name="id" id="field_id" data-cy="id" formControlName="id" />
+          </div>
+        }
+
+        @let labelRef = editForm.get('label')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_label" abfTranslate="hcAdminApp.cataloguePlanFeature.label">Label</label>
+          <input type="text" class="form-control" name="label" id="field_label" data-cy="label" formControlName="label" />
+          @if (labelRef.invalid && (labelRef.dirty || labelRef.touched)) {
+            <div>
+              @if (labelRef.errors?.required) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.required">This field is required.</small>
+              }
+              @if (labelRef.errors?.maxlength) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.maxlength" [translateValues]="{ max: '120' }"
+                  >This field cannot be longer than 120 characters.</small
+                >
+              }
+            </div>
+          }
+        </div>
+
+        @let positionRef = editForm.get('position')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_position" abfTranslate="hcAdminApp.cataloguePlanFeature.position">Position</label>
+          <input type="number" class="form-control" name="position" id="field_position" data-cy="position" formControlName="position" />
+          @if (positionRef.invalid && (positionRef.dirty || positionRef.touched)) {
+            <div>
+              @if (positionRef.errors?.required) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.required">This field is required.</small>
+              }
+              @if (positionRef.errors?.min) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.min" [translateValues]="{ min: '0' }"
+                  >This field should be at least 0.</small
+                >
+              }
+              <small class="form-text text-danger" [hidden]="!positionRef.errors?.number" abfTranslate="entity.validation.number"
+                >This field should be a number.</small
+              >
+            </div>
+          }
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_plan" abfTranslate="hcAdminApp.cataloguePlanFeature.plan">Plan</label>
+          <select class="form-control" id="field_plan" data-cy="plan" name="plan" formControlName="plan" [compareWith]="compareServicePlan">
+            @if (editForm.get(['plan'])!.value === null) {
+              <option [ngValue]="null" selected></option>
+            }
+            @for (servicePlanOption of servicePlansSharedCollection(); track $index) {
+              <option [ngValue]="servicePlanOption">{{ servicePlanOption.name }}</option>
+            }
+          </select>
+        </div>
+        @if (editForm.get(['plan'])!.invalid && (editForm.get(['plan'])!.dirty || editForm.get(['plan'])!.touched)) {
+          <div>
+            @if (editForm.get(['plan'])?.errors?.required) {
+              <small class="form-text text-danger" abfTranslate="entity.validation.required">This field is required.</small>
+            }
+          </div>
+        }
+      </div>
+
+      <div>
+        <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary" (click)="previousState()">
+          <fa-icon icon="ban" />&nbsp;<span abfTranslate="entity.action.cancel">Cancel</span>
+        </button>
+
+        <button
+          type="submit"
+          id="save-entity"
+          data-cy="entityCreateSaveButton"
+          [disabled]="editForm.invalid || isSaving()"
+          class="btn btn-primary"
+        >
+          <fa-icon icon="save" />&nbsp;<span abfTranslate="entity.action.save">Save</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

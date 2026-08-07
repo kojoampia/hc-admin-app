@@ -1,0 +1,9 @@
+export enum MessageChannel {
+  PATIENT_APP = 'PATIENT_APP',
+
+  PROFESSIONAL_APP = 'PROFESSIONAL_APP',
+
+  VENDOR_PORTAL = 'VENDOR_PORTAL',
+
+  EMAIL = 'EMAIL',
+}

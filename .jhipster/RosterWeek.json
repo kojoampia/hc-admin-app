@@ -1,0 +1,40 @@
+{
+  "annotations": {
+    "changelogDate": "20231211194718"
+  },
+  "applications": ["hcAdmin"],
+  "clientRootFolder": "operations",
+  "documentation": "PDF: Roster (Name, Description, Patient, Date) — modelled as a\\nweek header so the grid in the demo has something to publish.",
+  "fields": [
+    {
+      "fieldName": "label",
+      "fieldType": "String",
+      "fieldValidateRules": ["required", "maxlength"],
+      "fieldValidateRulesMaxlength": "60"
+    },
+    {
+      "fieldName": "startDate",
+      "fieldType": "LocalDate",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "published",
+      "fieldType": "Boolean",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "publishedAt",
+      "fieldType": "Instant"
+    }
+  ],
+  "name": "RosterWeek",
+  "relationships": [
+    {
+      "otherEntityName": "shiftAssignment",
+      "otherEntityRelationshipName": "week",
+      "relationshipName": "assignment",
+      "relationshipSide": "left",
+      "relationshipType": "one-to-many"
+    }
+  ]
+}

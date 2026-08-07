@@ -1,0 +1,132 @@
+<div>
+  <h2 id="page-heading" data-cy="CareActivityHeading">
+    <span abfTranslate="hcAdminApp.platformCareActivity.home.title">Care Activities</span>
+
+    <div class="d-flex justify-content-end">
+      <button class="btn btn-info me-2" (click)="load()" [disabled]="isLoading()">
+        <fa-icon icon="sync" [animation]="isLoading() ? 'spin' : undefined" />
+        <span abfTranslate="hcAdminApp.platformCareActivity.home.refreshListLabel">Refresh list</span>
+      </button>
+
+      <button
+        id="jh-create-entity"
+        data-cy="entityCreateButton"
+        class="btn btn-primary jh-create-entity create-care-activity"
+        [routerLink]="['/care-activity/new']"
+      >
+        <fa-icon icon="plus" />
+        <span abfTranslate="hcAdminApp.platformCareActivity.home.createLabel">Create a new Care Activity</span>
+      </button>
+    </div>
+  </h2>
+
+  <abf-alert-error />
+
+  <abf-alert />
+
+  @if (careActivities().length === 0) {
+    <div class="alert alert-warning" id="no-result">
+      <span abfTranslate="hcAdminApp.platformCareActivity.home.notFound">No Care Activities found</span>
+    </div>
+  } @else {
+    <div class="table-responsive table-entities" id="entities">
+      <table class="table table-striped" aria-describedby="page-heading">
+        <thead>
+          <tr abfSort [(sortState)]="sortState" (sortChange)="navigateToWithComponentValues($event)">
+            <th scope="col" abfSortBy="id">
+              <div class="d-flex">
+                <span abfTranslate="global.field.id">ID</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="name">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.platformCareActivity.name">Name</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="description">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.platformCareActivity.description">Description</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="occurredOn">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.platformCareActivity.occurredOn">Occurred On</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="patient.id">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.platformCareActivity.patient">Patient</span>
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (careActivity of careActivities(); track trackId(careActivity)) {
+            <tr data-cy="entityTable">
+              <td>
+                <a [routerLink]="['/care-activity', careActivity.id, 'view']">{{ careActivity.id }}</a>
+              </td>
+              <td>{{ careActivity.name }}</td>
+              <td>{{ careActivity.description }}</td>
+              <td>{{ careActivity.occurredOn | formatMediumDate }}</td>
+              <td>
+                @if (careActivity.patient) {
+                  <div>
+                    <a [routerLink]="['/patient', careActivity.patient.id, 'view']">{{ careActivity.patient.id }}</a>
+                  </div>
+                }
+              </td>
+              <td class="text-end">
+                <div class="btn-group">
+                  <a [routerLink]="['/care-activity', careActivity.id, 'view']" class="btn btn-info btn-sm" data-cy="entityDetailsButton">
+                    <fa-icon icon="eye" />
+                    <span class="d-none d-md-inline" abfTranslate="entity.action.view">View</span>
+                  </a>
+
+                  <a [routerLink]="['/care-activity', careActivity.id, 'edit']" class="btn btn-primary btn-sm" data-cy="entityEditButton">
+                    <fa-icon icon="pencil-alt" />
+                    <span class="d-none d-md-inline" abfTranslate="entity.action.edit">Edit</span>
+                  </a>
+
+                  <button type="submit" (click)="delete(careActivity)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
+                    <fa-icon icon="times" />
+                    <span class="d-none d-md-inline" abfTranslate="entity.action.delete">Delete</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+  @if (careActivities().length > 0) {
+    <div>
+      <div class="d-flex justify-content-center">
+        <abf-item-count [params]="{ page: page(), totalItems: totalItems(), itemsPerPage: itemsPerPage() }" />
+      </div>
+
+      <div class="d-flex justify-content-center">
+        <ngb-pagination
+          [collectionSize]="totalItems()"
+          [page]="page()"
+          [pageSize]="itemsPerPage()"
+          [maxSize]="5"
+          [rotate]="true"
+          [boundaryLinks]="true"
+          (pageChange)="navigateToPage($event)"
+        />
+      </div>
+    </div>
+  }
+</div>

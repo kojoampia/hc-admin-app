@@ -1,0 +1,46 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    @if (hub(); as hubRef) {
+      <div>
+        <h2 data-cy="hubDetailsHeading"><span abfTranslate="hcAdminApp.platformHub.detail.title">Hub</span></h2>
+
+        <hr />
+
+        <abf-alert-error />
+
+        <abf-alert />
+
+        <dl class="row-md jh-entity-details">
+          <dt><span abfTranslate="global.field.id">ID</span></dt>
+          <dd>
+            <span>{{ hubRef.id }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.platformHub.name">Name</span></dt>
+          <dd>
+            <span>{{ hubRef.name }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.platformHub.staffCount">Staff Count</span></dt>
+          <dd>
+            <span>{{ hubRef.staffCount }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.platformHub.address">Address</span></dt>
+          <dd>
+            @if (hub()!.address) {
+              <div>
+                <a [routerLink]="['/address', hub()!.address?.id, 'view']">{{ hubRef.address?.id }}</a>
+              </div>
+            }
+          </dd>
+        </dl>
+
+        <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+          <fa-icon icon="arrow-left" />&nbsp;<span abfTranslate="entity.action.back">Back</span>
+        </button>
+
+        <button type="button" [routerLink]="['/hub', hubRef.id, 'edit']" class="btn btn-primary">
+          <fa-icon icon="pencil-alt" />&nbsp;<span abfTranslate="entity.action.edit">Edit</span>
+        </button>
+      </div>
+    }
+  </div>
+</div>

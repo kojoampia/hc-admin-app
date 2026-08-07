@@ -1,0 +1,11 @@
+{
+  "hcAdminApp": {
+    "ShiftType": {
+      "null": "",
+      "DAY": "DAY",
+      "EVENING": "EVENING",
+      "NIGHT": "NIGHT",
+      "OFF": "OFF"
+    }
+  }
+}

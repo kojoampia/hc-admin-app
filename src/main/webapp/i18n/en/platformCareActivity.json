@@ -1,0 +1,27 @@
+{
+  "hcAdminApp": {
+    "platformCareActivity": {
+      "home": {
+        "title": "Care Activities",
+        "refreshListLabel": "Refresh list",
+        "createLabel": "Create a new Care Activity",
+        "createOrEditLabel": "Create or edit a Care Activity",
+        "notFound": "No Care Activities found"
+      },
+      "created": "A new Care Activity is created with identifier {{ param }}",
+      "updated": "A Care Activity is updated with identifier {{ param }}",
+      "deleted": "A Care Activity is deleted with identifier {{ param }}",
+      "delete": {
+        "question": "Are you sure you want to delete Care Activity {{ id }}?"
+      },
+      "detail": {
+        "title": "Care Activity"
+      },
+      "id": "ID",
+      "name": "Name",
+      "description": "Description",
+      "occurredOn": "Occurred On",
+      "patient": "Patient"
+    }
+  }
+}

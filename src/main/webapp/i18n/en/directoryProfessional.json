@@ -1,0 +1,38 @@
+{
+  "hcAdminApp": {
+    "directoryProfessional": {
+      "home": {
+        "title": "Professionals",
+        "refreshListLabel": "Refresh list",
+        "createLabel": "Create a new Professional",
+        "createOrEditLabel": "Create or edit a Professional",
+        "notFound": "No Professionals found"
+      },
+      "created": "A new Professional is created with identifier {{ param }}",
+      "updated": "A Professional is updated with identifier {{ param }}",
+      "deleted": "A Professional is deleted with identifier {{ param }}",
+      "delete": {
+        "question": "Are you sure you want to delete Professional {{ id }}?"
+      },
+      "detail": {
+        "title": "Professional"
+      },
+      "id": "ID",
+      "role": "Role",
+      "speciality": "Speciality",
+      "licenceNumber": "Licence Number",
+      "verification": "Verification",
+      "status": "Status",
+      "patientCount": "Patient Count",
+      "caseCount": "Case Count",
+      "visitCount": "Visit Count",
+      "rating": "Rating",
+      "joinedOn": "Joined On",
+      "profile": "Profile",
+      "credential": "Credential",
+      "assignment": "Assignment",
+      "team": "Team",
+      "hub": "Hub"
+    }
+  }
+}

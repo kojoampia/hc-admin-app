@@ -1,0 +1,54 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    @if (address(); as addressRef) {
+      <div>
+        <h2 data-cy="addressDetailsHeading"><span abfTranslate="hcAdminApp.directoryAddress.detail.title">Address</span></h2>
+
+        <hr />
+
+        <abf-alert-error />
+
+        <abf-alert />
+
+        <dl class="row-md jh-entity-details">
+          <dt><span abfTranslate="global.field.id">ID</span></dt>
+          <dd>
+            <span>{{ addressRef.id }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.directoryAddress.digitalAddress">Digital Address</span></dt>
+          <dd>
+            <span>{{ addressRef.digitalAddress }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.directoryAddress.streetAddress">Street Address</span></dt>
+          <dd>
+            <span>{{ addressRef.streetAddress }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.directoryAddress.townDistrict">Town District</span></dt>
+          <dd>
+            <span>{{ addressRef.townDistrict }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.directoryAddress.cityState">City State</span></dt>
+          <dd>
+            <span>{{ addressRef.cityState }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.directoryAddress.region">Region</span></dt>
+          <dd>
+            <span>{{ addressRef.region }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.directoryAddress.country">Country</span></dt>
+          <dd>
+            <span>{{ addressRef.country }}</span>
+          </dd>
+        </dl>
+
+        <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+          <fa-icon icon="arrow-left" />&nbsp;<span abfTranslate="entity.action.back">Back</span>
+        </button>
+
+        <button type="button" [routerLink]="['/address', addressRef.id, 'edit']" class="btn btn-primary">
+          <fa-icon icon="pencil-alt" />&nbsp;<span abfTranslate="entity.action.edit">Edit</span>
+        </button>
+      </div>
+    }
+  </div>
+</div>

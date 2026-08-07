@@ -1,0 +1,105 @@
+<div>
+  <h2 id="page-heading" data-cy="HubHeading">
+    <span abfTranslate="hcAdminApp.platformHub.home.title">Hubs</span>
+
+    <div class="d-flex justify-content-end">
+      <button class="btn btn-info me-2" (click)="load()" [disabled]="isLoading()">
+        <fa-icon icon="sync" [animation]="isLoading() ? 'spin' : undefined" />
+        <span abfTranslate="hcAdminApp.platformHub.home.refreshListLabel">Refresh list</span>
+      </button>
+
+      <button
+        id="jh-create-entity"
+        data-cy="entityCreateButton"
+        class="btn btn-primary jh-create-entity create-hub"
+        [routerLink]="['/hub/new']"
+      >
+        <fa-icon icon="plus" />
+        <span abfTranslate="hcAdminApp.platformHub.home.createLabel">Create a new Hub</span>
+      </button>
+    </div>
+  </h2>
+
+  <abf-alert-error />
+
+  <abf-alert />
+
+  @if (hubs().length === 0) {
+    <div class="alert alert-warning" id="no-result">
+      <span abfTranslate="hcAdminApp.platformHub.home.notFound">No Hubs found</span>
+    </div>
+  } @else {
+    <div class="table-responsive table-entities" id="entities">
+      <table class="table table-striped" aria-describedby="page-heading">
+        <thead>
+          <tr abfSort [(sortState)]="sortState" (sortChange)="navigateToWithComponentValues($event)">
+            <th scope="col" abfSortBy="id">
+              <div class="d-flex">
+                <span abfTranslate="global.field.id">ID</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="name">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.platformHub.name">Name</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="staffCount">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.platformHub.staffCount">Staff Count</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="address.id">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.platformHub.address">Address</span>
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (hub of hubs(); track trackId(hub)) {
+            <tr data-cy="entityTable">
+              <td>
+                <a [routerLink]="['/hub', hub.id, 'view']">{{ hub.id }}</a>
+              </td>
+              <td>{{ hub.name }}</td>
+              <td>{{ hub.staffCount }}</td>
+              <td>
+                @if (hub.address) {
+                  <div>
+                    <a [routerLink]="['/address', hub.address.id, 'view']">{{ hub.address.id }}</a>
+                  </div>
+                }
+              </td>
+              <td class="text-end">
+                <div class="btn-group">
+                  <a [routerLink]="['/hub', hub.id, 'view']" class="btn btn-info btn-sm" data-cy="entityDetailsButton">
+                    <fa-icon icon="eye" />
+                    <span class="d-none d-md-inline" abfTranslate="entity.action.view">View</span>
+                  </a>
+
+                  <a [routerLink]="['/hub', hub.id, 'edit']" class="btn btn-primary btn-sm" data-cy="entityEditButton">
+                    <fa-icon icon="pencil-alt" />
+                    <span class="d-none d-md-inline" abfTranslate="entity.action.edit">Edit</span>
+                  </a>
+
+                  <button type="submit" (click)="delete(hub)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
+                    <fa-icon icon="times" />
+                    <span class="d-none d-md-inline" abfTranslate="entity.action.delete">Delete</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

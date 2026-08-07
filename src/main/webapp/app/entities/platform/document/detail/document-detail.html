@@ -1,0 +1,62 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    @if (document(); as documentRef) {
+      <div>
+        <h2 data-cy="documentDetailsHeading"><span abfTranslate="hcAdminApp.platformDocument.detail.title">Document</span></h2>
+
+        <hr />
+
+        <abf-alert-error />
+
+        <abf-alert />
+
+        <dl class="row-md jh-entity-details">
+          <dt><span abfTranslate="global.field.id">ID</span></dt>
+          <dd>
+            <span>{{ documentRef.id }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.platformDocument.name">Name</span></dt>
+          <dd>
+            <span>{{ documentRef.name }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.platformDocument.description">Description</span></dt>
+          <dd>
+            <span>{{ documentRef.description }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.platformDocument.url">Url</span></dt>
+          <dd>
+            <span>{{ documentRef.url }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.platformDocument.uploadedAt">Uploaded At</span></dt>
+          <dd>
+            <span>{{ documentRef.uploadedAt | formatMediumDatetime }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.platformDocument.patient">Patient</span></dt>
+          <dd>
+            @if (document()!.patient) {
+              <div>
+                <a [routerLink]="['/patient', document()!.patient?.id, 'view']">{{ documentRef.patient?.id }}</a>
+              </div>
+            }
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.platformDocument.vendor">Vendor</span></dt>
+          <dd>
+            @if (document()!.vendor) {
+              <div>
+                <a [routerLink]="['/vendor', document()!.vendor?.id, 'view']">{{ documentRef.vendor?.id }}</a>
+              </div>
+            }
+          </dd>
+        </dl>
+
+        <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+          <fa-icon icon="arrow-left" />&nbsp;<span abfTranslate="entity.action.back">Back</span>
+        </button>
+
+        <button type="button" [routerLink]="['/document', documentRef.id, 'edit']" class="btn btn-primary">
+          <fa-icon icon="pencil-alt" />&nbsp;<span abfTranslate="entity.action.edit">Edit</span>
+        </button>
+      </div>
+    }
+  </div>
+</div>

@@ -1,0 +1,10 @@
+{
+  "hcAdminApp": {
+    "ServiceHealth": {
+      "null": "",
+      "HEALTHY": "HEALTHY",
+      "DEGRADED": "DEGRADED",
+      "DOWN": "DOWN"
+    }
+  }
+}

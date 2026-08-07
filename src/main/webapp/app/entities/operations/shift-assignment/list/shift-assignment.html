@@ -1,0 +1,157 @@
+<div>
+  <h2 id="page-heading" data-cy="ShiftAssignmentHeading">
+    <span abfTranslate="hcAdminApp.operationsShiftAssignment.home.title">Shift Assignments</span>
+
+    <div class="d-flex justify-content-end">
+      <button class="btn btn-info me-2" (click)="load()" [disabled]="isLoading()">
+        <fa-icon icon="sync" [animation]="isLoading() ? 'spin' : undefined" />
+        <span abfTranslate="hcAdminApp.operationsShiftAssignment.home.refreshListLabel">Refresh list</span>
+      </button>
+
+      <button
+        id="jh-create-entity"
+        data-cy="entityCreateButton"
+        class="btn btn-primary jh-create-entity create-shift-assignment"
+        [routerLink]="['/shift-assignment/new']"
+      >
+        <fa-icon icon="plus" />
+        <span abfTranslate="hcAdminApp.operationsShiftAssignment.home.createLabel">Create a new Shift Assignment</span>
+      </button>
+    </div>
+  </h2>
+
+  <abf-alert-error />
+
+  <abf-alert />
+
+  @if (shiftAssignments().length === 0) {
+    <div class="alert alert-warning" id="no-result">
+      <span abfTranslate="hcAdminApp.operationsShiftAssignment.home.notFound">No Shift Assignments found</span>
+    </div>
+  } @else {
+    <div class="table-responsive table-entities" id="entities">
+      <table class="table table-striped" aria-describedby="page-heading">
+        <thead>
+          <tr abfSort [(sortState)]="sortState" (sortChange)="navigateToWithComponentValues($event)">
+            <th scope="col" abfSortBy="id">
+              <div class="d-flex">
+                <span abfTranslate="global.field.id">ID</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="dayIndex">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.operationsShiftAssignment.dayIndex">Day Index</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="shiftDate">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.operationsShiftAssignment.shiftDate">Shift Date</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="shift">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.operationsShiftAssignment.shift">Shift</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="week.label">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.operationsShiftAssignment.week">Week</span>
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="professional.licenceNumber">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.operationsShiftAssignment.professional">Professional</span>
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (shiftAssignment of shiftAssignments(); track trackId(shiftAssignment)) {
+            <tr data-cy="entityTable">
+              <td>
+                <a [routerLink]="['/shift-assignment', shiftAssignment.id, 'view']">{{ shiftAssignment.id }}</a>
+              </td>
+              <td>{{ shiftAssignment.dayIndex }}</td>
+              <td>{{ shiftAssignment.shiftDate | formatMediumDate }}</td>
+              <td [abfTranslate]="'hcAdminApp.ShiftType.' + (shiftAssignment.shift ?? 'null')">
+                {{ { null: '', DAY: 'DAY', EVENING: 'EVENING', NIGHT: 'NIGHT', OFF: 'OFF' }[shiftAssignment.shift ?? 'null'] }}
+              </td>
+              <td>
+                @if (shiftAssignment.week) {
+                  <div>
+                    <a [routerLink]="['/roster-week', shiftAssignment.week.id, 'view']">{{ shiftAssignment.week.label }}</a>
+                  </div>
+                }
+              </td>
+              <td>
+                @if (shiftAssignment.professional) {
+                  <div>
+                    <a [routerLink]="['/professional', shiftAssignment.professional.id, 'view']">{{
+                      shiftAssignment.professional.licenceNumber
+                    }}</a>
+                  </div>
+                }
+              </td>
+              <td class="text-end">
+                <div class="btn-group">
+                  <a
+                    [routerLink]="['/shift-assignment', shiftAssignment.id, 'view']"
+                    class="btn btn-info btn-sm"
+                    data-cy="entityDetailsButton"
+                  >
+                    <fa-icon icon="eye" />
+                    <span class="d-none d-md-inline" abfTranslate="entity.action.view">View</span>
+                  </a>
+
+                  <a
+                    [routerLink]="['/shift-assignment', shiftAssignment.id, 'edit']"
+                    class="btn btn-primary btn-sm"
+                    data-cy="entityEditButton"
+                  >
+                    <fa-icon icon="pencil-alt" />
+                    <span class="d-none d-md-inline" abfTranslate="entity.action.edit">Edit</span>
+                  </a>
+
+                  <button type="submit" (click)="delete(shiftAssignment)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
+                    <fa-icon icon="times" />
+                    <span class="d-none d-md-inline" abfTranslate="entity.action.delete">Delete</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+  @if (shiftAssignments().length > 0) {
+    <div>
+      <div class="d-flex justify-content-center">
+        <abf-item-count [params]="{ page: page(), totalItems: totalItems(), itemsPerPage: itemsPerPage() }" />
+      </div>
+
+      <div class="d-flex justify-content-center">
+        <ngb-pagination
+          [collectionSize]="totalItems()"
+          [page]="page()"
+          [pageSize]="itemsPerPage()"
+          [maxSize]="5"
+          [rotate]="true"
+          [boundaryLinks]="true"
+          (pageChange)="navigateToPage($event)"
+        />
+      </div>
+    </div>
+  }
+</div>

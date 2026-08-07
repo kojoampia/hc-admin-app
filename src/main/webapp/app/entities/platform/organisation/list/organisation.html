@@ -1,0 +1,161 @@
+<div>
+  <h2 id="page-heading" data-cy="OrganisationHeading">
+    <span abfTranslate="hcAdminApp.platformOrganisation.home.title">Organisations</span>
+
+    <div class="d-flex justify-content-end">
+      <button class="btn btn-info me-2" (click)="load()" [disabled]="isLoading()">
+        <fa-icon icon="sync" [animation]="isLoading() ? 'spin' : undefined" />
+        <span abfTranslate="hcAdminApp.platformOrganisation.home.refreshListLabel">Refresh list</span>
+      </button>
+
+      <button
+        id="jh-create-entity"
+        data-cy="entityCreateButton"
+        class="btn btn-primary jh-create-entity create-organisation"
+        [routerLink]="['/organisation/new']"
+      >
+        <fa-icon icon="plus" />
+        <span abfTranslate="hcAdminApp.platformOrganisation.home.createLabel">Create a new Organisation</span>
+      </button>
+    </div>
+  </h2>
+
+  <abf-alert-error />
+
+  <abf-alert />
+
+  @if (organisations().length === 0) {
+    <div class="alert alert-warning" id="no-result">
+      <span abfTranslate="hcAdminApp.platformOrganisation.home.notFound">No Organisations found</span>
+    </div>
+  } @else {
+    <div class="table-responsive table-entities" id="entities">
+      <table class="table table-striped" aria-describedby="page-heading">
+        <thead>
+          <tr abfSort [(sortState)]="sortState" (sortChange)="navigateToWithComponentValues($event)">
+            <th scope="col" abfSortBy="id">
+              <div class="d-flex">
+                <span abfTranslate="global.field.id">ID</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="name">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.platformOrganisation.name">Name</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="legalName">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.platformOrganisation.legalName">Legal Name</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="description">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.platformOrganisation.description">Description</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="registrationNumber">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.platformOrganisation.registrationNumber">Registration Number</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="tin">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.platformOrganisation.tin">Tin</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="foundedOn">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.platformOrganisation.foundedOn">Founded On</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="switchboard">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.platformOrganisation.switchboard">Switchboard</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="email">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.platformOrganisation.email">Email</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="deskHours">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.platformOrganisation.deskHours">Desk Hours</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="address.id">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.platformOrganisation.address">Address</span>
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (organisation of organisations(); track trackId(organisation)) {
+            <tr data-cy="entityTable">
+              <td>
+                <a [routerLink]="['/organisation', organisation.id, 'view']">{{ organisation.id }}</a>
+              </td>
+              <td>{{ organisation.name }}</td>
+              <td>{{ organisation.legalName }}</td>
+              <td>{{ organisation.description }}</td>
+              <td>{{ organisation.registrationNumber }}</td>
+              <td>{{ organisation.tin }}</td>
+              <td>{{ organisation.foundedOn | formatMediumDate }}</td>
+              <td>{{ organisation.switchboard }}</td>
+              <td>{{ organisation.email }}</td>
+              <td>{{ organisation.deskHours }}</td>
+              <td>
+                @if (organisation.address) {
+                  <div>
+                    <a [routerLink]="['/address', organisation.address.id, 'view']">{{ organisation.address.id }}</a>
+                  </div>
+                }
+              </td>
+              <td class="text-end">
+                <div class="btn-group">
+                  <a [routerLink]="['/organisation', organisation.id, 'view']" class="btn btn-info btn-sm" data-cy="entityDetailsButton">
+                    <fa-icon icon="eye" />
+                    <span class="d-none d-md-inline" abfTranslate="entity.action.view">View</span>
+                  </a>
+
+                  <a [routerLink]="['/organisation', organisation.id, 'edit']" class="btn btn-primary btn-sm" data-cy="entityEditButton">
+                    <fa-icon icon="pencil-alt" />
+                    <span class="d-none d-md-inline" abfTranslate="entity.action.edit">Edit</span>
+                  </a>
+
+                  <button type="submit" (click)="delete(organisation)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
+                    <fa-icon icon="times" />
+                    <span class="d-none d-md-inline" abfTranslate="entity.action.delete">Delete</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

@@ -1,0 +1,142 @@
+<div>
+  <h2 id="page-heading" data-cy="ServicePlanHeading">
+    <span abfTranslate="hcAdminApp.catalogueServicePlan.home.title">Service Plans</span>
+
+    <div class="d-flex justify-content-end">
+      <button class="btn btn-info me-2" (click)="load()" [disabled]="isLoading()">
+        <fa-icon icon="sync" [animation]="isLoading() ? 'spin' : undefined" />
+        <span abfTranslate="hcAdminApp.catalogueServicePlan.home.refreshListLabel">Refresh list</span>
+      </button>
+
+      <button
+        id="jh-create-entity"
+        data-cy="entityCreateButton"
+        class="btn btn-primary jh-create-entity create-service-plan"
+        [routerLink]="['/service-plan/new']"
+      >
+        <fa-icon icon="plus" />
+        <span abfTranslate="hcAdminApp.catalogueServicePlan.home.createLabel">Create a new Service Plan</span>
+      </button>
+    </div>
+  </h2>
+
+  <abf-alert-error />
+
+  <abf-alert />
+
+  @if (servicePlans().length === 0) {
+    <div class="alert alert-warning" id="no-result">
+      <span abfTranslate="hcAdminApp.catalogueServicePlan.home.notFound">No Service Plans found</span>
+    </div>
+  } @else {
+    <div class="table-responsive table-entities" id="entities">
+      <table class="table table-striped" aria-describedby="page-heading">
+        <thead>
+          <tr abfSort [(sortState)]="sortState" (sortChange)="navigateToWithComponentValues($event)">
+            <th scope="col" abfSortBy="id">
+              <div class="d-flex">
+                <span abfTranslate="global.field.id">ID</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="name">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.catalogueServicePlan.name">Name</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="tier">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.catalogueServicePlan.tier">Tier</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="tierLabel">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.catalogueServicePlan.tierLabel">Tier Label</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="monthlyPrice">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.catalogueServicePlan.monthlyPrice">Monthly Price</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="currency">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.catalogueServicePlan.currency">Currency</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="summary">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.catalogueServicePlan.summary">Summary</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="featured">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.catalogueServicePlan.featured">Featured</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="subscriberCount">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.catalogueServicePlan.subscriberCount">Subscriber Count</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (servicePlan of servicePlans(); track trackId(servicePlan)) {
+            <tr data-cy="entityTable">
+              <td>
+                <a [routerLink]="['/service-plan', servicePlan.id, 'view']">{{ servicePlan.id }}</a>
+              </td>
+              <td>{{ servicePlan.name }}</td>
+              <td [abfTranslate]="'hcAdminApp.PlanTier.' + (servicePlan.tier ?? 'null')">
+                {{ { null: '', ESSENTIAL: 'ESSENTIAL', PLUS: 'PLUS', FAMILY: 'FAMILY' }[servicePlan.tier ?? 'null'] }}
+              </td>
+              <td>{{ servicePlan.tierLabel }}</td>
+              <td>{{ servicePlan.monthlyPrice }}</td>
+              <td>{{ servicePlan.currency }}</td>
+              <td>{{ servicePlan.summary }}</td>
+              <td>{{ servicePlan.featured }}</td>
+              <td>{{ servicePlan.subscriberCount }}</td>
+              <td class="text-end">
+                <div class="btn-group">
+                  <a [routerLink]="['/service-plan', servicePlan.id, 'view']" class="btn btn-info btn-sm" data-cy="entityDetailsButton">
+                    <fa-icon icon="eye" />
+                    <span class="d-none d-md-inline" abfTranslate="entity.action.view">View</span>
+                  </a>
+
+                  <a [routerLink]="['/service-plan', servicePlan.id, 'edit']" class="btn btn-primary btn-sm" data-cy="entityEditButton">
+                    <fa-icon icon="pencil-alt" />
+                    <span class="d-none d-md-inline" abfTranslate="entity.action.edit">Edit</span>
+                  </a>
+
+                  <button type="submit" (click)="delete(servicePlan)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
+                    <fa-icon icon="times" />
+                    <span class="d-none d-md-inline" abfTranslate="entity.action.delete">Delete</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

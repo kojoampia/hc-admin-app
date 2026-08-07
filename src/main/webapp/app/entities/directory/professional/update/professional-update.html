@@ -1,0 +1,326 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    <form name="editForm" novalidate (ngSubmit)="save()" [formGroup]="editForm">
+      <h2
+        id="abf-professional-heading"
+        data-cy="ProfessionalCreateUpdateHeading"
+        abfTranslate="hcAdminApp.directoryProfessional.home.createOrEditLabel"
+      >
+        Create or edit a Professional
+      </h2>
+
+      <div>
+        <abf-alert-error />
+
+        @if (editForm.controls.id.value !== null) {
+          <div class="mb-3">
+            <label class="form-label" for="field_id" abfTranslate="global.field.id">ID</label>
+            <input type="number" class="form-control" name="id" id="field_id" data-cy="id" formControlName="id" />
+          </div>
+        }
+
+        @let roleRef = editForm.get('role')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_role" abfTranslate="hcAdminApp.directoryProfessional.role">Role</label>
+          <select class="form-control" name="role" formControlName="role" id="field_role" data-cy="role">
+            <option [ngValue]="null">{{ 'hcAdminApp.ProfessionalRole.null' | translate }}</option>
+            @for (professionalRole of professionalRoleValues; track $index) {
+              <option [value]="professionalRole">{{ 'hcAdminApp.ProfessionalRole.' + professionalRole | translate }}</option>
+            }
+          </select>
+          @if (roleRef.invalid && (roleRef.dirty || roleRef.touched)) {
+            <div>
+              @if (roleRef.errors?.required) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.required">This field is required.</small>
+              }
+            </div>
+          }
+        </div>
+
+        @let specialityRef = editForm.get('speciality')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_speciality" abfTranslate="hcAdminApp.directoryProfessional.speciality">Speciality</label>
+          <input
+            type="text"
+            class="form-control"
+            name="speciality"
+            id="field_speciality"
+            data-cy="speciality"
+            formControlName="speciality"
+          />
+          @if (specialityRef.invalid && (specialityRef.dirty || specialityRef.touched)) {
+            <div>
+              @if (specialityRef.errors?.maxlength) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.maxlength" [translateValues]="{ max: '80' }"
+                  >This field cannot be longer than 80 characters.</small
+                >
+              }
+            </div>
+          }
+        </div>
+
+        @let licenceNumberRef = editForm.get('licenceNumber')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_licenceNumber" abfTranslate="hcAdminApp.directoryProfessional.licenceNumber"
+            >Licence Number</label
+          >
+          <input
+            type="text"
+            class="form-control"
+            name="licenceNumber"
+            id="field_licenceNumber"
+            data-cy="licenceNumber"
+            formControlName="licenceNumber"
+          />
+          @if (licenceNumberRef.invalid && (licenceNumberRef.dirty || licenceNumberRef.touched)) {
+            <div>
+              @if (licenceNumberRef.errors?.required) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.required">This field is required.</small>
+              }
+              @if (licenceNumberRef.errors?.maxlength) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.maxlength" [translateValues]="{ max: '40' }"
+                  >This field cannot be longer than 40 characters.</small
+                >
+              }
+            </div>
+          }
+        </div>
+
+        @let verificationRef = editForm.get('verification')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_verification" abfTranslate="hcAdminApp.directoryProfessional.verification"
+            >Verification</label
+          >
+          <select class="form-control" name="verification" formControlName="verification" id="field_verification" data-cy="verification">
+            <option [ngValue]="null">{{ 'hcAdminApp.VerificationStatus.null' | translate }}</option>
+            @for (verificationStatus of verificationStatusValues; track $index) {
+              <option [value]="verificationStatus">{{ 'hcAdminApp.VerificationStatus.' + verificationStatus | translate }}</option>
+            }
+          </select>
+          @if (verificationRef.invalid && (verificationRef.dirty || verificationRef.touched)) {
+            <div>
+              @if (verificationRef.errors?.required) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.required">This field is required.</small>
+              }
+            </div>
+          }
+        </div>
+
+        @let statusRef = editForm.get('status')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_status" abfTranslate="hcAdminApp.directoryProfessional.status">Status</label>
+          <select class="form-control" name="status" formControlName="status" id="field_status" data-cy="status">
+            <option [ngValue]="null">{{ 'hcAdminApp.AccountStatus.null' | translate }}</option>
+            @for (accountStatus of accountStatusValues; track $index) {
+              <option [value]="accountStatus">{{ 'hcAdminApp.AccountStatus.' + accountStatus | translate }}</option>
+            }
+          </select>
+          @if (statusRef.invalid && (statusRef.dirty || statusRef.touched)) {
+            <div>
+              @if (statusRef.errors?.required) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.required">This field is required.</small>
+              }
+            </div>
+          }
+        </div>
+
+        @let patientCountRef = editForm.get('patientCount')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_patientCount" abfTranslate="hcAdminApp.directoryProfessional.patientCount"
+            >Patient Count</label
+          >
+          <input
+            type="number"
+            class="form-control"
+            name="patientCount"
+            id="field_patientCount"
+            data-cy="patientCount"
+            formControlName="patientCount"
+          />
+          @if (patientCountRef.invalid && (patientCountRef.dirty || patientCountRef.touched)) {
+            <div>
+              @if (patientCountRef.errors?.min) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.min" [translateValues]="{ min: '0' }"
+                  >This field should be at least 0.</small
+                >
+              }
+              <small class="form-text text-danger" [hidden]="!patientCountRef.errors?.number" abfTranslate="entity.validation.number"
+                >This field should be a number.</small
+              >
+            </div>
+          }
+        </div>
+
+        @let caseCountRef = editForm.get('caseCount')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_caseCount" abfTranslate="hcAdminApp.directoryProfessional.caseCount">Case Count</label>
+          <input type="number" class="form-control" name="caseCount" id="field_caseCount" data-cy="caseCount" formControlName="caseCount" />
+          @if (caseCountRef.invalid && (caseCountRef.dirty || caseCountRef.touched)) {
+            <div>
+              @if (caseCountRef.errors?.min) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.min" [translateValues]="{ min: '0' }"
+                  >This field should be at least 0.</small
+                >
+              }
+              <small class="form-text text-danger" [hidden]="!caseCountRef.errors?.number" abfTranslate="entity.validation.number"
+                >This field should be a number.</small
+              >
+            </div>
+          }
+        </div>
+
+        @let visitCountRef = editForm.get('visitCount')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_visitCount" abfTranslate="hcAdminApp.directoryProfessional.visitCount">Visit Count</label>
+          <input
+            type="number"
+            class="form-control"
+            name="visitCount"
+            id="field_visitCount"
+            data-cy="visitCount"
+            formControlName="visitCount"
+          />
+          @if (visitCountRef.invalid && (visitCountRef.dirty || visitCountRef.touched)) {
+            <div>
+              @if (visitCountRef.errors?.min) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.min" [translateValues]="{ min: '0' }"
+                  >This field should be at least 0.</small
+                >
+              }
+              <small class="form-text text-danger" [hidden]="!visitCountRef.errors?.number" abfTranslate="entity.validation.number"
+                >This field should be a number.</small
+              >
+            </div>
+          }
+        </div>
+
+        @let ratingRef = editForm.get('rating')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_rating" abfTranslate="hcAdminApp.directoryProfessional.rating">Rating</label>
+          <input type="number" class="form-control" name="rating" id="field_rating" data-cy="rating" formControlName="rating" />
+          @if (ratingRef.invalid && (ratingRef.dirty || ratingRef.touched)) {
+            <div>
+              @if (ratingRef.errors?.min) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.min" [translateValues]="{ min: '0' }"
+                  >This field should be at least 0.</small
+                >
+              }
+              @if (ratingRef.errors?.max) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.max" [translateValues]="{ max: '5' }"
+                  >This field cannot be more than 5.</small
+                >
+              }
+              <small class="form-text text-danger" [hidden]="!ratingRef.errors?.number" abfTranslate="entity.validation.number"
+                >This field should be a number.</small
+              >
+            </div>
+          }
+        </div>
+
+        @let joinedOnRef = editForm.get('joinedOn')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_joinedOn" abfTranslate="hcAdminApp.directoryProfessional.joinedOn">Joined On</label>
+          <div class="input-group">
+            <input
+              id="field_joinedOn"
+              data-cy="joinedOn"
+              type="text"
+              class="form-control"
+              name="joinedOn"
+              ngbDatepicker
+              #joinedOnDp="ngbDatepicker"
+              formControlName="joinedOn"
+            />
+            <button type="button" class="btn btn-secondary" (click)="joinedOnDp.toggle()"><fa-icon icon="calendar-alt" /></button>
+          </div>
+          @if (joinedOnRef.invalid && (joinedOnRef.dirty || joinedOnRef.touched)) {
+            <div>
+              @if (joinedOnRef.errors?.required) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.required">This field is required.</small>
+              }
+            </div>
+          }
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_profile" abfTranslate="hcAdminApp.directoryProfessional.profile">Profile</label>
+          <select
+            class="form-control"
+            id="field_profile"
+            data-cy="profile"
+            name="profile"
+            formControlName="profile"
+            [compareWith]="compareProfile"
+          >
+            @if (editForm.get(['profile'])!.value === null) {
+              <option [ngValue]="null" selected></option>
+            }
+            @for (profileOption of profilesCollection(); track $index) {
+              <option [ngValue]="profileOption">{{ profileOption.id }}</option>
+            }
+          </select>
+        </div>
+        @if (editForm.get(['profile'])!.invalid && (editForm.get(['profile'])!.dirty || editForm.get(['profile'])!.touched)) {
+          <div>
+            @if (editForm.get(['profile'])?.errors?.required) {
+              <small class="form-text text-danger" abfTranslate="entity.validation.required">This field is required.</small>
+            }
+          </div>
+        }
+
+        <div class="mb-3">
+          <label class="form-label" for="field_credential" abfTranslate="hcAdminApp.directoryProfessional.credential">Credential</label>
+          <select
+            class="form-control"
+            id="field_credential"
+            data-cy="credential"
+            name="credential"
+            formControlName="credential"
+            [compareWith]="compareCredential"
+          >
+            <option [ngValue]="null"></option>
+            @for (credentialOption of credentialsCollection(); track $index) {
+              <option [ngValue]="credentialOption">{{ credentialOption.id }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_team" abfTranslate="hcAdminApp.directoryProfessional.team">Team</label>
+          <select class="form-control" id="field_team" data-cy="team" name="team" formControlName="team" [compareWith]="compareTeam">
+            <option [ngValue]="null"></option>
+            @for (teamOption of teamsSharedCollection(); track $index) {
+              <option [ngValue]="teamOption">{{ teamOption.name }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_hub" abfTranslate="hcAdminApp.directoryProfessional.hub">Hub</label>
+          <select class="form-control" id="field_hub" data-cy="hub" name="hub" formControlName="hub" [compareWith]="compareHub">
+            <option [ngValue]="null"></option>
+            @for (hubOption of hubsSharedCollection(); track $index) {
+              <option [ngValue]="hubOption">{{ hubOption.name }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary" (click)="previousState()">
+          <fa-icon icon="ban" />&nbsp;<span abfTranslate="entity.action.cancel">Cancel</span>
+        </button>
+
+        <button
+          type="submit"
+          id="save-entity"
+          data-cy="entityCreateSaveButton"
+          [disabled]="editForm.invalid || isSaving()"
+          class="btn btn-primary"
+        >
+          <fa-icon icon="save" />&nbsp;<span abfTranslate="entity.action.save">Save</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

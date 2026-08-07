@@ -1,0 +1,54 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    @if (platformService(); as platformServiceRef) {
+      <div>
+        <h2 data-cy="platformServiceDetailsHeading">
+          <span abfTranslate="hcAdminApp.platformPlatformService.detail.title">Platform Service</span>
+        </h2>
+
+        <hr />
+
+        <abf-alert-error />
+
+        <abf-alert />
+
+        <dl class="row-md jh-entity-details">
+          <dt><span abfTranslate="global.field.id">ID</span></dt>
+          <dd>
+            <span>{{ platformServiceRef.id }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.platformPlatformService.name">Name</span></dt>
+          <dd>
+            <span>{{ platformServiceRef.name }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.platformPlatformService.host">Host</span></dt>
+          <dd>
+            <span>{{ platformServiceRef.host }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.platformPlatformService.port">Port</span></dt>
+          <dd>
+            <span>{{ platformServiceRef.port }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.platformPlatformService.plane">Plane</span></dt>
+          <dd>
+            <span>{{ platformServiceRef.plane }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.platformPlatformService.health">Health</span></dt>
+          <dd>
+            <span [abfTranslate]="'hcAdminApp.ServiceHealth.' + (platformServiceRef.health ?? 'null')">{{
+              { null: '', HEALTHY: 'HEALTHY', DEGRADED: 'DEGRADED', DOWN: 'DOWN' }[platformServiceRef.health ?? 'null']
+            }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.platformPlatformService.responseMs">Response Ms</span></dt>
+          <dd>
+            <span>{{ platformServiceRef.responseMs }}</span>
+          </dd>
+        </dl>
+
+        <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+          <fa-icon icon="arrow-left" />&nbsp;<span abfTranslate="entity.action.back">Back</span>
+        </button>
+      </div>
+    }
+  </div>
+</div>

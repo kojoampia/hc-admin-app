@@ -1,0 +1,116 @@
+<div>
+  <h2 id="page-heading" data-cy="AngelHeading">
+    <span abfTranslate="hcAdminApp.directoryAngel.home.title">Angels</span>
+
+    <div class="d-flex justify-content-end">
+      <button class="btn btn-info me-2" (click)="load()" [disabled]="isLoading()">
+        <fa-icon icon="sync" [animation]="isLoading() ? 'spin' : undefined" />
+        <span abfTranslate="hcAdminApp.directoryAngel.home.refreshListLabel">Refresh list</span>
+      </button>
+
+      <button
+        id="jh-create-entity"
+        data-cy="entityCreateButton"
+        class="btn btn-primary jh-create-entity create-angel"
+        [routerLink]="['/angel/new']"
+      >
+        <fa-icon icon="plus" />
+        <span abfTranslate="hcAdminApp.directoryAngel.home.createLabel">Create a new Angel</span>
+      </button>
+    </div>
+  </h2>
+
+  <abf-alert-error />
+
+  <abf-alert />
+
+  @if (angels().length === 0) {
+    <div class="alert alert-warning" id="no-result">
+      <span abfTranslate="hcAdminApp.directoryAngel.home.notFound">No Angels found</span>
+    </div>
+  } @else {
+    <div class="table-responsive table-entities" id="entities">
+      <table class="table table-striped" aria-describedby="page-heading">
+        <thead>
+          <tr abfSort [(sortState)]="sortState" (sortChange)="navigateToWithComponentValues($event)">
+            <th scope="col" abfSortBy="id">
+              <div class="d-flex">
+                <span abfTranslate="global.field.id">ID</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="name">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.directoryAngel.name">Name</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="relationship">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.directoryAngel.relationship">Relationship</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="phone">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.directoryAngel.phone">Phone</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="email">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.directoryAngel.email">Email</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="country">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.directoryAngel.country">Country</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (angel of angels(); track trackId(angel)) {
+            <tr data-cy="entityTable">
+              <td>
+                <a [routerLink]="['/angel', angel.id, 'view']">{{ angel.id }}</a>
+              </td>
+              <td>{{ angel.name }}</td>
+              <td>{{ angel.relationship }}</td>
+              <td>{{ angel.phone }}</td>
+              <td>{{ angel.email }}</td>
+              <td>{{ angel.country }}</td>
+              <td class="text-end">
+                <div class="btn-group">
+                  <a [routerLink]="['/angel', angel.id, 'view']" class="btn btn-info btn-sm" data-cy="entityDetailsButton">
+                    <fa-icon icon="eye" />
+                    <span class="d-none d-md-inline" abfTranslate="entity.action.view">View</span>
+                  </a>
+
+                  <a [routerLink]="['/angel', angel.id, 'edit']" class="btn btn-primary btn-sm" data-cy="entityEditButton">
+                    <fa-icon icon="pencil-alt" />
+                    <span class="d-none d-md-inline" abfTranslate="entity.action.edit">Edit</span>
+                  </a>
+
+                  <button type="submit" (click)="delete(angel)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
+                    <fa-icon icon="times" />
+                    <span class="d-none d-md-inline" abfTranslate="entity.action.delete">Delete</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

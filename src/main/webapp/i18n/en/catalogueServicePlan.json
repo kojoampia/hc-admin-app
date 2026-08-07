@@ -1,0 +1,32 @@
+{
+  "hcAdminApp": {
+    "catalogueServicePlan": {
+      "home": {
+        "title": "Service Plans",
+        "refreshListLabel": "Refresh list",
+        "createLabel": "Create a new Service Plan",
+        "createOrEditLabel": "Create or edit a Service Plan",
+        "notFound": "No Service Plans found"
+      },
+      "created": "A new Service Plan is created with identifier {{ param }}",
+      "updated": "A Service Plan is updated with identifier {{ param }}",
+      "deleted": "A Service Plan is deleted with identifier {{ param }}",
+      "delete": {
+        "question": "Are you sure you want to delete Service Plan {{ id }}?"
+      },
+      "detail": {
+        "title": "Service Plan"
+      },
+      "id": "ID",
+      "name": "Name",
+      "tier": "Tier",
+      "tierLabel": "Tier Label",
+      "monthlyPrice": "Monthly Price",
+      "currency": "Currency",
+      "summary": "Summary",
+      "featured": "Featured",
+      "subscriberCount": "Subscriber Count",
+      "feature": "Feature"
+    }
+  }
+}

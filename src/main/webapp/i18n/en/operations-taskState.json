@@ -1,0 +1,10 @@
+{
+  "hcAdminApp": {
+    "TaskState": {
+      "null": "",
+      "TODO": "TODO",
+      "DOING": "DOING",
+      "DONE": "DONE"
+    }
+  }
+}

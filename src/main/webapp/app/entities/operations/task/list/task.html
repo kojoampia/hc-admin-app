@@ -1,0 +1,173 @@
+<div>
+  <h2 id="page-heading" data-cy="TaskHeading">
+    <span abfTranslate="hcAdminApp.operationsTask.home.title">Tasks</span>
+
+    <div class="d-flex justify-content-end">
+      <button class="btn btn-info me-2" (click)="load()" [disabled]="isLoading()">
+        <fa-icon icon="sync" [animation]="isLoading() ? 'spin' : undefined" />
+        <span abfTranslate="hcAdminApp.operationsTask.home.refreshListLabel">Refresh list</span>
+      </button>
+
+      <button
+        id="jh-create-entity"
+        data-cy="entityCreateButton"
+        class="btn btn-primary jh-create-entity create-task"
+        [routerLink]="['/task/new']"
+      >
+        <fa-icon icon="plus" />
+        <span abfTranslate="hcAdminApp.operationsTask.home.createLabel">Create a new Task</span>
+      </button>
+    </div>
+  </h2>
+
+  <abf-alert-error />
+
+  <abf-alert />
+
+  @if (tasks().length === 0) {
+    <div class="alert alert-warning" id="no-result">
+      <span abfTranslate="hcAdminApp.operationsTask.home.notFound">No Tasks found</span>
+    </div>
+  } @else {
+    <div class="table-responsive table-entities" id="entities">
+      <table class="table table-striped" aria-describedby="page-heading">
+        <thead>
+          <tr abfSort [(sortState)]="sortState" (sortChange)="navigateToWithComponentValues($event)">
+            <th scope="col" abfSortBy="id">
+              <div class="d-flex">
+                <span abfTranslate="global.field.id">ID</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="title">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.operationsTask.title">Title</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="state">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.operationsTask.state">State</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="priority">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.operationsTask.priority">Priority</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="dueOn">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.operationsTask.dueOn">Due On</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="tag">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.operationsTask.tag">Tag</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="createdAt">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.operationsTask.createdAt">Created At</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="owner.licenceNumber">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.operationsTask.owner">Owner</span>
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" abfSortBy="sourceMessage.subject">
+              <div class="d-flex">
+                <span abfTranslate="hcAdminApp.operationsTask.sourceMessage">Source Message</span>
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (task of tasks(); track trackId(task)) {
+            <tr data-cy="entityTable">
+              <td>
+                <a [routerLink]="['/task', task.id, 'view']">{{ task.id }}</a>
+              </td>
+              <td>{{ task.title }}</td>
+              <td [abfTranslate]="'hcAdminApp.TaskState.' + (task.state ?? 'null')">
+                {{ { null: '', TODO: 'TODO', DOING: 'DOING', DONE: 'DONE' }[task.state ?? 'null'] }}
+              </td>
+              <td [abfTranslate]="'hcAdminApp.Priority.' + (task.priority ?? 'null')">
+                {{ { null: '', HIGH: 'HIGH', NORMAL: 'NORMAL', LOW: 'LOW' }[task.priority ?? 'null'] }}
+              </td>
+              <td>{{ task.dueOn | formatMediumDate }}</td>
+              <td>{{ task.tag }}</td>
+              <td>{{ task.createdAt | formatMediumDatetime }}</td>
+              <td>
+                @if (task.owner) {
+                  <div>
+                    <a [routerLink]="['/professional', task.owner.id, 'view']">{{ task.owner.licenceNumber }}</a>
+                  </div>
+                }
+              </td>
+              <td>
+                @if (task.sourceMessage) {
+                  <div>
+                    <a [routerLink]="['/message', task.sourceMessage.id, 'view']">{{ task.sourceMessage.subject }}</a>
+                  </div>
+                }
+              </td>
+              <td class="text-end">
+                <div class="btn-group">
+                  <a [routerLink]="['/task', task.id, 'view']" class="btn btn-info btn-sm" data-cy="entityDetailsButton">
+                    <fa-icon icon="eye" />
+                    <span class="d-none d-md-inline" abfTranslate="entity.action.view">View</span>
+                  </a>
+
+                  <a [routerLink]="['/task', task.id, 'edit']" class="btn btn-primary btn-sm" data-cy="entityEditButton">
+                    <fa-icon icon="pencil-alt" />
+                    <span class="d-none d-md-inline" abfTranslate="entity.action.edit">Edit</span>
+                  </a>
+
+                  <button type="submit" (click)="delete(task)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
+                    <fa-icon icon="times" />
+                    <span class="d-none d-md-inline" abfTranslate="entity.action.delete">Delete</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+  @if (tasks().length > 0) {
+    <div>
+      <div class="d-flex justify-content-center">
+        <abf-item-count [params]="{ page: page(), totalItems: totalItems(), itemsPerPage: itemsPerPage() }" />
+      </div>
+
+      <div class="d-flex justify-content-center">
+        <ngb-pagination
+          [collectionSize]="totalItems()"
+          [page]="page()"
+          [pageSize]="itemsPerPage()"
+          [maxSize]="5"
+          [rotate]="true"
+          [boundaryLinks]="true"
+          (pageChange)="navigateToPage($event)"
+        />
+      </div>
+    </div>
+  }
+</div>

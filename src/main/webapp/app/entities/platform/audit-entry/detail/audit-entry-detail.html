@@ -1,0 +1,48 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    @if (auditEntry(); as auditEntryRef) {
+      <div>
+        <h2 data-cy="auditEntryDetailsHeading"><span abfTranslate="hcAdminApp.platformAuditEntry.detail.title">Audit Entry</span></h2>
+
+        <hr />
+
+        <abf-alert-error />
+
+        <abf-alert />
+
+        <dl class="row-md jh-entity-details">
+          <dt><span abfTranslate="global.field.id">ID</span></dt>
+          <dd>
+            <span>{{ auditEntryRef.id }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.platformAuditEntry.occurredAt">Occurred At</span></dt>
+          <dd>
+            <span>{{ auditEntryRef.occurredAt | formatMediumDatetime }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.platformAuditEntry.actor">Actor</span></dt>
+          <dd>
+            <span>{{ auditEntryRef.actor }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.platformAuditEntry.action">Action</span></dt>
+          <dd>
+            <span>{{ auditEntryRef.action }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.platformAuditEntry.target">Target</span></dt>
+          <dd>
+            <span>{{ auditEntryRef.target }}</span>
+          </dd>
+          <dt><span abfTranslate="hcAdminApp.platformAuditEntry.level">Level</span></dt>
+          <dd>
+            <span [abfTranslate]="'hcAdminApp.AuditLevel.' + (auditEntryRef.level ?? 'null')">{{
+              { null: '', INFO: 'INFO', WARN: 'WARN' }[auditEntryRef.level ?? 'null']
+            }}</span>
+          </dd>
+        </dl>
+
+        <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+          <fa-icon icon="arrow-left" />&nbsp;<span abfTranslate="entity.action.back">Back</span>
+        </button>
+      </div>
+    }
+  </div>
+</div>
