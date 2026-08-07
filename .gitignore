@@ -158,3 +158,13 @@ coverage/
 ######################
 /src/main/webapp/swagger-ui/*
 !/src/main/webapp/swagger-ui/index.html
+
+######################
+# Source briefs — kept locally, deliberately untracked
+######################
+# The systems specification and the build brief the console was generated
+# from. They are planning material, not code, and belong with the private
+# hc-admin-doc repo rather than in a public one. Stripped from history on
+# 2026-08-07; re-adding them would republish what that removed.
+/Abofonsa-Admin-JHipster-Prompt.md
+/admin-systems.pdf
