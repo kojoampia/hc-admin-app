@@ -7,6 +7,7 @@ import type { DashboardMetrics } from 'app/console/shared/console-metrics.servic
 
 import { accountFor, decodeToken, issueToken, resolveRole } from './mock-auth';
 import { DEMO_CAPS, DEMO_MESSAGE_VOLUME, DEMO_NET, DEMO_SPARKLINES, db, nextId, resetDatabase } from './mock-db';
+import { handleManagement } from './mock-management';
 import { buildLinkHeader, queryCollection } from './mock-query';
 
 /**
@@ -23,6 +24,12 @@ const PARAMS_HEADER = 'x-hcadminapp-params';
 
 export interface MockRequest {
   readonly method: string;
+  /**
+   * Which surface the request is on: the entity API or the actuator endpoints
+   * the generated admin screens read. They share nothing but a host, so they
+   * are dispatched separately rather than by guessing from the path.
+   */
+  readonly surface: 'api' | 'management';
   /** Path with the /api prefix already stripped, e.g. 'patients/3'. */
   readonly path: string;
   readonly params: HttpParams;
@@ -143,6 +150,16 @@ const dashboardMetrics = (): DashboardMetrics => {
 
 export const handleRequest = (request: MockRequest): HttpResponse<any> => {
   const { method, path, params, url, body } = request;
+
+  // ---- actuator ---------------------------------------------------------
+  if (request.surface === 'management') {
+    const answered = handleManagement(method, path, body);
+    if (!answered) {
+      throw new MockNotFoundError(`${method} management/${path}`);
+    }
+    return answered.status === 204 ? new HttpResponse<null>({ status: 204, body: null }) : json(answered.status, answered.body);
+  }
+
   const segments = path.split('/').filter(Boolean);
 
   // ---- auth -------------------------------------------------------------

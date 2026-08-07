@@ -62,7 +62,8 @@
         "directory": "Directory",
         "catalogue": "Catalogue",
         "account": "Account",
-        "session": "Session"
+        "session": "Session",
+        "administration": "Administration"
       },
       "console": {
         "dashboard": "Dashboard",

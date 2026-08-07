@@ -67,8 +67,24 @@ describe('Navbar Component', () => {
       'global.menu.group.directory',
       'global.menu.group.catalogue',
       'global.menu.group.account',
+      'global.menu.group.administration',
     ]);
     expect(groups.flatMap(group => group.items)).toEqual([...SHELL_NAVIGATION]);
+  });
+
+  it('should hide the Administration group from anyone without ROLE_ADMIN', () => {
+    accountService.authenticate(accountWith([ConsoleAuthority.SUPERVISOR, ConsoleAuthority.USER]));
+
+    const labels = comp.groups().map(group => group.label);
+    expect(labels).not.toContain('global.menu.group.administration');
+    // The rest of the console stays reachable — read-only, not truncated.
+    expect(labels).toContain('global.menu.group.operations');
+    expect(
+      comp
+        .groups()
+        .flatMap(group => group.items)
+        .some(item => item.route.startsWith('admin/')),
+    ).toBe(false);
   });
 
   it('should resolve the role chip from the authorities the token actually carries', () => {

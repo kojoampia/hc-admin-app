@@ -46,7 +46,12 @@ const latencyFor = (params: HttpParams, configured: number): number => {
   return Number.isFinite(parsed) && parsed >= 0 ? parsed : base;
 };
 
-const API_PREFIX = /^(?:.*\/)?api\//;
+/**
+ * Both surfaces the app talks to. `/api/**` is the entity contract; the
+ * generated admin screens read `/management/**` instead, and leaving that one
+ * out left four stock screens rendering an error where a table should be.
+ */
+const API_PREFIX = /^(?:.*\/)?(api|management)\//;
 
 export const mockApiInterceptor = (request: HttpRequest<unknown>, next: HttpHandlerFn): Observable<HttpEvent<unknown>> => {
   // Read from DI first: inject() is only valid during this function's
@@ -67,6 +72,8 @@ export const mockApiInterceptor = (request: HttpRequest<unknown>, next: HttpHand
   // hand-written `/api/patients?page=1` is not silently served page 0.
   const params = new HttpParams({ fromString: queryPart });
 
+  // The regex only ever captures one of these two alternatives.
+  const surface = match[1] as 'api' | 'management';
   const path = pathPart.slice(match.index + match[0].length);
   const url = pathPart;
   const wait = latencyFor(params, configuredLatency);
@@ -75,6 +82,7 @@ export const mockApiInterceptor = (request: HttpRequest<unknown>, next: HttpHand
   try {
     response = handleRequest({
       method: request.method.toUpperCase(),
+      surface,
       path,
       params,
       url,

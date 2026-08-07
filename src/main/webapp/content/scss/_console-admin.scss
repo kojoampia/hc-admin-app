@@ -1,0 +1,211 @@
+// ============================================================
+// BridgeCare treatment for JHipster's stock admin screens.
+//
+// WHY THIS ONE LIVES IN global.scss AND THE CONSOLE'S DOES NOT.
+// `abf-health`, `abf-metrics`, `abf-configuration` and `abf-logs` are
+// untouched generator output: they declare no `styleUrl`, so there is no
+// component scope to write into, and Angular's view encapsulation puts them
+// out of reach of every other component's stylesheet. Editing the generated
+// components to add one would be the alternative — this is the smaller
+// change, and it keeps `git diff` against pristine JHipster readable.
+//
+// Scoping is by host selector, so nothing here can leak onto a console
+// screen. The rules only restate the console's own furniture — heading,
+// card, table, pill — on markup that already uses Bootstrap classes and
+// therefore already has the palette via _bootstrap-variables.scss.
+// ============================================================
+
+$abf-admin-hosts: 'abf-health, abf-metrics, abf-configuration, abf-logs, abf-docs';
+
+#{$abf-admin-hosts} {
+  display: block;
+
+  /* The generated screens lead with an <h2> carrying a right-floated action.
+     The console leads with .sec-head; this gives the h2 the same weight and
+     rhythm without restructuring anyone's template. */
+  h2 {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin: 0 0 16px;
+    font-size: 16.5px;
+    font-weight: 800;
+    letter-spacing: -0.017em;
+    color: var(--abf-ink);
+
+    /* The templates position their buttons with .float-end, which does not
+       survive a flex parent. Neutralise it and let flex do the work. */
+    .float-end {
+      float: none !important;
+    }
+  }
+
+  h3,
+  h4 {
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    margin: 22px 0 10px;
+  }
+
+  /* ---- tables ---------------------------------------------------------- */
+  .table {
+    --bs-table-bg: transparent;
+    background: var(--abf-card);
+    border: 1px solid var(--abf-line);
+    border-radius: var(--abf-r);
+    border-collapse: separate;
+    border-spacing: 0;
+    overflow: hidden;
+    font-size: 13.5px;
+    margin-bottom: 18px;
+
+    > :not(caption) > * > * {
+      padding: 11px 14px;
+      border-bottom-color: var(--abf-line);
+    }
+
+    thead th {
+      background: var(--abf-cream);
+      font-size: 11px;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: var(--abf-grey);
+      font-weight: 700;
+      white-space: nowrap;
+      border-bottom: 1px solid var(--abf-line);
+    }
+
+    tbody tr:last-child > * {
+      border-bottom: none;
+    }
+  }
+
+  /* .table-striped's default zebra is a grey wash that fights the cream
+     chrome; a lighter tint of the page colour reads as the same family. */
+  .table-striped > tbody > tr:nth-of-type(odd) > * {
+    --bs-table-accent-bg: transparent;
+    background-color: #fcfbf8;
+  }
+
+  .table-responsive {
+    border-radius: var(--abf-r);
+  }
+
+  /* ---- status badges --------------------------------------------------- */
+  /* Health and Logs render Bootstrap badges for status and level. Give them
+     the console's pill shape and tint so a healthy service looks the same
+     here as it does on the Platform health screen. */
+  .badge {
+    border-radius: 999px;
+    padding: 3.5px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.015em;
+    /* A hairline in the pill's own colour. The tints are light by design, and
+       against the striped rows they otherwise disappear on every other line —
+       the pill looked like plain coloured text half the time. */
+    border: 1px solid currentColor;
+  }
+
+  /* Scoped to .badge deliberately. The same .bg-* utilities also colour the
+     metrics progress bars, where a pale tint would erase the bar entirely —
+     a fill is supposed to be solid. */
+  .badge {
+    &.bg-success {
+      background: var(--abf-ok-bg) !important;
+      color: var(--abf-ok) !important;
+    }
+
+    &.bg-danger {
+      background: var(--abf-danger-bg) !important;
+      color: var(--abf-danger) !important;
+    }
+
+    &.bg-warning {
+      background: var(--abf-warn-bg) !important;
+      color: var(--abf-warn) !important;
+    }
+
+    &.bg-info,
+    &.bg-primary {
+      background: #e8edf4 !important;
+      color: var(--abf-navy) !important;
+    }
+
+    &.bg-secondary {
+      background: #edebe5 !important;
+      color: var(--abf-grey) !important;
+    }
+  }
+
+  /* ---- cards, panels and progress -------------------------------------- */
+  .card {
+    background: var(--abf-card);
+    border: 1px solid var(--abf-line);
+    border-radius: var(--abf-r);
+    box-shadow: var(--abf-sh-sm);
+    margin-bottom: 16px;
+  }
+
+  .card-header {
+    background: var(--abf-cream);
+    border-bottom: 1px solid var(--abf-line);
+    font-weight: 700;
+    font-size: 13.5px;
+  }
+
+  /* Height is left to Bootstrap: the generated metrics bars print their
+     percentage INSIDE the bar, and squashing the track to a hairline pushed
+     that label out over the labels above it. */
+  .progress {
+    border-radius: 999px;
+    background: #ece9e1;
+  }
+
+  /* ---- forms ----------------------------------------------------------- */
+  /* The Logs screen filters with an input and sets levels with selects. */
+  .form-control,
+  .form-select {
+    border: 1.5px solid var(--abf-line);
+    border-radius: var(--abf-r-sm);
+    font-size: 14px;
+
+    &:focus {
+      border-color: var(--abf-navy);
+      box-shadow: 0 0 0 3.5px rgba(13, 48, 88, 0.1);
+    }
+  }
+
+  /* The Configuration screen highlights every value with <mark>. Bootstrap's
+     default highlight derives from the theme, and against a gold secondary it
+     came out loud enough to read as a warning. The soft gold tint is the
+     console's own "noteworthy, not urgent". */
+  mark {
+    background: var(--abf-gold-050);
+    color: #7a5c1c;
+    padding: 1px 5px;
+    border-radius: 4px;
+  }
+
+  /* Numbers line up when they are tabular; metrics tables are mostly numbers. */
+  td,
+  .text-end {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* The API docs screen embeds a full-width Swagger frame and should not be
+   boxed by the console's content padding. */
+abf-docs {
+  .swagger-frame,
+  iframe {
+    width: 100%;
+    min-height: 70vh;
+    border: 1px solid var(--abf-line);
+    border-radius: var(--abf-r);
+    background: var(--abf-card);
+  }
+}

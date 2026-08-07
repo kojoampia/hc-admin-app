@@ -59,6 +59,39 @@ export const SHELL_NAVIGATION: readonly ShellNavItem[] = [
   { route: 'platform-health', label: 'global.menu.console.platformHealth', icon: 'gauge-high', group: 'global.menu.group.catalogue' },
 
   { route: 'organisation-profile', label: 'global.menu.console.organisation', icon: 'building', group: 'global.menu.group.account' },
+
+  // JHipster's stock admin screens, adopted into the console rather than left
+  // unreachable. They are the only entries that name an authority: the routes
+  // themselves are already guarded by `data.authorities` in admin.routes.ts,
+  // and a link that always 403s is worse than no link.
+  {
+    route: 'admin/health',
+    label: 'global.menu.admin.health',
+    icon: 'heart',
+    group: 'global.menu.group.administration',
+    authorities: [Authority.ADMIN],
+  },
+  {
+    route: 'admin/metrics',
+    label: 'global.menu.admin.metrics',
+    icon: 'chart-line',
+    group: 'global.menu.group.administration',
+    authorities: [Authority.ADMIN],
+  },
+  {
+    route: 'admin/configuration',
+    label: 'global.menu.admin.configuration',
+    icon: 'cogs',
+    group: 'global.menu.group.administration',
+    authorities: [Authority.ADMIN],
+  },
+  {
+    route: 'admin/logs',
+    label: 'global.menu.admin.logs',
+    icon: 'file-lines',
+    group: 'global.menu.group.administration',
+    authorities: [Authority.ADMIN],
+  },
 ];
 
 /**

@@ -320,4 +320,12 @@ a clean document: chrome off, cards flattened, backgrounds forced through.
     content: '';
   }
 }
+/* ==========================================================================
+JHipster's stock admin screens
+
+Scoped entirely to their host selectors. See the file header for why this one
+partial is global while the console's own component styles are not.
+========================================================================== */
+@import 'console-admin';
+
 /* jhipster-needle-scss-add-main JHipster will add new css style */

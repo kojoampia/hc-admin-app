@@ -13,6 +13,11 @@ const ROUTES: { route: string; title: string; breadcrumb: string }[] = [
   { route: 'category', title: 'Categories', breadcrumb: 'Catalogue' },
   { route: 'platform-health', title: 'Platform health', breadcrumb: 'Catalogue' },
   { route: 'organisation-profile', title: 'Organisation profile', breadcrumb: 'Account' },
+  // JHipster's stock admin screens, adopted into the console.
+  { route: 'admin/health', title: 'Health Checks', breadcrumb: 'Administration' },
+  { route: 'admin/metrics', title: 'Application Metrics', breadcrumb: 'Administration' },
+  { route: 'admin/configuration', title: 'Configuration', breadcrumb: 'Administration' },
+  { route: 'admin/logs', title: 'Logs', breadcrumb: 'Administration' },
 ];
 
 describe('navigation', () => {
@@ -35,7 +40,7 @@ describe('navigation', () => {
     cy.signInAs('ops');
   });
 
-  it('should offer every one of the eleven destinations in the sidebar', () => {
+  it('should offer every one of the fifteen destinations in the sidebar', () => {
     cy.get(sidebarNavSelector)
       .find('a[href^="/"]')
       .then($links => {

@@ -34,6 +34,26 @@ role off the `Authorization` header exactly as a resource server would.
 router emits on create, update and delete. The mock simply never lets the
 request reach the network.
 
+## Two surfaces, not one
+
+The interceptor matches `^(api|management)/`. `/api/**` is the entity
+contract; `/management/**` is what JHipster's four generated admin screens
+(Health, Metrics, Configuration, Logs) call, plus the profile `info` request
+the shell makes on boot. Leaving that second surface out left four untouched
+generated screens rendering an error where a table should be.
+
+Where the console already knows something, the actuator reports _that_:
+`/management/health` derives its components and its aggregate status from the
+`platform-services` collection, so the admin Health screen and the console's
+own Platform health screen cannot disagree about which service is down — a
+spec asserts exactly that. The genuinely invented part is what an actuator
+measures about a JVM that is not running (heap, GC pauses, thread dumps), and
+`mock-management.ts` says so in its header rather than dressing it up.
+
+Logger levels are the one writable thing on that surface, so they are held in
+module state — otherwise the Logs screen would appear to accept a change and
+discard it on the next read.
+
 It speaks HTTP properly: real `HttpResponse` objects, real headers,
 `X-Total-Count` and RFC 5988 `Link` on every list, `201` + `Location` on
 create, `404` on a missing id, `204` on delete, `405` on a write to a

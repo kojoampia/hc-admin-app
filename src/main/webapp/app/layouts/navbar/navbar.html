@@ -27,10 +27,6 @@
     }
 
     <div class="abf-nav-lbl" abfTranslate="global.menu.group.session">Session</div>
-    <a routerLink="/admin/user-management" routerLinkActive="active" *abfHasAnyAuthority="'ROLE_ADMIN'" (click)="close()">
-      <fa-icon icon="users-cog" />
-      <span abfTranslate="global.menu.admin.userManagement">User management</span>
-    </a>
     <a href="javascript:void(0)" (click)="logout()">
       <fa-icon icon="sign-out-alt" />
       <span abfTranslate="global.menu.account.logout">Sign out</span>
