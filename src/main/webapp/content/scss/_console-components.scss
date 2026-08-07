@@ -15,6 +15,17 @@
 // Every brand colour reaches this file as a var(--abf-*) custom property
 // published by global.scss from _hc-tokens.scss. Raw values that remain are
 // neutrals and alpha washes with no token of their own.
+//
+// COST, AND WHY IT IS ACCEPTED. Component styles are scoped, so importing
+// this whole partial compiles ~25 kB into each of the seven console
+// components — which is why angular.json raises `anyComponentStyle` to a
+// 28 kB warning / 32 kB error. That is deliberate rather than overlooked:
+// every console screen is lazy-loaded, so its stylesheet ships in that
+// route's chunk and nobody downloads all seven. The thresholds sit just
+// above current usage, so a screen that grows another 5 kB still trips the
+// warning. If the duplication ever needs to go, split this file per screen
+// (roster / kanban / platform / catalogue) rather than moving it into
+// global.scss — the prototype's component classes are not app-wide.
 // ============================================================
 @import 'hc-tokens';
 

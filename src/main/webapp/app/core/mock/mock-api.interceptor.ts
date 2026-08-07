@@ -1,4 +1,5 @@
 import { HttpErrorResponse, HttpEvent, HttpHandlerFn, HttpParams, HttpRequest, HttpResponse } from '@angular/common/http';
+import { InjectionToken, inject } from '@angular/core';
 import { Observable, delay, of, throwError } from 'rxjs';
 
 import { MockNotFoundError, MockStatusError, handleRequest } from './mock-router';
@@ -14,27 +15,45 @@ import { MockNotFoundError, MockStatusError, handleRequest } from './mock-router
  */
 
 /** Default latency, so skeletons and spinners are genuinely exercised. */
-export const MOCK_LATENCY_MS = 120;
+export const DEFAULT_MOCK_LATENCY_MS = 120;
 
 /**
- * Cypress and unit tests pass `?abfLatency=0` to remove the wait. It is read
- * per request rather than from a global so a single slow-path test can ask
- * for latency while the rest of the suite runs without it.
+ * The applied latency, overridable through DI.
+ *
+ * Component specs drive real components against this interceptor, and they
+ * cannot append `?abfLatency=0` to requests the component itself builds.
+ * Providing `{ provide: MOCK_LATENCY, useValue: 0 }` makes those suites
+ * deterministic instead of racing a timeout.
  */
-const latencyFor = (params: HttpParams): number => {
+export const MOCK_LATENCY = new InjectionToken<number>('abf.mock.latencyMs', {
+  providedIn: 'root',
+  factory: () => DEFAULT_MOCK_LATENCY_MS,
+});
+
+/**
+ * Cypress passes `?abfLatency=0` to remove the wait for a single request. It
+ * is read per request rather than from a global so a slow-path test can ask
+ * for latency while the rest of a run goes without it.
+ */
+const latencyFor = (params: HttpParams, configured: number): number => {
+  // A non-finite delay never fires, so every response would hang silently.
+  const base = Number.isFinite(configured) && configured >= 0 ? configured : DEFAULT_MOCK_LATENCY_MS;
   const override = params.get('abfLatency');
   if (override === null) {
-    return MOCK_LATENCY_MS;
+    return base;
   }
   const parsed = Number(override);
-  return Number.isFinite(parsed) && parsed >= 0 ? parsed : MOCK_LATENCY_MS;
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : base;
 };
 
 const API_PREFIX = /^(?:.*\/)?api\//;
 
 export const mockApiInterceptor = (request: HttpRequest<unknown>, next: HttpHandlerFn): Observable<HttpEvent<unknown>> => {
-  // Split the query off; Angular has already parsed it into request.params.
-  const [pathPart] = request.urlWithParams.split('?');
+  // Read from DI first: inject() is only valid during this function's
+  // synchronous run, and the early return below would otherwise skip it.
+  const configuredLatency = inject(MOCK_LATENCY);
+
+  const [pathPart, queryPart] = request.urlWithParams.split('?');
   const match = API_PREFIX.exec(pathPart);
 
   if (!match) {
@@ -42,16 +61,22 @@ export const mockApiInterceptor = (request: HttpRequest<unknown>, next: HttpHand
     return next(request);
   }
 
+  // `urlWithParams` merges HttpParams into the URL, but a caller may also have
+  // written the query into the URL string directly, in which case
+  // `request.params` is empty. Re-parsing the merged query covers both, so a
+  // hand-written `/api/patients?page=1` is not silently served page 0.
+  const params = new HttpParams({ fromString: queryPart });
+
   const path = pathPart.slice(match.index + match[0].length);
   const url = pathPart;
-  const wait = latencyFor(request.params);
+  const wait = latencyFor(params, configuredLatency);
 
   let response: HttpResponse<unknown>;
   try {
     response = handleRequest({
       method: request.method.toUpperCase(),
       path,
-      params: request.params,
+      params,
       url,
       body: request.body,
       authorization: request.headers.get('Authorization'),
@@ -90,5 +115,8 @@ export const mockApiInterceptor = (request: HttpRequest<unknown>, next: HttpHand
     throw error;
   }
 
-  return of(response).pipe(delay(wait));
+  // A zero wait emits synchronously rather than scheduling a timer: there is
+  // nothing to wait for, and a scheduled tick is one more thing that can be
+  // starved by whatever else owns the event loop.
+  return wait > 0 ? of(response).pipe(delay(wait)) : of(response);
 };

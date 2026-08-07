@@ -1,6 +1,6 @@
 @let user = account();
 
-<aside class="abf-sidebar" [class.abf-sidebar--open]="isOpen()" id="abf-sidebar">
+<aside data-cy="sidebar" class="abf-sidebar" [class.abf-sidebar--open]="isOpen()" id="abf-sidebar">
   <div class="side-brand">
     <img src="content/images/hc-logo.png" alt="" />
     <div>
@@ -12,7 +12,7 @@
     </div>
   </div>
 
-  <nav class="abf-nav" [attr.aria-label]="'global.menu.primary' | translate">
+  <nav data-cy="sidebarNav" class="abf-nav" [attr.aria-label]="'global.menu.primary' | translate">
     @for (group of groups(); track group.label) {
       <div class="abf-nav-lbl">{{ group.label | translate }}</div>
       @for (item of group.items; track item.route) {

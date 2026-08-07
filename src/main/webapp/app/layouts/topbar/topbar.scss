@@ -1,5 +1,15 @@
 @import 'hc-tokens';
 
+/* The host must not box the header in.
+   `position: sticky` is constrained by its PARENT's box, and the parent here
+   is <abf-topbar>, which is exactly as tall as the header itself — so it
+   sticks for zero pixels and scrolls away like static content. `display:
+   contents` lifts the header up to be a direct child of .abf-main, whose box
+   spans the whole scroll range. */
+:host {
+  display: contents;
+}
+
 .abf-topbar {
   position: sticky;
   top: 0;
@@ -30,11 +40,6 @@
   &__heading {
     flex: 1;
     min-width: 0;
-  }
-
-  /* The drawer toggle only exists once the sidebar is a drawer. */
-  &__menu {
-    display: none;
   }
 
   &__actions {
@@ -104,8 +109,17 @@
   }
 }
 
+/* The drawer toggle only exists once the sidebar is a drawer.
+   These two rules sit AFTER .icon-btn and carry an extra class on purpose:
+   the toggle is `class="icon-btn abf-topbar__menu"`, and .icon-btn's
+   `display: grid` has the same specificity, so on source order alone it wins
+   and the hamburger shows on desktop. */
+.abf-topbar .abf-topbar__menu {
+  display: none;
+}
+
 @media (max-width: $abf-shell-bp) {
-  .abf-topbar__menu {
+  .abf-topbar .abf-topbar__menu {
     display: grid;
   }
 }

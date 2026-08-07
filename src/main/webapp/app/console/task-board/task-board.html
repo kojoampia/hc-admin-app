@@ -24,7 +24,7 @@
 
 <div class="kan">
   @for (column of board(); track column.state) {
-    <section class="kcol">
+    <section data-cy="taskColumn" class="kcol">
       <h4>
         {{ 'console.taskState.' + column.state | translate }}
         <span class="n">{{ column.items.length }}</span>

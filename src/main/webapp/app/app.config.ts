@@ -9,6 +9,7 @@ import {
   provideRouter,
   withComponentInputBinding,
   withDebugTracing,
+  withInMemoryScrolling,
   withNavigationErrorHandler,
 } from '@angular/router';
 import { provideServiceWorker } from '@angular/service-worker';
@@ -31,6 +32,10 @@ import { NgbDateDayjsAdapter } from './config/datepicker-adapter';
 
 const routerFeatures: RouterFeatures[] = [
   withComponentInputBinding(),
+  // Angular defaults to leaving the scroll position where it was, so
+  // arriving at a screen part-way down is the default rather than the
+  // exception. Restore on back/forward, top on a fresh navigation.
+  withInMemoryScrolling({ scrollPositionRestoration: 'enabled', anchorScrolling: 'enabled' }),
   withNavigationErrorHandler((e: NavigationError) => {
     const router = inject(Router);
     if (e.error.status === 403) {

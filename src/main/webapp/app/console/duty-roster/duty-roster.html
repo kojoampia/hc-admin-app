@@ -4,15 +4,15 @@
     <p abfTranslate="dutyRoster.subtitle">Click any cell to cycle the shift: unassigned → day → evening → night → off</p>
   </div>
   <div class="head-tools no-print" *abfHasAnyAuthority="adminOnly">
-    <button type="button" class="btn btn-ghost btn-sm" [disabled]="isSaving()" (click)="autoFill()">
+    <button type="button" class="btn btn-ghost btn-sm" [disabled]="isSaving() || !week()" (click)="autoFill()">
       <fa-icon icon="wrench" />
       <span abfTranslate="dutyRoster.autoFill">Auto-fill gaps</span>
     </button>
-    <button type="button" class="btn btn-ghost btn-sm" [disabled]="isSaving()" (click)="resetWeek()">
+    <button type="button" class="btn btn-ghost btn-sm" [disabled]="isSaving() || rows().length === 0" (click)="resetWeek()">
       <fa-icon icon="sync" />
       <span abfTranslate="dutyRoster.resetWeek">Reset week</span>
     </button>
-    <button type="button" class="btn btn-primary btn-sm" [disabled]="isSaving() || week()?.published" (click)="publish()">
+    <button type="button" class="btn btn-primary btn-sm" [disabled]="isSaving() || !week() || week()!.published" (click)="publish()">
       <fa-icon icon="save" />
       <span abfTranslate="dutyRoster.publish">Publish</span>
     </button>
@@ -48,7 +48,7 @@
 
 <div class="card roster-card">
   <div class="tbl-wrap">
-    <table class="roster">
+    <table data-cy="rosterGrid" class="roster">
       <caption class="visually-hidden">
         {{
           'dutyRoster.tableCaption' | translate

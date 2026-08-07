@@ -159,7 +159,7 @@
       <div><h3 abfTranslate="dashboard.approvals.title">Needs your approval</h3></div>
       <a class="btn-quiet sm" routerLink="/task-board" abfTranslate="dashboard.approvals.allTasks">All tasks</a>
     </div>
-    <div class="card">
+    <div class="card" data-cy="approvals">
       @for (row of approvals(); track row.kind + row.id) {
         <a class="lrow" [routerLink]="row.route">
           <span class="mono-av">{{ initials(row.name) }}</span>
@@ -184,7 +184,7 @@
       <div><h3 abfTranslate="dashboard.desk.title">Latest at the desk</h3></div>
       <a class="btn-quiet sm" routerLink="/message-desk" abfTranslate="dashboard.desk.allMessages">All messages</a>
     </div>
-    <div class="card">
+    <div class="card" data-cy="latestMessages">
       @for (message of latestMessages(); track message.id) {
         <a class="lrow" [routerLink]="['/message-desk', message.id]">
           <span class="mono-av">{{ initials(message.senderName ?? '') }}</span>

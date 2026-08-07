@@ -142,7 +142,23 @@ export const applySort = <T>(rows: readonly T[], terms: readonly SortTerm[]): T[
   }
   return [...rows].sort((a, b) => {
     for (const term of terms) {
-      const result = compare(valueAt(a, term.field), valueAt(b, term.field));
+      const left = valueAt(a, term.field);
+      const right = valueAt(b, term.field);
+
+      // Nulls sort last in BOTH directions, so this is decided before the
+      // descending flip. Letting `compare`'s null result be negated would put
+      // every empty cell at the top of a descending column — the one place
+      // they are most conspicuous and least useful.
+      const leftIsNull = left == null;
+      const rightIsNull = right == null;
+      if (leftIsNull !== rightIsNull) {
+        return leftIsNull ? 1 : -1;
+      }
+      if (leftIsNull) {
+        continue;
+      }
+
+      const result = compare(left, right);
       if (result !== 0) {
         return term.descending ? -result : result;
       }

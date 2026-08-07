@@ -86,29 +86,22 @@ Cypress.Commands.add('authenticatedRequest', data => {
   return cy.request(data);
 });
 
+/**
+ * Sign in through the form.
+ *
+ * The generated version obtained a token with `cy.request`, which issues HTTP
+ * from the Cypress process rather than the browser and therefore never
+ * reaches `mockApiInterceptor` — against this build it gets HTML back. The
+ * API lives inside the page, so the only way in is through the page.
+ */
 Cypress.Commands.add('login', (username: string, password: string) => {
-  cy.session(
-    [username, password],
-    () => {
-      cy.request({
-        method: 'GET',
-        url: '/api/account',
-        failOnStatusCode: false,
-      });
-      cy.authenticatedRequest({
-        method: 'POST',
-        body: { username, password },
-        url: Cypress.expose('authenticationUrl'),
-      }).then(({ body: { id_token } }) => {
-        sessionStorage.setItem(Cypress.expose('jwtStorageName'), JSON.stringify(id_token));
-      });
-    },
-    {
-      validate() {
-        cy.authenticatedRequest({ url: '/api/account' }).its('status').should('eq', 200);
-      },
-    },
-  );
+  cy.visit('/login');
+  cy.get('[data-cy="username"]').clear();
+  cy.get('[data-cy="username"]').type(username);
+  cy.get('[data-cy="password"]').clear();
+  cy.get('[data-cy="password"]').type(password, { log: false });
+  cy.get('[data-cy="submit"]').click();
+  return cy.location('pathname', { timeout: 20000 }).should('not.eq', '/login');
 });
 
 export interface Credentials {

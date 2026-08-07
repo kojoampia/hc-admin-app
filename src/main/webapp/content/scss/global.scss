@@ -50,9 +50,14 @@ properties: a component writes var(--abf-navy), never #0d3058.
 /* ==========================================================================
 Base
 ========================================================================== */
+/* Deliberately NOT `height: 100%`. The prototype sets it because its #app
+   wrapper needs a percentage basis; here `.abf-shell` already carries
+   `min-height: 100vh`, and capping the html box to the viewport height leaves
+   the overflow outside the scrollport — which quietly breaks the sticky
+   topbar and makes programmatic scrolling a no-op. */
 html,
 body {
-  height: 100%;
+  min-height: 100%;
 }
 
 body {

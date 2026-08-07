@@ -1,6 +1,7 @@
-<header class="abf-topbar">
+<header data-cy="topbar" class="abf-topbar">
   <button
     type="button"
+    data-cy="menuToggle"
     class="icon-btn abf-topbar__menu"
     (click)="toggleSidebar()"
     [attr.aria-label]="'global.menu.toggle' | translate"
@@ -11,8 +12,8 @@
   </button>
 
   <div class="abf-topbar__heading">
-    <div class="crumb">{{ breadcrumb() | translate }}</div>
-    <h2>{{ pageTitle() | translate }}</h2>
+    <div data-cy="breadcrumb" class="crumb">{{ breadcrumb() | translate }}</div>
+    <h2 data-cy="pageTitle">{{ pageTitle() | translate }}</h2>
   </div>
 
   <div class="abf-topbar__actions no-print">

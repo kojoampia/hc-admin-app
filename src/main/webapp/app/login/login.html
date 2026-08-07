@@ -48,6 +48,7 @@
         <label for="username" abfTranslate="login.form.workEmail">Work email</label>
         <input
           id="username"
+          data-cy="username"
           #username
           type="email"
           formControlName="username"
@@ -60,6 +61,7 @@
         <label for="password" abfTranslate="login.form.password">Password</label>
         <input
           id="password"
+          data-cy="password"
           type="password"
           formControlName="password"
           autocomplete="current-password"
@@ -69,7 +71,7 @@
 
       <div class="field">
         <label for="roleKey" abfTranslate="login.form.signInAs">Sign in as</label>
-        <select id="roleKey" formControlName="roleKey" (change)="onRoleChange($any($event.target).value)">
+        <select id="roleKey" data-cy="roleKey" formControlName="roleKey" (change)="onRoleChange($any($event.target).value)">
           @for (role of roles; track role.key) {
             <option [value]="role.key">{{ role.label | translate }}</option>
           }
@@ -83,7 +85,13 @@
         </label>
       </div>
 
-      <button type="submit" class="btn btn-primary btn-block" [disabled]="loginForm.invalid" abfTranslate="login.form.button">
+      <button
+        type="submit"
+        data-cy="submit"
+        class="btn btn-primary btn-block"
+        [disabled]="loginForm.invalid"
+        abfTranslate="login.form.button"
+      >
         Sign in
       </button>
 
