@@ -1,5 +1,5 @@
 /*
- * Reveals the "failed to load" message in index.html if the app has not booted within 4 seconds.
+ * Reveals the "failed to load" message in index.html if the app has not booted within 4 seconds after the page load event.
  *
  * This lived as an inline <script> in index.html until the production CSP blocked it. The header
  * set by hc-admin-ci's prod-server/hc-admin.conf is `script-src 'self'` with no 'unsafe-inline'
