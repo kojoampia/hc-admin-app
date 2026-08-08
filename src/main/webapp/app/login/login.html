@@ -69,15 +69,6 @@
         />
       </div>
 
-      <div class="field">
-        <label for="roleKey" abfTranslate="login.form.signInAs">Sign in as</label>
-        <select id="roleKey" data-cy="roleKey" formControlName="roleKey" (change)="onRoleChange($any($event.target).value)">
-          @for (role of roles; track role.key) {
-            <option [value]="role.key">{{ role.label | translate }}</option>
-          }
-        </select>
-      </div>
-
       <div class="field checkbox">
         <label for="rememberMe">
           <input id="rememberMe" type="checkbox" formControlName="rememberMe" />
@@ -94,14 +85,6 @@
       >
         Sign in
       </button>
-
-      <div class="auth-hint">
-        <b abfTranslate="login.hint.title">Interactive demo.</b>
-        <span abfTranslate="login.hint.body">
-          Credentials are pre-filled — just press Sign in. Every screen, table, roster cell and form is clickable; no data leaves your
-          browser.
-        </span>
-      </div>
     </form>
   </div>
 </div>
