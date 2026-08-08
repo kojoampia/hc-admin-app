@@ -8,17 +8,16 @@ export default defineConfig({
       reportsDirectory: 'target/test-results',
     },
 
-    // Vitest defaults both of these to 5s and 10s. That is comfortable on a developer machine and
-    // marginal on a CI runner: the whole suite takes about 10s of test time here and about 100s on
-    // ubuntu-latest, and the console specs are the slowest in it — each `beforeEach` resets the
-    // TestBed, rebuilds the mock database and renders a real screen against it, and duty-roster
-    // builds a full week's grid. Nine of its hooks timed out on the first CI run while passing
-    // locally every time.
-    //
-    // Raised rather than made conditional on CI, so a local run fails the same way a CI run does.
-    // These are ceilings for a hung test, not a target — if a hook ever genuinely approaches 30s,
-    // the answer is a cheaper fixture, not a larger number here.
-    testTimeout: 30_000,
-    hookTimeout: 30_000,
+    // Hands real timers back at the end of every spec file. Twenty-four generated list specs install
+    // fake timers at module scope and none of them restore, which froze `Date.now()` and the global
+    // `setTimeout` for whatever ran next in the same worker. See the file itself for the full story;
+    // it is the reason duty-roster.spec.ts hung on CI and nowhere else.
+    setupFiles: ['src/main/webapp/vitest-setup.ts'],
+
+    // Left at Vitest's defaults deliberately. Raising them to 30s and then 60s was my attempt at
+    // that hang before it was understood, and it made things strictly worse: nine hooks waiting on
+    // a timer that could never fire simply waited longer, and the suite's reported test time tracked
+    // the ceiling almost exactly — 100s, then 285s, then 551s. A timeout cannot fix a deadlock, and
+    // leaving the defaults in place means the next one surfaces in seconds instead of minutes.
   },
 });
