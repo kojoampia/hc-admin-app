@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ActivatedRoute } from '@angular/router';
 
 import { CONSOLE_ROLES, ConsoleAuthority, roleByAuthorities } from 'app/shared/auth/console-role';
 import { accountFor, issueToken, resolveRole } from 'app/core/mock/mock-auth';
@@ -10,9 +9,7 @@ import DutyRoster from '../duty-roster/duty-roster';
 import MessageDesk from '../message-desk/message-desk';
 import MessageThread from '../message-desk/message-thread';
 import TaskBoard from '../task-board/task-board';
-import { provideConsoleTesting, settle, signInAs } from './console-testing';
-
-const route = { provide: ActivatedRoute, useValue: { snapshot: { data: {} } } };
+import { consoleActivatedRoute, provideConsoleTesting, settle, signInAs } from './console-testing';
 
 const html = (fixture: ComponentFixture<unknown>): string => (fixture.nativeElement as HTMLElement).innerHTML;
 
@@ -57,7 +54,7 @@ describe('authority gating', () => {
 
   describe('the duty roster', () => {
     const build = async (authorities: string[]): Promise<ComponentFixture<DutyRoster>> => {
-      provideConsoleTesting([route]);
+      provideConsoleTesting([consoleActivatedRoute]);
       signInAs(authorities);
       const fixture = TestBed.createComponent(DutyRoster);
       fixture.componentInstance.ngOnInit();
@@ -105,7 +102,7 @@ describe('authority gating', () => {
 
   describe('the message desk', () => {
     const build = async (authorities: string[]): Promise<ComponentFixture<MessageDesk>> => {
-      provideConsoleTesting([route]);
+      provideConsoleTesting([consoleActivatedRoute]);
       signInAs(authorities);
       const fixture = TestBed.createComponent(MessageDesk);
       fixture.componentInstance.ngOnInit();
@@ -136,7 +133,7 @@ describe('authority gating', () => {
 
   describe('the task board', () => {
     const build = async (authorities: string[]): Promise<ComponentFixture<TaskBoard>> => {
-      provideConsoleTesting([route]);
+      provideConsoleTesting([consoleActivatedRoute]);
       signInAs(authorities);
       const fixture = TestBed.createComponent(TaskBoard);
       fixture.componentInstance.ngOnInit();
@@ -164,7 +161,7 @@ describe('authority gating', () => {
 
   describe('the topbar quick-add', () => {
     const build = async (authorities: string[]): Promise<ComponentFixture<Topbar>> => {
-      provideConsoleTesting([route]);
+      provideConsoleTesting([consoleActivatedRoute]);
       signInAs(authorities);
       const fixture = TestBed.createComponent(Topbar);
       await settle();
@@ -186,7 +183,7 @@ describe('authority gating', () => {
 
   describe('the message thread', () => {
     const build = async (authorities: string[]): Promise<ComponentFixture<MessageThread>> => {
-      provideConsoleTesting([route]);
+      provideConsoleTesting([consoleActivatedRoute]);
       signInAs(authorities);
       const fixture = TestBed.createComponent(MessageThread);
       fixture.componentRef.setInput('id', 'm4');
