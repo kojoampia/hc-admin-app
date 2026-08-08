@@ -27,8 +27,12 @@ export class ProfessionalDetail {
    * after a PATCH, so the input signal keeps whatever it saw. Without this the
    * button would still say "Archive" after archiving, which reads as a failure.
    */
-  readonly archivedOverride = signal<boolean | null>(null);
-  readonly isArchived = computed(() => this.archivedOverride() ?? this.professional()?.isArchived === true);
+  readonly archivedOverride = signal<{ id: string; isArchived: boolean } | null>(null);
+  readonly isArchived = computed(() => {
+    const professional = this.professional();
+    const override = this.archivedOverride();
+    return override && professional && override.id === professional.id ? override.isArchived : professional?.isArchived === true;
+  });
   readonly isSaving = signal(false);
 
   protected readonly professionalService = inject(ProfessionalService);
@@ -46,7 +50,7 @@ export class ProfessionalDetail {
     this.isSaving.set(true);
     this.professionalService.setArchived(current, next).subscribe({
       next: () => {
-        this.archivedOverride.set(next);
+        this.archivedOverride.set({ id: current.id, isArchived: next });
         this.isSaving.set(false);
       },
       // Leave the flag as it was. The error interceptor raises the alert;
