@@ -3,8 +3,8 @@
 #
 # --- Why this repo had no CI until now -------------------------------------------------------------
 #
-# It is the newest of the four and was developed against the in-browser mock, so nothing forced the
-# question. The other three (hc-admin-service, hc-admin-gateway, hc-admin-dashboard) each have a
+# It is the newest of the four and was developed against an in-browser mock, with no backend to
+# integrate against and so nothing forcing the question. The other three (hc-admin-service, hc-admin-gateway, hc-admin-dashboard) each have a
 # ci.yml on this shape; this one deliberately matches them so a red build reads the same way
 # wherever it happens.
 #
@@ -30,9 +30,11 @@
 # none of them are defined in package.json. So `npm run e2e:headless` fails at its pre-hook before
 # cypress starts.
 #
-# Worth fixing rather than deleting: this client answers /api/** from an in-browser mock, so unlike
-# the other repos its e2e needs no backend at all and would be genuinely cheap to run in CI. Wiring
-# those three scripts is the whole job. Until then, do not add a cypress step expecting it to work.
+# Wiring those three scripts is no longer the whole job. That estimate assumed the mock — with
+# /api/** answered inside the browser, e2e here needed no backend and would have been cheap. #11
+# removed the mock, so these specs now need a running gateway, a running admin service and a Mongo
+# behind both, seeded under the `test` profile. That is the same cost the other repos carry, not a
+# bargain. Until someone takes it on, do not add a cypress step expecting it to work.
 name: CI
 
 on:
