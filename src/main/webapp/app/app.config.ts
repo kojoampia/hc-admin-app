@@ -1,5 +1,5 @@
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
-import { ApplicationConfig, LOCALE_ID, inject, provideAppInitializer } from '@angular/core';
+import { ApplicationConfig, LOCALE_ID, inject } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import {
   NavigationError,
@@ -21,8 +21,6 @@ import { authExpiredInterceptor } from 'app/core/interceptor/auth-expired.interc
 import { authInterceptor } from 'app/core/interceptor/auth.interceptor';
 import { errorHandlerInterceptor } from 'app/core/interceptor/error-handler.interceptor';
 import { notificationInterceptor } from 'app/core/interceptor/notification.interceptor';
-import { ApiModeService } from 'app/core/api-mode/api-mode.service';
-import { mockApiInterceptor } from 'app/core/mock/mock-api.interceptor';
 
 import './config/dayjs';
 import { provideTranslation } from 'app/shared/language/translation.provider';
@@ -57,23 +55,15 @@ if (environment.DEBUG_INFO_ENABLED) {
 export const appConfig: ApplicationConfig = {
   providers: [
     provideTranslation(),
-    // Before anything issues a request: decide whether we are talking to the
-    // in-browser mock or a real gateway, and set the endpoint prefix to match.
-    provideAppInitializer(() => {
-      inject(ApiModeService).restore();
-    }),
     provideRouter(routes, ...routerFeatures),
     // Set this to true to enable service worker (PWA)
     provideServiceWorker('ngsw-worker.js', { enabled: false }),
-    // mockApiInterceptor is registered LAST on purpose. Every interceptor
-    // before it runs normally — auth still attaches the bearer token, the
-    // error and notification handlers still see real responses — and the mock
-    // simply never lets the request reach the network. Deleting this one entry
-    // and `app/core/mock/` points the client at a real gateway; see that
-    // folder's README.
-    provideHttpClient(
-      withInterceptors([authInterceptor, authExpiredInterceptor, errorHandlerInterceptor, notificationInterceptor, mockApiInterceptor]),
-    ),
+    // Order matters: authInterceptor attaches the bearer token, then the expired/error/notification
+    // handlers see the real response. There was a fifth entry here, mockApiInterceptor, which
+    // answered every /api/** and /management/** request inside the browser before it reached the
+    // network. It is gone — hc-admin-service seeds the console's dataset under
+    // `spring.profiles.active=test`, so there is a real backend to talk to.
+    provideHttpClient(withInterceptors([authInterceptor, authExpiredInterceptor, errorHandlerInterceptor, notificationInterceptor])),
     Title,
     { provide: LOCALE_ID, useValue: 'en' },
     { provide: NgbDateAdapter, useClass: NgbDateDayjsAdapter },

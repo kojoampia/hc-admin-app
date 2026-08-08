@@ -12,10 +12,9 @@ import { Routes } from '@angular/router';
  * `title` is left in place beside it: `AppPageTitleStrategy` uses it for the
  * browser tab, and the two are not interchangeable.
  *
- * `docs` is deliberately NOT listed in the sidebar. It embeds a Swagger UI
- * pointed at `/v3/api-docs`, which no in-browser mock can serve — the route
- * stays reachable by URL, but linking to it would advertise a screen that
- * cannot work.
+ * `docs` is deliberately NOT listed in the sidebar. It embeds a Swagger UI pointed at
+ * `/v3/api-docs`, which the gateway serves only when the `api-docs` profile is active — so the
+ * route stays reachable by URL, but linking to it would advertise a screen that is usually blank.
  */
 const ADMIN_BREADCRUMB = 'global.menu.group.administration';
 

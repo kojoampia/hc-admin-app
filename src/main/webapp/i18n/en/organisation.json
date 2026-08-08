@@ -40,18 +40,7 @@
       "role": "Role",
       "authorities": "Authorities",
       "switchRole": "Switch role",
-      "switchHint": "Switching re-issues the session token. Controls gated on an authority you no longer hold disappear immediately.",
-      "dataSource": "Data source",
-      "dataSourceHint": "The console can answer its own API in the browser, or talk to a real hc-admin-gateway. Switching signs you out and reloads.",
-      "currentMode": "Current",
-      "gatewayUrl": "Gateway URL — leave blank to use the dev proxy",
-      "useGateway": "Connect to the gateway",
-      "useMock": "Return to the in-browser mock",
-      "mode": {
-        "DEGRADED": "In-browser mock",
-        "HEALTHY": "Live gateway"
-      },
-      "sameOrigin": "Same origin, forwarded by the dev proxy"
+      "switchHint": "Switching re-issues the session token. Controls gated on an authority you no longer hold disappear immediately."
     },
     "audit": {
       "when": "When",
