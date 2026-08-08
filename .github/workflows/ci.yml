@@ -92,18 +92,15 @@ jobs:
       # --omit=dev, because a build-time advisory is not a shipped one and this gate has to stay
       # actionable.
       #
-      # NON-BLOCKING, and that is a temporary state with a specific reason. As of 2026-08-08 the
-      # production tree carries 9 advisories: one low (@babel/core) and eight high that are all the
-      # same root cause, GHSA-jj27-h5hq-8x99 — an XSS in @angular/compiler's i18n handling, affecting
-      # >=21.0.0-next.0 <21.2.19. Every other @angular/* package is flagged for depending on it.
+      # This BLOCKS, and the production tree is at zero vulnerabilities of any severity. It carried
+      # continue-on-error for exactly two commits, while the tree still had GHSA-jj27-h5hq-8x99 — an
+      # XSS in @angular/compiler's i18n handling affecting <21.2.19, which flagged eight @angular/*
+      # packages through it. The 21.2.19 bump in this same PR cleared it.
       #
-      # The fix is a patch bump: @angular/* 21.2.17 -> 21.2.19, plus @angular/build and @angular/cli
-      # 21.2.18 -> 21.2.19, which the lockfile needs moved together or npm cannot resolve the peers.
-      # That is a dependency upgrade with its own testing, not something to fold into adding CI.
-      #
-      # Once that lands, delete continue-on-error. A permanently non-blocking audit is a decoration.
+      # Do not reinstate the flag to make a red build green. That is the failure mode it existed to
+      # avoid, and hc-admin-dashboard's copy of this file carries the same warning for the same
+      # reason.
       - name: Audit production dependencies
-        continue-on-error: true
         run: npm audit --omit=dev --audit-level=moderate
 
       - name: Upload test results
