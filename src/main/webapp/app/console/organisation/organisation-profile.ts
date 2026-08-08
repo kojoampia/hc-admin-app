@@ -5,7 +5,6 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { TranslatePipe } from '@ngx-translate/core';
 import { map } from 'rxjs';
 
-import { ApiMode, ApiModeService } from 'app/core/api-mode/api-mode.service';
 import { AccountService } from 'app/core/auth/account.service';
 import { LoginService } from 'app/login/login.service';
 import { IAuditEntry } from 'app/entities/platform/audit-entry/audit-entry.model';
@@ -54,16 +53,9 @@ export default class OrganisationProfile implements OnInit {
   private readonly accountService = inject(AccountService);
   private readonly loginService = inject(LoginService);
   private readonly professionalNames = inject(ProfessionalNamesService);
-  private readonly apiModeService = inject(ApiModeService);
 
   // eslint-disable-next-line @typescript-eslint/member-ordering
   readonly account = this.accountService.account;
-  // eslint-disable-next-line @typescript-eslint/member-ordering
-  readonly apiMode = this.apiModeService.mode;
-  // eslint-disable-next-line @typescript-eslint/member-ordering
-  readonly gatewayUrl = this.apiModeService.gatewayUrl;
-  // eslint-disable-next-line @typescript-eslint/member-ordering
-  readonly gatewayDraft = signal('');
 
   // eslint-disable-next-line @typescript-eslint/member-ordering
   readonly currentRole = computed(() => roleByAuthorities(this.account()?.authorities));
@@ -94,31 +86,14 @@ export default class OrganisationProfile implements OnInit {
 
   selectTab(tab: OrganisationTab): void {
     this.activeTab.set(tab);
-    if (tab === 'security') {
-      this.gatewayDraft.set(this.gatewayUrl());
-    }
-  }
-
-  /**
-   * Point the console at the mock or at a real gateway.
-   *
-   * This reloads. Switching data source mid-session would leave every loaded
-   * screen showing rows from the other one, and the stored token was minted
-   * by whichever side answered /api/authenticate.
-   */
-  switchApiMode(mode: ApiMode): void {
-    if (mode === this.apiMode()) {
-      return;
-    }
-    this.apiModeService.switchAndReload(mode, mode === 'network' ? this.gatewayDraft() : undefined);
   }
 
   /**
    * Switch role by signing in as that role's account.
    *
-   * A password is required by the login form's shape but not checked by the
-   * mock auth layer, which resolves the role from the login. See
-   * core/mock/README.md.
+   * The password below is a placeholder the login form's shape requires. It was never checked
+   * while an in-browser mock resolved the role from the login; against a real gateway it is, so
+   * these role buttons only work for accounts the gateway actually holds with that password.
    */
   switchRole(role: ConsoleRole): void {
     if (role.key === this.currentRole().key || this.isSwitching()) {
