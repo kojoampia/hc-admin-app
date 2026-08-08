@@ -41,7 +41,18 @@ const GATEWAY_KEY = 'abf-gateway-url';
 export class ApiModeService {
   private readonly applicationConfigService = inject(ApplicationConfigService);
 
-  private readonly currentMode = signal<ApiMode>('mock');
+  // Network by default. The console talks to a real gateway unless someone asks otherwise.
+  //
+  // This was 'mock' while there was no backend to talk to. There is now: hc-admin-service seeds the
+  // console dataset under `spring.profiles.active=test`, and the entity services address it through
+  // `services/hcadminservice/**`. Leaving the default at 'mock' means a deployed container renders a
+  // complete, fabricated directory without making a single request — healthy-looking whether or not
+  // anything is behind it, which is the worst possible failure mode for a deployment.
+  //
+  // `?apiMode=mock` still selects the mock, and the choice is still persisted, so local work with no
+  // backend is one query parameter away. The specs that exercise the mock now pin the mode
+  // explicitly — they inherited it before, and flipping this failed 61 of them until they did.
+  private readonly currentMode = signal<ApiMode>('network');
   private readonly currentGateway = signal<string>(DEFAULT_GATEWAY_URL);
 
   // eslint-disable-next-line @typescript-eslint/member-ordering
