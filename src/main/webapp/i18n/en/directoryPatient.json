@@ -6,7 +6,10 @@
         "refreshListLabel": "Refresh list",
         "createLabel": "Create a new Patient",
         "createOrEditLabel": "Create or edit a Patient",
-        "notFound": "No Patients found"
+        "notFound": "No Patients found",
+        "showArchivedLabel": "Show archived",
+        "showActiveLabel": "Show active",
+        "noneArchived": "No archived Patients"
       },
       "created": "A new Patient is created with identifier {{ param }}",
       "updated": "A Patient is updated with identifier {{ param }}",
@@ -28,7 +31,9 @@
       "careActivity": "Care Activity",
       "plan": "Plan",
       "clinicalLead": "Clinical Lead",
-      "hub": "Hub"
+      "hub": "Hub",
+      "archivedNotice": "This patient is archived and does not appear in the directory.",
+      "isArchived": "Archived"
     }
   }
 }

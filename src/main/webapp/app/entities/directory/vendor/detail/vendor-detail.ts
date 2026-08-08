@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
@@ -9,6 +9,7 @@ import { AlertError } from 'app/shared/alert/alert-error';
 import { FormatMediumDatePipe } from 'app/shared/date';
 import { TranslateDirective } from 'app/shared/language';
 import { IVendor } from '../vendor.model';
+import { VendorService } from '../service/vendor.service';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -19,7 +20,38 @@ import { IVendor } from '../vendor.model';
 export class VendorDetail {
   readonly vendor = input<IVendor | null>(null);
 
+  /**
+   * Locally applied so the button flips without a re-resolve.
+   *
+   * The route resolver read this record on the way in and nothing re-runs it
+   * after a PATCH, so the input signal keeps whatever it saw. Without this the
+   * button would still say "Archive" after archiving, which reads as a failure.
+   */
+  readonly archivedOverride = signal<boolean | null>(null);
+  readonly isArchived = computed(() => this.archivedOverride() ?? this.vendor()?.isArchived === true);
+  readonly isSaving = signal(false);
+
+  protected readonly vendorService = inject(VendorService);
+
   previousState(): void {
     globalThis.history.back();
+  }
+
+  toggleArchived(): void {
+    const current = this.vendor();
+    if (!current || this.isSaving()) {
+      return;
+    }
+    const next = !this.isArchived();
+    this.isSaving.set(true);
+    this.vendorService.setArchived(current, next).subscribe({
+      next: () => {
+        this.archivedOverride.set(next);
+        this.isSaving.set(false);
+      },
+      // Leave the flag as it was. The error interceptor raises the alert;
+      // flipping the label on a failed write would be a lie about the record.
+      error: () => this.isSaving.set(false),
+    });
   }
 }

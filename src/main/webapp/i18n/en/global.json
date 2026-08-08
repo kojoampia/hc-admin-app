@@ -167,14 +167,16 @@
     "action": {
       "addblob": "Add blob",
       "addimage": "Add image",
+      "archive": "Archive",
       "back": "Back",
       "cancel": "Cancel",
       "delete": "Delete",
       "edit": "Edit",
       "open": "Open",
       "save": "Save",
-      "view": "View",
-      "show": "Show {{otherEntity}}"
+      "show": "Show {{otherEntity}}",
+      "unarchive": "Unarchive",
+      "view": "View"
     },
     "detail": {
       "field": "Field",

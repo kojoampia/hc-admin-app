@@ -94,6 +94,18 @@ export class PatientService extends PatientsService {
     return this.http.delete<undefined>(`${this.resourceUrl}/${encodeURIComponent(id)}`);
   }
 
+  /**
+   * Archive or restore, as a PATCH of the single field.
+   *
+   * Deliberately not a PUT of the whole record: the detail view holds whatever
+   * the resolver last read, and sending it back would quietly overwrite any
+   * change made in between with a stale copy. PATCH sends { id, isArchived }
+   * and nothing else.
+   */
+  setArchived(patient: Pick<IPatient, 'id'>, isArchived: boolean): Observable<IPatient> {
+    return this.partialUpdate({ id: patient.id, isArchived });
+  }
+
   getPatientIdentifier(patient: Pick<IPatient, 'id'>): string {
     return patient.id;
   }
