@@ -27,8 +27,12 @@ export class PatientDetail {
    * after a PATCH, so the input signal keeps whatever it saw. Without this the
    * button would still say "Archive" after archiving, which reads as a failure.
    */
-  readonly archivedOverride = signal<boolean | null>(null);
-  readonly isArchived = computed(() => this.archivedOverride() ?? this.patient()?.isArchived === true);
+  readonly archivedOverride = signal<{ id: string; isArchived: boolean } | null>(null);
+  readonly isArchived = computed(() => {
+    const patient = this.patient();
+    const override = this.archivedOverride();
+    return override && patient && override.id === patient.id ? override.isArchived : patient?.isArchived === true;
+  });
   readonly isSaving = signal(false);
 
   protected readonly patientService = inject(PatientService);
@@ -46,7 +50,7 @@ export class PatientDetail {
     this.isSaving.set(true);
     this.patientService.setArchived(current, next).subscribe({
       next: () => {
-        this.archivedOverride.set(next);
+        this.archivedOverride.set({ id: current.id, isArchived: next });
         this.isSaving.set(false);
       },
       // Leave the flag as it was. The error interceptor raises the alert;
