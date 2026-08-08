@@ -32,7 +32,7 @@
       "plan": "Plan",
       "clinicalLead": "Clinical Lead",
       "hub": "Hub",
-      "archivedNotice": "This patient is archived and does not appear in the directory.",
+      "archivedNotice": "This record is archived and does not appear in the directory.",
       "isArchived": "Archived"
     }
   }
