@@ -135,12 +135,6 @@
                 <fa-icon class="p-1" icon="sort" />
               </div>
             </th>
-            <th scope="col" abfSortBy="credential.id">
-              <div class="d-flex">
-                <span abfTranslate="hcAdminApp.directoryProfessional.credential">Credential</span>
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
             <th scope="col" abfSortBy="team.name">
               <div class="d-flex">
                 <span abfTranslate="hcAdminApp.directoryProfessional.team">Team</span>
@@ -195,13 +189,6 @@
                 @if (professional.profile) {
                   <div>
                     <a [routerLink]="['/profile', professional.profile.id, 'view']">{{ professional.profile.id }}</a>
-                  </div>
-                }
-              </td>
-              <td>
-                @if (professional.credential) {
-                  <div>
-                    <a [routerLink]="['/credential', professional.credential.id, 'view']">{{ professional.credential.id }}</a>
                   </div>
                 }
               </td>
