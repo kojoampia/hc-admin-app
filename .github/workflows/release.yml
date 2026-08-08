@@ -155,9 +155,17 @@ jobs:
           ignore-unfixed: true
           exit-code: '0'
 
+      # `always()` alone is not enough, and the difference is not cosmetic. When an earlier step
+      # fails, the scan is skipped and writes no SARIF — this step then failed with
+      # "Path does not exist: trivy-results.sarif", so one root cause reported as two failed steps
+      # and the second one named a file rather than the problem. That is what the first Release runs
+      # looked like: the real failure was a missing HC_ADMIN_CI_TOKEN four steps earlier.
+      #
+      # The file check keeps the useful half — a scan that ran and found something still uploads
+      # even if a later step fails — while a scan that never ran stays quiet.
       - name: Upload the scan to the Security tab
         uses: github/codeql-action/upload-sarif@v3
-        if: always()
+        if: always() && hashFiles('trivy-results.sarif') != ''
         with:
           sarif_file: trivy-results.sarif
           category: trivy-image
