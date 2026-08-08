@@ -21,14 +21,22 @@ export class VendorDetail {
   readonly vendor = input<IVendor | null>(null);
 
   /**
-   * Locally applied so the button flips without a re-resolve.
+   * Applied locally so the button flips without a re-resolve, and keyed by id so it cannot leak.
    *
-   * The route resolver read this record on the way in and nothing re-runs it
-   * after a PATCH, so the input signal keeps whatever it saw. Without this the
-   * button would still say "Archive" after archiving, which reads as a failure.
+   * Nothing re-runs the route resolver after a PATCH, so the input signal keeps whatever it saw and
+   * the button would otherwise still say "Archive" after archiving. Holding the id alongside the
+   * value means that if the resolver ever swaps the record underneath us, a stale override is
+   * ignored rather than claiming the new record's state.
    */
-  readonly archivedOverride = signal<boolean | null>(null);
-  readonly isArchived = computed(() => this.archivedOverride() ?? this.vendor()?.isArchived === true);
+  readonly archivedOverride = signal<{ id: string; isArchived: boolean } | null>(null);
+  readonly isArchived = computed(() => {
+    const vendor = this.vendor();
+    const override = this.archivedOverride();
+    if (override && vendor?.id === override.id) {
+      return override.isArchived;
+    }
+    return vendor?.isArchived === true;
+  });
   readonly isSaving = signal(false);
 
   protected readonly vendorService = inject(VendorService);
@@ -46,7 +54,7 @@ export class VendorDetail {
     this.isSaving.set(true);
     this.vendorService.setArchived(current, next).subscribe({
       next: () => {
-        this.archivedOverride.set(next);
+        this.archivedOverride.set({ id: current.id, isArchived: next });
         this.isSaving.set(false);
       },
       // Leave the flag as it was. The error interceptor raises the alert;
