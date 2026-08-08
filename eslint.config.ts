@@ -25,6 +25,18 @@ export default defineConfig(
     },
   },
   {
+    // Plain scripts shipped as assets and loaded by index.html — they run in the browser, not in
+    // node, so the block above's node globals are the wrong set. Kept out of the TypeScript block
+    // on purpose: these are not compiled, and a `.js` under an app that builds every other source
+    // through the Angular compiler should be conspicuous.
+    files: ['src/main/webapp/content/js/**/*.js'],
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+      },
+    },
+  },
+  {
     files: ['src/main/webapp/**/*.ts'],
     extends: [...tseslint.configs.strictTypeChecked, ...tseslint.configs.stylistic, ...angular.configs.tsRecommended],
     languageOptions: {
