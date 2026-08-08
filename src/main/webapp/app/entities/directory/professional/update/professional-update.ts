@@ -12,7 +12,6 @@ import { IProfile } from 'app/entities/directory/profile/profile.model';
 import { ProfileService } from 'app/entities/directory/profile/service/profile.service';
 import { AccountStatus } from 'app/entities/enumerations/account-status.model';
 import { ProfessionalRole } from 'app/entities/enumerations/professional-role.model';
-import { ICredential } from 'app/entities/platform/credential/credential.model';
 import { AlertError } from 'app/shared/alert/alert-error';
 import { TranslateDirective } from 'app/shared/language';
 
@@ -20,7 +19,6 @@ import { IProfessional } from '../professional.model';
 import { ProfessionalService } from '../service/professional.service';
 
 import { ProfessionalFormGroup, ProfessionalFormService } from './professional-form.service';
-import { CredentialService } from 'app/entities/platform/credential/service/credential.service';
 import { ITeam } from 'app/entities/platform/team/team.model';
 import { TeamService } from 'app/entities/platform/team/service/team.service';
 import { IHub } from 'app/entities/platform/hub/hub.model';
@@ -41,14 +39,12 @@ export class ProfessionalUpdate implements OnInit {
   accountStatusValues = Object.keys(AccountStatus);
 
   profilesCollection = signal<IProfile[]>([]);
-  credentialsCollection = signal<ICredential[]>([]);
   teamsSharedCollection = signal<ITeam[]>([]);
   hubsSharedCollection = signal<IHub[]>([]);
 
   protected professionalService = inject(ProfessionalService);
   protected professionalFormService = inject(ProfessionalFormService);
   protected profileService = inject(ProfileService);
-  protected credentialService = inject(CredentialService);
   protected teamService = inject(TeamService);
   protected hubService = inject(HubService);
   protected activatedRoute = inject(ActivatedRoute);
@@ -57,8 +53,6 @@ export class ProfessionalUpdate implements OnInit {
   editForm: ProfessionalFormGroup = this.professionalFormService.createProfessionalFormGroup();
 
   compareProfile = (o1: IProfile | null, o2: IProfile | null): boolean => this.profileService.compareProfile(o1, o2);
-
-  compareCredential = (o1: ICredential | null, o2: ICredential | null): boolean => this.credentialService.compareCredential(o1, o2);
 
   compareTeam = (o1: ITeam | null, o2: ITeam | null): boolean => this.teamService.compareTeam(o1, o2);
 
@@ -115,9 +109,6 @@ export class ProfessionalUpdate implements OnInit {
     this.profilesCollection.set(
       this.profileService.addProfileToCollectionIfMissing<IProfile>(this.profilesCollection(), professional.profile),
     );
-    this.credentialsCollection.set(
-      this.credentialService.addCredentialToCollectionIfMissing<ICredential>(this.credentialsCollection(), professional.credential),
-    );
     this.teamsSharedCollection.update(teams => this.teamService.addTeamToCollectionIfMissing<ITeam>(teams, professional.team));
     this.hubsSharedCollection.update(hubs => this.hubService.addHubToCollectionIfMissing<IHub>(hubs, professional.hub));
   }
@@ -130,16 +121,6 @@ export class ProfessionalUpdate implements OnInit {
         map((profiles: IProfile[]) => this.profileService.addProfileToCollectionIfMissing<IProfile>(profiles, this.professional?.profile)),
       )
       .subscribe((profiles: IProfile[]) => this.profilesCollection.set(profiles));
-
-    this.credentialService
-      .query({ filter: 'professional-is-null' })
-      .pipe(map((res: HttpResponse<ICredential[]>) => res.body ?? []))
-      .pipe(
-        map((credentials: ICredential[]) =>
-          this.credentialService.addCredentialToCollectionIfMissing<ICredential>(credentials, this.professional?.credential),
-        ),
-      )
-      .subscribe((credentials: ICredential[]) => this.credentialsCollection.set(credentials));
 
     this.teamService
       .query()

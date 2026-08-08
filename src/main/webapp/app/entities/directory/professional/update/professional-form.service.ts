@@ -29,7 +29,6 @@ type ProfessionalFormGroupContent = {
   rating: FormControl<IProfessional['rating']>;
   joinedOn: FormControl<IProfessional['joinedOn']>;
   profile: FormControl<IProfessional['profile']>;
-  credential: FormControl<IProfessional['credential']>;
   team: FormControl<IProfessional['team']>;
   hub: FormControl<IProfessional['hub']>;
 };
@@ -85,7 +84,6 @@ export class ProfessionalFormService {
       profile: new FormControl(professionalRawValue.profile, {
         validators: [Validators.required],
       }),
-      credential: new FormControl(professionalRawValue.credential),
       team: new FormControl(professionalRawValue.team),
       hub: new FormControl(professionalRawValue.hub),
     });

@@ -9,8 +9,6 @@ import { Subject, from, of } from 'rxjs';
 
 import { IProfile } from 'app/entities/directory/profile/profile.model';
 import { ProfileService } from 'app/entities/directory/profile/service/profile.service';
-import { ICredential } from 'app/entities/platform/credential/credential.model';
-import { CredentialService } from 'app/entities/platform/credential/service/credential.service';
 import { IHub } from 'app/entities/platform/hub/hub.model';
 import { HubService } from 'app/entities/platform/hub/service/hub.service';
 import { TeamService } from 'app/entities/platform/team/service/team.service';
@@ -28,7 +26,6 @@ describe('Professional Management Update Component', () => {
   let professionalFormService: ProfessionalFormService;
   let professionalService: ProfessionalService;
   let profileService: ProfileService;
-  let credentialService: CredentialService;
   let teamService: TeamService;
   let hubService: HubService;
 
@@ -51,7 +48,6 @@ describe('Professional Management Update Component', () => {
     professionalFormService = TestBed.inject(ProfessionalFormService);
     professionalService = TestBed.inject(ProfessionalService);
     profileService = TestBed.inject(ProfileService);
-    credentialService = TestBed.inject(CredentialService);
     teamService = TestBed.inject(TeamService);
     hubService = TestBed.inject(HubService);
 
@@ -76,25 +72,6 @@ describe('Professional Management Update Component', () => {
       expect(profileService.addProfileToCollectionIfMissing).toHaveBeenCalledWith(profileCollection, profile);
       expect(comp.profilesCollection()).toEqual(expectedCollection);
     });
-
-    it('should call credential query and add missing value', () => {
-      const professional: IProfessional = { id: '0e955bb7-9639-4125-b816-aa9d995e679e' };
-      const credential: ICredential = { id: '35b3b582-8e66-4c2d-9e4a-8ff9d99022d0' };
-      professional.credential = credential;
-
-      const credentialCollection: ICredential[] = [{ id: '35b3b582-8e66-4c2d-9e4a-8ff9d99022d0' }];
-      vitest.spyOn(credentialService, 'query').mockReturnValue(of(new HttpResponse({ body: credentialCollection })));
-      const expectedCollection: ICredential[] = [credential, ...credentialCollection];
-      vitest.spyOn(credentialService, 'addCredentialToCollectionIfMissing').mockReturnValue(expectedCollection);
-
-      activatedRoute.data = of({ professional });
-      comp.ngOnInit();
-
-      expect(credentialService.query).toHaveBeenCalled();
-      expect(credentialService.addCredentialToCollectionIfMissing).toHaveBeenCalledWith(credentialCollection, credential);
-      expect(comp.credentialsCollection()).toEqual(expectedCollection);
-    });
-
     it('should call Team query and add missing value', () => {
       const professional: IProfessional = { id: '0e955bb7-9639-4125-b816-aa9d995e679e' };
       const team: ITeam = { id: '07c2eeb9-6f13-455e-bbad-df15a9442470' };
@@ -143,8 +120,6 @@ describe('Professional Management Update Component', () => {
       const professional: IProfessional = { id: '0e955bb7-9639-4125-b816-aa9d995e679e' };
       const profile: IProfile = { id: 'f60e8f71-7b26-4f3d-8111-2c32dce7269d' };
       professional.profile = profile;
-      const credential: ICredential = { id: '35b3b582-8e66-4c2d-9e4a-8ff9d99022d0' };
-      professional.credential = credential;
       const team: ITeam = { id: '07c2eeb9-6f13-455e-bbad-df15a9442470' };
       professional.team = team;
       const hub: IHub = { id: 'bb609620-c7ae-4900-948f-445397c053ae' };
@@ -154,7 +129,6 @@ describe('Professional Management Update Component', () => {
       comp.ngOnInit();
 
       expect(comp.profilesCollection()).toContainEqual(profile);
-      expect(comp.credentialsCollection()).toContainEqual(credential);
       expect(comp.teamsSharedCollection()).toContainEqual(team);
       expect(comp.hubsSharedCollection()).toContainEqual(hub);
       expect(comp.professional).toEqual(professional);
@@ -239,17 +213,6 @@ describe('Professional Management Update Component', () => {
         expect(profileService.compareProfile).toHaveBeenCalledWith(entity, entity2);
       });
     });
-
-    describe('compareCredential', () => {
-      it('should forward to credentialService', () => {
-        const entity = { id: '35b3b582-8e66-4c2d-9e4a-8ff9d99022d0' };
-        const entity2 = { id: '37c978bd-bd74-4bba-a58a-e21267b95005' };
-        vitest.spyOn(credentialService, 'compareCredential');
-        comp.compareCredential(entity, entity2);
-        expect(credentialService.compareCredential).toHaveBeenCalledWith(entity, entity2);
-      });
-    });
-
     describe('compareTeam', () => {
       it('should forward to teamService', () => {
         const entity = { id: '07c2eeb9-6f13-455e-bbad-df15a9442470' };

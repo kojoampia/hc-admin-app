@@ -84,14 +84,6 @@
               </div>
             }
           </dd>
-          <dt><span abfTranslate="hcAdminApp.directoryProfessional.credential">Credential</span></dt>
-          <dd>
-            @if (professional()!.credential) {
-              <div>
-                <a [routerLink]="['/credential', professional()!.credential?.id, 'view']">{{ professionalRef.credential?.id }}</a>
-              </div>
-            }
-          </dd>
           <dt><span abfTranslate="hcAdminApp.directoryProfessional.team">Team</span></dt>
           <dd>
             @if (professional()!.team) {

@@ -269,23 +269,6 @@
         }
 
         <div class="mb-3">
-          <label class="form-label" for="field_credential" abfTranslate="hcAdminApp.directoryProfessional.credential">Credential</label>
-          <select
-            class="form-control"
-            id="field_credential"
-            data-cy="credential"
-            name="credential"
-            formControlName="credential"
-            [compareWith]="compareCredential"
-          >
-            <option [ngValue]="null"></option>
-            @for (credentialOption of credentialsCollection(); track $index) {
-              <option [ngValue]="credentialOption">{{ credentialOption.id }}</option>
-            }
-          </select>
-        </div>
-
-        <div class="mb-3">
           <label class="form-label" for="field_team" abfTranslate="hcAdminApp.directoryProfessional.team">Team</label>
           <select class="form-control" id="field_team" data-cy="team" name="team" formControlName="team" [compareWith]="compareTeam">
             <option [ngValue]="null"></option>
