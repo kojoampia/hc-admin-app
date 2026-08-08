@@ -4,6 +4,7 @@ import { TestBed } from '@angular/core/testing';
 
 import { firstValueFrom } from 'rxjs';
 
+import { ApiModeService } from 'app/core/api-mode/api-mode.service';
 import { MOCK_LATENCY, mockApiInterceptor } from './mock-api.interceptor';
 import { resetDatabase } from './mock-db';
 import { issueToken } from './mock-auth';
@@ -33,6 +34,9 @@ describe('mockApiInterceptor', () => {
     TestBed.configureTestingModule({
       providers: [provideHttpClient(withInterceptors([mockApiInterceptor])), { provide: MOCK_LATENCY, useValue: 0 }],
     });
+    // These specs exercise the interceptor itself, so the mode is pinned rather than inherited:
+    // the application default is 'network' now, and the interceptor stands aside in that mode.
+    TestBed.inject(ApiModeService).set('mock');
     http = TestBed.inject(HttpClient);
   });
 

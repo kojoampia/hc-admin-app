@@ -10,6 +10,7 @@ import { provideTranslateService } from '@ngx-translate/core';
 
 import { Account } from 'app/core/auth/account.model';
 import { AccountService } from 'app/core/auth/account.service';
+import { ApiModeService } from 'app/core/api-mode/api-mode.service';
 import { fontAwesomeIcons } from 'app/config/font-awesome-icons';
 import { MOCK_LATENCY, mockApiInterceptor } from 'app/core/mock/mock-api.interceptor';
 import { resetDatabase } from 'app/core/mock/mock-db';
@@ -84,6 +85,12 @@ export const provideConsoleTesting = (extra: Provider[] = []): void => {
       ...extra,
     ],
   });
+
+  // These suites drive the real components against the in-browser mock on purpose — that is the
+  // point of `mockApiInterceptor` being registered above. Pinned explicitly rather than inherited:
+  // the application default is 'network' now that there is a backend to talk to, and a spec that
+  // depends on a default is a spec that breaks when the default moves. It did.
+  TestBed.inject(ApiModeService).set('mock');
 
   // fa-icon resolves against the library, not the import; an unregistered
   // icon logs an ERROR per render and drowns the real output.

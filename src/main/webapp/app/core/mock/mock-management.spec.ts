@@ -9,6 +9,7 @@ import { LoggersResponse } from 'app/admin/logs/log.model';
 import { ConfigProps, Env } from 'app/admin/configuration/configuration.model';
 import { MetricsModel } from 'app/admin/metrics/metrics.model';
 
+import { ApiModeService } from 'app/core/api-mode/api-mode.service';
 import { MOCK_LATENCY, mockApiInterceptor } from './mock-api.interceptor';
 import { resetDatabase } from './mock-db';
 import { resetLoggers } from './mock-management';
@@ -31,6 +32,9 @@ describe('mock management endpoints', () => {
     TestBed.configureTestingModule({
       providers: [provideHttpClient(withInterceptors([mockApiInterceptor])), { provide: MOCK_LATENCY, useValue: 0 }],
     });
+    // These specs exercise the interceptor itself, so the mode is pinned rather than inherited:
+    // the application default is 'network' now, and the interceptor stands aside in that mode.
+    TestBed.inject(ApiModeService).set('mock');
     http = TestBed.inject(HttpClient);
   });
 
