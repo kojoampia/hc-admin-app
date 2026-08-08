@@ -6,7 +6,10 @@
         "refreshListLabel": "Refresh list",
         "createLabel": "Create a new Vendor",
         "createOrEditLabel": "Create or edit a Vendor",
-        "notFound": "No Vendors found"
+        "notFound": "No Vendors found",
+        "showArchivedLabel": "Show archived",
+        "showActiveLabel": "Show active",
+        "noneArchived": "No archived Vendors"
       },
       "created": "A new Vendor is created with identifier {{ param }}",
       "updated": "A Vendor is updated with identifier {{ param }}",
@@ -31,7 +34,9 @@
       "orderCount": "Order Count",
       "spendToDate": "Spend To Date",
       "rating": "Rating",
-      "document": "Document"
+      "document": "Document",
+      "archivedNotice": "This record is archived and does not appear in the directory.",
+      "isArchived": "Archived"
     }
   }
 }

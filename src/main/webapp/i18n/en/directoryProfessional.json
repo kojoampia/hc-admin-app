@@ -6,7 +6,10 @@
         "refreshListLabel": "Refresh list",
         "createLabel": "Create a new Professional",
         "createOrEditLabel": "Create or edit a Professional",
-        "notFound": "No Professionals found"
+        "notFound": "No Professionals found",
+        "showArchivedLabel": "Show archived",
+        "showActiveLabel": "Show active",
+        "noneArchived": "No archived Professionals"
       },
       "created": "A new Professional is created with identifier {{ param }}",
       "updated": "A Professional is updated with identifier {{ param }}",
@@ -32,7 +35,9 @@
       "credential": "Credential",
       "assignment": "Assignment",
       "team": "Team",
-      "hub": "Hub"
+      "hub": "Hub",
+      "archivedNotice": "This record is archived and does not appear in the directory.",
+      "isArchived": "Archived"
     }
   }
 }

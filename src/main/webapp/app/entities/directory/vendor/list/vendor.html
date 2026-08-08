@@ -9,6 +9,21 @@
       </button>
 
       <button
+        id="toggle-archived"
+        data-cy="entityShowArchivedButton"
+        class="btn btn-secondary me-2"
+        (click)="toggleArchived()"
+        [attr.aria-pressed]="showArchived()"
+      >
+        <fa-icon [icon]="showArchived() ? 'list' : 'box-archive'" />
+        @if (showArchived()) {
+          <span abfTranslate="hcAdminApp.directoryVendor.home.showActiveLabel">Show active</span>
+        } @else {
+          <span abfTranslate="hcAdminApp.directoryVendor.home.showArchivedLabel">Show archived</span>
+        }
+      </button>
+
+      <button
         id="jh-create-entity"
         data-cy="entityCreateButton"
         class="btn btn-primary jh-create-entity create-vendor"
@@ -26,7 +41,11 @@
 
   @if (vendors().length === 0) {
     <div class="alert alert-warning" id="no-result">
-      <span abfTranslate="hcAdminApp.directoryVendor.home.notFound">No Vendors found</span>
+      @if (showArchived()) {
+        <span abfTranslate="hcAdminApp.directoryVendor.home.noneArchived">No archived Vendors</span>
+      } @else {
+        <span abfTranslate="hcAdminApp.directoryVendor.home.notFound">No Vendors found</span>
+      }
     </div>
   } @else {
     <div class="table-responsive table-entities" id="entities">
@@ -175,11 +194,6 @@
                     <fa-icon icon="pencil-alt" />
                     <span class="d-none d-md-inline" abfTranslate="entity.action.edit">Edit</span>
                   </a>
-
-                  <button type="submit" (click)="delete(vendor)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
-                    <fa-icon icon="times" />
-                    <span class="d-none d-md-inline" abfTranslate="entity.action.delete">Delete</span>
-                  </button>
                 </div>
               </td>
             </tr>

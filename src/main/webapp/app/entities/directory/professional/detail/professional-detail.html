@@ -10,6 +10,14 @@
 
         <abf-alert />
 
+        @if (isArchived()) {
+          <div class="alert alert-warning" data-cy="archivedBanner">
+            <fa-icon icon="box-archive" />&nbsp;<span abfTranslate="hcAdminApp.directoryProfessional.archivedNotice"
+              >This record is archived and does not appear in the directory.</span
+            >
+          </div>
+        }
+
         <dl class="row-md jh-entity-details">
           <dt><span abfTranslate="hcAdminApp.directoryProfessional.id">Id</span></dt>
           <dd>
@@ -108,6 +116,21 @@
 
         <button type="button" [routerLink]="['/professional', professionalRef.id, 'edit']" class="btn btn-primary">
           <fa-icon icon="pencil-alt" />&nbsp;<span abfTranslate="entity.action.edit">Edit</span>
+        </button>
+
+        <button
+          type="button"
+          data-cy="entityArchiveButton"
+          [class]="isArchived() ? 'btn btn-success' : 'btn btn-warning'"
+          [disabled]="isSaving()"
+          (click)="toggleArchived()"
+        >
+          <fa-icon [icon]="isArchived() ? 'box-open' : 'box-archive'" />&nbsp;
+          @if (isArchived()) {
+            <span abfTranslate="entity.action.unarchive">Unarchive</span>
+          } @else {
+            <span abfTranslate="entity.action.archive">Archive</span>
+          }
         </button>
       </div>
     }

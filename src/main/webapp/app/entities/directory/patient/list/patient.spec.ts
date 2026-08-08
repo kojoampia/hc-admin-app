@@ -4,8 +4,18 @@ import { ComponentFixture, TestBed, inject } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
 
 import { FaIconLibrary } from '@fortawesome/angular-fontawesome';
-import { faEye, faPencilAlt, faPlus, faSort, faSortDown, faSortUp, faSync, faTimes } from '@fortawesome/free-solid-svg-icons';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap/modal';
+import {
+  faBoxArchive,
+  faEye,
+  faList,
+  faPencilAlt,
+  faPlus,
+  faSort,
+  faSortDown,
+  faSortUp,
+  faSync,
+  faTimes,
+} from '@fortawesome/free-solid-svg-icons';
 import { provideTranslateService } from '@ngx-translate/core';
 import { Subject, of } from 'rxjs';
 
@@ -60,7 +70,7 @@ describe('Patient Management Component', () => {
     routerNavigateSpy = vitest.spyOn(comp.router, 'navigate');
 
     const library = TestBed.inject(FaIconLibrary);
-    library.addIcons(faEye, faPencilAlt, faPlus, faSort, faSortDown, faSortUp, faSync, faTimes);
+    library.addIcons(faBoxArchive, faEye, faList, faPencilAlt, faPlus, faSort, faSortDown, faSortUp, faSync, faTimes);
     httpMock = TestBed.inject(HttpTestingController);
   });
 
@@ -170,42 +180,46 @@ describe('Patient Management Component', () => {
     expect(service.patientsParams()).toMatchObject(expect.objectContaining({ sort: ['id,desc'] }));
   });
 
-  describe('delete', () => {
-    let ngbModal: NgbModal;
-    let deleteModalMock: any;
+  describe('archived filter', () => {
+    it('should ask for the un-archived half by default', () => {
+      TestBed.tick();
+      httpMock.expectOne({ method: 'GET' });
 
-    beforeEach(() => {
-      deleteModalMock = { componentInstance: {}, closed: new Subject() };
-      // NgbModal is not a singleton using TestBed.inject.
-      // ngbModal = TestBed.inject(NgbModal);
-      ngbModal = (comp as any).modalService;
-      vitest.spyOn(ngbModal, 'open').mockReturnValue(deleteModalMock);
+      // notEquals, not equals=false: a record saved before isArchived existed has no value at
+      // all, and equals=false would not match it — the whole directory would read as empty.
+      expect(service.patientsParams()).toMatchObject(expect.objectContaining({ 'isArchived.notEquals': true }));
+      expect(service.patientsParams()).not.toMatchObject(expect.objectContaining({ 'isArchived.equals': true }));
     });
 
-    it('on confirm should call load', inject([], () => {
-      // GIVEN
-      vitest.spyOn(comp, 'load');
+    it('should ask for the archived half when the route says so', () => {
+      // Consume the load the component issues on init, or verify() in afterEach
+      // sees two open requests and the failure reads as a leak rather than this.
+      TestBed.tick();
+      httpMock.expectOne({ method: 'GET' });
 
-      // WHEN
-      comp.delete(sampleWithRequiredData);
-      deleteModalMock.closed.next('deleted');
+      comp.showArchived.set(true);
+      comp.load();
+      TestBed.tick();
+      httpMock.expectOne({ method: 'GET' });
 
-      // THEN
-      expect(ngbModal.open).toHaveBeenCalled();
-      expect(comp.load).toHaveBeenCalled();
-    }));
+      expect(service.patientsParams()).toMatchObject(expect.objectContaining({ 'isArchived.equals': true }));
+    });
 
-    it('on dismiss should call load', inject([], () => {
-      // GIVEN
-      vitest.spyOn(comp, 'load');
+    it('should carry the archived flag into the URL when toggled on', () => {
+      const navigate = vitest.spyOn(comp.router, 'navigate');
 
-      // WHEN
-      comp.delete(sampleWithRequiredData);
-      deleteModalMock.closed.next();
+      comp.toggleArchived();
 
-      // THEN
-      expect(ngbModal.open).toHaveBeenCalled();
-      expect(comp.load).not.toHaveBeenCalled();
-    }));
+      expect(navigate).toHaveBeenCalledWith(['./'], expect.objectContaining({ queryParams: expect.objectContaining({ archived: true }) }));
+    });
+
+    it('should clear the archived flag from the URL when toggled off', () => {
+      comp.showArchived.set(true);
+      const navigate = vitest.spyOn(comp.router, 'navigate');
+
+      comp.toggleArchived();
+
+      expect(navigate).toHaveBeenCalledWith(['./'], expect.objectContaining({ queryParams: expect.objectContaining({ archived: null }) }));
+    });
   });
 });

@@ -90,6 +90,18 @@ export class VendorService extends VendorsService {
     return this.http.delete<undefined>(`${this.resourceUrl}/${encodeURIComponent(id)}`);
   }
 
+  /**
+   * Archive or restore, as a PATCH of the single field.
+   *
+   * Deliberately not a PUT of the whole record: the detail view holds whatever
+   * the resolver last read, and sending it back would quietly overwrite any
+   * change made in between with a stale copy. PATCH sends { id, isArchived }
+   * and nothing else.
+   */
+  setArchived(vendor: Pick<IVendor, 'id'>, isArchived: boolean): Observable<IVendor> {
+    return this.partialUpdate({ id: vendor.id, isArchived });
+  }
+
   getVendorIdentifier(vendor: Pick<IVendor, 'id'>): string {
     return vendor.id;
   }

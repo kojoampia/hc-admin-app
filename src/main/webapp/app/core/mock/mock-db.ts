@@ -1402,8 +1402,16 @@ export const buildDatabase = (): MockDatabase => {
     },
   ];
 
+  // Two of each directory collection start archived, so "Show Archived" has
+  // something in it on a first look and the active list is visibly shorter than
+  // the collection. `archivedEvery` picks by position rather than by name: the
+  // prototype's records are real-looking people and singling any of them out as
+  // "archived" reads as a statement about them.
+  const archivedEvery = (index: number): boolean => index % 7 === 3;
+
   const professionals = DEMO_PROS.map((pro, index) => ({
     id: pro.id,
+    isArchived: archivedEvery(index),
     role: PROFESSIONAL_ROLE[pro.role],
     speciality: pro.spec,
     licenceNumber: pro.lic,
@@ -1448,6 +1456,7 @@ export const buildDatabase = (): MockDatabase => {
 
   const patients = DEMO_PATIENTS.map((patient, index) => ({
     id: patient.id,
+    isArchived: archivedEvery(index),
     status: ACCOUNT_STATUS[patient.status],
     joinedOn: toIsoDate(patient.joined),
     lastActiveOn: toIsoDate(patient.last),
@@ -1467,8 +1476,9 @@ export const buildDatabase = (): MockDatabase => {
     })(),
   }));
 
-  const vendors = DEMO_VENDORS.map(vendor => ({
+  const vendors = DEMO_VENDORS.map((vendor, index) => ({
     id: vendor.id,
+    isArchived: archivedEvery(index),
     name: vendor.name,
     category: vendor.cat,
     serviceSummary: vendor.service,

@@ -4,12 +4,11 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Data, ParamMap, Router, RouterLink } from '@angular/router';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap/modal';
 import { NgbPagination } from '@ng-bootstrap/ng-bootstrap/pagination';
 import { TranslatePipe } from '@ngx-translate/core';
-import { Subscription, combineLatest, filter, tap } from 'rxjs';
+import { Subscription, combineLatest, tap } from 'rxjs';
 
-import { DEFAULT_SORT_DATA, ITEM_DELETED_EVENT, SORT } from 'app/config/navigation.constants';
+import { DEFAULT_SORT_DATA, SORT } from 'app/config/navigation.constants';
 import { ITEMS_PER_PAGE, PAGE_HEADER, TOTAL_COUNT_RESPONSE_HEADER } from 'app/config/pagination.constants';
 import { Alert } from 'app/shared/alert/alert';
 import { AlertError } from 'app/shared/alert/alert-error';
@@ -17,9 +16,11 @@ import { FormatMediumDatePipe } from 'app/shared/date';
 import { TranslateDirective } from 'app/shared/language';
 import { ItemCount } from 'app/shared/pagination';
 import { SortByDirective, SortDirective, SortService, type SortState, sortStateSignal } from 'app/shared/sort';
-import { VendorDeleteDialog } from '../delete/vendor-delete-dialog';
 import { VendorService } from '../service/vendor.service';
 import { IVendor } from '../vendor.model';
+
+/** Query param that puts the archived half of the directory on screen. */
+const ARCHIVED_PARAM = 'archived';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -49,6 +50,8 @@ export class Vendor implements OnInit {
   readonly itemsPerPage = signal(ITEMS_PER_PAGE);
   readonly totalItems = signal(0);
   readonly page = signal(1);
+  /** Which half of the directory is on screen. Mirrored in the `archived` query param. */
+  readonly showArchived = signal(false);
 
   readonly router = inject(Router);
   protected readonly vendorService = inject(VendorService);
@@ -56,7 +59,6 @@ export class Vendor implements OnInit {
   readonly isLoading = this.vendorService.vendorsResource.isLoading;
   protected readonly activatedRoute = inject(ActivatedRoute);
   protected readonly sortService = inject(SortService);
-  protected modalService = inject(NgbModal);
 
   constructor() {
     effect(() => {
@@ -81,18 +83,6 @@ export class Vendor implements OnInit {
       .subscribe();
   }
 
-  delete(vendor: IVendor): void {
-    const modalRef = this.modalService.open(VendorDeleteDialog, { size: 'lg', backdrop: 'static' });
-    modalRef.componentInstance.vendor = vendor;
-    // unsubscribe not needed because closed completes on modal close
-    modalRef.closed
-      .pipe(
-        filter(reason => reason === ITEM_DELETED_EVENT),
-        tap(() => this.load()),
-      )
-      .subscribe();
-  }
-
   load(): void {
     this.queryBackend();
   }
@@ -105,7 +95,16 @@ export class Vendor implements OnInit {
     this.handleNavigation(page, this.sortState());
   }
 
+  toggleArchived(): void {
+    this.router.navigate(['./'], {
+      relativeTo: this.activatedRoute,
+      queryParams: { page: 1, archived: this.showArchived() ? null : true },
+      queryParamsHandling: 'merge',
+    });
+  }
+
   protected fillComponentAttributeFromRoute(params: ParamMap, data: Data): void {
+    this.showArchived.set(params.get(ARCHIVED_PARAM) === 'true');
     const page = params.get(PAGE_HEADER);
     this.page.set(+(page ?? 1));
     this.sortState.set(this.sortService.parseSortParam(params.get(SORT) ?? data[DEFAULT_SORT_DATA]));
@@ -125,6 +124,10 @@ export class Vendor implements OnInit {
       page: pageToLoad - 1,
       size: this.itemsPerPage(),
       sort: this.sortService.buildSortParam(this.sortState()),
+      // notEquals rather than equals=false: a record saved before isArchived
+      // existed has no value at all, and equals=false would not match it, so
+      // the whole directory would read as empty.
+      [this.showArchived() ? 'isArchived.equals' : 'isArchived.notEquals']: true,
     };
     this.vendorService.vendorsParams.set(queryObject);
   }
@@ -134,6 +137,7 @@ export class Vendor implements OnInit {
       page,
       size: this.itemsPerPage(),
       sort: this.sortService.buildSortParam(sortState),
+      archived: this.showArchived() ? true : null,
     };
 
     this.router.navigate(['./'], {
