@@ -158,17 +158,6 @@
   margin-top: 8px;
 }
 
-.auth-hint {
-  margin-top: 16px;
-  background: var(--abf-gold-050);
-  border: 1px solid #efe0c2;
-  border-radius: var(--abf-r-sm);
-  padding: 11px 13px;
-  font-size: 12.5px;
-  color: #7a5c1c;
-  line-height: 1.5;
-}
-
 @media (max-width: 880px) {
   .auth {
     grid-template-columns: 1fr;

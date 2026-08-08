@@ -7,18 +7,20 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { AccountService } from 'app/core/auth/account.service';
 import { LoginService } from 'app/login/login.service';
 import { TranslateDirective } from 'app/shared/language';
-import { CONSOLE_ROLES, roleByKey } from 'app/shared/auth/console-role';
 
 import { ConsoleMetricsService } from 'app/console/shared/console-metrics.service';
 
 /**
  * The console sign-in.
  *
- * The prototype's "Sign in as" select is kept, because choosing the role is
- * how the demo is meant to be explored. Here it is not cosmetic: picking a
- * role sets the username, and the username is what the token's authorities
- * are issued from, so the console really does come up read-only as a
- * supervisor.
+ * The form starts empty. It carried a prefilled username and password, and a
+ * "Sign in as" select that rewrote the username, back when an in-browser mock
+ * accepted any password for a known login. Against a real gateway those
+ * accounts do not exist and every one of them returns 401, so the page was
+ * instructing people to do something that could not work.
+ *
+ * CONSOLE_ROLES still drives role-aware behaviour elsewhere in the console;
+ * what it must not do is decide who is signing in.
  */
 @Component({
   selector: 'abf-login',
@@ -30,16 +32,14 @@ import { ConsoleMetricsService } from 'app/console/shared/console-metrics.servic
 export default class Login implements OnInit, AfterViewInit {
   username = viewChild.required<ElementRef>('username');
 
-  readonly roles = CONSOLE_ROLES;
   readonly authenticationError = signal(false);
   readonly networkTotals = signal<{ patients: number; professionals: number; vendors: number } | null>(null);
   readonly servicesLive = signal(0);
 
   loginForm = new FormGroup({
-    username: new FormControl(CONSOLE_ROLES[0].login, { nonNullable: true, validators: [Validators.required] }),
-    password: new FormControl('demopassword', { nonNullable: true, validators: [Validators.required] }),
+    username: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+    password: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     rememberMe: new FormControl(false, { nonNullable: true, validators: [Validators.required] }),
-    roleKey: new FormControl(CONSOLE_ROLES[0].key, { nonNullable: true }),
   });
 
   private readonly accountService = inject(AccountService);
@@ -67,12 +67,6 @@ export default class Login implements OnInit, AfterViewInit {
 
   ngAfterViewInit(): void {
     this.username().nativeElement.focus();
-  }
-
-  /** Choosing a role rewrites the username it will actually sign in with. */
-  onRoleChange(key: string): void {
-    const role = roleByKey(key);
-    this.loginForm.patchValue({ roleKey: role.key, username: role.login });
   }
 
   login(): void {

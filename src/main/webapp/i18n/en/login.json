@@ -6,7 +6,6 @@
       "password.placeholder": "Your password",
       "rememberme": "Remember me",
       "button": "Sign in",
-      "signInAs": "Sign in as",
       "workEmail": "Work email",
       "workEmail.placeholder": "name@abofonsa.care"
     },
@@ -28,10 +27,6 @@
       "professionals": "Professionals",
       "vendors": "Vendors",
       "services": "Services live"
-    },
-    "hint": {
-      "title": "Interactive demo.",
-      "body": "Credentials are pre-filled — just press Sign in. Every screen, table, roster cell and form is clickable; no data leaves your browser."
     }
   }
 }
