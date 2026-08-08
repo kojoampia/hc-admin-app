@@ -3,6 +3,7 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 
 import { Observable } from 'rxjs';
 
+import { ADMIN_SERVICE } from 'app/config/microservice.constants';
 import { ApplicationConfigService } from 'app/core/config/application-config.service';
 import { createRequestOption } from 'app/core/request/request-util';
 import { isPresent } from 'app/core/util/operators';
@@ -28,7 +29,7 @@ export class ServiceActivitiesService {
    */
   readonly serviceActivities = computed(() => (this.serviceActivitiesResource.hasValue() ? this.serviceActivitiesResource.value() : []));
   protected readonly applicationConfigService = inject(ApplicationConfigService);
-  protected readonly resourceUrl = this.applicationConfigService.getEndpointFor('api/service-activities');
+  protected readonly resourceUrl = this.applicationConfigService.getEndpointFor('api/service-activities', ADMIN_SERVICE);
 }
 
 @Injectable({ providedIn: 'root' })

@@ -5,6 +5,7 @@ import dayjs from 'dayjs/esm';
 import { Observable, map } from 'rxjs';
 
 import { DATE_FORMAT } from 'app/config/input.constants';
+import { ADMIN_SERVICE } from 'app/config/microservice.constants';
 import { ApplicationConfigService } from 'app/core/config/application-config.service';
 import { createRequestOption } from 'app/core/request/request-util';
 import { isPresent } from 'app/core/util/operators';
@@ -43,7 +44,7 @@ export class PatientsService {
     (this.patientsResource.hasValue() ? this.patientsResource.value() : []).map(item => this.convertValueFromServer(item)),
   );
   protected readonly applicationConfigService = inject(ApplicationConfigService);
-  protected readonly resourceUrl = this.applicationConfigService.getEndpointFor('api/patients');
+  protected readonly resourceUrl = this.applicationConfigService.getEndpointFor('api/patients', ADMIN_SERVICE);
 
   protected convertValueFromServer(restPatient: RestPatient): IPatient {
     return {
