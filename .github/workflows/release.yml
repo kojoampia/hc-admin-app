@@ -1,0 +1,171 @@
+# Builds this repo's production image and pushes it to GHCR.
+#
+# Mirrors hc-admin-dashboard's release.yml, because the deployment treats these images
+# interchangeably: `hc-admin-ci/deploy.sh --channel github` deploys exactly what is pushed here,
+# with the same compose.yml and the same ./start.
+#
+# --- PREREQUISITE: HC_ADMIN_CI_TOKEN ---------------------------------------------------------------
+#
+# This repository has NO secrets set as of this file being written, so the first run of this
+# workflow will fail on the second checkout, deliberately and loudly.
+#
+# hc-admin-ci is private and holds the Dockerfile this build needs. A workflow's default
+# GITHUB_TOKEN is scoped to the repository it runs in — it can read a public sibling and nothing
+# else. Mint a fine-grained PAT limited to kojoampia/hc-admin-ci with Contents: Read-only and add it
+# as HC_ADMIN_CI_TOKEN. The three sibling repos already have one.
+#
+# --- Tags ------------------------------------------------------------------------------------------
+#
+# ${{ github.sha }} — the FULL 40-character SHA — plus `latest` for humans.
+#
+# hc-admin is four separate repositories with four independent HEADs, so no shared commit could name
+# the set. Each repo tags only its own image with its own SHA, and the deployment carries a tag per
+# image. Do not "simplify" this to a shared tag: a change confined to one repo would republish
+# different content under a tag that already exists on the others.
+#
+# --- The Dockerfile and the nginx config are not in this repo --------------------------------------
+#
+# Both live in hc-admin-ci, so the application repos need no deployment files of their own.
+# app.Dockerfile does `COPY --from=deploycfg web-nginx.conf ...`, a second build context supplied by
+# name — the workflow equivalent of build.sh's `--build-context deploycfg=./docker`. Without it the
+# image would serve static files and proxy nothing, and every /api call would 404.
+#
+# The nginx config is shared with the dashboard rather than duplicated: it already proxies /api/,
+# /services/, /management/ and /v3/api-docs to the gateway, a superset of what the console asks for.
+#
+# --- This image is not deployable yet, and pushing it does not make it so --------------------------
+#
+# Two things are still true, both tracked in kojoampia/hc-admin-dashboard#10:
+#
+#   1. The console defaults to an in-browser mock. app/core/mock/ answers /api/** and /management/**
+#      before the network, so a container from this image shows a complete, fabricated dataset
+#      whether or not a gateway exists behind it.
+#   2. Its 23 entity services call api/<entity> with no microservice segment, so every entity 404s
+#      through the gateway even in ?apiMode=network.
+#
+# Building the image is a prerequisite for the cutover, not the cutover. prod-server/compose.yml
+# still runs hc-admin-web.
+#
+# --- No quality gate here ---------------------------------------------------------------------------
+#
+# This workflow builds and pushes; ci.yml lints, type-checks and tests. Keep them separate — folding
+# the tests in here would leave the registry with no image for a commit already on main.
+name: Release
+
+on:
+  push:
+    branches: [main]
+  # Re-running a release for an already-merged commit should not require an empty push.
+  workflow_dispatch:
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false # never interrupt a push mid-flight
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: hc-admin-app
+
+jobs:
+  build-image:
+    name: Build and push the console image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      # Required by upload-sarif.
+      security-events: write
+    steps:
+      # Into a subdirectory rather than the workspace root: app.Dockerfile does `COPY . .`, so a
+      # deployment checkout at the root would be copied into the build stage along with the console.
+      - name: Check out the console
+        uses: actions/checkout@v7
+        with:
+          path: app
+
+      - name: Check out the deployment repo (for docker/app.Dockerfile and the nginx config)
+        uses: actions/checkout@v7
+        with:
+          repository: ${{ vars.DEPLOY_REPO || format('{0}/hc-admin-ci', github.repository_owner) }}
+          # See the header. The fallback to github.token is not a working configuration for a
+          # private repo; it exists so a missing secret fails HERE, on a checkout that plainly names
+          # the repo it could not read, rather than further down on a Dockerfile that mysteriously
+          # does not exist.
+          token: ${{ secrets.HC_ADMIN_CI_TOKEN || github.token }}
+          path: deploycfg
+
+      # GHCR rejects an upper-case path component, and github.repository_owner preserves whatever
+      # case the account was registered with — so it is folded here rather than assumed.
+      - name: Resolve the image path
+        run: |
+          owner="$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')"
+          echo "IMAGE_PATH=${REGISTRY}/${owner}/${IMAGE_NAME}" >> "$GITHUB_ENV"
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v4
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v7
+        with:
+          context: app
+          file: deploycfg/docker/app.Dockerfile
+          # The named second context the Dockerfile's `COPY --from=deploycfg` reads.
+          build-contexts: |
+            deploycfg=deploycfg/docker
+          push: true
+          # The SHA is what deploy.sh pins; `latest` is a convenience and is never what production
+          # resolves to.
+          tags: |
+            ${{ env.IMAGE_PATH }}:${{ github.sha }}
+            ${{ env.IMAGE_PATH }}:latest
+          cache-from: type=gha,scope=app
+          cache-to: type=gha,scope=app,mode=max
+
+      # Scans the image that was just pushed, not a rebuild of it — the digest above is what would
+      # run, and a scan of anything else is a scan of something else.
+      #
+      # Reports, does not block: this pipeline keeps the registry populated even when a check fails,
+      # and a base-image CVE with no upstream fix would otherwise stop delivery of an unrelated
+      # change. Results land in the Security tab and the exit code stays 0 by design.
+      #
+      # The action version is not arbitrary. trivy-action delegates to aquasecurity/setup-trivy, and
+      # which ref it names decides whether this job can even start: some releases name setup-trivy
+      # tags upstream has since deleted. An unresolvable action fails at "Set up job", before any
+      # step runs, so continue-on-error cannot rescue it and a broken scan step takes the image
+      # build down with it. That happened to the sibling repos on 2026-08-05. This matches the
+      # version they currently run green.
+      - name: Scan the pushed image
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: ${{ env.IMAGE_PATH }}:${{ github.sha }}
+          format: sarif
+          output: trivy-results.sarif
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          exit-code: '0'
+
+      - name: Upload the scan to the Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: trivy-results.sarif
+          category: trivy-image
+
+      - name: Report what was built
+        run: |
+          {
+            echo "### Console image"
+            echo '```'
+            echo "${IMAGE_PATH}:${{ github.sha }}"
+            echo '```'
+            echo
+            echo "**Not yet deployable.** prod-server/compose.yml still runs hc-admin-web, and the"
+            echo "console defaults to its in-browser mock while its entity services omit the"
+            echo "/services/hcadminservice segment. See kojoampia/hc-admin-dashboard#10."
+          } >> "$GITHUB_STEP_SUMMARY"
