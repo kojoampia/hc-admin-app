@@ -1,0 +1,40 @@
+# Keeps the Docker build context to the sources the image actually needs.
+#
+# Without this the context is ~472 MB, because app.Dockerfile does `COPY . .` and this directory
+# carries 579 MB of node_modules and 27 MB of target/. Those are the two that matter:
+#
+#   node_modules — reinstalled by `npm ci` inside the image, from the lockfile. Copying the host's
+#                  copy in is wasted transfer at best; at worst it carries platform-specific native
+#                  builds from a different OS into the build stage.
+#   target/      — the previous build's output. The image runs `npm run webapp:prod`, which starts
+#                  by clearing it, so shipping it in is pure cost.
+#
+# Modelled on hc-admin-dashboard's .dockerignore, which this repository never had.
+**/.classpath
+**/.dockerignore
+**/.env
+**/.git
+**/.gitignore
+**/.project
+**/.settings
+**/.toolstarget
+**/.vs
+**/.vscode
+**/*.*proj.user
+**/*.dbmdl
+**/*.jfm
+**/bin
+**/charts
+**/docker-compose*
+**/compose*
+**/Dockerfile*
+**/node_modules
+**/npm-debug.log
+**/obj
+**/secrets.dev.yaml
+**/values.dev.yaml
+LICENSE
+README.md
+
+# Build output. `webapp:prod` clears and regenerates it inside the image.
+target
