@@ -1,3 +1,5 @@
+import { vitest } from 'vitest';
+
 import { Provider } from '@angular/core';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
@@ -40,6 +42,18 @@ export const consoleActivatedRoute: Provider = { provide: ActivatedRoute, useVal
  * for every glyph in the template.
  */
 export const provideConsoleTesting = (extra: Provider[] = []): void => {
+  // Real timers first, and this is not belt-and-braces.
+  //
+  // Twenty-four generated list specs install fake timers at module scope and none restore them. If
+  // one of those has run in this worker, `setTimeout` is faked and `Date.now()` is frozen — and
+  // `settle()` below awaits four `setTimeout(…, 0)` calls that would then never fire. Every
+  // `beforeEach` in duty-roster.spec.ts hung on exactly that on CI, presenting as nine hook timeouts
+  // that no ceiling could fix. See vitest-setup.ts.
+  //
+  // Restoring here rather than trusting the leak to be cleaned up elsewhere: this is the point that
+  // needs real timers, and it costs nothing when they already are.
+  vitest.useRealTimers();
+
   // Reset first: some suites configure a module more than once in a test —
   // "as the administrator, then as the supervisor" — and reconfiguring an
   // already-instantiated TestBed leaves the injector and the zone in a state
