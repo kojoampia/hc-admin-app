@@ -33,18 +33,18 @@
 # The nginx config is shared with the dashboard rather than duplicated: it already proxies /api/,
 # /services/, /management/ and /v3/api-docs to the gateway, a superset of what the console asks for.
 #
-# --- This image is not deployable yet, and pushing it does not make it so --------------------------
+# --- This image is the deployed frontend ------------------------------------------------------------
 #
-# Two things are still true, both tracked in kojoampia/hc-admin-dashboard#10:
+# It was not, when this workflow was written. Two things blocked it, both since fixed:
 #
-#   1. The console defaults to an in-browser mock. app/core/mock/ answers /api/** and /management/**
-#      before the network, so a container from this image shows a complete, fabricated dataset
-#      whether or not a gateway exists behind it.
-#   2. Its 23 entity services call api/<entity> with no microservice segment, so every entity 404s
-#      through the gateway even in ?apiMode=network.
+#   1. The console defaulted to an in-browser mock, so a container from this image showed a
+#      complete, fabricated dataset whether or not a gateway existed behind it. The default flipped
+#      in #10 and the mock was removed outright in #11.
+#   2. Its 23 entity services called api/<entity> with no microservice segment, so every entity
+#      404ed through the gateway. They pass services/hcadminservice/** since #6.
 #
-# Building the image is a prerequisite for the cutover, not the cutover. prod-server/compose.yml
-# still runs hc-admin-web.
+# prod-server/compose.yml runs this image now (hc-admin-ci#4). What that means for this workflow:
+# a tag pushed from here reaches production on the next deploy, so it is no longer only a build.
 #
 # --- No quality gate here ---------------------------------------------------------------------------
 #
@@ -178,7 +178,6 @@ jobs:
             echo "${IMAGE_PATH}:${{ github.sha }}"
             echo '```'
             echo
-            echo "**Not yet deployable.** prod-server/compose.yml still runs hc-admin-web, and the"
-            echo "console defaults to its in-browser mock while its entity services omit the"
-            echo "/services/hcadminservice segment. See kojoampia/hc-admin-dashboard#10."
+            echo "**This is the production frontend.** prod-server/compose.yml resolves the \`web\`"
+            echo "service to this image, so a deploy from hc-admin-ci will pick this tag up."
           } >> "$GITHUB_STEP_SUMMARY"

@@ -12,13 +12,14 @@ export default defineConfig({
   retries: 2,
   allowCypressEnv: false,
   expose: {
-    // The mock auth layer accepts any password for a known console login;
-    // the role comes from the login, not the credential. See
-    // src/main/webapp/app/core/mock/mock-auth.ts.
-    adminUsername: 'efua.mensah@abofonsa.care',
-    adminPassword: 'demopassword',
-    username: 'efua.mensah@abofonsa.care',
-    password: 'demopassword',
+    // A real gateway checks these. They are the `dev` profile's seeded admin from
+    // hc-admin-gateway's hc-admin-gw-data.json — the console logins these used to name
+    // (efua.mensah@abofonsa.care and friends) existed only in the in-browser mock, which
+    // was removed in #11, and no gateway has ever held them.
+    adminUsername: 'admin',
+    adminPassword: 'Admin@01234',
+    username: 'admin',
+    password: 'Admin@01234',
     authenticationUrl: '/api/authenticate',
     jwtStorageName: 'abf-authenticationToken',
   },
