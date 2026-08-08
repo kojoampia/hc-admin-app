@@ -1,10 +1,9 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ActivatedRoute } from '@angular/router';
 
 import { ConsoleAuthority } from 'app/shared/auth/console-role';
 
-import { provideConsoleTesting, settle, signInAs } from '../shared/console-testing';
+import { consoleActivatedRoute, provideConsoleTesting, settle, signInAs } from '../shared/console-testing';
 import DutyRoster, { SHIFT_CYCLE, nextShift } from './duty-roster';
 
 describe('DutyRoster', () => {
@@ -34,7 +33,7 @@ describe('DutyRoster', () => {
     let component: DutyRoster;
 
     beforeEach(async () => {
-      provideConsoleTesting([{ provide: ActivatedRoute, useValue: { snapshot: { data: {} } } }]);
+      provideConsoleTesting([consoleActivatedRoute]);
       signInAs([ConsoleAuthority.ADMIN, ConsoleAuthority.USER]);
 
       fixture = TestBed.createComponent(DutyRoster);
@@ -132,7 +131,7 @@ describe('DutyRoster', () => {
     let component: DutyRoster;
 
     beforeEach(async () => {
-      provideConsoleTesting([{ provide: ActivatedRoute, useValue: { snapshot: { data: {} } } }]);
+      provideConsoleTesting([consoleActivatedRoute]);
       signInAs([ConsoleAuthority.SUPERVISOR, ConsoleAuthority.USER]);
 
       fixture = TestBed.createComponent(DutyRoster);

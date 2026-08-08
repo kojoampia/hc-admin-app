@@ -1,7 +1,7 @@
 import { Provider } from '@angular/core';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { ActivatedRoute, provideRouter } from '@angular/router';
 
 import { FaIconLibrary } from '@fortawesome/angular-fontawesome';
 import { provideTranslateService } from '@ngx-translate/core';
@@ -11,6 +11,23 @@ import { AccountService } from 'app/core/auth/account.service';
 import { fontAwesomeIcons } from 'app/config/font-awesome-icons';
 import { MOCK_LATENCY, mockApiInterceptor } from 'app/core/mock/mock-api.interceptor';
 import { resetDatabase } from 'app/core/mock/mock-db';
+
+/**
+ * A stand-in ActivatedRoute complete enough for the shell to walk.
+ *
+ * Three specs each carried `{ snapshot: { data: {} } }` inline. That is enough for a screen reading
+ * its own route data and not enough for anything that walks the tree: `Topbar.deepestRouteData`
+ * starts at `activatedRoute.root` and loops on `firstChild`, so an object with neither threw
+ * `Cannot read properties of undefined` from inside an rxjs pipeline — an uncaught exception, not a
+ * test failure. Every test still passed and the run still exited 1.
+ *
+ * `root` points back at the stub and `firstChild` is null, which is what a route tree of exactly one
+ * node looks like.
+ */
+const routeStub: Record<string, unknown> = { snapshot: { data: {} }, firstChild: null };
+routeStub.root = routeStub;
+
+export const consoleActivatedRoute: Provider = { provide: ActivatedRoute, useValue: routeStub };
 
 /**
  * The setup every console screen spec needs.
@@ -33,7 +50,20 @@ export const provideConsoleTesting = (extra: Provider[] = []): void => {
   TestBed.configureTestingModule({
     providers: [
       provideTranslateService(),
-      provideRouter([]),
+      // A catch-all, not an empty table. The console navigates away after several actions —
+      // message-thread sends you to /message-desk on reply and /task-board on escalate, the desk
+      // opens a thread relatively, the dashboard opens a tile's route — and every one of those call
+      // sites discards the promise with `void`. Against `provideRouter([])` the navigation rejects
+      // with NG04002 and, unawaited, becomes an unhandled rejection.
+      //
+      // That failure is invisible in the summary: every individual test still passes and Vitest
+      // still prints "1297 passed", but the process exits 1. It went unnoticed until this repo got a
+      // CI job, because a local reader looks at the count and not the exit code.
+      //
+      // A wildcard with no component matches any URL and renders nothing, which is all these
+      // navigations need. Tests that care where the console went spy on Router.navigate and
+      // intercept before routing, so nothing here weakens them.
+      provideRouter([{ path: '**', children: [] }]),
       provideHttpClient(withInterceptors([mockApiInterceptor])),
       // Without this every request waits 120ms and the suite becomes a race.
       { provide: MOCK_LATENCY, useValue: 0 },

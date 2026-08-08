@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ActivatedRoute } from '@angular/router';
 
 import { firstValueFrom } from 'rxjs';
 
@@ -8,18 +7,16 @@ import { TaskService } from 'app/entities/operations/task/service/task.service';
 import { MessageService } from 'app/entities/operations/message/service/message.service';
 import { ConsoleAuthority } from 'app/shared/auth/console-role';
 
-import { provideConsoleTesting, settle, signInAs } from '../shared/console-testing';
+import { consoleActivatedRoute, provideConsoleTesting, settle, signInAs } from '../shared/console-testing';
 import MessageDesk from './message-desk';
 import MessageThread from './message-thread';
-
-const route = { provide: ActivatedRoute, useValue: { snapshot: { data: {} } } };
 
 describe('MessageDesk', () => {
   let fixture: ComponentFixture<MessageDesk>;
   let component: MessageDesk;
 
   beforeEach(async () => {
-    provideConsoleTesting([route]);
+    provideConsoleTesting([consoleActivatedRoute]);
     signInAs([ConsoleAuthority.ADMIN, ConsoleAuthority.USER]);
 
     fixture = TestBed.createComponent(MessageDesk);
@@ -134,7 +131,7 @@ describe('MessageThread', () => {
   };
 
   beforeEach(() => {
-    provideConsoleTesting([route]);
+    provideConsoleTesting([consoleActivatedRoute]);
     signInAs([ConsoleAuthority.ADMIN, ConsoleAuthority.USER]);
     messageService = TestBed.inject(MessageService);
     taskService = TestBed.inject(TaskService);
