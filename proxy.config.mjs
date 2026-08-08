@@ -27,7 +27,17 @@ export default {
   // It is a proxy rather than a direct cross-origin call on purpose: the
   // gateway would otherwise have to CORS-allow the dev server, and a
   // same-origin path also keeps the JWT on the same site.
-  '^/(api|management)/': {
+  //
+  // `services` is in the pattern and is not optional. Entity requests are built as
+  // `services/hcadminservice/api/<entity>`, because that is the path the gateway's discovery
+  // locator publishes; `api/<entity>` reaches the gateway's own surface and 404s.
+  //
+  // Leaving it out does not produce a 404 here, which is what makes it worth stating: an unproxied
+  // path falls through to the dev server's SPA fallback, which answers **200 with index.html**.
+  // HttpClient then fails parsing HTML as JSON, and the screen reports a parse error rather than a
+  // routing one. Production nginx already proxies /services/ — see web-nginx.conf in hc-admin-ci —
+  // so this gap existed only in development.
+  '^/(api|management|services)/': {
     target: `http://${gatewayHost}:${gatewayPort}`,
     xfwd: true,
     // A dead gateway should fail fast and visibly, not hang the request until

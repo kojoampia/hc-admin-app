@@ -4,6 +4,7 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import dayjs from 'dayjs/esm';
 import { Observable, map } from 'rxjs';
 
+import { ADMIN_SERVICE } from 'app/config/microservice.constants';
 import { ApplicationConfigService } from 'app/core/config/application-config.service';
 import { createRequestOption } from 'app/core/request/request-util';
 import { isPresent } from 'app/core/util/operators';
@@ -35,7 +36,7 @@ export class AuditEntriesService {
     (this.auditEntriesResource.hasValue() ? this.auditEntriesResource.value() : []).map(item => this.convertValueFromServer(item)),
   );
   protected readonly applicationConfigService = inject(ApplicationConfigService);
-  protected readonly resourceUrl = this.applicationConfigService.getEndpointFor('api/audit-entries');
+  protected readonly resourceUrl = this.applicationConfigService.getEndpointFor('api/audit-entries', ADMIN_SERVICE);
 
   protected convertValueFromServer(restAuditEntry: RestAuditEntry): IAuditEntry {
     return {

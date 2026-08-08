@@ -41,6 +41,16 @@ export class CredentialsService {
     (this.credentialsResource.hasValue() ? this.credentialsResource.value() : []).map(item => this.convertValueFromServer(item)),
   );
   protected readonly applicationConfigService = inject(ApplicationConfigService);
+  // Deliberately NOT routed through `services/hcadminservice/` like every other entity service.
+  //
+  // Credential is hc-admin-gateway's Account. The admin service has no such entity and never will:
+  // the console model excluded Credential and CredentialRole on purpose, because the gateway owns
+  // user records and the two live in different databases. `/services/hcadminservice/api/credentials`
+  // would 404 forever.
+  //
+  // This path is therefore gateway-relative, and it is the one endpoint here the in-browser mock
+  // answers with no real counterpart yet — the gateway serves user management under
+  // `/api/admin/users`, a different shape. See app/config/microservice.constants.ts.
   protected readonly resourceUrl = this.applicationConfigService.getEndpointFor('api/credentials');
 
   protected convertValueFromServer(restCredential: RestCredential): ICredential {

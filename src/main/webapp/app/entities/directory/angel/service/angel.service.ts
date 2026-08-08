@@ -3,6 +3,7 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 
 import { Observable } from 'rxjs';
 
+import { ADMIN_SERVICE } from 'app/config/microservice.constants';
 import { ApplicationConfigService } from 'app/core/config/application-config.service';
 import { createRequestOption } from 'app/core/request/request-util';
 import { isPresent } from 'app/core/util/operators';
@@ -26,7 +27,7 @@ export class AngelsService {
    */
   readonly angels = computed(() => (this.angelsResource.hasValue() ? this.angelsResource.value() : []));
   protected readonly applicationConfigService = inject(ApplicationConfigService);
-  protected readonly resourceUrl = this.applicationConfigService.getEndpointFor('api/angels');
+  protected readonly resourceUrl = this.applicationConfigService.getEndpointFor('api/angels', ADMIN_SERVICE);
 }
 
 @Injectable({ providedIn: 'root' })
