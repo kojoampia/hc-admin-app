@@ -35,7 +35,7 @@
       "spendToDate": "Spend To Date",
       "rating": "Rating",
       "document": "Document",
-      "archivedNotice": "This vendor is archived and does not appear in the directory.",
+      "archivedNotice": "This record is archived and does not appear in the directory.",
       "isArchived": "Archived"
     }
   }
