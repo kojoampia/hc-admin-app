@@ -6,7 +6,6 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { map } from 'rxjs';
 
 import { AccountService } from 'app/core/auth/account.service';
-import { LoginService } from 'app/login/login.service';
 import { IAuditEntry } from 'app/entities/platform/audit-entry/audit-entry.model';
 import { AuditEntryService } from 'app/entities/platform/audit-entry/service/audit-entry.service';
 import { IOrganisation } from 'app/entities/platform/organisation/organisation.model';
@@ -15,7 +14,7 @@ import { ITeam } from 'app/entities/platform/team/team.model';
 import { TeamService } from 'app/entities/platform/team/service/team.service';
 import { FormatMediumDatePipe, FormatMediumDatetimePipe } from 'app/shared/date';
 import { TranslateDirective } from 'app/shared/language';
-import { CONSOLE_ROLES, ConsoleRole, roleByAuthorities } from 'app/shared/auth/console-role';
+import { roleByAuthorities } from 'app/shared/auth/console-role';
 
 import { ProfessionalNamesService } from '../shared/professional-names.service';
 import { StatusPill } from '../shared/status-pill/status-pill';
@@ -39,19 +38,16 @@ export type OrganisationTab = 'about' | 'address' | 'team' | 'security' | 'audit
 })
 export default class OrganisationProfile implements OnInit {
   readonly tabs: OrganisationTab[] = ['about', 'address', 'team', 'security', 'audit'];
-  readonly roles = CONSOLE_ROLES;
 
   readonly activeTab = signal<OrganisationTab>('about');
   readonly organisation = signal<IOrganisation | null>(null);
   readonly teams = signal<ITeam[]>([]);
   readonly auditTrail = signal<IAuditEntry[]>([]);
-  readonly isSwitching = signal(false);
 
   private readonly organisationService = inject(OrganisationService);
   private readonly teamService = inject(TeamService);
   private readonly auditEntryService = inject(AuditEntryService);
   private readonly accountService = inject(AccountService);
-  private readonly loginService = inject(LoginService);
   private readonly professionalNames = inject(ProfessionalNamesService);
 
   // eslint-disable-next-line @typescript-eslint/member-ordering
@@ -86,23 +82,5 @@ export default class OrganisationProfile implements OnInit {
 
   selectTab(tab: OrganisationTab): void {
     this.activeTab.set(tab);
-  }
-
-  /**
-   * Switch role by signing in as that role's account.
-   *
-   * The password below is a placeholder the login form's shape requires. It was never checked
-   * while an in-browser mock resolved the role from the login; against a real gateway it is, so
-   * these role buttons only work for accounts the gateway actually holds with that password.
-   */
-  switchRole(role: ConsoleRole): void {
-    if (role.key === this.currentRole().key || this.isSwitching()) {
-      return;
-    }
-    this.isSwitching.set(true);
-    this.loginService.login({ username: role.login, password: 'demopassword', rememberMe: false }).subscribe({
-      next: () => this.isSwitching.set(false),
-      error: () => this.isSwitching.set(false),
-    });
   }
 }
