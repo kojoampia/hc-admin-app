@@ -125,32 +125,6 @@
             <dd>{{ account()?.authorities?.join(', ') }}</dd>
           </dl>
         </section>
-
-        <section class="card card-pad">
-          <h4 abfTranslate="organisation.security.switchRole">Switch role</h4>
-          <p class="muted small" abfTranslate="organisation.security.switchHint">
-            Switching re-issues the session token. Controls gated on an authority you no longer hold disappear immediately.
-          </p>
-          <div class="stack">
-            @for (role of roles; track role.key) {
-              <button
-                type="button"
-                class="opt"
-                [class.sel]="currentRole().key === role.key"
-                [disabled]="isSwitching()"
-                (click)="switchRole(role)"
-              >
-                <span class="grow">
-                  <span class="tl">{{ role.label | translate }}</span>
-                  <span class="st">{{ role.authorities.join(', ') }}</span>
-                </span>
-                @if (currentRole().key === role.key) {
-                  <fa-icon icon="check" />
-                }
-              </button>
-            }
-          </div>
-        </section>
       </div>
     }
 

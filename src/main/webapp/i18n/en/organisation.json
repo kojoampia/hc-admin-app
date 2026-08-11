@@ -38,9 +38,7 @@
       "signedIn": "Signed in as",
       "account": "Account",
       "role": "Role",
-      "authorities": "Authorities",
-      "switchRole": "Switch role",
-      "switchHint": "Switching re-issues the session token. Controls gated on an authority you no longer hold disappear immediately."
+      "authorities": "Authorities"
     },
     "audit": {
       "when": "When",
