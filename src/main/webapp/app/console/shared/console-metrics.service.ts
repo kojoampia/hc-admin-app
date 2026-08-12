@@ -33,14 +33,16 @@ export interface RosterSummary {
 }
 
 export interface DegradedService {
-  id: number;
+  /** A Mongo id. It was `number` while an in-browser mock invented ids; the api returns strings. */
+  id: string;
   name: string;
   host: string;
   port: number;
 }
 
 export interface CaseLoadRow {
-  id: number;
+  /** A Mongo id — see DegradedService. */
+  id: string;
   name: string;
   cases: number;
   visits: number;
