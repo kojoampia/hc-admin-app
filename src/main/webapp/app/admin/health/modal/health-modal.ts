@@ -4,6 +4,7 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap/modal';
 
 import { TranslateDirective } from 'app/shared/language';
+import { humaniseTranslationKey } from 'app/config/translation.config';
 import { HealthDetails, HealthKey } from '../health.model';
 
 @Component({
@@ -16,6 +17,11 @@ export default class HealthModal {
   health?: { key: HealthKey; value: HealthDetails };
 
   private readonly activeModal = inject(NgbActiveModal);
+
+  /** Same fallback as the table behind it — see Health.indicatorLabel. */
+  indicatorLabel(key: string): string {
+    return humaniseTranslationKey(key);
+  }
 
   readableValue(value: any): string {
     if (this.health?.key === 'diskSpace') {
