@@ -11,25 +11,17 @@
       "error": "Error"
     },
     "indicator": {
+      "consul": "Consul",
+      "discoveryComposite": "Service discovery",
       "diskSpace": "Disk space",
-      "ssl": "SSL",
-      "mail": "Email",
       "livenessState": "Liveness state",
-      "readinessState": "Readiness state",
+      "mail": "Email",
+      "mongo": "MongoDB",
       "ping": "Application",
-      "hc-admin-dashboard": "Admin Dashboard",
-      "hc-admin-gateway": "Admin Gateway",
-      "hc-admin-ms": "Admin Service",
-      "hc-professional-dashboard": "Professional Dashboard",
-      "hc-professional-gateway": "Professional Gateway",
-      "hc-professional-service": "Professional Service",
-      "hc-patient-dashboard": "Patient Dashboard",
-      "hc-patient-gateway": "Patient Gateway",
-      "hc-patient-ms": "Patient Service",
-      "hc-vendor-gw": "Vendor Gateway",
-      "hc-vendorr-ms": "Vendor Service",
-      "hc-payment-ms": "Payment Service",
-      "hc-kafka": "Kafka event bus"
+      "reactiveDiscoveryClients": "Discovery clients",
+      "readinessState": "Readiness state",
+      "refreshScope": "Configuration refresh",
+      "ssl": "SSL"
     },
     "table": {
       "service": "Service name",
