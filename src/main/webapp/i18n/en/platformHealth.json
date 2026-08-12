@@ -8,7 +8,7 @@
       "healthy": "Services healthy",
       "degraded": "Degraded",
       "median": "Median response",
-      "mapped": "Services mapped"
+      "uptime": "Uptime, {{ days }} days"
     }
   }
 }

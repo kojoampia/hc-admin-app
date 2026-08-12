@@ -55,6 +55,13 @@ export interface PlatformCapability {
   status: string;
 }
 
+export interface Uptime {
+  /** Null when no metrics store is configured — "not measured", which is not the same as 0%. */
+  percent: number | null;
+  /** Render this. The caption must never claim a window nobody measured. */
+  windowDays: number;
+}
+
 export interface DashboardMetrics {
   /** Whole-network figures. */
   network: NetworkTotals;
@@ -73,6 +80,7 @@ export interface DashboardMetrics {
   /** Keyed by KPI. A key that is not present simply has no trend line. */
   sparklines: Record<string, number[] | undefined>;
   capabilities: PlatformCapability[];
+  uptime: Uptime;
 }
 
 @Injectable({ providedIn: 'root' })
