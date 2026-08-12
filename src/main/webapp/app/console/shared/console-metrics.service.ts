@@ -4,6 +4,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { ApplicationConfigService } from 'app/core/config/application-config.service';
+import { ADMIN_SERVICE } from 'app/config/microservice.constants';
 
 /**
  * The one aggregate the generated entity services cannot express.
@@ -78,7 +79,13 @@ export interface DashboardMetrics {
 export class ConsoleMetricsService {
   private readonly http = inject(HttpClient);
   private readonly applicationConfigService = inject(ApplicationConfigService);
-  private readonly resourceUrl = this.applicationConfigService.getEndpointFor('api/dashboard/metrics');
+  /**
+   * The microservice segment is not optional. Without it this resolves to `api/dashboard/metrics`
+   * on the gateway's own surface, which serves no such route — a 404 that no screen reports,
+   * leaving the dashboard, platform-health and the sign-in figures blank. Verified against
+   * production: gateway-relative 404, `services/hcadminservice/` 200.
+   */
+  private readonly resourceUrl = this.applicationConfigService.getEndpointFor('api/dashboard/metrics', ADMIN_SERVICE);
 
   metrics(): Observable<DashboardMetrics> {
     return this.http.get<DashboardMetrics>(this.resourceUrl);
