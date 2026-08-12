@@ -21,16 +21,7 @@
           @for (componentHealth of health.components | keyvalue; track componentHealth.key) {
             <tr>
               <td [abfTranslate]="'health.indicator.' + componentHealth.key">
-                {{
-                  {
-                    diskSpace: 'Disk space',
-                    ssl: 'SSL',
-                    mail: 'Email',
-                    livenessState: 'Liveness state',
-                    readinessState: 'Readiness state',
-                    ping: 'Application',
-                  }[componentHealth.key] || componentHealth.key
-                }}
+                {{ indicatorLabel(componentHealth.key) }}
               </td>
               <td class="text-center">
                 <span
