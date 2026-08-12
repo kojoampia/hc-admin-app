@@ -21,10 +21,15 @@
     <b>{{ medianResponseMs() }} ms</b>
     <span abfTranslate="platformHealth.stat.median">Median response</span>
   </div>
+  <!--
+    Uptime, as the prototype had it. The card previously showed services().length under "Services
+    mapped" — the first card's denominator restated, which is not a fact about the platform.
+    An em dash when the metrics store is unreachable: "not measured" must not render as 0%.
+  -->
   <div class="stat">
     <span class="ic ic--gold"><fa-icon icon="shield-halved" /></span>
-    <b>{{ services().length }}</b>
-    <span abfTranslate="platformHealth.stat.mapped">Services mapped</span>
+    <b>{{ uptimeLabel() }}</b>
+    <span>{{ 'platformHealth.stat.uptime' | translate: { days: uptime()?.windowDays ?? 0 } }}</span>
   </div>
 </div>
 

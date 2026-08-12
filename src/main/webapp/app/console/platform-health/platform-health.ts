@@ -6,8 +6,9 @@ import { map } from 'rxjs';
 import { IPlatformService } from 'app/entities/platform/platform-service/platform-service.model';
 import { PlatformServiceService } from 'app/entities/platform/platform-service/service/platform-service.service';
 import { TranslateDirective } from 'app/shared/language';
+import { TranslatePipe } from '@ngx-translate/core';
 
-import { ConsoleMetricsService, PlatformCapability } from '../shared/console-metrics.service';
+import { ConsoleMetricsService, PlatformCapability, Uptime } from '../shared/console-metrics.service';
 import { StatusPill } from '../shared/status-pill/status-pill';
 
 /**
@@ -25,11 +26,32 @@ import { StatusPill } from '../shared/status-pill/status-pill';
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './platform-health.html',
   styleUrl: './platform-health.scss',
-  imports: [FontAwesomeModule, TranslateDirective, StatusPill],
+  imports: [FontAwesomeModule, TranslateDirective, TranslatePipe, StatusPill],
 })
 export default class PlatformHealth implements OnInit {
   readonly services = signal<IPlatformService[]>([]);
   readonly capabilities = signal<PlatformCapability[]>([]);
+
+  /**
+   * Availability, and the window it was measured over.
+   *
+   * The card here used to show `services().length` under the caption "Services mapped" — the first
+   * card's denominator, restated. The prototype's card was "Uptime, 30 days" over a hardcoded
+   * 99.94%. Both were captions with nothing behind them; this one comes from the metrics store, and
+   * carries its own window so the caption cannot drift from the measurement.
+   */
+  readonly uptime = signal<Uptime | null>(null);
+
+  /**
+   * The figure as rendered: a percentage, or an em dash when nothing measured it.
+   *
+   * A computed rather than an expression in the template, because "unmeasured" and "0%" must not be
+   * allowed to collapse into each other by accident — 0% reads as a total outage.
+   */
+  readonly uptimeLabel = computed(() => {
+    const percent = this.uptime()?.percent;
+    return percent === null || percent === undefined ? '—' : `${percent}%`;
+  });
 
   private readonly platformServiceService = inject(PlatformServiceService);
   private readonly metricsService = inject(ConsoleMetricsService);
@@ -76,6 +98,9 @@ export default class PlatformHealth implements OnInit {
       .pipe(map(response => response.body ?? []))
       .subscribe(services => this.services.set(services));
 
-    this.metricsService.metrics().subscribe(metrics => this.capabilities.set(metrics.capabilities));
+    this.metricsService.metrics().subscribe(metrics => {
+      this.capabilities.set(metrics.capabilities);
+      this.uptime.set(metrics.uptime);
+    });
   }
 }
