@@ -1,17 +1,18 @@
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormControl, FormGroup, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import dayjs from 'dayjs/esm';
 import { RouterLink } from '@angular/router';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { TranslatePipe } from '@ngx-translate/core';
-import { map } from 'rxjs';
+import { Observable, map, of, switchMap } from 'rxjs';
 
 import { AccountService } from 'app/core/auth/account.service';
 import { IAuditEntry } from 'app/entities/platform/audit-entry/audit-entry.model';
 import { AuditEntryService } from 'app/entities/platform/audit-entry/service/audit-entry.service';
 import { IOrganisation } from 'app/entities/platform/organisation/organisation.model';
-import { IAddress, NewAddress } from 'app/entities/directory/address/address.model';
+import { IAddress } from 'app/entities/directory/address/address.model';
+import { AddressService } from 'app/entities/directory/address/service/address.service';
 import { OrganisationService } from 'app/entities/platform/organisation/service/organisation.service';
 import { ITeam } from 'app/entities/platform/team/team.model';
 import { TeamService } from 'app/entities/platform/team/service/team.service';
@@ -32,6 +33,27 @@ export type OrganisationTab = 'about' | 'address' | 'team' | 'security' | 'audit
  * every `*abfHasAnyAuthority` control on the next tick — the same code path a
  * real sign-in takes, not a local flag that only this screen respects.
  */
+/**
+ * An address is all-or-nothing.
+ *
+ * Street, city, region and country are `@NotNull` on the api's Address, so a partly filled one is
+ * rejected — and the rejection names fields the user may not have realised were linked. Requiring
+ * them together only once the address is being filled in keeps an organisation with no address at
+ * all perfectly valid, which is the common case.
+ */
+function addressValidator(group: AbstractControl): ValidationErrors | null {
+  const value = group.value as Record<string, string | null>;
+  const parts = ['digitalAddress', 'streetAddress', 'townDistrict', 'cityState', 'region', 'country'];
+  const required = ['streetAddress', 'cityState', 'region', 'country'];
+
+  const started = parts.some(field => value[field]);
+  if (!started) {
+    return null;
+  }
+  const missing = required.filter(field => !value[field]);
+  return missing.length ? { addressIncomplete: missing } : null;
+}
+
 @Component({
   selector: 'abf-organisation-profile',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -63,29 +85,37 @@ export default class OrganisationProfile implements OnInit {
   /**
    * Every field the Organisation document carries, including the embedded address.
    *
-   * None are required. The api marks none of them `@NotNull`, and an organisation that has only
-   * been named is a legitimate half-filled record — refusing to save it would make the first save
-   * the hardest one, on a screen whose whole purpose is filling this in over time.
+   * The validators mirror the api's constraints exactly, and they are not decoration: a save that
+   * omits `legalName` comes back 400 with `error.validation`, and the only thing the user sees is a
+   * failure they were given no way to avoid. `name` and `legalName` are `@NotNull`; the size limits
+   * are the api's too.
+   *
+   * The address is required-or-absent rather than partly filled. Four of its fields are `@NotNull`,
+   * so an address with only a digital address in it is rejected by the api — see `addressValidator`.
    */
-  readonly form = new FormGroup({
-    name: new FormControl<string | null>(null),
-    legalName: new FormControl<string | null>(null),
-    description: new FormControl<string | null>(null),
-    registrationNumber: new FormControl<string | null>(null),
-    tin: new FormControl<string | null>(null),
-    foundedOn: new FormControl<string | null>(null),
-    switchboard: new FormControl<string | null>(null),
-    email: new FormControl<string | null>(null, { validators: [Validators.email] }),
-    deskHours: new FormControl<string | null>(null),
-    digitalAddress: new FormControl<string | null>(null),
-    streetAddress: new FormControl<string | null>(null),
-    townDistrict: new FormControl<string | null>(null),
-    cityState: new FormControl<string | null>(null),
-    region: new FormControl<string | null>(null),
-    country: new FormControl<string | null>(null),
-  });
+  readonly form = new FormGroup(
+    {
+      name: new FormControl<string | null>(null, { validators: [Validators.required, Validators.maxLength(80)] }),
+      legalName: new FormControl<string | null>(null, { validators: [Validators.required, Validators.maxLength(120)] }),
+      description: new FormControl<string | null>(null, { validators: [Validators.maxLength(400)] }),
+      registrationNumber: new FormControl<string | null>(null, { validators: [Validators.maxLength(40)] }),
+      tin: new FormControl<string | null>(null, { validators: [Validators.maxLength(40)] }),
+      foundedOn: new FormControl<string | null>(null),
+      switchboard: new FormControl<string | null>(null, { validators: [Validators.maxLength(24)] }),
+      email: new FormControl<string | null>(null, { validators: [Validators.email, Validators.maxLength(120)] }),
+      deskHours: new FormControl<string | null>(null, { validators: [Validators.maxLength(80)] }),
+      digitalAddress: new FormControl<string | null>(null),
+      streetAddress: new FormControl<string | null>(null),
+      townDistrict: new FormControl<string | null>(null),
+      cityState: new FormControl<string | null>(null),
+      region: new FormControl<string | null>(null),
+      country: new FormControl<string | null>(null),
+    },
+    { validators: [addressValidator] },
+  );
 
   private readonly organisationService = inject(OrganisationService);
+  private readonly addressService = inject(AddressService);
   private readonly teamService = inject(TeamService);
   private readonly auditEntryService = inject(AuditEntryService);
   private readonly accountService = inject(AccountService);
@@ -170,11 +200,7 @@ export default class OrganisationProfile implements OnInit {
     const form = this.form.getRawValue();
     const existing = this.organisation();
 
-    // The address is embedded in the Organisation document rather than referenced, so it is saved
-    // with it. Its id is carried through when one exists: dropping it would orphan the stored
-    // address and create a second.
-    const address: IAddress | NewAddress = {
-      id: existing?.address?.id ?? null,
+    const addressFields = {
       digitalAddress: form.digitalAddress,
       streetAddress: form.streetAddress,
       townDistrict: form.townDistrict,
@@ -182,9 +208,9 @@ export default class OrganisationProfile implements OnInit {
       region: form.region,
       country: form.country,
     };
-    const hasAddress = Object.entries(address).some(([key, value]) => key !== 'id' && value);
+    const hasAddress = Object.values(addressFields).some(Boolean);
 
-    const body = {
+    const organisationFields = {
       name: form.name,
       legalName: form.legalName,
       description: form.description,
@@ -194,12 +220,30 @@ export default class OrganisationProfile implements OnInit {
       switchboard: form.switchboard,
       email: form.email,
       deskHours: form.deskHours,
-      address: (hasAddress ? address : null) as IAddress | null,
     };
 
-    const request = existing
-      ? this.organisationService.update({ ...existing, ...body })
-      : this.organisationService.create({ ...body, id: null });
+    /**
+     * The address is a `@DBRef`, not an embedded document.
+     *
+     * That is the whole shape of this method. A referenced address has to exist as its own record
+     * before the organisation can point at it — sending one inline fails with "Cannot create a
+     * reference to an object with a NULL id", a 500 rather than a validation error. So the address
+     * is saved first and the organisation is saved second, holding the stored reference.
+     */
+    const address$: Observable<IAddress | null> = !hasAddress
+      ? of(null)
+      : existing?.address?.id
+        ? this.addressService.update({ ...existing.address, ...addressFields })
+        : this.addressService.create({ ...addressFields, id: null });
+
+    const request = address$.pipe(
+      switchMap(address => {
+        const body = { ...organisationFields, address };
+        return existing
+          ? this.organisationService.update({ ...existing, ...body })
+          : this.organisationService.create({ ...body, id: null });
+      }),
+    );
 
     request.subscribe({
       next: saved => {

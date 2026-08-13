@@ -59,7 +59,9 @@
       "create": "Add organisation details",
       "save": "Save",
       "cancel": "Cancel",
-      "failed": "Could not save. Nothing has been changed."
+      "failed": "Could not save. Nothing has been changed.",
+      "required": "Required",
+      "addressIncomplete": "An address needs a street, city, region and country. Leave every field blank for no address."
     }
   }
 }
