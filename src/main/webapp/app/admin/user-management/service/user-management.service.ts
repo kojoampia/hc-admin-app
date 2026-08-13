@@ -68,8 +68,20 @@ export class UserManagementService {
    *
    * Fetched rather than hardcoded: the console must not offer a role the
    * gateway would reject, and the list is the gateway's to decide.
+   *
+   * `GET /api/authorities` is the Authority entity's CRUD surface, so it returns
+   * documents — `[{"name":"ROLE_ADMIN"}, …]` — not the bare strings this was
+   * typed for. The declared `string[]` made the mismatch invisible to the
+   * compiler, and the select rendered `[object Object]` for every option.
+   *
+   * Mapped here rather than in the template so the shape is converted once, at
+   * the boundary. Everything downstream — the form control, the payload sent
+   * back to `/api/admin/users`, `AdminUserDTO.authorities` — works in names, and
+   * this is the only place that has to know the entity has a wrapper.
    */
   authorities(): Observable<string[]> {
-    return this.http.get<string[]>(this.authoritiesUrl);
+    return this.http
+      .get<{ name?: string }[]>(this.authoritiesUrl)
+      .pipe(map(authorities => authorities.map(authority => authority.name).filter((name): name is string => !!name)));
   }
 }
