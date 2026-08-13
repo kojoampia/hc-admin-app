@@ -1,0 +1,27 @@
+// Local to this screen. Everything structural — .card, .hpd-input, .hpd-btn, .abf-grid — comes from
+// global.scss on the BridgeCare tokens; only the save/failure notes are specific to a form that
+// reports three independent outcomes on one page.
+.note {
+  margin: 12px 0 0;
+  padding: 8px 11px;
+  border-radius: var(--abf-r-sm);
+  font-size: 13px;
+
+  &--ok {
+    background: var(--abf-ok-bg);
+    color: var(--abf-ok);
+  }
+
+  &--bad {
+    background: var(--abf-danger-bg);
+    color: var(--abf-danger);
+  }
+}
+
+.field + .field {
+  margin-top: 12px;
+}
+
+form > .hpd-btn {
+  margin-top: 16px;
+}

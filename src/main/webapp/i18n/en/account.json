@@ -1,0 +1,48 @@
+{
+  "account": {
+    "title": "My account",
+    "subtitle": "Your sign-in details, your password, and the profile record that belongs to them.",
+    "details": {
+      "title": "Sign-in details",
+      "hint": "Held by the gateway. Your login cannot be changed here.",
+      "saved": "Details saved.",
+      "failed": "Could not save your details."
+    },
+    "password": {
+      "title": "Password",
+      "hint": "Changing this signs you out of nothing — your current session stays valid.",
+      "saved": "Password changed.",
+      "failed": "Could not change your password. Check the current one and that the two new entries match."
+    },
+    "profile": {
+      "title": "Your profile",
+      "hint": "Held by the admin service and linked to your account.",
+      "createTitle": "Create your profile",
+      "createHint": "Your account has no profile record yet. This is the detail the rest of the console reads.",
+      "saved": "Profile saved.",
+      "failed": "Could not save your profile."
+    },
+    "field": {
+      "login": "Login",
+      "firstName": "First name",
+      "middleName": "Middle name",
+      "lastName": "Last name",
+      "email": "Email",
+      "language": "Language",
+      "currentPassword": "Current password",
+      "newPassword": "New password",
+      "confirmPassword": "Confirm new password",
+      "title": "Title",
+      "dateOfBirth": "Date of birth",
+      "sex": "Sex",
+      "mobilePhone": "Mobile",
+      "idType": "ID type",
+      "idNumber": "ID number"
+    },
+    "action": {
+      "save": "Save",
+      "changePassword": "Change password",
+      "createProfile": "Create profile"
+    }
+  }
+}
