@@ -20,13 +20,19 @@
       "contact": "Contact",
       "switchboard": "Switchboard",
       "email": "Email",
-      "deskHours": "Desk hours"
+      "deskHours": "Desk hours",
+      "description": "Description"
     },
     "address": {
       "title": "Registered address",
       "digital": "Digital address",
       "open": "Open the full address record",
-      "none": "No address on file."
+      "none": "No address on file.",
+      "street": "Street",
+      "town": "Town or district",
+      "city": "City",
+      "region": "Region",
+      "country": "Country"
     },
     "team": {
       "name": "Team",
@@ -47,6 +53,13 @@
       "target": "Target",
       "level": "Level",
       "none": "The trail is empty."
+    },
+    "edit": {
+      "edit": "Edit details",
+      "create": "Add organisation details",
+      "save": "Save",
+      "cancel": "Cancel",
+      "failed": "Could not save. Nothing has been changed."
     }
   }
 }

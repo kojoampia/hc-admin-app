@@ -26,38 +26,141 @@
 <div class="tab-panel" role="tabpanel" [id]="'abf-panel-' + activeTab()" [attr.aria-labelledby]="'abf-tab-' + activeTab()">
   @switch (activeTab()) {
     @case ('about') {
-      <div class="abf-grid abf-g-2">
-        <section class="card card-pad">
-          <h4 abfTranslate="organisation.about.identity">Organisation</h4>
-          <dl class="kv-list">
-            <dt abfTranslate="organisation.about.tradingName">Trading name</dt>
-            <dd>{{ org?.name ?? '—' }}</dd>
-            <dt abfTranslate="organisation.about.legalEntity">Legal entity</dt>
-            <dd>{{ org?.legalName ?? '—' }}</dd>
-            <dt abfTranslate="organisation.about.registration">Registration</dt>
-            <dd>{{ org?.registrationNumber ?? '—' }}</dd>
-            <dt abfTranslate="organisation.about.tin">TIN</dt>
-            <dd>{{ org?.tin ?? '—' }}</dd>
-            <dt abfTranslate="organisation.about.founded">Founded</dt>
-            <dd>{{ org?.foundedOn ? (org!.foundedOn | formatMediumDate) : '—' }}</dd>
-          </dl>
-        </section>
+      @if (editing()) {
+        <form [formGroup]="form" (ngSubmit)="save()">
+          <div class="abf-grid abf-g-2">
+            <section class="card card-pad">
+              <h4 abfTranslate="organisation.about.identity">Organisation</h4>
+              <div class="field">
+                <label for="name" abfTranslate="organisation.about.tradingName">Trading name</label>
+                <input id="name" formControlName="name" />
+              </div>
+              <div class="field">
+                <label for="legalName" abfTranslate="organisation.about.legalEntity">Legal entity</label>
+                <input id="legalName" formControlName="legalName" />
+              </div>
+              <div class="field">
+                <label for="registrationNumber" abfTranslate="organisation.about.registration">Registration</label>
+                <input id="registrationNumber" formControlName="registrationNumber" />
+              </div>
+              <div class="field">
+                <label for="tin" abfTranslate="organisation.about.tin">TIN</label>
+                <input id="tin" formControlName="tin" />
+              </div>
+              <div class="field">
+                <label for="foundedOn" abfTranslate="organisation.about.founded">Founded</label>
+                <input id="foundedOn" type="date" formControlName="foundedOn" />
+              </div>
+            </section>
 
-        <section class="card card-pad">
-          <h4 abfTranslate="organisation.about.contact">Contact</h4>
-          <dl class="kv-list">
-            <dt abfTranslate="organisation.about.switchboard">Switchboard</dt>
-            <dd>{{ org?.switchboard ?? '—' }}</dd>
-            <dt abfTranslate="organisation.about.email">Email</dt>
-            <dd>{{ org?.email ?? '—' }}</dd>
-            <dt abfTranslate="organisation.about.deskHours">Desk hours</dt>
-            <dd>{{ org?.deskHours ?? '—' }}</dd>
-          </dl>
-          @if (org?.description) {
-            <p class="desc">{{ org!.description }}</p>
-          }
-        </section>
-      </div>
+            <section class="card card-pad">
+              <h4 abfTranslate="organisation.about.contact">Contact</h4>
+              <div class="field">
+                <label for="switchboard" abfTranslate="organisation.about.switchboard">Switchboard</label>
+                <input id="switchboard" formControlName="switchboard" />
+              </div>
+              <div class="field">
+                <label for="email" abfTranslate="organisation.about.email">Email</label>
+                <input id="email" type="email" formControlName="email" />
+              </div>
+              <div class="field">
+                <label for="deskHours" abfTranslate="organisation.about.deskHours">Desk hours</label>
+                <input id="deskHours" formControlName="deskHours" />
+              </div>
+              <div class="field">
+                <label for="description" abfTranslate="organisation.about.description">Description</label>
+                <textarea id="description" formControlName="description"></textarea>
+              </div>
+            </section>
+          </div>
+
+          <section class="card card-pad mt-12">
+            <h4 abfTranslate="organisation.address.title">Registered address</h4>
+            <div class="abf-grid abf-g-3">
+              <div class="field">
+                <label for="digitalAddress" abfTranslate="organisation.address.digital">Digital address</label>
+                <input id="digitalAddress" formControlName="digitalAddress" />
+              </div>
+              <div class="field">
+                <label for="streetAddress" abfTranslate="organisation.address.street">Street</label>
+                <input id="streetAddress" formControlName="streetAddress" />
+              </div>
+              <div class="field">
+                <label for="townDistrict" abfTranslate="organisation.address.town">Town or district</label>
+                <input id="townDistrict" formControlName="townDistrict" />
+              </div>
+              <div class="field">
+                <label for="cityState" abfTranslate="organisation.address.city">City</label>
+                <input id="cityState" formControlName="cityState" />
+              </div>
+              <div class="field">
+                <label for="region" abfTranslate="organisation.address.region">Region</label>
+                <input id="region" formControlName="region" />
+              </div>
+              <div class="field">
+                <label for="country" abfTranslate="organisation.address.country">Country</label>
+                <input id="country" formControlName="country" />
+              </div>
+            </div>
+
+            @if (saveFailed()) {
+              <p class="muted" abfTranslate="organisation.edit.failed">Could not save. Nothing has been changed.</p>
+            }
+
+            <div class="abf-row gap-12 mt-12">
+              <button type="submit" class="btn btn-primary" [disabled]="form.invalid || saving()">
+                <span abfTranslate="organisation.edit.save">Save</span>
+              </button>
+              <button type="button" class="btn btn-ghost" (click)="cancelEditing()" [disabled]="saving()">
+                <span abfTranslate="organisation.edit.cancel">Cancel</span>
+              </button>
+            </div>
+          </section>
+        </form>
+      } @else {
+        <div class="abf-grid abf-g-2">
+          <section class="card card-pad">
+            <h4 abfTranslate="organisation.about.identity">Organisation</h4>
+            <dl class="kv-list">
+              <dt abfTranslate="organisation.about.tradingName">Trading name</dt>
+              <dd>{{ org?.name ?? '—' }}</dd>
+              <dt abfTranslate="organisation.about.legalEntity">Legal entity</dt>
+              <dd>{{ org?.legalName ?? '—' }}</dd>
+              <dt abfTranslate="organisation.about.registration">Registration</dt>
+              <dd>{{ org?.registrationNumber ?? '—' }}</dd>
+              <dt abfTranslate="organisation.about.tin">TIN</dt>
+              <dd>{{ org?.tin ?? '—' }}</dd>
+              <dt abfTranslate="organisation.about.founded">Founded</dt>
+              <dd>{{ org?.foundedOn ? (org!.foundedOn | formatMediumDate) : '—' }}</dd>
+            </dl>
+          </section>
+
+          <section class="card card-pad">
+            <h4 abfTranslate="organisation.about.contact">Contact</h4>
+            <dl class="kv-list">
+              <dt abfTranslate="organisation.about.switchboard">Switchboard</dt>
+              <dd>{{ org?.switchboard ?? '—' }}</dd>
+              <dt abfTranslate="organisation.about.email">Email</dt>
+              <dd>{{ org?.email ?? '—' }}</dd>
+              <dt abfTranslate="organisation.about.deskHours">Desk hours</dt>
+              <dd>{{ org?.deskHours ?? '—' }}</dd>
+            </dl>
+            @if (org?.description) {
+              <p class="desc">{{ org!.description }}</p>
+            }
+          </section>
+        </div>
+        @if (canEdit()) {
+          <button type="button" class="btn btn-primary mt-12" (click)="startEditing()">
+            <fa-icon icon="pencil-alt" />
+            @if (creating()) {
+              <span abfTranslate="organisation.edit.create">Add organisation details</span>
+            } @else {
+              <span abfTranslate="organisation.edit.edit">Edit details</span>
+            }
+          </button>
+        }
+      }
     }
 
     @case ('address') {
