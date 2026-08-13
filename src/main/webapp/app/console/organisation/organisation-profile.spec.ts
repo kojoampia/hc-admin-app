@@ -47,6 +47,15 @@ describe('OrganisationProfile editing', () => {
   /** The two fields the api marks @NotNull. Every save has to carry them. */
   const requiredFields = { name: 'Abofonsa BridgeCare', legalName: 'Abofonsa BridgeCare Ltd' };
 
+  /** Five of the six address fields are @NotNull, and the digital address is patterned. */
+  const aCompleteAddress = {
+    digitalAddress: 'GA-123-4567',
+    streetAddress: '1 Test St',
+    cityState: 'Accra',
+    region: 'Greater Accra',
+    country: 'Ghana',
+  };
+
   function setUp(authorities: string[], existing: any = null): OrganisationProfile {
     organisationService = {
       query: vitest.fn().mockReturnValue(of({ body: existing ? [existing] : [] })),
@@ -155,13 +164,7 @@ describe('OrganisationProfile editing', () => {
     const component = setUp(['ROLE_ADMIN']);
 
     component.startEditing();
-    component.form.patchValue({
-      ...requiredFields,
-      streetAddress: '1 Test St',
-      cityState: 'Accra',
-      region: 'Greater Accra',
-      country: 'Ghana',
-    });
+    component.form.patchValue({ ...requiredFields, ...aCompleteAddress });
     component.save();
 
     expect(addressService.create).toHaveBeenCalled();
@@ -198,6 +201,44 @@ describe('OrganisationProfile editing', () => {
 
     expect(component.form.errors?.['addressIncomplete']).toBeTruthy();
     expect(organisationService.create).not.toHaveBeenCalled();
+  });
+
+  /**
+   * The failure that reached production. `digitalAddress` carries a @Pattern the form did not
+   * mirror, so a plausible-looking value was accepted here and rejected by the api with a bare
+   * regex — a message that tells the person filling the form nothing at all.
+   */
+  it('rejects a digital address that is not Ghana Post GPS', () => {
+    const component = setUp(['ROLE_ADMIN']);
+
+    component.startEditing();
+    component.form.patchValue({ ...requiredFields, ...aCompleteAddress, digitalAddress: '12 Independence Ave' });
+    component.save();
+
+    expect(component.form.get('digitalAddress')?.errors?.['pattern']).toBeTruthy();
+    expect(addressService.create).not.toHaveBeenCalled();
+  });
+
+  it('accepts a correctly formatted digital address', () => {
+    const component = setUp(['ROLE_ADMIN']);
+
+    component.startEditing();
+    component.form.patchValue({ ...requiredFields, ...aCompleteAddress });
+    component.save();
+
+    expect(addressService.create).toHaveBeenCalled();
+  });
+
+  /** An address needs its digital address too — it is @NotNull, which the first attempt missed. */
+  it('will not save an address without a digital address', () => {
+    const component = setUp(['ROLE_ADMIN']);
+
+    component.startEditing();
+    component.form.patchValue({ ...requiredFields, streetAddress: '1 Test St', cityState: 'Accra', region: 'GA', country: 'Ghana' });
+    component.save();
+
+    expect(component.form.errors?.['addressIncomplete']).toContain('digitalAddress');
+    expect(addressService.create).not.toHaveBeenCalled();
   });
 
   /** An organisation with no address at all must not be given an empty one. */

@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { AbstractControl, FormControl, FormGroup, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import dayjs from 'dayjs/esm';
 import { RouterLink } from '@angular/router';
@@ -34,17 +35,43 @@ export type OrganisationTab = 'about' | 'address' | 'team' | 'security' | 'audit
  * real sign-in takes, not a local flag that only this screen respects.
  */
 /**
+ * Ghana Post GPS, as the api spells it: two letters, three digits, four digits.
+ *
+ * `AB-123-4567`. The api rejects anything else with a bare regex in the message, which tells a user
+ * nothing — so the form matches it here and the label carries an example.
+ */
+/**
+ * Turns a JHipster problem response into something worth showing.
+ *
+ * Field errors first, because they name what to change. The bare `detail` is a fallback and is
+ * often "Unexpected runtime exception", which is why it is last rather than first.
+ */
+function describeSaveError(response: HttpErrorResponse): string | null {
+  const problem = response.error as { fieldErrors?: { field: string; message: string }[]; detail?: string } | null;
+  const fieldErrors = problem?.fieldErrors;
+  if (fieldErrors?.length) {
+    return fieldErrors.map(error => `${error.field}: ${error.message}`).join('; ');
+  }
+  return problem?.detail ?? null;
+}
+
+const GHANA_POST_GPS = /^[A-Z]{2}-[0-9]{3}-[0-9]{4}$/;
+
+/**
  * An address is all-or-nothing.
  *
- * Street, city, region and country are `@NotNull` on the api's Address, so a partly filled one is
- * rejected — and the rejection names fields the user may not have realised were linked. Requiring
- * them together only once the address is being filled in keeps an organisation with no address at
- * all perfectly valid, which is the common case.
+ * Five of the six fields are `@NotNull` on the api's Address — every one except `townDistrict` —
+ * so a partly filled address is rejected, and the rejection names fields the user may not have
+ * realised were linked. Requiring them together only once the address is being started keeps an
+ * organisation with no address at all perfectly valid, which is the common case.
+ *
+ * The list is `digitalAddress` included. That was missed the first time because the api declares it
+ * with three annotations stacked and only the last was read.
  */
 function addressValidator(group: AbstractControl): ValidationErrors | null {
   const value = group.value as Record<string, string | null>;
   const parts = ['digitalAddress', 'streetAddress', 'townDistrict', 'cityState', 'region', 'country'];
-  const required = ['streetAddress', 'cityState', 'region', 'country'];
+  const required = ['digitalAddress', 'streetAddress', 'cityState', 'region', 'country'];
 
   const started = parts.some(field => value[field]);
   if (!started) {
@@ -83,6 +110,16 @@ export default class OrganisationProfile implements OnInit {
   readonly saveFailed = signal(false);
 
   /**
+   * What the api said, when it said anything useful.
+   *
+   * The screen used to show only "Could not save", and the api's own message was thrown away — so a
+   * 400 naming a field and a 500 naming a broken reference looked identical, and diagnosing one
+   * meant reading server logs. JHipster answers with `application/problem+json`, and `fieldErrors`
+   * is the part worth reading aloud.
+   */
+  readonly saveError = signal<string | null>(null);
+
+  /**
    * Every field the Organisation document carries, including the embedded address.
    *
    * The validators mirror the api's constraints exactly, and they are not decoration: a save that
@@ -104,12 +141,14 @@ export default class OrganisationProfile implements OnInit {
       switchboard: new FormControl<string | null>(null, { validators: [Validators.maxLength(24)] }),
       email: new FormControl<string | null>(null, { validators: [Validators.email, Validators.maxLength(120)] }),
       deskHours: new FormControl<string | null>(null, { validators: [Validators.maxLength(80)] }),
-      digitalAddress: new FormControl<string | null>(null),
-      streetAddress: new FormControl<string | null>(null),
-      townDistrict: new FormControl<string | null>(null),
-      cityState: new FormControl<string | null>(null),
-      region: new FormControl<string | null>(null),
-      country: new FormControl<string | null>(null),
+      digitalAddress: new FormControl<string | null>(null, {
+        validators: [Validators.pattern(GHANA_POST_GPS), Validators.maxLength(20)],
+      }),
+      streetAddress: new FormControl<string | null>(null, { validators: [Validators.maxLength(120)] }),
+      townDistrict: new FormControl<string | null>(null, { validators: [Validators.maxLength(60)] }),
+      cityState: new FormControl<string | null>(null, { validators: [Validators.maxLength(60)] }),
+      region: new FormControl<string | null>(null, { validators: [Validators.maxLength(60)] }),
+      country: new FormControl<string | null>(null, { validators: [Validators.maxLength(60)] }),
     },
     { validators: [addressValidator] },
   );
@@ -182,12 +221,14 @@ export default class OrganisationProfile implements OnInit {
       country: org?.address?.country ?? null,
     });
     this.saveFailed.set(false);
+    this.saveError.set(null);
     this.editing.set(true);
   }
 
   cancelEditing(): void {
     this.editing.set(false);
     this.saveFailed.set(false);
+    this.saveError.set(null);
   }
 
   save(): void {
@@ -196,6 +237,7 @@ export default class OrganisationProfile implements OnInit {
     }
     this.saving.set(true);
     this.saveFailed.set(false);
+    this.saveError.set(null);
 
     const form = this.form.getRawValue();
     const existing = this.organisation();
@@ -251,9 +293,10 @@ export default class OrganisationProfile implements OnInit {
         this.saving.set(false);
         this.editing.set(false);
       },
-      error: () => {
+      error: (response: HttpErrorResponse) => {
         this.saving.set(false);
         this.saveFailed.set(true);
+        this.saveError.set(describeSaveError(response));
       },
     });
   }
