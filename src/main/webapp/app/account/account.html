@@ -10,34 +10,34 @@
     <!-- ── The gateway's account ─────────────────────────────────────────────────────────────── -->
     <section class="card card-pad">
       <h4 abfTranslate="account.details.title">Sign-in details</h4>
-      <p class="muted small" abfTranslate="account.details.hint">Held by the gateway. Your login cannot be changed here.</p>
+      <p class="muted" abfTranslate="account.details.hint">Held by the gateway. Your login cannot be changed here.</p>
 
       <form [formGroup]="detailsForm" (ngSubmit)="saveDetails()">
         <div class="field">
-          <label class="hpd-label" for="login" abfTranslate="account.field.login">Login</label>
+          <label for="login" abfTranslate="account.field.login">Login</label>
           <!-- Read-only rather than absent: it is the name you sign in with, and hiding it invites
                the question of which account this page is even editing. -->
-          <input class="hpd-input" id="login" [value]="user.login" disabled />
+          <input id="login" [value]="user.login" disabled />
         </div>
 
         <div class="field">
-          <label class="hpd-label" for="firstName" abfTranslate="account.field.firstName">First name</label>
-          <input class="hpd-input" id="firstName" formControlName="firstName" />
+          <label for="firstName" abfTranslate="account.field.firstName">First name</label>
+          <input id="firstName" formControlName="firstName" />
         </div>
 
         <div class="field">
-          <label class="hpd-label" for="lastName" abfTranslate="account.field.lastName">Last name</label>
-          <input class="hpd-input" id="lastName" formControlName="lastName" />
+          <label for="lastName" abfTranslate="account.field.lastName">Last name</label>
+          <input id="lastName" formControlName="lastName" />
         </div>
 
         <div class="field">
-          <label class="hpd-label" for="email" abfTranslate="account.field.email">Email</label>
-          <input class="hpd-input" id="email" type="email" formControlName="email" />
+          <label for="email" abfTranslate="account.field.email">Email</label>
+          <input id="email" type="email" formControlName="email" />
         </div>
 
         <div class="field">
-          <label class="hpd-label" for="langKey" abfTranslate="account.field.language">Language</label>
-          <select class="hpd-input" id="langKey" formControlName="langKey">
+          <label for="langKey" abfTranslate="account.field.language">Language</label>
+          <select id="langKey" formControlName="langKey">
             <option value="en">English</option>
           </select>
         </div>
@@ -49,7 +49,7 @@
           <p class="note note--bad" abfTranslate="account.details.failed">Could not save your details.</p>
         }
 
-        <button type="submit" class="hpd-btn hpd-btn--primary" [disabled]="detailsForm.invalid || saving()">
+        <button type="submit" class="btn btn-primary" [disabled]="detailsForm.invalid || saving()">
           <span abfTranslate="account.action.save">Save</span>
         </button>
       </form>
@@ -58,24 +58,22 @@
     <!-- ── Password ──────────────────────────────────────────────────────────────────────────── -->
     <section class="card card-pad">
       <h4 abfTranslate="account.password.title">Password</h4>
-      <p class="muted small" abfTranslate="account.password.hint">
-        Changing this signs you out of nothing — your current session stays valid.
-      </p>
+      <p class="muted" abfTranslate="account.password.hint">Changing this signs you out of nothing — your current session stays valid.</p>
 
       <form [formGroup]="passwordForm" (ngSubmit)="changePassword()">
         <div class="field">
-          <label class="hpd-label" for="currentPassword" abfTranslate="account.field.currentPassword">Current password</label>
-          <input class="hpd-input" id="currentPassword" type="password" autocomplete="current-password" formControlName="currentPassword" />
+          <label for="currentPassword" abfTranslate="account.field.currentPassword">Current password</label>
+          <input id="currentPassword" type="password" autocomplete="current-password" formControlName="currentPassword" />
         </div>
 
         <div class="field">
-          <label class="hpd-label" for="newPassword" abfTranslate="account.field.newPassword">New password</label>
-          <input class="hpd-input" id="newPassword" type="password" autocomplete="new-password" formControlName="newPassword" />
+          <label for="newPassword" abfTranslate="account.field.newPassword">New password</label>
+          <input id="newPassword" type="password" autocomplete="new-password" formControlName="newPassword" />
         </div>
 
         <div class="field">
-          <label class="hpd-label" for="confirmPassword" abfTranslate="account.field.confirmPassword">Confirm new password</label>
-          <input class="hpd-input" id="confirmPassword" type="password" autocomplete="new-password" formControlName="confirmPassword" />
+          <label for="confirmPassword" abfTranslate="account.field.confirmPassword">Confirm new password</label>
+          <input id="confirmPassword" type="password" autocomplete="new-password" formControlName="confirmPassword" />
         </div>
 
         @if (saved() === 'password') {
@@ -87,7 +85,7 @@
           </p>
         }
 
-        <button type="submit" class="hpd-btn hpd-btn--primary" [disabled]="passwordForm.invalid || saving()">
+        <button type="submit" class="btn btn-primary" [disabled]="passwordForm.invalid || saving()">
           <span abfTranslate="account.action.changePassword">Change password</span>
         </button>
       </form>
@@ -113,8 +111,8 @@
     <form [formGroup]="profileForm" (ngSubmit)="saveProfile()">
       <div class="abf-grid abf-g-3">
         <div class="field">
-          <label class="hpd-label" for="title" abfTranslate="account.field.title">Title</label>
-          <select class="hpd-input" id="title" formControlName="title">
+          <label for="title" abfTranslate="account.field.title">Title</label>
+          <select id="title" formControlName="title">
             <option [value]="null"></option>
             @for (option of titles; track option) {
               <option [value]="option">{{ option }}</option>
@@ -123,28 +121,28 @@
         </div>
 
         <div class="field">
-          <label class="hpd-label" for="pFirstName" abfTranslate="account.field.firstName">First name</label>
-          <input class="hpd-input" id="pFirstName" formControlName="firstName" />
+          <label for="pFirstName" abfTranslate="account.field.firstName">First name</label>
+          <input id="pFirstName" formControlName="firstName" />
         </div>
 
         <div class="field">
-          <label class="hpd-label" for="middleName" abfTranslate="account.field.middleName">Middle name</label>
-          <input class="hpd-input" id="middleName" formControlName="middleName" />
+          <label for="middleName" abfTranslate="account.field.middleName">Middle name</label>
+          <input id="middleName" formControlName="middleName" />
         </div>
 
         <div class="field">
-          <label class="hpd-label" for="pLastName" abfTranslate="account.field.lastName">Last name</label>
-          <input class="hpd-input" id="pLastName" formControlName="lastName" />
+          <label for="pLastName" abfTranslate="account.field.lastName">Last name</label>
+          <input id="pLastName" formControlName="lastName" />
         </div>
 
         <div class="field">
-          <label class="hpd-label" for="dateOfBirth" abfTranslate="account.field.dateOfBirth">Date of birth</label>
-          <input class="hpd-input" id="dateOfBirth" type="date" formControlName="dateOfBirth" />
+          <label for="dateOfBirth" abfTranslate="account.field.dateOfBirth">Date of birth</label>
+          <input id="dateOfBirth" type="date" formControlName="dateOfBirth" />
         </div>
 
         <div class="field">
-          <label class="hpd-label" for="sex" abfTranslate="account.field.sex">Sex</label>
-          <select class="hpd-input" id="sex" formControlName="sex">
+          <label for="sex" abfTranslate="account.field.sex">Sex</label>
+          <select id="sex" formControlName="sex">
             <option value=""></option>
             @for (option of sexes; track option) {
               <option [value]="option">{{ option }}</option>
@@ -153,18 +151,18 @@
         </div>
 
         <div class="field">
-          <label class="hpd-label" for="mobilePhone" abfTranslate="account.field.mobilePhone">Mobile</label>
-          <input class="hpd-input" id="mobilePhone" formControlName="mobilePhone" />
+          <label for="mobilePhone" abfTranslate="account.field.mobilePhone">Mobile</label>
+          <input id="mobilePhone" formControlName="mobilePhone" />
         </div>
 
         <div class="field">
-          <label class="hpd-label" for="pEmail" abfTranslate="account.field.email">Email</label>
-          <input class="hpd-input" id="pEmail" type="email" formControlName="email" />
+          <label for="pEmail" abfTranslate="account.field.email">Email</label>
+          <input id="pEmail" type="email" formControlName="email" />
         </div>
 
         <div class="field">
-          <label class="hpd-label" for="idType" abfTranslate="account.field.idType">ID type</label>
-          <select class="hpd-input" id="idType" formControlName="idType">
+          <label for="idType" abfTranslate="account.field.idType">ID type</label>
+          <select id="idType" formControlName="idType">
             <option value=""></option>
             @for (option of idTypes; track option) {
               <option [value]="option">{{ option }}</option>
@@ -173,8 +171,8 @@
         </div>
 
         <div class="field">
-          <label class="hpd-label" for="idNumber" abfTranslate="account.field.idNumber">ID number</label>
-          <input class="hpd-input" id="idNumber" formControlName="idNumber" />
+          <label for="idNumber" abfTranslate="account.field.idNumber">ID number</label>
+          <input id="idNumber" formControlName="idNumber" />
         </div>
       </div>
 
@@ -185,7 +183,7 @@
         <p class="note note--bad" abfTranslate="account.profile.failed">Could not save your profile.</p>
       }
 
-      <button type="submit" class="hpd-btn hpd-btn--primary" [disabled]="profileForm.invalid || saving()">
+      <button type="submit" class="btn btn-primary" [disabled]="profileForm.invalid || saving()">
         @if (creatingProfile()) {
           <span abfTranslate="account.action.createProfile">Create profile</span>
         } @else {
