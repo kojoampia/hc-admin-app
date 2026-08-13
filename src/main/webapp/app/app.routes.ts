@@ -34,6 +34,19 @@ const routes: Routes = [
     data: { pageTitle: 'login.title' },
   },
   {
+    /**
+     * The signed-in administrator's own account.
+     *
+     * Top level rather than under `admin/`, because it is not an administrative screen — every
+     * authenticated user has one of these, and it is guarded by authentication alone. `admin/*`
+     * screens name an authority; this one deliberately does not.
+     */
+    path: 'account',
+    loadComponent: () => import('./account/account'),
+    title: 'account.title',
+    canActivate: [UserRouteAccessService],
+  },
+  {
     // The six custom screens.
     path: '',
     loadChildren: () => import('./console/console.routes'),

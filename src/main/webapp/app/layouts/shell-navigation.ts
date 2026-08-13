@@ -58,6 +58,7 @@ export const SHELL_NAVIGATION: readonly ShellNavItem[] = [
   { route: 'category', label: 'global.menu.console.catalog', icon: 'folder-open', group: 'global.menu.group.catalogue' },
   { route: 'platform-health', label: 'global.menu.console.platformHealth', icon: 'gauge-high', group: 'global.menu.group.catalogue' },
 
+  { route: 'account', label: 'global.menu.account.main', icon: 'user', group: 'global.menu.group.account' },
   { route: 'organisation-profile', label: 'global.menu.console.organisation', icon: 'building', group: 'global.menu.group.account' },
 
   // JHipster's stock admin screens, adopted into the console rather than left

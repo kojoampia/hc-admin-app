@@ -34,7 +34,11 @@
   </nav>
 
   <div class="side-foot">
-    <a class="side-user" routerLink="/organisation-profile" (click)="close()">
+    <!--
+      The signed-in person, so it goes to their account. It pointed at /organisation-profile — the
+      company's record — because until now the console had no account screen for it to reach.
+    -->
+    <a class="side-user" routerLink="/account" (click)="close()">
       <span class="mono-av">{{ initials() }}</span>
       <span class="grow">
         <span class="nm trunc">{{ displayName() }}</span>
