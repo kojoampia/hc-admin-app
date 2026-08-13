@@ -1,3 +1,8 @@
+// Component styles are scoped, and the console's shared components — .card, .field, .btn, .sec-head,
+// .abf-grid — live in a partial rather than in global.scss. Every console screen imports it, and a
+// screen that forgets renders with no styling at all rather than with a visible error. This one did.
+@import 'console-components';
+
 // Local to this screen. Everything structural — .card, .hpd-input, .hpd-btn, .abf-grid — comes from
 // global.scss on the BridgeCare tokens; only the save/failure notes are specific to a form that
 // reports three independent outcomes on one page.
