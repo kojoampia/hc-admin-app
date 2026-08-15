@@ -2,9 +2,9 @@
   "hcAdminApp": {
     "TaskState": {
       "null": "",
-      "TODO": "TODO",
-      "DOING": "DOING",
-      "DONE": "DONE"
+      "TODO": "To do",
+      "DOING": "In progress",
+      "DONE": "Done"
     }
   }
 }

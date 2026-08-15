@@ -2,9 +2,9 @@
   "hcAdminApp": {
     "MessageStatus": {
       "null": "",
-      "NEW": "NEW",
-      "READ": "READ",
-      "REPLIED": "REPLIED"
+      "NEW": "New",
+      "READ": "Read",
+      "REPLIED": "Replied"
     }
   }
 }

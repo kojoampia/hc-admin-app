@@ -2,11 +2,11 @@
   "hcAdminApp": {
     "Title": {
       "null": "",
-      "MR": "MR",
-      "MRS": "MRS",
-      "MS": "MS",
-      "DR": "DR",
-      "PROF": "PROF"
+      "MR": "Mr",
+      "MRS": "Mrs",
+      "MS": "Ms",
+      "DR": "Dr",
+      "PROF": "Prof"
     }
   }
 }

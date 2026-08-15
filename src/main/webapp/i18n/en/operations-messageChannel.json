@@ -2,10 +2,10 @@
   "hcAdminApp": {
     "MessageChannel": {
       "null": "",
-      "PATIENT_APP": "PATIENT_APP",
-      "PROFESSIONAL_APP": "PROFESSIONAL_APP",
-      "VENDOR_PORTAL": "VENDOR_PORTAL",
-      "EMAIL": "EMAIL"
+      "PATIENT_APP": "Patient app",
+      "PROFESSIONAL_APP": "Professional app",
+      "VENDOR_PORTAL": "Vendor portal",
+      "EMAIL": "Email"
     }
   }
 }

@@ -2,9 +2,9 @@
   "hcAdminApp": {
     "VerificationStatus": {
       "null": "",
-      "VERIFIED": "VERIFIED",
-      "PENDING": "PENDING",
-      "REJECTED": "REJECTED"
+      "VERIFIED": "Verified",
+      "PENDING": "Pending",
+      "REJECTED": "Rejected"
     }
   }
 }
