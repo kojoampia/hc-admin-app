@@ -153,7 +153,7 @@ export default class Dashboard implements OnInit {
   readonly accountMixSegments = computed(() =>
     (this.metrics()?.accountMix ?? []).map(row => ({
       key: row.key,
-      label: this.translateService.instant(`dashboard.charts.mix.${row.key}`),
+      label: this.roleLabel(row.key),
       value: row.value,
     })),
   );
@@ -236,6 +236,26 @@ export default class Dashboard implements OnInit {
   // eslint-disable-next-line @typescript-eslint/member-ordering
   seriesColour(index: number): string {
     return VIZ_SERIES[index % VIZ_SERIES.length];
+  }
+
+  /**
+   * The account-mix keys are `ProfessionalRole` enum constants — `DOCTOR`,
+   * `NURSE` and so on — because the api groups professionals by role. The
+   * translation therefore only covers the roles the enum held when this file
+   * was written, and `instant()` returns the key itself on a miss: that is how
+   * `dashboard.charts.mix.DOCTOR` came to be rendered as a chart label, in the
+   * legend, the SVG and the table at once. Add a role to the enum and it would
+   * happen again silently, so miss to the constant in readable form instead of
+   * to the key.
+   */
+  private roleLabel(role: string): string {
+    const key = `dashboard.charts.mix.roles.${role}`;
+    const translated: string = this.translateService.instant(key);
+    if (translated !== key) {
+      return translated;
+    }
+    const words = role.toLowerCase().replaceAll('_', ' ');
+    return words.charAt(0).toUpperCase() + words.slice(1);
   }
 
   /** Initials for the monogram avatar, from whatever name we actually have. */

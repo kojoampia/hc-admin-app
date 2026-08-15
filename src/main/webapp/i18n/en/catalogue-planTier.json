@@ -2,9 +2,9 @@
   "hcAdminApp": {
     "PlanTier": {
       "null": "",
-      "ESSENTIAL": "ESSENTIAL",
-      "PLUS": "PLUS",
-      "FAMILY": "FAMILY"
+      "ESSENTIAL": "Essential",
+      "PLUS": "Plus",
+      "FAMILY": "Family"
     }
   }
 }

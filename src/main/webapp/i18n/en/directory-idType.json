@@ -2,10 +2,10 @@
   "hcAdminApp": {
     "IdType": {
       "null": "",
-      "GHANA_CARD": "GHANA_CARD",
-      "PASSPORT": "PASSPORT",
-      "VOTER_ID": "VOTER_ID",
-      "DRIVERS_LICENCE": "DRIVERS_LICENCE"
+      "GHANA_CARD": "Ghana Card",
+      "PASSPORT": "Passport",
+      "VOTER_ID": "Voter ID",
+      "DRIVERS_LICENCE": "Driver's licence"
     }
   }
 }

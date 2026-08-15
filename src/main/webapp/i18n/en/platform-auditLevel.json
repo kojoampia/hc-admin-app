@@ -2,8 +2,8 @@
   "hcAdminApp": {
     "AuditLevel": {
       "null": "",
-      "INFO": "INFO",
-      "WARN": "WARN"
+      "INFO": "Info",
+      "WARN": "Warning"
     }
   }
 }

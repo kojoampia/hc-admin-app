@@ -120,6 +120,52 @@ describe('Alert Error Component', () => {
       expect(comp.alerts()[0].translationKey).toBe('error.Size');
     });
 
+    /**
+     * The api names the field `<objectName>.<field>` with `objectName` taken from the request body
+     * parameter — `organisation`, where the console files its labels under `platformOrganisation`.
+     * Nothing matched, and ngx-translate returns the key on a miss, so the toast read
+     * `Error on field "hcAdminApp.organisation.name"`. Whatever we cannot resolve, it must not be
+     * a translation key that reaches the screen.
+     */
+    it('names the field itself rather than the key when no label resolves', () => {
+      // GIVEN
+      const response = new HttpErrorResponse({
+        url: 'http://localhost:8080/api/foos',
+        headers: new HttpHeaders(),
+        status: 400,
+        statusText: 'Bad Request',
+        error: {
+          type: ProblemWithMessageType,
+          title: 'Method argument not valid',
+          status: 400,
+          path: '/api/foos',
+          message: 'error.validation',
+          fieldErrors: [{ objectName: 'foo', field: 'minField', message: 'Min' }],
+        },
+      });
+      eventManager.broadcast({ name: 'hcAdminApp.httpError', content: response });
+      // THEN
+      expect(comp.alerts()[0].translationParams).toEqual({ fieldName: 'Min field' });
+      expect(comp.alerts()[0].message).not.toContain('hcAdminApp.');
+    });
+
+    /** Same rule for the entity name, which arrives in the api's own ENTITY_NAME spelling. */
+    it('names the entity rather than the key when no label resolves', () => {
+      // GIVEN
+      const response = new HttpErrorResponse({
+        url: 'http://localhost:8080/api/organisations',
+        headers: new HttpHeaders()
+          .append(MESSAGE_ERROR_HEADER_NAME, 'error.idexists')
+          .append(MESSAGE_PARAM_HEADER_NAME, 'hcAdminServiceOrganisation'),
+        status: 400,
+        statusText: 'Bad Request',
+        error: { status: 400, message: 'error.validation' },
+      });
+      eventManager.broadcast({ name: 'hcAdminApp.httpError', content: response });
+      // THEN
+      expect(comp.alerts()[0].translationParams).toEqual({ entityName: 'Organisation' });
+    });
+
     it('should display an alert on status 400 for error headers', () => {
       // GIVEN
       const response = new HttpErrorResponse({

@@ -30,7 +30,13 @@
         "platformCredential": "Credential",
         "platformUserOption": "User Option",
         "platformPlatformService": "Platform Service",
-        "platformAuditEntry": "Audit Entry"
+        "platformAuditEntry": "Audit Entry",
+        "_comment": "Five entities reach this map under the api's own ENTITY_NAME, which is not the console spelling above. The api sends the header, so both names have to resolve.",
+        "hcAdminServiceAddress": "Address",
+        "hcAdminServiceOrganisation": "Organisation",
+        "hcAdminServiceTeam": "Team",
+        "hcAdminServiceMessage": "Message",
+        "platformService": "Platform Service"
       },
       "account": {
         "main": "Account",
