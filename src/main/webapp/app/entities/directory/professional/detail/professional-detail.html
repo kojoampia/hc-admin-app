@@ -1,130 +1,164 @@
-<div class="d-flex justify-content-center">
-  <div class="col-8">
-    @if (professional(); as professionalRef) {
-      <div>
-        <h2 data-cy="professionalDetailsHeading"><span abfTranslate="hcAdminApp.directoryProfessional.detail.title">Professional</span></h2>
+@if (professional(); as professionalRef) {
+  <a class="btn-quiet sm back" routerLink="/professional" data-cy="backToDirectory">
+    <fa-icon icon="arrow-left" />
+    <span abfTranslate="hcAdminApp.directoryProfessional.detail.back">Back to professional accounts</span>
+  </a>
 
-        <hr />
+  <abf-alert-error />
+  <abf-alert />
 
-        <abf-alert-error />
+  @if (isArchived()) {
+    <div class="alert alert-warning no-print" data-cy="archivedBanner">
+      <fa-icon icon="box-archive" />&nbsp;<span abfTranslate="hcAdminApp.directoryProfessional.archivedNotice"
+        >This record is archived and does not appear in the directory.</span
+      >
+    </div>
+  }
 
-        <abf-alert />
-
-        @if (isArchived()) {
-          <div class="alert alert-warning" data-cy="archivedBanner">
-            <fa-icon icon="box-archive" />&nbsp;<span abfTranslate="hcAdminApp.directoryProfessional.archivedNotice"
-              >This record is archived and does not appear in the directory.</span
-            >
-          </div>
+  <header class="record-head card" data-cy="professionalDetailsHeading">
+    <span class="mono-av" aria-hidden="true">{{ initials() }}</span>
+    <div class="who">
+      <h3>{{ fullName() ?? professionalRef.id }}</h3>
+      <p>
+        @if (professionalRef.role) {
+          <span>{{ 'hcAdminApp.ProfessionalRole.' + professionalRef.role | translate }}</span>
         }
-
-        <dl class="row-md jh-entity-details">
-          <dt><span abfTranslate="hcAdminApp.directoryProfessional.id">Id</span></dt>
-          <dd>
-            <span>{{ professionalRef.id }}</span>
-          </dd>
-          <dt><span abfTranslate="hcAdminApp.directoryProfessional.role">Role</span></dt>
-          <dd>
-            <span [abfTranslate]="'hcAdminApp.ProfessionalRole.' + (professionalRef.role ?? 'null')">{{
-              { null: '', CAREGIVER: 'CAREGIVER', PARAMEDIC: 'PARAMEDIC', NURSE: 'NURSE', DOCTOR: 'DOCTOR' }[professionalRef.role ?? 'null']
-            }}</span>
-          </dd>
-          <dt><span abfTranslate="hcAdminApp.directoryProfessional.speciality">Speciality</span></dt>
-          <dd>
-            <span>{{ professionalRef.speciality }}</span>
-          </dd>
-          <dt><span abfTranslate="hcAdminApp.directoryProfessional.licenceNumber">Licence Number</span></dt>
-          <dd>
-            <span>{{ professionalRef.licenceNumber }}</span>
-          </dd>
-          <dt><span abfTranslate="hcAdminApp.directoryProfessional.verification">Verification</span></dt>
-          <dd>
-            <span [abfTranslate]="'hcAdminApp.VerificationStatus.' + (professionalRef.verification ?? 'null')">{{
-              { null: '', VERIFIED: 'VERIFIED', PENDING: 'PENDING', REJECTED: 'REJECTED' }[professionalRef.verification ?? 'null']
-            }}</span>
-          </dd>
-          <dt><span abfTranslate="hcAdminApp.directoryProfessional.status">Status</span></dt>
-          <dd>
-            <span [abfTranslate]="'hcAdminApp.AccountStatus.' + (professionalRef.status ?? 'null')">{{
-              {
-                null: '',
-                ACTIVE: 'ACTIVE',
-                PENDING: 'PENDING',
-                SUSPENDED: 'SUSPENDED',
-                ON_LEAVE: 'ON_LEAVE',
-                UNDER_REVIEW: 'UNDER_REVIEW',
-              }[professionalRef.status ?? 'null']
-            }}</span>
-          </dd>
-          <dt><span abfTranslate="hcAdminApp.directoryProfessional.patientCount">Patient Count</span></dt>
-          <dd>
-            <span>{{ professionalRef.patientCount }}</span>
-          </dd>
-          <dt><span abfTranslate="hcAdminApp.directoryProfessional.caseCount">Case Count</span></dt>
-          <dd>
-            <span>{{ professionalRef.caseCount }}</span>
-          </dd>
-          <dt><span abfTranslate="hcAdminApp.directoryProfessional.visitCount">Visit Count</span></dt>
-          <dd>
-            <span>{{ professionalRef.visitCount }}</span>
-          </dd>
-          <dt><span abfTranslate="hcAdminApp.directoryProfessional.rating">Rating</span></dt>
-          <dd>
-            <span>{{ professionalRef.rating }}</span>
-          </dd>
-          <dt><span abfTranslate="hcAdminApp.directoryProfessional.joinedOn">Joined On</span></dt>
-          <dd>
-            <span>{{ professionalRef.joinedOn | formatMediumDate }}</span>
-          </dd>
-          <dt><span abfTranslate="hcAdminApp.directoryProfessional.profile">Profile</span></dt>
-          <dd>
-            @if (professional()!.profile) {
-              <div>
-                <a [routerLink]="['/profile', professional()!.profile?.id, 'view']">{{ professionalRef.profile?.id }}</a>
-              </div>
-            }
-          </dd>
-          <dt><span abfTranslate="hcAdminApp.directoryProfessional.team">Team</span></dt>
-          <dd>
-            @if (professional()!.team) {
-              <div>
-                <a [routerLink]="['/team', professional()!.team?.id, 'view']">{{ professionalRef.team?.name }}</a>
-              </div>
-            }
-          </dd>
-          <dt><span abfTranslate="hcAdminApp.directoryProfessional.hub">Hub</span></dt>
-          <dd>
-            @if (professional()!.hub) {
-              <div>
-                <a [routerLink]="['/hub', professional()!.hub?.id, 'view']">{{ professionalRef.hub?.name }}</a>
-              </div>
-            }
-          </dd>
-        </dl>
-
-        <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
-          <fa-icon icon="arrow-left" />&nbsp;<span abfTranslate="entity.action.back">Back</span>
+        @if (professionalRef.speciality) {
+          <span aria-hidden="true">·</span><span>{{ professionalRef.speciality }}</span>
+        }
+        @if (professionalRef.team?.name) {
+          <span aria-hidden="true">·</span><span>{{ professionalRef.team?.name }}</span>
+        }
+        @if (professionalRef.hub?.name) {
+          <span aria-hidden="true">·</span><span>{{ professionalRef.hub?.name }}</span>
+        }
+      </p>
+    </div>
+    <div class="head-tools no-print">
+      <abf-status-pill [status]="status()" />
+      <a class="btn btn-ghost btn-sm" routerLink="/duty-roster">
+        <fa-icon icon="calendar-alt" />
+        <span abfTranslate="hcAdminApp.directoryProfessional.detail.roster">Roster</span>
+      </a>
+      @if (canWrite()) {
+        <button type="button" class="btn btn-ghost btn-sm" (click)="toggleSuspended()" [disabled]="isSaving()" data-cy="suspendButton">
+          <fa-icon icon="triangle-exclamation" />
+          <span
+            [abfTranslate]="
+              isSuspended() ? 'hcAdminApp.directoryProfessional.detail.reinstate' : 'hcAdminApp.directoryProfessional.detail.suspend'
+            "
+            >Suspend</span
+          >
         </button>
+      }
+      <a class="btn btn-ghost btn-sm" [routerLink]="['/professional', professionalRef.id, 'edit']">
+        <fa-icon icon="pencil-alt" />
+        <span abfTranslate="entity.action.edit">Edit</span>
+      </a>
+      <button type="button" class="btn btn-ghost btn-sm" (click)="toggleArchived()" [disabled]="isSaving()" data-cy="entityArchiveButton">
+        <fa-icon icon="box-archive" />
+        <span [abfTranslate]="isArchived() ? 'entity.action.unarchive' : 'entity.action.archive'">Archive</span>
+      </button>
+    </div>
+  </header>
 
-        <button type="button" [routerLink]="['/professional', professionalRef.id, 'edit']" class="btn btn-primary">
-          <fa-icon icon="pencil-alt" />&nbsp;<span abfTranslate="entity.action.edit">Edit</span>
-        </button>
+  <div class="abf-grid abf-g-4 mb-18">
+    <div class="stat">
+      <b>{{ professionalRef.patientCount ?? 0 }}</b>
+      <span abfTranslate="hcAdminApp.directoryProfessional.detail.patients">Patients</span>
+    </div>
+    <div class="stat">
+      <b>{{ professionalRef.caseCount ?? 0 }}</b>
+      <span abfTranslate="hcAdminApp.directoryProfessional.detail.cases">Cases</span>
+    </div>
+    <div class="stat">
+      <b>{{ professionalRef.visitCount ?? 0 }}</b>
+      <span abfTranslate="hcAdminApp.directoryProfessional.detail.visits">Visits logged</span>
+    </div>
+    <div class="stat">
+      <b>{{ professionalRef.rating ?? '—' }}</b>
+      <span abfTranslate="hcAdminApp.directoryProfessional.detail.rating">Patient rating</span>
+    </div>
+  </div>
 
+  <div class="abf-grid abf-g-3 record-grid">
+    <!-- Profile -->
+    <section class="card">
+      <h4><fa-icon icon="user" /><span abfTranslate="hcAdminApp.directoryProfessional.detail.profile">Profile</span></h4>
+      <dl>
+        <dt abfTranslate="hcAdminApp.directoryProfessional.detail.name">Name</dt>
+        <dd>{{ fullName() ?? '—' }}</dd>
+        <dt abfTranslate="hcAdminApp.directoryProfessional.role">Role</dt>
+        <dd>{{ professionalRef.role ? ('hcAdminApp.ProfessionalRole.' + professionalRef.role | translate) : '—' }}</dd>
+        <dt abfTranslate="hcAdminApp.directoryProfessional.speciality">Speciality</dt>
+        <dd>{{ professionalRef.speciality ?? '—' }}</dd>
+        <dt abfTranslate="hcAdminApp.directoryProfessional.team">Team</dt>
+        <dd>
+          @if (professionalRef.team; as team) {
+            <a [routerLink]="['/team', team.id, 'view']">{{ team.name ?? team.id }}</a>
+          } @else {
+            —
+          }
+        </dd>
+        <dt abfTranslate="hcAdminApp.directoryProfessional.detail.hub">Hub</dt>
+        <dd>
+          @if (professionalRef.hub; as hub) {
+            <a [routerLink]="['/hub', hub.id, 'view']">{{ hub.name ?? hub.id }}</a>
+          } @else {
+            —
+          }
+        </dd>
+        <dt abfTranslate="hcAdminApp.directoryProfessional.detail.joined">Joined</dt>
+        <dd>{{ professionalRef.joinedOn ? (professionalRef.joinedOn | formatMediumDate) : '—' }}</dd>
+      </dl>
+    </section>
+
+    <!-- Credential -->
+    <section class="card">
+      <h4><fa-icon icon="shield-halved" /><span abfTranslate="hcAdminApp.directoryProfessional.detail.credential">Credential</span></h4>
+      <dl>
+        <dt abfTranslate="hcAdminApp.directoryProfile.email">Email</dt>
+        <dd>{{ professionalRef.profile?.email ?? '—' }}</dd>
+        <dt abfTranslate="hcAdminApp.directoryProfile.mobilePhone">Phone</dt>
+        <dd>{{ professionalRef.profile?.mobilePhone ?? '—' }}</dd>
+        <dt abfTranslate="hcAdminApp.directoryProfessional.licenceNumber">Licence</dt>
+        <dd>{{ professionalRef.licenceNumber ?? '—' }}</dd>
+        <dt abfTranslate="hcAdminApp.directoryProfessional.verification">Verification</dt>
+        <dd>{{ verification() ? ('hcAdminApp.VerificationStatus.' + verification() | translate) : '—' }}</dd>
+      </dl>
+      @if (canWrite()) {
         <button
           type="button"
-          data-cy="entityArchiveButton"
-          [class]="isArchived() ? 'btn btn-success' : 'btn btn-warning'"
-          [disabled]="isSaving()"
-          (click)="toggleArchived()"
+          class="btn btn-ghost btn-sm mt-12"
+          (click)="requestReverification()"
+          [disabled]="isSaving() || verification() === 'PENDING'"
+          data-cy="reverifyButton"
         >
-          <fa-icon [icon]="isArchived() ? 'box-open' : 'box-archive'" />&nbsp;
-          @if (isArchived()) {
-            <span abfTranslate="entity.action.unarchive">Unarchive</span>
-          } @else {
-            <span abfTranslate="entity.action.archive">Archive</span>
-          }
+          <fa-icon icon="sync" />
+          <span abfTranslate="hcAdminApp.directoryProfessional.detail.reverify">Send for re-verification</span>
         </button>
-      </div>
-    }
+      }
+    </section>
+
+    <!-- This week -->
+    <section class="card">
+      <h4><fa-icon icon="calendar-alt" /><span abfTranslate="hcAdminApp.directoryProfessional.detail.thisWeek">This week</span></h4>
+      @if (week().length > 0) {
+        <dl>
+          @for (cell of week(); track cell.dayIndex) {
+            <dt>{{ cell.date ? cell.date.format('ddd DD') : '—' }}</dt>
+            <dd>
+              @if (cell.shift) {
+                {{ 'hcAdminApp.ShiftType.' + cell.shift | translate }}
+              } @else {
+                <span class="muted" abfTranslate="dutyRoster.unassigned">Unassigned</span>
+              }
+            </dd>
+          }
+        </dl>
+      } @else {
+        <p class="empty" abfTranslate="hcAdminApp.directoryProfessional.detail.noWeek">No roster week published.</p>
+      }
+    </section>
   </div>
-</div>
+}
