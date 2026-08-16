@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vitest } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vitest } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 
 import { AUTHENTICATION_TOKEN_KEY } from 'app/shared/jhipster/constants';
@@ -25,6 +25,21 @@ describe('MessageStreamService', () => {
     sessionStorage.setItem(AUTHENTICATION_TOKEN_KEY, JSON.stringify('a-token'));
     TestBed.configureTestingModule({});
     service = TestBed.inject(MessageStreamService);
+  });
+
+  /**
+   * Put the storage back, because it is shared with every other spec in the run.
+   *
+   * Without this the token written above outlives the file, and auth-jwt.service.spec's "should
+   * return empty token if not found in local storage nor session storage" reads `a-token` and
+   * fails. It passed locally and failed in CI purely on file order, which is the worst kind of
+   * flake: the suite is green until somebody adds a file.
+   */
+  afterEach(() => {
+    sessionStorage.removeItem(AUTHENTICATION_TOKEN_KEY);
+    localStorage.removeItem(AUTHENTICATION_TOKEN_KEY);
+    vitest.unstubAllGlobals();
+    service.stop();
   });
 
   const connect = (chunks: string[]): void => {
