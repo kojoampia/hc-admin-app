@@ -133,7 +133,7 @@ describe('Professional Management Detail Component', () => {
   describe('Suspending', () => {
     it('should PATCH status rather than isArchived', () => {
       const service = TestBed.inject(ProfessionalService);
-      const patch = vitest.spyOn(service, 'partialUpdate').mockReturnValue(of({ id: 'p1' }) as any);
+      const patch = vitest.spyOn(service, 'partialUpdate').mockReturnValue(of({ id: 'p1' }));
       fixture.componentRef.setInput('professional', { id: 'p1', status: 'ACTIVE' });
 
       comp.toggleSuspended();
@@ -145,7 +145,7 @@ describe('Professional Management Detail Component', () => {
 
     it('should reinstate a suspended professional', () => {
       const service = TestBed.inject(ProfessionalService);
-      const patch = vitest.spyOn(service, 'partialUpdate').mockReturnValue(of({ id: 'p1' }) as any);
+      const patch = vitest.spyOn(service, 'partialUpdate').mockReturnValue(of({ id: 'p1' }));
       fixture.componentRef.setInput('professional', { id: 'p1', status: 'SUSPENDED' });
 
       comp.toggleSuspended();
@@ -169,7 +169,7 @@ describe('Professional Management Detail Component', () => {
   describe('Re-verification', () => {
     it('should move the record back to PENDING', () => {
       const service = TestBed.inject(ProfessionalService);
-      const patch = vitest.spyOn(service, 'partialUpdate').mockReturnValue(of({ id: 'p1' }) as any);
+      const patch = vitest.spyOn(service, 'partialUpdate').mockReturnValue(of({ id: 'p1' }));
       fixture.componentRef.setInput('professional', { id: 'p1', verification: 'VERIFIED' });
 
       comp.requestReverification();
@@ -193,7 +193,7 @@ describe('Professional Management Detail Component', () => {
     it('should place each assignment on its own day and leave the rest unassigned', () => {
       vitest
         .spyOn(TestBed.inject(RosterWeekService), 'query')
-        .mockReturnValue(of(new HttpResponse({ body: [{ id: 'w1', startDate: dayjs('2026-08-03') }] })) as any);
+        .mockReturnValue(of(new HttpResponse({ body: [{ id: 'w1', startDate: dayjs('2026-08-03') }] })));
       vitest.spyOn(TestBed.inject(ShiftAssignmentService), 'query').mockReturnValue(
         of(
           new HttpResponse({
@@ -218,8 +218,8 @@ describe('Professional Management Detail Component', () => {
     });
 
     it('should be empty when no week is published', () => {
-      vitest.spyOn(TestBed.inject(RosterWeekService), 'query').mockReturnValue(of(new HttpResponse({ body: [] })) as any);
-      vitest.spyOn(TestBed.inject(ShiftAssignmentService), 'query').mockReturnValue(of(new HttpResponse({ body: [] })) as any);
+      vitest.spyOn(TestBed.inject(RosterWeekService), 'query').mockReturnValue(of(new HttpResponse({ body: [] })));
+      vitest.spyOn(TestBed.inject(ShiftAssignmentService), 'query').mockReturnValue(of(new HttpResponse({ body: [] })));
 
       fixture.componentRef.setInput('professional', { id: 'p1' });
       fixture.detectChanges();
