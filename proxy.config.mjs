@@ -13,6 +13,25 @@ const gatewayHost = process.env.ABF_GATEWAY_HOST ?? '127.0.0.1';
 const gatewayPort = process.env.ABF_GATEWAY_PORT ?? 5504;
 
 export default {
+  // The SSE stream, which must not be given a timeout.
+  //
+  // ⚠ Known limitation: a browser `fetch` of this path does not stream THROUGH THIS PROXY. curl
+  // through it receives events fine and the same fetch against the real origin
+  // (http://admin.healthconnect.local, i.e. nginx in front of the web container) receives them
+  // fine — so the console's notifications work when served normally and are silently dead under
+  // `ng serve`. If you are testing notifications, test them against the quality stack, not here.
+  //
+  // The rule below sets 5s so a dead gateway fails fast instead of looking like slowness. That is
+  // right for a request/response call and fatal to a stream: the console's notification connection
+  // is meant to stay open for half an hour, so a 5s proxy timeout severed it on a loop — the api
+  // logged a fresh "Registering sse client" every five seconds and no event ever survived long
+  // enough to be delivered. Declared first, because the pattern below would otherwise match it.
+  '^/services/[^/]+/api/hc-admin-service-kafka/(register|unregister)': {
+    target: `http://${gatewayHost}:${gatewayPort}`,
+    xfwd: true,
+    timeout: 0,
+    proxyTimeout: 0,
+  },
   // A proxy rather than a direct cross-origin call on purpose: the
   // gateway would otherwise have to CORS-allow the dev server, and a
   // same-origin path also keeps the JWT on the same site.

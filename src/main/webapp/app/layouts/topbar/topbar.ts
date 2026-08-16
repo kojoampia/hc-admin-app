@@ -12,6 +12,7 @@ import { TranslateDirective } from 'app/shared/language';
 
 import { QUICK_ADD, QUICK_ADD_AUTHORITIES } from '../shell-navigation';
 import { ShellCountersService } from '../shell-counters.service';
+import { MessageStreamService, type MessageSentEvent } from 'app/core/util/message-stream.service';
 import { ShellStateService } from '../shell-state.service';
 
 /**
@@ -44,6 +45,13 @@ export default class Topbar {
   readonly quickAdd = QUICK_ADD;
   readonly quickAddAuthorities = [...QUICK_ADD_AUTHORITIES];
 
+  /**
+   * Live notifications from the api's Kafka bridge, over SSE.
+   *
+   * <p>Started here because the topbar exists exactly when somebody is signed in and looking at the
+   * console — the shell renders it only for an authenticated session, so there is no window where
+   * this is connected without a token behind it.
+   */
   readonly pageTitle = signal('global.title');
   readonly breadcrumb = signal('global.menu.group.operations');
 
@@ -51,6 +59,19 @@ export default class Topbar {
   private readonly activatedRoute = inject(ActivatedRoute);
   private readonly document = inject(DOCUMENT);
   private readonly shellState = inject(ShellStateService);
+  private readonly messageStream = inject(MessageStreamService);
+
+  /**
+   * Live notifications from the api's Kafka bridge, over SSE.
+   *
+   * <p>Declared after the injection it reads, because a field initialiser runs in declaration order
+   * and referencing an inject() below it is a use-before-initialisation the compiler catches.
+   *
+   * <p>Started from the topbar because the shell renders it only for an authenticated session, so
+   * there is no window where this is connected without a token behind it.
+   */
+  // eslint-disable-next-line @typescript-eslint/member-ordering
+  readonly notifications = this.messageStream.notifications;
   private readonly counters = inject(ShellCountersService);
 
   // eslint-disable-next-line @typescript-eslint/member-ordering
@@ -59,6 +80,7 @@ export default class Topbar {
   readonly unreadMessages = this.counters.unreadMessages;
 
   constructor() {
+    this.messageStream.start();
     this.router.events
       .pipe(
         filter(event => event instanceof NavigationEnd),
@@ -99,5 +121,18 @@ export default class Topbar {
       }
     }
     return resolved;
+  }
+
+  /**
+   * Open a notification: go to the message it names, and drop the notification.
+   *
+   * <p>The event carries metadata only — subject, sender, id — so this is where the message itself
+   * is fetched: the thread screen loads it by id, authenticated, from the service that owns it. The
+   * body never travelled on the bus to get here.
+   */
+  // eslint-disable-next-line @typescript-eslint/member-ordering
+  openNotification(event: MessageSentEvent): void {
+    this.messageStream.dismiss(event.id);
+    void this.router.navigate(['/message-desk', event.id]);
   }
 }

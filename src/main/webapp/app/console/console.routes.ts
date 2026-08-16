@@ -29,6 +29,15 @@ const routes: Routes = [
     loadComponent: () => import('./message-desk/message-desk'),
   },
   {
+    // Declared before `message-desk/:id`, and the order is load-bearing: the router takes the first
+    // match, so with :id first this route would resolve as a thread whose id is the word "new" and
+    // the compose screen would be unreachable.
+    path: 'message-desk/new',
+    data: { pageTitle: 'messageDesk.compose.pageTitle', breadcrumb: 'global.menu.console.messageDesk' },
+    canActivate: [UserRouteAccessService],
+    loadComponent: () => import('./message-desk/message-compose'),
+  },
+  {
     path: 'message-desk/:id',
     data: { pageTitle: 'messageDesk.thread.pageTitle', breadcrumb: 'global.menu.console.messageDesk' },
     canActivate: [UserRouteAccessService],

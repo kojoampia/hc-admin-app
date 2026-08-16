@@ -61,6 +61,18 @@ export class MessageService extends MessagesService {
     return this.http.post<RestMessage>(this.resourceUrl, copy).pipe(map(res => this.convertResponseFromServer(res)));
   }
 
+  /**
+   * Send an outbound message: persist it, and let the api announce it.
+   *
+   * A separate endpoint from `create` on purpose, and the distinction is not cosmetic. Creating a
+   * message records one that arrived; sending one notifies somebody. Routing both through the same
+   * call would make every seeded or imported row fire a notification at a recipient.
+   */
+  send(message: NewMessage): Observable<IMessage> {
+    const copy = this.convertValueFromClient(message);
+    return this.http.post<RestMessage>(`${this.resourceUrl}/send`, copy).pipe(map(res => this.convertResponseFromServer(res)));
+  }
+
   update(message: IMessage): Observable<IMessage> {
     const copy = this.convertValueFromClient(message);
     return this.http
