@@ -1,6 +1,8 @@
 import dayjs from 'dayjs/esm';
 
 import { AccountStatus } from 'app/entities/enumerations/account-status.model';
+import { IDocument } from 'app/entities/platform/document/document.model';
+import { IFacility } from 'app/entities/platform/facility/facility.model';
 
 export interface IVendor {
   id: string;
@@ -28,6 +30,16 @@ export interface IVendor {
    * the moment this shipped.
    */
   isArchived?: boolean | null;
+
+  /**
+   * The sites this vendor operates, and its filed paperwork.
+   *
+   * Both arrive nested on `GET /api/vendors/{id}` and neither is written from the console. A vendor
+   * is the party the network contracts with; a facility is a place it runs, and one vendor may have
+   * several — a pharmacy chain is one contract and many counters.
+   */
+  facilities?: IFacility[] | null;
+  documents?: IDocument[] | null;
 }
 
 export type NewVendor = Omit<IVendor, 'id'> & { id: null };

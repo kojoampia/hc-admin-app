@@ -18,7 +18,22 @@
         "question": "Are you sure you want to delete Vendor {{ id }}?"
       },
       "detail": {
-        "title": "Vendor"
+        "title": "Vendor",
+        "back": "Back to vendors",
+        "organisation": "Organisation",
+        "contact": "Contact",
+        "commercial": "Commercial",
+        "facilities": "Sites operated",
+        "documents": "Documents",
+        "orders": "Orders",
+        "spend": "Spend to date (GHS)",
+        "rating": "Rating",
+        "sites": "Sites",
+        "renews": "Renews",
+        "review": "Place under review",
+        "clearReview": "Clear review",
+        "noFacilities": "No sites recorded. A vendor that only delivers has none.",
+        "noDocuments": "Nothing filed. Statements and contracts appear here once uploaded."
       },
       "id": "Id",
       "name": "Name",

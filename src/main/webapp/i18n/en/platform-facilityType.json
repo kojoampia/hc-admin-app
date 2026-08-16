@@ -1,0 +1,13 @@
+{
+  "hcAdminApp": {
+    "FacilityType": {
+      "null": "",
+      "HOSPITAL": "Hospital",
+      "HOSPICE": "Hospice",
+      "CLINIC": "Clinic",
+      "LAB": "Laboratory",
+      "PHARMACY": "Pharmacy",
+      "OTHER": "Other"
+    }
+  }
+}
