@@ -1,0 +1,5 @@
+/* The record idiom — .back, .record-head, .record-grid, .kv-list, .mono-av — lives in
+   _console-components.scss and is imported per component, as every console screen does. Angular
+   scopes a component stylesheet, so an import here is the only way those classes reach this
+   template; global.scss pulls in console-admin only. */
+@import 'console-components';

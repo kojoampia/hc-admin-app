@@ -1790,3 +1790,110 @@ button.svc:hover {
   color: var(--abf-navy);
   box-shadow: var(--abf-sh-sm);
 }
+
+/* ============================================================
+   RECORD SCREENS
+
+   The shape every directory record uses: a back link, a header carrying the
+   monogram, the name and the actions, then a grid of labelled cards.
+
+   Shared rather than per-screen because patient, professional and vendor
+   records are the same object with different cards in it — three copies of this
+   would drift, and the first thing to drift is the label column width, which is
+   what makes two cards side by side read as one table.
+   ============================================================ */
+
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 14px;
+  text-decoration: none;
+}
+
+.record-head {
+  display: flex;
+  /* Explicit, because Bootstrap's own .card is `display:flex; flex-direction:column` and this
+     element carries both classes. Setting only `display:flex` leaves the column direction in
+     place, which stacks the monogram, the name and the actions down the middle of the card. */
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 20px;
+  margin-bottom: 16px;
+
+  .who {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  h3 {
+    margin: 0;
+    font-size: 20px;
+    letter-spacing: -0.01em;
+  }
+
+  /* The identifying line: ID document, account and joining date. Wraps as a
+     whole rather than mid-value, so an ID number never breaks across lines. */
+  p {
+    margin: 3px 0 0;
+    font-size: 13px;
+    color: var(--abf-grey);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+}
+
+.record-grid {
+  align-items: start;
+
+  h4 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 12px;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--abf-grey);
+  }
+
+  section.card {
+    padding: 16px 18px;
+  }
+}
+
+/* Label/value pairs inside a record card. `auto 1fr` rather than a fixed label
+   column: the labels are translated, and a fixed width that fits English clips
+   the moment a longer language arrives. */
+.kv-list,
+.record-grid dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 9px 16px;
+  margin: 0;
+  font-size: 13.5px;
+
+  dt {
+    color: var(--abf-grey);
+    font-weight: 600;
+  }
+
+  dd {
+    margin: 0;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+  }
+}
+
+@media (max-width: 640px) {
+  .record-head {
+    flex-wrap: wrap;
+
+    .head-tools {
+      width: 100%;
+    }
+  }
+}

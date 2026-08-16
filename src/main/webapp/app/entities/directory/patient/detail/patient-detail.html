@@ -1,118 +1,191 @@
-<div class="d-flex justify-content-center">
-  <div class="col-8">
-    @if (patient(); as patientRef) {
-      <div>
-        <h2 data-cy="patientDetailsHeading"><span abfTranslate="hcAdminApp.directoryPatient.detail.title">Patient</span></h2>
+@if (patient(); as patientRef) {
+  <a class="btn-quiet sm back" routerLink="/patient" data-cy="backToDirectory">
+    <fa-icon icon="arrow-left" />
+    <span abfTranslate="hcAdminApp.directoryPatient.detail.back">Back to patient accounts</span>
+  </a>
 
-        <hr />
+  <abf-alert-error />
+  <abf-alert />
 
-        <abf-alert-error />
+  @if (isArchived()) {
+    <div class="alert alert-warning no-print" data-cy="archivedBanner">
+      <fa-icon icon="box-archive" />&nbsp;<span abfTranslate="hcAdminApp.directoryPatient.archivedNotice"
+        >This record is archived and does not appear in the directory.</span
+      >
+    </div>
+  }
 
-        <abf-alert />
-
-        @if (isArchived()) {
-          <div class="alert alert-warning" data-cy="archivedBanner">
-            <fa-icon icon="box-archive" />&nbsp;<span abfTranslate="hcAdminApp.directoryPatient.archivedNotice"
-              >This record is archived and does not appear in the directory.</span
-            >
-          </div>
+  <header class="record-head card" data-cy="patientDetailsHeading">
+    <span class="mono-av" aria-hidden="true">{{ initials() }}</span>
+    <div class="who">
+      <h3>{{ fullName() ?? patientRef.id }}</h3>
+      <p>
+        @if (patientRef.profile?.idNumber) {
+          <span>{{ 'hcAdminApp.IdType.' + (patientRef.profile?.idType ?? 'null') | translate }} {{ patientRef.profile?.idNumber }}</span>
+          <span aria-hidden="true">·</span>
         }
+        <span><span abfTranslate="hcAdminApp.directoryPatient.detail.account">Account</span> {{ patientRef.id }}</span>
+        @if (patientRef.joinedOn) {
+          <span aria-hidden="true">·</span>
+          <span
+            ><span abfTranslate="hcAdminApp.directoryPatient.detail.joined">joined</span> {{ patientRef.joinedOn | formatMediumDate }}</span
+          >
+        }
+      </p>
+    </div>
+    <div class="head-tools no-print">
+      <abf-status-pill [status]="patientRef.status" />
+      <a class="btn btn-ghost btn-sm" [routerLink]="['/patient', patientRef.id, 'edit']">
+        <fa-icon icon="pencil-alt" />
+        <span abfTranslate="entity.action.edit">Edit</span>
+      </a>
+      <button type="button" class="btn btn-ghost btn-sm" (click)="toggleArchived()" [disabled]="isSaving()" data-cy="entityArchiveButton">
+        <fa-icon icon="box-archive" />
+        <span [abfTranslate]="isArchived() ? 'entity.action.unarchive' : 'entity.action.archive'">Archive</span>
+      </button>
+    </div>
+  </header>
 
-        <dl class="row-md jh-entity-details">
-          <dt><span abfTranslate="hcAdminApp.directoryPatient.id">Id</span></dt>
+  <div class="abf-grid abf-g-3 record-grid">
+    <!-- Profile -->
+    <section class="card">
+      <h4><fa-icon icon="user" /><span abfTranslate="hcAdminApp.directoryPatient.detail.profile">Profile</span></h4>
+      <dl>
+        <dt abfTranslate="hcAdminApp.directoryProfile.firstName">First name</dt>
+        <dd>{{ patientRef.profile?.firstName ?? '—' }}</dd>
+        <dt abfTranslate="hcAdminApp.directoryProfile.lastName">Last name</dt>
+        <dd>{{ patientRef.profile?.lastName ?? '—' }}</dd>
+        <dt abfTranslate="hcAdminApp.directoryProfile.dateOfBirth">Date of birth</dt>
+        <dd>{{ dateOfBirth() ? (dateOfBirth() | formatMediumDate) : '—' }}</dd>
+        @if (age() !== null) {
+          <dt abfTranslate="hcAdminApp.directoryPatient.detail.age">Age</dt>
+          <dd>{{ age() }} <span abfTranslate="hcAdminApp.directoryPatient.detail.years">years</span></dd>
+        }
+        <dt abfTranslate="hcAdminApp.directoryProfile.sex">Sex</dt>
+        <dd>{{ patientRef.profile?.sex ? ('hcAdminApp.Sex.' + patientRef.profile?.sex | translate) : '—' }}</dd>
+        <dt abfTranslate="hcAdminApp.directoryProfile.idType">ID type</dt>
+        <dd>{{ patientRef.profile?.idType ? ('hcAdminApp.IdType.' + patientRef.profile?.idType | translate) : '—' }}</dd>
+        <dt abfTranslate="hcAdminApp.directoryProfile.idNumber">ID number</dt>
+        <dd>{{ patientRef.profile?.idNumber ?? '—' }}</dd>
+      </dl>
+    </section>
+
+    <!-- Address -->
+    <section class="card">
+      <h4><fa-icon icon="location-dot" /><span abfTranslate="hcAdminApp.directoryPatient.detail.address">Address</span></h4>
+      @if (patientRef.profile?.address; as address) {
+        <dl>
+          <dt abfTranslate="hcAdminApp.directoryAddress.digitalAddress">Digital</dt>
+          <dd>{{ address.digitalAddress ?? '—' }}</dd>
+          <dt abfTranslate="hcAdminApp.directoryAddress.streetAddress">Street</dt>
+          <dd>{{ address.streetAddress ?? '—' }}</dd>
+          <dt abfTranslate="hcAdminApp.directoryAddress.townDistrict">Town</dt>
+          <dd>{{ address.townDistrict ?? '—' }}</dd>
+          <dt abfTranslate="hcAdminApp.directoryAddress.cityState">City</dt>
+          <dd>{{ address.cityState ?? '—' }}</dd>
+          <dt abfTranslate="hcAdminApp.directoryAddress.region">Region</dt>
+          <dd>{{ address.region ?? '—' }}</dd>
+          <dt abfTranslate="hcAdminApp.directoryAddress.country">Country</dt>
+          <dd>{{ address.country ?? '—' }}</dd>
+        </dl>
+      } @else {
+        <p class="empty" abfTranslate="hcAdminApp.directoryPatient.detail.noAddress">No address on file.</p>
+      }
+    </section>
+
+    <!-- Credential and contact -->
+    <section class="card">
+      <h4>
+        <fa-icon icon="shield-halved" /><span abfTranslate="hcAdminApp.directoryPatient.detail.credential">Credential &amp; contact</span>
+      </h4>
+      <dl>
+        <dt abfTranslate="hcAdminApp.directoryProfile.email">Email</dt>
+        <dd>{{ patientRef.profile?.email ?? '—' }}</dd>
+        <dt abfTranslate="hcAdminApp.directoryProfile.mobilePhone">Phone</dt>
+        <dd>{{ patientRef.profile?.mobilePhone ?? '—' }}</dd>
+        <dt abfTranslate="hcAdminApp.directoryPatient.detail.lastActive">Last active</dt>
+        <dd>{{ patientRef.lastActiveOn ? (patientRef.lastActiveOn | formatMediumDate) : '—' }}</dd>
+        <dt abfTranslate="hcAdminApp.directoryPatient.detail.caseCount">Cases on file</dt>
+        <dd>{{ patientRef.caseCount ?? 0 }}</dd>
+      </dl>
+    </section>
+
+    <!-- Angel / next of kin -->
+    <section class="card">
+      <h4><fa-icon icon="heart" /><span abfTranslate="hcAdminApp.directoryPatient.detail.angel">Angel · next of kin</span></h4>
+      @if (patientRef.angel; as angel) {
+        <dl>
+          <dt abfTranslate="hcAdminApp.directoryAngel.name">Name</dt>
           <dd>
-            <span>{{ patientRef.id }}</span>
+            <a [routerLink]="['/angel', angel.id, 'view']">{{ angel.name ?? angel.id }}</a>
           </dd>
-          <dt><span abfTranslate="hcAdminApp.directoryPatient.status">Status</span></dt>
+          <dt abfTranslate="hcAdminApp.directoryAngel.relationship">Relationship</dt>
+          <dd>{{ angel.relationship ?? '—' }}</dd>
+          <dt abfTranslate="hcAdminApp.directoryAngel.phone">Phone</dt>
+          <dd>{{ angel.phone ?? '—' }}</dd>
+          <dt abfTranslate="hcAdminApp.directoryAngel.email">Email</dt>
+          <dd>{{ angel.email ?? '—' }}</dd>
+        </dl>
+      } @else {
+        <p class="empty" abfTranslate="hcAdminApp.directoryPatient.detail.noAngel">No sponsor recorded.</p>
+      }
+    </section>
+
+    <!-- Service plan -->
+    <section class="card">
+      <h4><fa-icon icon="credit-card" /><span abfTranslate="hcAdminApp.directoryPatient.detail.plan">Service plan</span></h4>
+      @if (patientRef.plan; as plan) {
+        <dl>
+          <dt abfTranslate="hcAdminApp.catalogueServicePlan.name">Plan</dt>
           <dd>
-            <span [abfTranslate]="'hcAdminApp.AccountStatus.' + (patientRef.status ?? 'null')">{{
-              {
-                null: '',
-                ACTIVE: 'ACTIVE',
-                PENDING: 'PENDING',
-                SUSPENDED: 'SUSPENDED',
-                ON_LEAVE: 'ON_LEAVE',
-                UNDER_REVIEW: 'UNDER_REVIEW',
-              }[patientRef.status ?? 'null']
-            }}</span>
+            <a [routerLink]="['/service-plan', plan.id, 'view']">{{ plan.name ?? plan.id }}</a>
           </dd>
-          <dt><span abfTranslate="hcAdminApp.directoryPatient.joinedOn">Joined On</span></dt>
+          <dt abfTranslate="hcAdminApp.directoryPatient.detail.monthly">Monthly</dt>
+          <dd>{{ plan.currency ?? '' }} {{ plan.monthlyPrice ?? '—' }}</dd>
+          @if (plan.tierLabel) {
+            <dt abfTranslate="hcAdminApp.directoryPatient.detail.tier">Tier</dt>
+            <dd>{{ plan.tierLabel }}</dd>
+          }
+          <dt abfTranslate="hcAdminApp.directoryPatient.detail.since">Since</dt>
+          <dd>{{ patientRef.joinedOn ? (patientRef.joinedOn | formatMediumDate) : '—' }}</dd>
+        </dl>
+      } @else {
+        <p class="empty" abfTranslate="hcAdminApp.directoryPatient.detail.noPlan">No plan subscribed.</p>
+      }
+    </section>
+
+    <!-- Care -->
+    <section class="card">
+      <h4><fa-icon icon="stethoscope" /><span abfTranslate="hcAdminApp.directoryPatient.detail.care">Care</span></h4>
+      @if (patientRef.clinicalLead; as lead) {
+        <dl>
+          <dt abfTranslate="hcAdminApp.directoryPatient.detail.clinicalLead">Clinical lead</dt>
           <dd>
-            <span>{{ patientRef.joinedOn | formatMediumDate }}</span>
+            <a [routerLink]="['/professional', lead.id, 'view']">{{ clinicalLeadName() ?? lead.licenceNumber ?? lead.id }}</a>
           </dd>
-          <dt><span abfTranslate="hcAdminApp.directoryPatient.lastActiveOn">Last Active On</span></dt>
+          @if (lead.role) {
+            <dt abfTranslate="hcAdminApp.directoryProfessional.role">Role</dt>
+            <dd>
+              {{ 'hcAdminApp.ProfessionalRole.' + lead.role | translate }}
+              @if (lead.speciality) {
+                <span class="muted"> · {{ lead.speciality }}</span>
+              }
+            </dd>
+          }
+          <dt abfTranslate="hcAdminApp.directoryProfessional.licenceNumber">Licence</dt>
+          <dd>{{ lead.licenceNumber ?? '—' }}</dd>
+          <dt abfTranslate="hcAdminApp.directoryPatient.detail.hub">Hub</dt>
           <dd>
-            <span>{{ patientRef.lastActiveOn | formatMediumDate }}</span>
-          </dd>
-          <dt><span abfTranslate="hcAdminApp.directoryPatient.caseCount">Case Count</span></dt>
-          <dd>
-            <span>{{ patientRef.caseCount }}</span>
-          </dd>
-          <dt><span abfTranslate="hcAdminApp.directoryPatient.profile">Profile</span></dt>
-          <dd>
-            @if (patient()!.profile) {
-              <div>
-                <a [routerLink]="['/profile', patient()!.profile?.id, 'view']">{{ patientRef.profile?.id }}</a>
-              </div>
-            }
-          </dd>
-          <dt><span abfTranslate="hcAdminApp.directoryPatient.angel">Angel</span></dt>
-          <dd>
-            @if (patient()!.angel) {
-              <div>
-                <a [routerLink]="['/angel', patient()!.angel?.id, 'view']">{{ patientRef.angel?.id }}</a>
-              </div>
-            }
-          </dd>
-          <dt><span abfTranslate="hcAdminApp.directoryPatient.plan">Plan</span></dt>
-          <dd>
-            @if (patient()!.plan) {
-              <div>
-                <a [routerLink]="['/service-plan', patient()!.plan?.id, 'view']">{{ patientRef.plan?.name }}</a>
-              </div>
-            }
-          </dd>
-          <dt><span abfTranslate="hcAdminApp.directoryPatient.clinicalLead">Clinical Lead</span></dt>
-          <dd>
-            @if (patient()!.clinicalLead) {
-              <div>
-                <a [routerLink]="['/professional', patient()!.clinicalLead?.id, 'view']">{{ patientRef.clinicalLead?.licenceNumber }}</a>
-              </div>
-            }
-          </dd>
-          <dt><span abfTranslate="hcAdminApp.directoryPatient.hub">Hub</span></dt>
-          <dd>
-            @if (patient()!.hub) {
-              <div>
-                <a [routerLink]="['/hub', patient()!.hub?.id, 'view']">{{ patientRef.hub?.name }}</a>
-              </div>
+            @if (patientRef.hub; as hub) {
+              <a [routerLink]="['/hub', hub.id, 'view']">{{ hub.name ?? hub.id }}</a>
+            } @else {
+              —
             }
           </dd>
         </dl>
-
-        <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
-          <fa-icon icon="arrow-left" />&nbsp;<span abfTranslate="entity.action.back">Back</span>
-        </button>
-
-        <button type="button" [routerLink]="['/patient', patientRef.id, 'edit']" class="btn btn-primary">
-          <fa-icon icon="pencil-alt" />&nbsp;<span abfTranslate="entity.action.edit">Edit</span>
-        </button>
-
-        <button
-          type="button"
-          data-cy="entityArchiveButton"
-          [class]="isArchived() ? 'btn btn-success' : 'btn btn-warning'"
-          [disabled]="isSaving()"
-          (click)="toggleArchived()"
-        >
-          <fa-icon [icon]="isArchived() ? 'box-open' : 'box-archive'" />&nbsp;
-          @if (isArchived()) {
-            <span abfTranslate="entity.action.unarchive">Unarchive</span>
-          } @else {
-            <span abfTranslate="entity.action.archive">Archive</span>
-          }
-        </button>
-      </div>
-    }
+      } @else {
+        <p class="empty" abfTranslate="hcAdminApp.directoryPatient.detail.noLead">No clinical lead assigned.</p>
+      }
+    </section>
   </div>
-</div>
+}
