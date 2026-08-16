@@ -200,8 +200,6 @@ describe('Professional Management Detail Component', () => {
             body: [
               { id: 's1', dayIndex: 0, shift: 'DAY', professional: { id: 'p1' }, week: { id: 'w1' } },
               { id: 's2', dayIndex: 3, shift: 'OFF', professional: { id: 'p1' }, week: { id: 'w1' } },
-              // Another professional's shift, which must not appear on this record.
-              { id: 's3', dayIndex: 1, shift: 'NIGHT', professional: { id: 'p2' }, week: { id: 'w1' } },
             ],
           }),
         ) as any,
@@ -215,6 +213,26 @@ describe('Professional Management Detail Component', () => {
       expect(comp.week()[1].shift).toBeNull();
       expect(comp.week()[3].shift).toBe('OFF');
       expect(comp.week()[0].date?.format('YYYY-MM-DD')).toBe('2026-08-03');
+    });
+
+    /**
+     * The narrowing is the api's, and asking for it is the whole of this record's correctness.
+     *
+     * Both names were undeclared parameters until the api declared them, and Spring drops those
+     * without complaint — so this asked for one professional's week, received the whole collection,
+     * and filtered it here one page deep. Anyone whose shifts fell past that page showed an empty
+     * week. A fixture cannot catch a filter the server ignores; asserting the query can.
+     */
+    it('should ask the api for this professional and this week', () => {
+      vitest
+        .spyOn(TestBed.inject(RosterWeekService), 'query')
+        .mockReturnValue(of(new HttpResponse({ body: [{ id: 'w1', startDate: dayjs('2026-08-03') }] })));
+      const shifts = vitest.spyOn(TestBed.inject(ShiftAssignmentService), 'query').mockReturnValue(of(new HttpResponse({ body: [] })));
+
+      fixture.componentRef.setInput('professional', { id: 'p1' });
+      fixture.detectChanges();
+
+      expect(shifts).toHaveBeenCalledWith(expect.objectContaining({ 'professionalId.equals': 'p1', 'weekId.equals': 'w1' }));
     });
 
     it('should be empty when no week is published', () => {
