@@ -14,6 +14,23 @@ export interface IMessage {
   channel?: keyof typeof MessageChannel | null;
   status?: keyof typeof MessageStatus | null;
   priority?: keyof typeof Priority | null;
+
+  /**
+   * Where an outbound message went. Absent on everything that arrived at the desk.
+   *
+   * A message is outbound exactly when this is set — the api carries no direction flag, because a
+   * flag and an address can disagree and then neither can be trusted.
+   */
+  toAddress?: string | null;
+  recipientName?: string | null;
+
+  /** The message this one answers. A reply is its own message, not an edit of the original. */
+  parentId?: string | null;
+
+  /** Who it went to, when the service knows them. `toAddress` stays the authoritative field. */
+  vendorId?: string | null;
+  patientId?: string | null;
+  professionalId?: string | null;
 }
 
 export type NewMessage = Omit<IMessage, 'id'> & { id: null };

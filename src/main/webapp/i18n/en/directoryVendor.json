@@ -33,7 +33,8 @@
         "review": "Place under review",
         "clearReview": "Clear review",
         "noFacilities": "No sites recorded. A vendor that only delivers has none.",
-        "noDocuments": "Nothing filed. Statements and contracts appear here once uploaded."
+        "noDocuments": "Nothing filed. Statements and contracts appear here once uploaded.",
+        "message": "Message vendor"
       },
       "id": "Id",
       "name": "Name",

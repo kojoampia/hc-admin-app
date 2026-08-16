@@ -1,0 +1,70 @@
+<a class="btn-quiet sm back" routerLink="/message-desk">
+  <fa-icon icon="arrow-left" />
+  <span abfTranslate="messageDesk.thread.back">Back to the desk</span>
+</a>
+
+<abf-alert-error />
+
+<div class="card card-pad compose">
+  <h3 abfTranslate="messageDesk.compose.title">New message</h3>
+  <p class="muted" abfTranslate="messageDesk.compose.subtitle">
+    Sent from the desk. The recipient is notified and opens it from their own inbox.
+  </p>
+
+  <div class="row-2">
+    <div class="field">
+      <label for="to" abfTranslate="messageDesk.compose.to">To</label>
+      <input id="to" type="email" [value]="to()" (input)="to.set($any($event.target).value)" data-cy="composeTo" />
+    </div>
+    <div class="field">
+      <label for="recipientName" abfTranslate="messageDesk.compose.recipientName">Recipient name</label>
+      <input
+        id="recipientName"
+        type="text"
+        [value]="recipientName()"
+        (input)="recipientName.set($any($event.target).value)"
+        data-cy="composeRecipient"
+      />
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="subject" abfTranslate="messageDesk.compose.subject">Subject</label>
+    <input id="subject" type="text" [value]="subject()" (input)="subject.set($any($event.target).value)" data-cy="composeSubject" />
+  </div>
+
+  <div class="row-2">
+    <div class="field">
+      <label for="channel" abfTranslate="messageDesk.compose.channel">Channel</label>
+      <select id="channel" [value]="channel()" (change)="channel.set($any($event.target).value)">
+        @for (option of channels; track option) {
+          <option [value]="option">{{ 'hcAdminApp.MessageChannel.' + option | translate }}</option>
+        }
+      </select>
+    </div>
+    <div class="field">
+      <label for="priority" abfTranslate="messageDesk.compose.priority">Priority</label>
+      <select id="priority" [value]="priority()" (change)="priority.set($any($event.target).value)">
+        @for (option of priorities; track option) {
+          <option [value]="option">{{ 'console.status.' + option | translate }}</option>
+        }
+      </select>
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="body" abfTranslate="messageDesk.compose.body">Message</label>
+    <textarea id="body" [value]="body()" (input)="body.set($any($event.target).value)" data-cy="composeBody"></textarea>
+  </div>
+
+  <div class="actions">
+    <button type="button" class="btn btn-primary" (click)="send()" [disabled]="!canSend()" data-cy="composeSend">
+      <fa-icon icon="paper-plane" />
+      <span abfTranslate="messageDesk.compose.send">Send</span>
+    </button>
+    <a class="btn btn-ghost" routerLink="/message-desk" abfTranslate="entity.action.cancel">Cancel</a>
+    @if (!canSend() && !isSending()) {
+      <span class="muted" abfTranslate="messageDesk.compose.incomplete">A recipient, a subject and a message are all required.</span>
+    }
+  </div>
+</div>

@@ -33,6 +33,24 @@
       "markReplied": "Mark replied",
       "markUnread": "Mark unread",
       "escalate": "Escalate"
+    },
+    "compose": {
+      "pageTitle": "New message",
+      "action": "Compose",
+      "title": "New message",
+      "subtitle": "Sent from the desk. The recipient is notified and opens it from their own inbox.",
+      "to": "To",
+      "recipientName": "Recipient name",
+      "subject": "Subject",
+      "channel": "Channel",
+      "priority": "Priority",
+      "body": "Message",
+      "send": "Send",
+      "incomplete": "A recipient, a subject and a message are all required."
+    },
+    "notifications": {
+      "empty": "Nothing new.",
+      "all": "Open the message desk"
     }
   }
 }

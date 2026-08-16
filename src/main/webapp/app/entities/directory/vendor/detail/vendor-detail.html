@@ -37,6 +37,17 @@
     </div>
     <div class="head-tools no-print">
       <abf-status-pill [status]="status()" />
+      @if (vendorRef.email) {
+        <a
+          class="btn btn-ghost btn-sm"
+          routerLink="/message-desk/new"
+          [queryParams]="{ to: vendorRef.email, name: vendorRef.name, channel: 'VENDOR_PORTAL' }"
+          data-cy="messageVendor"
+        >
+          <fa-icon icon="envelope" />
+          <span abfTranslate="hcAdminApp.directoryVendor.detail.message">Message vendor</span>
+        </a>
+      }
       @if (canWrite()) {
         <button type="button" class="btn btn-ghost btn-sm" (click)="toggleReview()" [disabled]="isSaving()" data-cy="reviewButton">
           <fa-icon icon="triangle-exclamation" />

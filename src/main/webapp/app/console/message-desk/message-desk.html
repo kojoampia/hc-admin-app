@@ -8,6 +8,10 @@
       <fa-icon icon="check" />
       <span abfTranslate="messageDesk.markAllRead">Mark all read</span>
     </button>
+    <a class="btn btn-primary btn-sm" routerLink="/message-desk/new" *abfHasAnyAuthority="adminOnly" data-cy="composeButton">
+      <fa-icon icon="paper-plane" />
+      <span abfTranslate="messageDesk.compose.action">Compose</span>
+    </a>
   </div>
 </div>
 

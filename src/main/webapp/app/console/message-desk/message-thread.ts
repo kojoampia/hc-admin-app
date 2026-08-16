@@ -6,6 +6,9 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { TranslatePipe } from '@ngx-translate/core';
 
 import { IMessage } from 'app/entities/operations/message/message.model';
+import dayjs from 'dayjs/esm';
+
+import { AccountService } from 'app/core/auth/account.service';
 import { MessageService } from 'app/entities/operations/message/service/message.service';
 import { NewTask } from 'app/entities/operations/task/task.model';
 import { TaskService } from 'app/entities/operations/task/service/task.service';
@@ -48,9 +51,11 @@ export default class MessageThread implements OnInit {
 
   readonly message = signal<IMessage | null>(null);
   readonly reply = signal('');
+  readonly isSending = signal(false);
   readonly notFound = signal(false);
 
   private readonly messageService = inject(MessageService);
+  private readonly accountService = inject(AccountService);
   private readonly taskService = inject(TaskService);
   private readonly counters = inject(ShellCountersService);
   private readonly router = inject(Router);
@@ -98,12 +103,50 @@ export default class MessageThread implements OnInit {
     this.messageService.partialUpdate({ id: current.id, priority: 'HIGH' }).subscribe(updated => this.message.set(updated));
   }
 
-  /** Reply flips the thread to REPLIED. An empty reply is not a reply. */
+  /**
+   * Send the reply, then mark the thread replied.
+   *
+   * <p>This used to do only the second half. It flipped the status, navigated away, and discarded
+   * the typed text — nothing an operator wrote was ever stored, let alone delivered, and the desk
+   * showed a conversation that had only ever been one-sided. The button said "Send reply" the whole
+   * time, which is what kept it hidden.
+   *
+   * <p>A reply is its own message with a parent, not an edit of the one it answers: it has its own
+   * body, its own time and its own author. It goes to whoever wrote in, and it goes back on the
+   * channel they used, because a patient who wrote from the patient app does not read email.
+   */
   send(): void {
-    if (!this.reply().trim()) {
+    const current = this.message();
+    const body = this.reply().trim();
+    if (!current || !body || this.isSending()) {
       return;
     }
-    this.setStatus('REPLIED', true);
+    const account = this.accountService.account();
+    this.isSending.set(true);
+    this.messageService
+      .send({
+        id: null,
+        sentAt: dayjs(),
+        fromAddress: account?.email ?? account?.login ?? 'desk@abofonsa.care',
+        senderName: [account?.firstName, account?.lastName].filter(Boolean).join(' ') || (account?.login ?? 'Admin desk'),
+        toAddress: current.fromAddress ?? null,
+        recipientName: current.senderName ?? null,
+        subject: current.subject?.startsWith('Re: ') ? current.subject : `Re: ${current.subject ?? ''}`.trim(),
+        body,
+        channel: current.channel ?? 'EMAIL',
+        priority: current.priority ?? 'NORMAL',
+        status: 'REPLIED',
+        parentId: current.id,
+      })
+      .subscribe({
+        next: () => {
+          this.isSending.set(false);
+          // Only now is the thread genuinely replied to. Flipping it first would leave a thread
+          // marked answered by a reply that failed to save.
+          this.setStatus('REPLIED', true);
+        },
+        error: () => this.isSending.set(false),
+      });
   }
 
   setStatus(status: 'NEW' | 'READ' | 'REPLIED', leave: boolean): void {
