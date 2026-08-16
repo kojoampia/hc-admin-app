@@ -214,11 +214,10 @@ export class ProfessionalDetail {
   /**
    * This professional's shifts for the current roster week.
    *
-   * Filtered here rather than in the query because the api ignores the parameter: it accepts only
-   * `isArchived.*`, so `professionalId.equals` — like the duty roster's `weekId.equals` — is dropped
-   * silently and the response is the whole collection. The roster survives that by asking for 500
-   * rows; this asks for the same page and narrows it locally. Both want the named filters that the
-   * directory lists are getting, and neither is correct until then.
+   * Both filters are applied by the api. They were not always: `professionalId.equals` and
+   * `weekId.equals` were undeclared parameters, which Spring drops without complaint, so this asked
+   * for one professional's week and received the whole collection — then narrowed it here, one page
+   * deep, and showed an empty week for anyone whose shifts fell outside that page.
    */
   private loadWeek(professionalId: string): void {
     this.rosterWeekService
@@ -230,7 +229,14 @@ export class ProfessionalDetail {
             ? forkJoin({
                 week: of(week),
                 assignments: this.shiftService
-                  .query({ page: 0, size: 500, sort: ['dayIndex,asc'] })
+                  .query({
+                    page: 0,
+                    // A week holds seven days; the margin is for a day carrying more than one entry.
+                    size: 20,
+                    'professionalId.equals': professionalId,
+                    'weekId.equals': week.id,
+                    sort: ['dayIndex,asc'],
+                  })
                   .pipe(map(response => response.body ?? [])),
               })
             : of(null),
@@ -242,10 +248,7 @@ export class ProfessionalDetail {
             this.week.set([]);
             return;
           }
-          const mine = result.assignments.filter(
-            (assignment: IShiftAssignment) =>
-              assignment.professional?.id === professionalId && (!assignment.week?.id || assignment.week.id === result.week.id),
-          );
+          const mine: IShiftAssignment[] = result.assignments;
           const start = result.week.startDate ? dayjs(result.week.startDate) : null;
           this.week.set(
             this.dayIndexes.map(dayIndex => ({
