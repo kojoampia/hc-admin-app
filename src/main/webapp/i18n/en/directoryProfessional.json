@@ -18,7 +18,23 @@
         "question": "Are you sure you want to delete Professional {{ id }}?"
       },
       "detail": {
-        "title": "Professional"
+        "title": "Professional",
+        "back": "Back to professional accounts",
+        "profile": "Profile",
+        "credential": "Credential",
+        "thisWeek": "This week",
+        "name": "Name",
+        "hub": "Hub",
+        "joined": "Joined",
+        "patients": "Patients",
+        "cases": "Cases",
+        "visits": "Visits logged",
+        "rating": "Patient rating",
+        "roster": "Roster",
+        "suspend": "Suspend",
+        "reinstate": "Reinstate",
+        "reverify": "Send for re-verification",
+        "noWeek": "No roster week published."
       },
       "id": "Id",
       "role": "Role",
