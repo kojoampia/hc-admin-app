@@ -8,6 +8,7 @@ import { NgbInputDatepicker } from '@ng-bootstrap/ng-bootstrap/datepicker';
 import { TranslatePipe } from '@ngx-translate/core';
 import { Observable, finalize, map } from 'rxjs';
 
+import { RELATIONSHIP_OPTIONS_PAGE_SIZE } from 'app/config/pagination.constants';
 import { IProfessional } from 'app/entities/directory/professional/professional.model';
 import { ProfessionalService } from 'app/entities/directory/professional/service/professional.service';
 import { Priority } from 'app/entities/enumerations/priority.model';
@@ -109,7 +110,7 @@ export class TaskUpdate implements OnInit {
 
   protected loadRelationshipsOptions(): void {
     this.professionalService
-      .query()
+      .query({ size: RELATIONSHIP_OPTIONS_PAGE_SIZE })
       .pipe(map((res: HttpResponse<IProfessional[]>) => res.body ?? []))
       .pipe(
         map((professionals: IProfessional[]) =>
@@ -119,7 +120,7 @@ export class TaskUpdate implements OnInit {
       .subscribe((professionals: IProfessional[]) => this.professionalsSharedCollection.set(professionals));
 
     this.messageService
-      .query()
+      .query({ size: RELATIONSHIP_OPTIONS_PAGE_SIZE })
       .pipe(map((res: HttpResponse<IMessage[]>) => res.body ?? []))
       .pipe(
         map((messages: IMessage[]) => this.messageService.addMessageToCollectionIfMissing<IMessage>(messages, this.task?.sourceMessage)),

@@ -7,6 +7,7 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { TranslatePipe } from '@ngx-translate/core';
 import { Observable, finalize, map } from 'rxjs';
 
+import { RELATIONSHIP_OPTIONS_PAGE_SIZE } from 'app/config/pagination.constants';
 import { IPatient } from 'app/entities/directory/patient/patient.model';
 import { PatientService } from 'app/entities/directory/patient/service/patient.service';
 import { VendorService } from 'app/entities/directory/vendor/service/vendor.service';
@@ -100,13 +101,13 @@ export class DocumentUpdate implements OnInit {
 
   protected loadRelationshipsOptions(): void {
     this.patientService
-      .query()
+      .query({ size: RELATIONSHIP_OPTIONS_PAGE_SIZE })
       .pipe(map((res: HttpResponse<IPatient[]>) => res.body ?? []))
       .pipe(map((patients: IPatient[]) => this.patientService.addPatientToCollectionIfMissing<IPatient>(patients, this.document?.patient)))
       .subscribe((patients: IPatient[]) => this.patientsSharedCollection.set(patients));
 
     this.vendorService
-      .query()
+      .query({ size: RELATIONSHIP_OPTIONS_PAGE_SIZE })
       .pipe(map((res: HttpResponse<IVendor[]>) => res.body ?? []))
       .pipe(map((vendors: IVendor[]) => this.vendorService.addVendorToCollectionIfMissing<IVendor>(vendors, this.document?.vendor)))
       .subscribe((vendors: IVendor[]) => this.vendorsSharedCollection.set(vendors));

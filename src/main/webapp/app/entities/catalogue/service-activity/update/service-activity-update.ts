@@ -7,6 +7,7 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { TranslatePipe } from '@ngx-translate/core';
 import { Observable, finalize, map } from 'rxjs';
 
+import { RELATIONSHIP_OPTIONS_PAGE_SIZE } from 'app/config/pagination.constants';
 import { ICategory } from 'app/entities/catalogue/category/category.model';
 import { CategoryService } from 'app/entities/catalogue/category/service/category.service';
 import { AlertError } from 'app/shared/alert/alert-error';
@@ -93,7 +94,7 @@ export class ServiceActivityUpdate implements OnInit {
 
   protected loadRelationshipsOptions(): void {
     this.categoryService
-      .query()
+      .query({ size: RELATIONSHIP_OPTIONS_PAGE_SIZE })
       .pipe(map((res: HttpResponse<ICategory[]>) => res.body ?? []))
       .pipe(
         map((categories: ICategory[]) =>

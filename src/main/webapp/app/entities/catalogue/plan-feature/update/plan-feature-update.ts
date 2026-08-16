@@ -7,6 +7,7 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { TranslatePipe } from '@ngx-translate/core';
 import { Observable, finalize, map } from 'rxjs';
 
+import { RELATIONSHIP_OPTIONS_PAGE_SIZE } from 'app/config/pagination.constants';
 import { ServicePlanService } from 'app/entities/catalogue/service-plan/service/service-plan.service';
 import { IServicePlan } from 'app/entities/catalogue/service-plan/service-plan.model';
 import { AlertError } from 'app/shared/alert/alert-error';
@@ -93,7 +94,7 @@ export class PlanFeatureUpdate implements OnInit {
 
   protected loadRelationshipsOptions(): void {
     this.servicePlanService
-      .query()
+      .query({ size: RELATIONSHIP_OPTIONS_PAGE_SIZE })
       .pipe(map((res: HttpResponse<IServicePlan[]>) => res.body ?? []))
       .pipe(
         map((servicePlans: IServicePlan[]) =>
