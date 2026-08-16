@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import accountStatus from '../../../i18n/en/directory-accountStatus.json';
 import auditLevel from '../../../i18n/en/platform-auditLevel.json';
 import credentialRole from '../../../i18n/en/platform-credentialRole.json';
+import facilityType from '../../../i18n/en/platform-facilityType.json';
 import idType from '../../../i18n/en/directory-idType.json';
 import messageChannel from '../../../i18n/en/operations-messageChannel.json';
 import messageStatus from '../../../i18n/en/operations-messageStatus.json';
@@ -34,6 +35,7 @@ const DICTIONARIES = [
   accountStatus,
   auditLevel,
   credentialRole,
+  facilityType,
   idType,
   messageChannel,
   messageStatus,
@@ -58,7 +60,7 @@ const labels: [string, string, string][] = DICTIONARIES.flatMap(dictionary =>
 
 describe('enum labels', () => {
   it('covers every enum dictionary', () => {
-    expect(DICTIONARIES).toHaveLength(15);
+    expect(DICTIONARIES).toHaveLength(16);
     expect(labels.length).toBeGreaterThan(40);
   });
 

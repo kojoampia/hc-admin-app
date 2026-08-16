@@ -1,114 +1,168 @@
-<div class="d-flex justify-content-center">
-  <div class="col-8">
-    @if (vendor(); as vendorRef) {
-      <div>
-        <h2 data-cy="vendorDetailsHeading"><span abfTranslate="hcAdminApp.directoryVendor.detail.title">Vendor</span></h2>
+@if (vendor(); as vendorRef) {
+  <a class="btn-quiet sm back" routerLink="/vendor" data-cy="backToDirectory">
+    <fa-icon icon="arrow-left" />
+    <span abfTranslate="hcAdminApp.directoryVendor.detail.back">Back to vendors</span>
+  </a>
 
-        <hr />
+  <abf-alert-error />
+  <abf-alert />
 
-        <abf-alert-error />
+  @if (isArchived()) {
+    <div class="alert alert-warning no-print" data-cy="archivedBanner">
+      <fa-icon icon="box-archive" />&nbsp;<span abfTranslate="hcAdminApp.directoryVendor.archivedNotice"
+        >This record is archived and does not appear in the directory.</span
+      >
+    </div>
+  }
 
-        <abf-alert />
-
-        @if (isArchived()) {
-          <div class="alert alert-warning" data-cy="archivedBanner">
-            <fa-icon icon="box-archive" />&nbsp;<span abfTranslate="hcAdminApp.directoryVendor.archivedNotice"
-              >This record is archived and does not appear in the directory.</span
-            >
-          </div>
+  <header class="record-head card" data-cy="vendorDetailsHeading">
+    <span class="mono-av" aria-hidden="true">{{ initials() }}</span>
+    <div class="who">
+      <h3>{{ vendorRef.name ?? vendorRef.id }}</h3>
+      <p>
+        @if (vendorRef.category) {
+          <span>{{ vendorRef.category }}</span>
         }
-
-        <dl class="row-md jh-entity-details">
-          <dt><span abfTranslate="hcAdminApp.directoryVendor.id">Id</span></dt>
-          <dd>
-            <span>{{ vendorRef.id }}</span>
-          </dd>
-          <dt><span abfTranslate="hcAdminApp.directoryVendor.name">Name</span></dt>
-          <dd>
-            <span>{{ vendorRef.name }}</span>
-          </dd>
-          <dt><span abfTranslate="hcAdminApp.directoryVendor.category">Category</span></dt>
-          <dd>
-            <span>{{ vendorRef.category }}</span>
-          </dd>
-          <dt><span abfTranslate="hcAdminApp.directoryVendor.serviceSummary">Service Summary</span></dt>
-          <dd>
-            <span>{{ vendorRef.serviceSummary }}</span>
-          </dd>
-          <dt><span abfTranslate="hcAdminApp.directoryVendor.contactName">Contact Name</span></dt>
-          <dd>
-            <span>{{ vendorRef.contactName }}</span>
-          </dd>
-          <dt><span abfTranslate="hcAdminApp.directoryVendor.phone">Phone</span></dt>
-          <dd>
-            <span>{{ vendorRef.phone }}</span>
-          </dd>
-          <dt><span abfTranslate="hcAdminApp.directoryVendor.email">Email</span></dt>
-          <dd>
-            <span>{{ vendorRef.email }}</span>
-          </dd>
-          <dt><span abfTranslate="hcAdminApp.directoryVendor.city">City</span></dt>
-          <dd>
-            <span>{{ vendorRef.city }}</span>
-          </dd>
-          <dt><span abfTranslate="hcAdminApp.directoryVendor.status">Status</span></dt>
-          <dd>
-            <span [abfTranslate]="'hcAdminApp.AccountStatus.' + (vendorRef.status ?? 'null')">{{
-              {
-                null: '',
-                ACTIVE: 'ACTIVE',
-                PENDING: 'PENDING',
-                SUSPENDED: 'SUSPENDED',
-                ON_LEAVE: 'ON_LEAVE',
-                UNDER_REVIEW: 'UNDER_REVIEW',
-              }[vendorRef.status ?? 'null']
-            }}</span>
-          </dd>
-          <dt><span abfTranslate="hcAdminApp.directoryVendor.contractNote">Contract Note</span></dt>
-          <dd>
-            <span>{{ vendorRef.contractNote }}</span>
-          </dd>
-          <dt><span abfTranslate="hcAdminApp.directoryVendor.contractRenewsOn">Contract Renews On</span></dt>
-          <dd>
-            <span>{{ vendorRef.contractRenewsOn | formatMediumDate }}</span>
-          </dd>
-          <dt><span abfTranslate="hcAdminApp.directoryVendor.orderCount">Order Count</span></dt>
-          <dd>
-            <span>{{ vendorRef.orderCount }}</span>
-          </dd>
-          <dt><span abfTranslate="hcAdminApp.directoryVendor.spendToDate">Spend To Date</span></dt>
-          <dd>
-            <span>{{ vendorRef.spendToDate }}</span>
-          </dd>
-          <dt><span abfTranslate="hcAdminApp.directoryVendor.rating">Rating</span></dt>
-          <dd>
-            <span>{{ vendorRef.rating }}</span>
-          </dd>
-        </dl>
-
-        <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
-          <fa-icon icon="arrow-left" />&nbsp;<span abfTranslate="entity.action.back">Back</span>
+        @if (vendorRef.city) {
+          <span aria-hidden="true">·</span><span>{{ vendorRef.city }}</span>
+        }
+        @if (vendorRef.contractRenewsOn) {
+          <span aria-hidden="true">·</span>
+          <span
+            ><span abfTranslate="hcAdminApp.directoryVendor.detail.renews">Renews</span>
+            {{ vendorRef.contractRenewsOn | formatMediumDate }}</span
+          >
+        }
+      </p>
+    </div>
+    <div class="head-tools no-print">
+      <abf-status-pill [status]="status()" />
+      @if (canWrite()) {
+        <button type="button" class="btn btn-ghost btn-sm" (click)="toggleReview()" [disabled]="isSaving()" data-cy="reviewButton">
+          <fa-icon icon="triangle-exclamation" />
+          <span
+            [abfTranslate]="isUnderReview() ? 'hcAdminApp.directoryVendor.detail.clearReview' : 'hcAdminApp.directoryVendor.detail.review'"
+            >Place under review</span
+          >
         </button>
+      }
+      <a class="btn btn-ghost btn-sm" [routerLink]="['/vendor', vendorRef.id, 'edit']">
+        <fa-icon icon="pencil-alt" />
+        <span abfTranslate="entity.action.edit">Edit</span>
+      </a>
+      <button type="button" class="btn btn-ghost btn-sm" (click)="toggleArchived()" [disabled]="isSaving()" data-cy="entityArchiveButton">
+        <fa-icon icon="box-archive" />
+        <span [abfTranslate]="isArchived() ? 'entity.action.unarchive' : 'entity.action.archive'">Archive</span>
+      </button>
+    </div>
+  </header>
 
-        <button type="button" [routerLink]="['/vendor', vendorRef.id, 'edit']" class="btn btn-primary">
-          <fa-icon icon="pencil-alt" />&nbsp;<span abfTranslate="entity.action.edit">Edit</span>
-        </button>
-
-        <button
-          type="button"
-          data-cy="entityArchiveButton"
-          [class]="isArchived() ? 'btn btn-success' : 'btn btn-warning'"
-          [disabled]="isSaving()"
-          (click)="toggleArchived()"
-        >
-          <fa-icon [icon]="isArchived() ? 'box-open' : 'box-archive'" />&nbsp;
-          @if (isArchived()) {
-            <span abfTranslate="entity.action.unarchive">Unarchive</span>
-          } @else {
-            <span abfTranslate="entity.action.archive">Archive</span>
-          }
-        </button>
-      </div>
-    }
+  <div class="abf-grid abf-g-4 mb-18">
+    <div class="stat">
+      <b>{{ vendorRef.orderCount ?? 0 }}</b>
+      <span abfTranslate="hcAdminApp.directoryVendor.detail.orders">Orders</span>
+    </div>
+    <div class="stat">
+      <b>{{ vendorRef.spendToDate ?? 0 }}</b>
+      <span abfTranslate="hcAdminApp.directoryVendor.detail.spend">Spend to date (GHS)</span>
+    </div>
+    <div class="stat">
+      <b>{{ vendorRef.rating ?? '—' }}</b>
+      <span abfTranslate="hcAdminApp.directoryVendor.detail.rating">Rating</span>
+    </div>
+    <div class="stat">
+      <b>{{ facilities().length }}</b>
+      <span abfTranslate="hcAdminApp.directoryVendor.detail.sites">Sites</span>
+    </div>
   </div>
-</div>
+
+  <div class="abf-grid abf-g-3 record-grid">
+    <!-- Organisation -->
+    <section class="card">
+      <h4><fa-icon icon="building" /><span abfTranslate="hcAdminApp.directoryVendor.detail.organisation">Organisation</span></h4>
+      <dl>
+        <dt abfTranslate="hcAdminApp.directoryVendor.name">Name</dt>
+        <dd>{{ vendorRef.name ?? '—' }}</dd>
+        <dt abfTranslate="hcAdminApp.directoryVendor.category">Category</dt>
+        <dd>{{ vendorRef.category ?? '—' }}</dd>
+        <dt abfTranslate="hcAdminApp.directoryVendor.serviceSummary">Service</dt>
+        <dd>{{ vendorRef.serviceSummary ?? '—' }}</dd>
+        <dt abfTranslate="hcAdminApp.directoryVendor.city">City</dt>
+        <dd>{{ vendorRef.city ?? '—' }}</dd>
+      </dl>
+    </section>
+
+    <!-- Contact -->
+    <section class="card">
+      <h4><fa-icon icon="user" /><span abfTranslate="hcAdminApp.directoryVendor.detail.contact">Contact</span></h4>
+      <dl>
+        <dt abfTranslate="hcAdminApp.directoryVendor.contactName">Name</dt>
+        <dd>{{ vendorRef.contactName ?? '—' }}</dd>
+        <dt abfTranslate="hcAdminApp.directoryVendor.phone">Phone</dt>
+        <dd>{{ vendorRef.phone ?? '—' }}</dd>
+        <dt abfTranslate="hcAdminApp.directoryVendor.email">Email</dt>
+        <dd>{{ vendorRef.email ?? '—' }}</dd>
+      </dl>
+    </section>
+
+    <!-- Commercial -->
+    <section class="card">
+      <h4><fa-icon icon="credit-card" /><span abfTranslate="hcAdminApp.directoryVendor.detail.commercial">Commercial</span></h4>
+      <dl>
+        <dt abfTranslate="hcAdminApp.directoryVendor.contractNote">Contract</dt>
+        <dd>{{ vendorRef.contractNote ?? '—' }}</dd>
+        <dt abfTranslate="hcAdminApp.directoryVendor.contractRenewsOn">Renews</dt>
+        <dd>{{ vendorRef.contractRenewsOn ? (vendorRef.contractRenewsOn | formatMediumDate) : '—' }}</dd>
+        <dt abfTranslate="hcAdminApp.directoryVendor.orderCount">Orders</dt>
+        <dd>{{ vendorRef.orderCount ?? 0 }}</dd>
+        <dt abfTranslate="hcAdminApp.directoryVendor.spendToDate">Spend to date</dt>
+        <dd>{{ vendorRef.spendToDate ?? 0 }}</dd>
+      </dl>
+    </section>
+
+    <!-- Facilities -->
+    <section class="card">
+      <h4><fa-icon icon="hospital" /><span abfTranslate="hcAdminApp.directoryVendor.detail.facilities">Sites operated</span></h4>
+      @if (facilities().length > 0) {
+        <dl>
+          @for (facility of facilities(); track facility.id) {
+            <dt>{{ facility.type ? ('hcAdminApp.FacilityType.' + facility.type | translate) : '—' }}</dt>
+            <dd>
+              {{ facility.name ?? facility.id }}
+              @if (facility.description) {
+                <span class="muted"> · {{ facility.description }}</span>
+              }
+            </dd>
+          }
+        </dl>
+      } @else {
+        <p class="empty" abfTranslate="hcAdminApp.directoryVendor.detail.noFacilities">
+          No sites recorded. A vendor that only delivers has none.
+        </p>
+      }
+    </section>
+
+    <!-- Documents -->
+    <section class="card">
+      <h4><fa-icon icon="file-lines" /><span abfTranslate="hcAdminApp.directoryVendor.detail.documents">Documents</span></h4>
+      @if (documents().length > 0) {
+        <dl>
+          @for (document of documents(); track document.id) {
+            <dt>{{ document.uploadedAt ? (document.uploadedAt | formatMediumDate) : '—' }}</dt>
+            <dd>
+              @if (document.url) {
+                <a [href]="document.url" target="_blank" rel="noopener noreferrer">{{ document.name ?? document.id }}</a>
+              } @else {
+                {{ document.name ?? document.id }}
+              }
+            </dd>
+          }
+        </dl>
+      } @else {
+        <p class="empty" abfTranslate="hcAdminApp.directoryVendor.detail.noDocuments">
+          Nothing filed. Statements and contracts appear here once uploaded.
+        </p>
+      }
+    </section>
+  </div>
+}
