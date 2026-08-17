@@ -8,6 +8,7 @@ import { NgbInputDatepicker } from '@ng-bootstrap/ng-bootstrap/datepicker';
 import { TranslatePipe } from '@ngx-translate/core';
 import { Observable, finalize, map } from 'rxjs';
 
+import { RELATIONSHIP_OPTIONS_PAGE_SIZE } from 'app/config/pagination.constants';
 import { ServicePlanService } from 'app/entities/catalogue/service-plan/service/service-plan.service';
 import { IServicePlan } from 'app/entities/catalogue/service-plan/service-plan.model';
 import { IAngel } from 'app/entities/directory/angel/angel.model';
@@ -127,19 +128,19 @@ export class PatientUpdate implements OnInit {
 
   protected loadRelationshipsOptions(): void {
     this.profileService
-      .query({ filter: 'patient-is-null' })
+      .query({ filter: 'patient-is-null', size: RELATIONSHIP_OPTIONS_PAGE_SIZE })
       .pipe(map((res: HttpResponse<IProfile[]>) => res.body ?? []))
       .pipe(map((profiles: IProfile[]) => this.profileService.addProfileToCollectionIfMissing<IProfile>(profiles, this.patient?.profile)))
       .subscribe((profiles: IProfile[]) => this.profilesCollection.set(profiles));
 
     this.angelService
-      .query({ filter: 'patient-is-null' })
+      .query({ filter: 'patient-is-null', size: RELATIONSHIP_OPTIONS_PAGE_SIZE })
       .pipe(map((res: HttpResponse<IAngel[]>) => res.body ?? []))
       .pipe(map((angels: IAngel[]) => this.angelService.addAngelToCollectionIfMissing<IAngel>(angels, this.patient?.angel)))
       .subscribe((angels: IAngel[]) => this.angelsCollection.set(angels));
 
     this.servicePlanService
-      .query()
+      .query({ size: RELATIONSHIP_OPTIONS_PAGE_SIZE })
       .pipe(map((res: HttpResponse<IServicePlan[]>) => res.body ?? []))
       .pipe(
         map((servicePlans: IServicePlan[]) =>
@@ -149,7 +150,7 @@ export class PatientUpdate implements OnInit {
       .subscribe((servicePlans: IServicePlan[]) => this.servicePlansSharedCollection.set(servicePlans));
 
     this.professionalService
-      .query()
+      .query({ size: RELATIONSHIP_OPTIONS_PAGE_SIZE })
       .pipe(map((res: HttpResponse<IProfessional[]>) => res.body ?? []))
       .pipe(
         map((professionals: IProfessional[]) =>
@@ -159,7 +160,7 @@ export class PatientUpdate implements OnInit {
       .subscribe((professionals: IProfessional[]) => this.professionalsSharedCollection.set(professionals));
 
     this.hubService
-      .query()
+      .query({ size: RELATIONSHIP_OPTIONS_PAGE_SIZE })
       .pipe(map((res: HttpResponse<IHub[]>) => res.body ?? []))
       .pipe(map((hubs: IHub[]) => this.hubService.addHubToCollectionIfMissing<IHub>(hubs, this.patient?.hub)))
       .subscribe((hubs: IHub[]) => this.hubsSharedCollection.set(hubs));

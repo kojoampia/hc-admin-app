@@ -8,6 +8,7 @@ import { NgbInputDatepicker } from '@ng-bootstrap/ng-bootstrap/datepicker';
 import { TranslatePipe } from '@ngx-translate/core';
 import { Observable, finalize, map } from 'rxjs';
 
+import { RELATIONSHIP_OPTIONS_PAGE_SIZE } from 'app/config/pagination.constants';
 import { IPatient } from 'app/entities/directory/patient/patient.model';
 import { PatientService } from 'app/entities/directory/patient/service/patient.service';
 import { AlertError } from 'app/shared/alert/alert-error';
@@ -94,7 +95,7 @@ export class CareActivityUpdate implements OnInit {
 
   protected loadRelationshipsOptions(): void {
     this.patientService
-      .query()
+      .query({ size: RELATIONSHIP_OPTIONS_PAGE_SIZE })
       .pipe(map((res: HttpResponse<IPatient[]>) => res.body ?? []))
       .pipe(
         map((patients: IPatient[]) => this.patientService.addPatientToCollectionIfMissing<IPatient>(patients, this.careActivity?.patient)),

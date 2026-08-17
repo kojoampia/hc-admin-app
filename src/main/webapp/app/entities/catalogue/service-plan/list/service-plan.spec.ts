@@ -83,6 +83,34 @@ describe('ServicePlan Management Component', () => {
     expect(comp.servicePlans()[0]).toEqual(expect.objectContaining({ id: 'b5e0e540-7a57-41f1-8c7d-7faaae191154' }));
   });
 
+  /**
+   * The list asks the server for a page, and takes its total from the response.
+   *
+   * `/api/service-plans` returned the whole collection until 2026-08-17, and this screen rendered
+   * all of it with no pager. Paginating the endpoint without this half would have been the worse
+   * failure of the two: the screen would show the first 20 rows, report nothing, and offer no way
+   * to reach row 21.
+   */
+  it('should request a page and read the total from the header', async () => {
+    TestBed.tick();
+    const req = httpMock.expectOne(request => request.method === 'GET');
+    req.flush([{ id: 'b5e0e540-7a57-41f1-8c7d-7faaae191154' }], { headers: { 'X-Total-Count': '57' } });
+    await vitest.runAllTimersAsync();
+
+    expect(req.request.params.get('page')).toBe('0');
+    expect(req.request.params.get('size')).toBe('20');
+    expect(comp.totalItems()).toBe(57);
+  });
+
+  it('should navigate when a page is chosen', () => {
+    comp.navigateToPage(3);
+
+    expect(routerNavigateSpy).toHaveBeenCalledWith(
+      ['./'],
+      expect.objectContaining({ queryParams: expect.objectContaining({ page: 3, size: 20 }) }),
+    );
+  });
+
   describe('trackId', () => {
     it('should forward to servicePlanService', () => {
       const entity = { id: 'b5e0e540-7a57-41f1-8c7d-7faaae191154' };

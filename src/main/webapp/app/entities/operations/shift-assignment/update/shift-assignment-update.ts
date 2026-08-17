@@ -8,6 +8,7 @@ import { NgbInputDatepicker } from '@ng-bootstrap/ng-bootstrap/datepicker';
 import { TranslatePipe } from '@ngx-translate/core';
 import { Observable, finalize, map } from 'rxjs';
 
+import { RELATIONSHIP_OPTIONS_PAGE_SIZE } from 'app/config/pagination.constants';
 import { IProfessional } from 'app/entities/directory/professional/professional.model';
 import { ProfessionalService } from 'app/entities/directory/professional/service/professional.service';
 import { ShiftType } from 'app/entities/enumerations/shift-type.model';
@@ -107,7 +108,7 @@ export class ShiftAssignmentUpdate implements OnInit {
 
   protected loadRelationshipsOptions(): void {
     this.rosterWeekService
-      .query()
+      .query({ size: RELATIONSHIP_OPTIONS_PAGE_SIZE })
       .pipe(map((res: HttpResponse<IRosterWeek[]>) => res.body ?? []))
       .pipe(
         map((rosterWeeks: IRosterWeek[]) =>
@@ -117,7 +118,7 @@ export class ShiftAssignmentUpdate implements OnInit {
       .subscribe((rosterWeeks: IRosterWeek[]) => this.rosterWeeksSharedCollection.set(rosterWeeks));
 
     this.professionalService
-      .query()
+      .query({ size: RELATIONSHIP_OPTIONS_PAGE_SIZE })
       .pipe(map((res: HttpResponse<IProfessional[]>) => res.body ?? []))
       .pipe(
         map((professionals: IProfessional[]) =>

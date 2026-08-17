@@ -8,6 +8,7 @@ import { NgbInputDatepicker } from '@ng-bootstrap/ng-bootstrap/datepicker';
 import { TranslatePipe } from '@ngx-translate/core';
 import { Observable, finalize, map } from 'rxjs';
 
+import { RELATIONSHIP_OPTIONS_PAGE_SIZE } from 'app/config/pagination.constants';
 import { IProfile } from 'app/entities/directory/profile/profile.model';
 import { ProfileService } from 'app/entities/directory/profile/service/profile.service';
 import { AccountStatus } from 'app/entities/enumerations/account-status.model';
@@ -123,13 +124,13 @@ export class ProfessionalUpdate implements OnInit {
       .subscribe((profiles: IProfile[]) => this.profilesCollection.set(profiles));
 
     this.teamService
-      .query()
+      .query({ size: RELATIONSHIP_OPTIONS_PAGE_SIZE })
       .pipe(map((res: HttpResponse<ITeam[]>) => res.body ?? []))
       .pipe(map((teams: ITeam[]) => this.teamService.addTeamToCollectionIfMissing<ITeam>(teams, this.professional?.team)))
       .subscribe((teams: ITeam[]) => this.teamsSharedCollection.set(teams));
 
     this.hubService
-      .query()
+      .query({ size: RELATIONSHIP_OPTIONS_PAGE_SIZE })
       .pipe(map((res: HttpResponse<IHub[]>) => res.body ?? []))
       .pipe(map((hubs: IHub[]) => this.hubService.addHubToCollectionIfMissing<IHub>(hubs, this.professional?.hub)))
       .subscribe((hubs: IHub[]) => this.hubsSharedCollection.set(hubs));
