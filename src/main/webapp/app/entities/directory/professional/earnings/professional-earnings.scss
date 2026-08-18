@@ -1,3 +1,12 @@
+/* The chart-card and viz-table idiom lives in _console-components.scss and is imported per
+   component — the same reason professional-detail.scss and platform-health.scss import it.
+   Angular's emulated encapsulation stamps each component's rules with its OWN attribute, and the
+   table below is declared in this template, so the copy compiled into another component's
+   stylesheet does not match it. Without this import `.viz-tbl` is inert here and the table renders
+   unstyled at its intrinsic width — which at full card width is a third of the row, with the rest
+   blank. */
+@import 'console-components';
+
 .earnings {
   margin-top: 18px;
 }

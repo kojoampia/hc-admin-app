@@ -187,10 +187,18 @@ export class AbfLineChart {
     return `${this.linePath()} L${marks[marks.length - 1].x.toFixed(1)} ${baseline} L${marks[0].x.toFixed(1)} ${baseline} Z`;
   });
 
+  /**
+   * A single point is centred, not pinned to the left axis.
+   *
+   * There is no line to draw with one value, so all the reader gets is the dot and its label. Put
+   * flush against the y-axis with the rest of the plot empty, that reads as a chart that failed to
+   * render rather than as one day of data — which is the normal state of "this week" on a Monday or
+   * a Tuesday.
+   */
   private x(index: number): number {
     const count = this.points().length;
     if (count < 2) {
-      return this.PL;
+      return (this.PL + (this.W - this.PR)) / 2;
     }
     return this.PL + (index / (count - 1)) * (this.W - this.PL - this.PR);
   }
