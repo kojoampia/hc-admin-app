@@ -160,5 +160,19 @@
         <p class="empty" abfTranslate="hcAdminApp.directoryProfessional.detail.noWeek">No roster week published.</p>
       }
     </section>
+
+    <!--
+      Shifts completed and value accrued. Sits below "this week" deliberately: that strip is the
+      roster as scheduled, this is the roster as worked and paid, and reading them in that order is
+      what makes the difference between the two visible.
+
+      Full width, unlike the cards above it. Those hold labelled fields and read fine in a third of
+      the row; this one holds a time series, and a chart squeezed into a third has its x-axis labels
+      collide — twelve monthly ticks in ~300px overlap into noise, and the table beside it wraps
+      every row. The wide element sets the width it needs.
+    -->
+    <section class="card card--full">
+      <abf-professional-earnings [professionalId]="professional()!.id" />
+    </section>
   </div>
 }

@@ -1,0 +1,140 @@
+<div class="earnings">
+  <div class="earnings-head">
+    <div>
+      <h4 abfTranslate="professionalEarnings.title">Shifts and earnings</h4>
+
+      <div class="pager no-print">
+        <button
+          type="button"
+          class="step"
+          (click)="goBack()"
+          [attr.aria-label]="'professionalEarnings.period.previous' | translate"
+          data-cy="earningsPrev"
+        >
+          &lsaquo;
+        </button>
+
+        <span class="period" data-cy="earningsPeriod">{{ periodLabelKey() | translate: periodLabelArgs() }}</span>
+
+        <!-- Disabled at the current period rather than hidden: a control that vanishes reads as a
+             bug, and there is genuinely no next period while this one is still running. -->
+        <button
+          type="button"
+          class="step"
+          (click)="goForward()"
+          [disabled]="!canGoForward()"
+          [attr.aria-label]="'professionalEarnings.period.next' | translate"
+          data-cy="earningsNext"
+        >
+          &rsaquo;
+        </button>
+      </div>
+
+      @if (earnings(); as data) {
+        @if (hasWindow()) {
+          <!--
+            The range the api actually counted, not the one that was asked for. A shift is payable
+            only once it is in the past, so the current period is clipped at yesterday.
+          -->
+          <p class="range" data-cy="earningsRange">
+            {{ 'professionalEarnings.range' | translate: { from: data.from.format('D MMM YYYY'), to: data.to.format('D MMM YYYY') } }}
+          </p>
+        }
+      }
+    </div>
+
+    <div class="units no-print" role="group" [attr.aria-label]="'professionalEarnings.unit.label' | translate">
+      @for (option of units; track option) {
+        <button
+          type="button"
+          [class.on]="unit() === option"
+          [attr.aria-pressed]="unit() === option"
+          (click)="setUnit(option)"
+          [attr.data-cy]="'earningsUnit-' + option"
+        >
+          {{ unitLabelKey(option) | translate }}
+        </button>
+      }
+    </div>
+  </div>
+
+  @if (failed()) {
+    <!-- Never blank on failure: an empty panel reads as "earned nothing", which may be false. -->
+    <div class="alert alert-warning" data-cy="earningsError" abfTranslate="professionalEarnings.failed">
+      Earnings could not be loaded, so no figures are shown. This is not a statement that nothing was earned.
+    </div>
+  } @else if (isLoading()) {
+    <p class="muted" abfTranslate="professionalEarnings.loading">Loading…</p>
+  } @else if (earnings(); as data) {
+    @if (!hasWindow()) {
+      <!-- The first day of a period: nothing has been worked in it yet, and there is no range. -->
+      <p class="muted" data-cy="earningsNotStarted" abfTranslate="professionalEarnings.notStarted">
+        This period has only just started — nothing has been worked in it yet.
+      </p>
+    } @else {
+      <div class="totals">
+        <div class="tot">
+          <b data-cy="earningsShiftCount">{{ data.shiftsCompleted }}</b>
+          <span abfTranslate="professionalEarnings.total.shifts">Shifts completed</span>
+        </div>
+        <div class="tot">
+          <b data-cy="earningsTotal"
+            >{{ data.totalAccrued }} <span class="cur">{{ data.currency }}</span></b
+          >
+          <span abfTranslate="professionalEarnings.total.accrued">Value accrued</span>
+        </div>
+        @if (data.unpricedShifts > 0) {
+          <!--
+            Stated only when it happens, and stated plainly. These shifts are in the count above and
+            contribute nothing to the total, so without this the two figures disagree for no visible
+            reason.
+          -->
+          <div class="tot tot--warn" data-cy="earningsUnpriced">
+            <b>{{ data.unpricedShifts }}</b>
+            <span abfTranslate="professionalEarnings.total.unpriced">Worked before a rate was set</span>
+          </div>
+        }
+      </div>
+
+      @if (!hasEarnings()) {
+        <p class="muted" data-cy="earningsNone" abfTranslate="professionalEarnings.none">
+          No completed shifts in this period. Shifts rostered for today or later are not counted until they have been worked.
+        </p>
+      }
+
+      <abf-chart-card title="professionalEarnings.chart.title" subtitle="professionalEarnings.chart.subtitle">
+        <abf-line-chart chartFigure [points]="points()" [ariaLabel]="'professionalEarnings.chart.title' | translate" />
+
+        <table chartTable class="viz-tbl" data-cy="earningsTable">
+          <thead>
+            <tr>
+              <th abfTranslate="professionalEarnings.column.day">Day</th>
+              <th class="right" abfTranslate="professionalEarnings.column.shifts">Shifts completed</th>
+              <th class="right" abfTranslate="professionalEarnings.column.accrued">Value accrued</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (bucket of rows(); track bucket.periodStart.valueOf()) {
+              <tr>
+                <th scope="row">{{ bucket.periodStart.format('ddd D MMM') }}</th>
+                <td class="right">{{ bucket.shifts }}</td>
+                <td class="right">
+                  {{ bucket.amount }} <span class="cur">{{ data.currency }}</span>
+                </td>
+              </tr>
+            }
+          </tbody>
+          <tfoot>
+            <tr>
+              <th scope="row" abfTranslate="professionalEarnings.column.total">Total</th>
+              <td class="right">{{ data.shiftsCompleted }}</td>
+              <td class="right">
+                {{ data.totalAccrued }} <span class="cur">{{ data.currency }}</span>
+              </td>
+            </tr>
+          </tfoot>
+        </table>
+      </abf-chart-card>
+    }
+  }
+</div>
