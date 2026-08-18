@@ -17,6 +17,7 @@ import { Alert } from 'app/shared/alert/alert';
 import { AlertError } from 'app/shared/alert/alert-error';
 import { FormatMediumDatePipe } from 'app/shared/date';
 import { TranslateDirective } from 'app/shared/language';
+import { ProfessionalEarnings } from '../earnings/professional-earnings';
 import { IProfessional } from '../professional.model';
 import { ProfessionalService } from '../service/professional.service';
 
@@ -40,7 +41,17 @@ export interface WeekCell {
   selector: 'abf-professional-detail',
   templateUrl: './professional-detail.html',
   styleUrl: './professional-detail.scss',
-  imports: [FontAwesomeModule, Alert, AlertError, TranslateDirective, TranslatePipe, RouterLink, FormatMediumDatePipe, StatusPill],
+  imports: [
+    FontAwesomeModule,
+    Alert,
+    AlertError,
+    TranslateDirective,
+    TranslatePipe,
+    RouterLink,
+    FormatMediumDatePipe,
+    StatusPill,
+    ProfessionalEarnings,
+  ],
 })
 export class ProfessionalDetail {
   readonly professional = input<IProfessional | null>(null);

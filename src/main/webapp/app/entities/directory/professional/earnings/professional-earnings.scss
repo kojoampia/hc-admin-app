@@ -1,0 +1,102 @@
+.earnings {
+  margin-top: 18px;
+}
+
+.earnings-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+
+  h4 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--abf-navy);
+  }
+
+  .range {
+    margin: 2px 0 0;
+    font-size: 12px;
+    color: var(--abf-grey);
+  }
+}
+
+// Same shape as the chart card's Chart/Table toggle, so the two sets of buttons on this panel read
+// as one control family rather than two unrelated widgets.
+.granularity {
+  display: inline-flex;
+  border: 1px solid var(--abf-line);
+  border-radius: 999px;
+  overflow: hidden;
+
+  button {
+    padding: 4px 12px;
+    border: 0;
+    background: transparent;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--abf-grey);
+    cursor: pointer;
+
+    &.on {
+      background: var(--abf-navy);
+      color: #fff;
+    }
+  }
+}
+
+.totals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 14px;
+
+  .tot {
+    flex: 1 1 150px;
+    padding: 10px 14px;
+    border: 1px solid var(--abf-line);
+    border-radius: 8px;
+    background: #fff;
+
+    b {
+      display: block;
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--abf-navy);
+      font-variant-numeric: tabular-nums;
+    }
+
+    span {
+      font-size: 12px;
+      color: var(--abf-grey);
+    }
+  }
+
+  // The unpriced count is a caveat on the two figures beside it, not a third headline.
+  .tot--warn {
+    border-color: var(--abf-gold);
+    background: var(--abf-gold-050);
+
+    b {
+      color: var(--abf-gold);
+    }
+  }
+}
+
+.cur {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--abf-grey);
+}
+
+.right {
+  text-align: right;
+}
+
+.muted {
+  color: var(--abf-grey);
+  font-size: 13px;
+}

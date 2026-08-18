@@ -160,5 +160,14 @@
         <p class="empty" abfTranslate="hcAdminApp.directoryProfessional.detail.noWeek">No roster week published.</p>
       }
     </section>
+
+    <!--
+      Shifts completed and value accrued. Sits below "this week" deliberately: that strip is the
+      roster as scheduled, this is the roster as worked and paid, and reading them in that order is
+      what makes the difference between the two visible.
+    -->
+    <section class="card">
+      <abf-professional-earnings [professionalId]="professional()!.id" />
+    </section>
   </div>
 }
