@@ -1,0 +1,119 @@
+@import 'console-components';
+
+.note {
+  margin: 0 0 16px;
+  padding: 10px 14px;
+  border-left: 3px solid var(--abf-gold);
+  background: var(--abf-gold-050);
+  border-radius: 0 6px 6px 0;
+  font-size: 13px;
+  color: var(--abf-ink);
+}
+
+.right {
+  text-align: right;
+}
+
+.amount {
+  white-space: nowrap;
+
+  .num {
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .cur {
+    margin-left: 4px;
+    font-size: 11px;
+    color: var(--abf-grey);
+  }
+}
+
+// "Not set" must not read like a number. It sits in the same column as the amounts, so without a
+// visual break the eye takes it as a value.
+.unpriced {
+  font-style: italic;
+  color: var(--abf-grey);
+}
+
+.muted {
+  color: var(--abf-grey);
+  font-size: 12px;
+
+  .by {
+    margin-left: 6px;
+    &::before {
+      content: '·';
+      margin-right: 6px;
+    }
+  }
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.form-row > td,
+.history-row > td {
+  background: var(--abf-cream);
+}
+
+.form-row {
+  h4 {
+    margin: 0 0 12px;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--abf-grey);
+  }
+
+  .fields {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+  }
+
+  .field--wide {
+    grid-column: 1 / -1;
+  }
+
+  .form-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-top: 14px;
+  }
+}
+
+.history {
+  margin: 0;
+  background: transparent;
+}
+
+// A future-dated rate is recorded but is not what anyone is being paid. Dimming it keeps the row
+// that is actually in force the one that reads as current.
+.scheduled {
+  opacity: 0.72;
+}
+
+.pill--scheduled {
+  margin-left: 8px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--abf-gold-050);
+  color: var(--abf-gold);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}

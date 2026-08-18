@@ -4,6 +4,7 @@
       "null": "",
       "CAREGIVER": "Caregiver",
       "PARAMEDIC": "Paramedic",
+      "THERAPIST": "Therapist",
       "NURSE": "Nurse",
       "DOCTOR": "Doctor"
     }

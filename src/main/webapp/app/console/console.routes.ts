@@ -62,6 +62,16 @@ const routes: Routes = [
     loadComponent: () => import('./platform-health/platform-health'),
   },
   {
+    // No `authorities` here, in line with every other console route: all three roles may read the
+    // rate table. Setting a rate is gated per-control with `*abfHasAnyAuthority`, and the api
+    // enforces the same split independently — writes under /api/** are ROLE_ADMIN, reads are
+    // ROLE_OPERATOR or better, so hiding the button is presentation and not the security boundary.
+    path: 'wage-rates',
+    data: { pageTitle: 'wageRates.pageTitle', breadcrumb: 'global.menu.group.catalogue' },
+    canActivate: [UserRouteAccessService],
+    loadComponent: () => import('./wage-rates/wage-rates'),
+  },
+  {
     path: 'organisation-profile',
     data: { pageTitle: 'organisation.pageTitle', breadcrumb: 'global.menu.group.account' },
     canActivate: [UserRouteAccessService],

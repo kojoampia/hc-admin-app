@@ -1,0 +1,228 @@
+<div class="sec-head">
+  <div>
+    <h3 abfTranslate="wageRates.title">Wage remuneration</h3>
+    <p abfTranslate="wageRates.subtitle">What one shift pays, by professional type</p>
+  </div>
+  <div class="sec-head-actions">
+    <button type="button" class="btn btn-info" (click)="load()" [disabled]="isLoading()" data-cy="wageRatesRefresh">
+      <fa-icon icon="sync" [animation]="isLoading() ? 'spin' : undefined" />
+      <span abfTranslate="wageRates.refresh">Refresh</span>
+    </button>
+  </div>
+</div>
+
+<!--
+  Stated on the screen, not just in the code. An admin about to move a price needs to know that the
+  change applies from a date and leaves worked shifts alone — otherwise the natural assumption is
+  that it takes effect everywhere, and the natural next step is to worry about last month.
+-->
+<p class="note" abfTranslate="wageRates.effectiveDatingNote">
+  A new rate applies from the date you give it. Shifts already worked keep the rate that was in force on the day — changing a price never
+  restates a wage bill that has already been paid.
+</p>
+
+@if (errorMessage(); as message) {
+  <div class="alert alert-danger" role="alert" data-cy="wageRatesError">{{ message }}</div>
+}
+
+@if (savedRole(); as role) {
+  <div class="alert alert-success" role="status" data-cy="wageRatesSaved">
+    {{ 'wageRates.saved' | translate: { role: roleLabelKey(role) | translate } }}
+  </div>
+}
+
+@if (!anyPriced() && !isLoading()) {
+  <div class="alert alert-warning" data-cy="wageRatesEmpty" abfTranslate="wageRates.noneConfigured">
+    No wage rates are configured yet. Until a role is priced, shifts worked by it are counted but valued at nothing.
+  </div>
+}
+
+<section class="card card-pad">
+  <div class="table-responsive">
+    <table class="table table-striped" aria-describedby="page-heading">
+      <thead>
+        <tr>
+          <th scope="col" abfTranslate="wageRates.column.role">Professional type</th>
+          <th scope="col" class="right" abfTranslate="wageRates.column.perShift">Per shift</th>
+          <th scope="col" abfTranslate="wageRates.column.inForceSince">In force since</th>
+          <th scope="col" abfTranslate="wageRates.column.lastChanged">Last changed</th>
+          <th scope="col"><span class="sr-only" abfTranslate="wageRates.column.actions">Actions</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of rows(); track row.role) {
+          <tr [attr.data-cy]="'wageRateRow-' + row.role">
+            <th scope="row">{{ roleLabelKey(row.role) | translate }}</th>
+
+            @if (row.current; as rate) {
+              <td class="right amount" [attr.data-cy]="'wageRateAmount-' + row.role">
+                <span class="num">{{ rate.amount }}</span>
+                <span class="cur">{{ rate.currency }}</span>
+              </td>
+              <td>{{ rate.validFrom | formatMediumDate }}</td>
+              <td class="muted">
+                @if (rate.lastModifiedDate) {
+                  {{ rate.lastModifiedDate | formatMediumDatetime }}
+                  @if (rate.lastModifiedBy) {
+                    <span class="by">{{ rate.lastModifiedBy }}</span>
+                  }
+                } @else {
+                  &mdash;
+                }
+              </td>
+            } @else {
+              <!--
+                Deliberately not rendered as 0. A role nobody has priced and a role priced at nothing
+                are different facts, and the wage bill reads identically for both.
+              -->
+              <td class="right unpriced" [attr.data-cy]="'wageRateAmount-' + row.role" abfTranslate="wageRates.notSet">Not set</td>
+              <td class="muted">&mdash;</td>
+              <td class="muted">&mdash;</td>
+            }
+
+            <td class="actions">
+              <button
+                type="button"
+                class="btn btn-sm btn-secondary"
+                (click)="toggleHistory(row.role)"
+                [attr.data-cy]="'wageRateHistoryToggle-' + row.role"
+              >
+                <fa-icon [icon]="expandedRole() === row.role ? 'chevron-up' : 'chevron-down'" />
+                <span abfTranslate="wageRates.history.toggle">History</span>
+              </button>
+              <button
+                *abfHasAnyAuthority="[ConsoleAuthority.ADMIN]"
+                type="button"
+                class="btn btn-sm btn-primary"
+                (click)="startReprice(row.role)"
+                [attr.data-cy]="'wageRateReprice-' + row.role"
+              >
+                <fa-icon icon="pen" />
+                <span abfTranslate="wageRates.reprice">Set new rate</span>
+              </button>
+            </td>
+          </tr>
+
+          @if (editingRole() === row.role) {
+            <tr class="form-row">
+              <td colspan="5">
+                <form [formGroup]="form" (ngSubmit)="save()" [attr.data-cy]="'wageRateForm-' + row.role">
+                  <h4>{{ 'wageRates.form.title' | translate: { role: roleLabelKey(row.role) | translate } }}</h4>
+
+                  <div class="fields">
+                    <div class="field">
+                      <label class="form-label" [attr.for]="'amount-' + row.role" abfTranslate="wageRates.form.amount"
+                        >Amount per shift</label
+                      >
+                      <input
+                        type="number"
+                        class="form-control"
+                        [id]="'amount-' + row.role"
+                        formControlName="amount"
+                        min="0"
+                        step="1"
+                        data-cy="wageRateAmountInput"
+                      />
+                      @if (form.controls.amount.touched && form.controls.amount.invalid) {
+                        <small class="form-text text-danger" abfTranslate="wageRates.form.amountRequired">
+                          Enter an amount of zero or more.
+                        </small>
+                      }
+                    </div>
+
+                    <div class="field">
+                      <label class="form-label" [attr.for]="'validFrom-' + row.role" abfTranslate="wageRates.form.validFrom">
+                        In force from
+                      </label>
+                      <input
+                        type="date"
+                        class="form-control"
+                        [id]="'validFrom-' + row.role"
+                        formControlName="validFrom"
+                        data-cy="wageRateValidFromInput"
+                      />
+                      <small class="form-text" abfTranslate="wageRates.form.validFromHint">
+                        Shifts worked before this date keep the previous rate.
+                      </small>
+                    </div>
+
+                    <div class="field field--wide">
+                      <label class="form-label" [attr.for]="'note-' + row.role" abfTranslate="wageRates.form.note">Reason</label>
+                      <input
+                        type="text"
+                        class="form-control"
+                        [id]="'note-' + row.role"
+                        formControlName="note"
+                        maxlength="200"
+                        data-cy="wageRateNoteInput"
+                      />
+                    </div>
+                  </div>
+
+                  <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" (click)="cancelReprice()" abfTranslate="entity.action.cancel">
+                      Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary" [disabled]="isSaving()" data-cy="wageRateSave">
+                      <fa-icon icon="save" [animation]="isSaving() ? 'spin' : undefined" />
+                      <span abfTranslate="wageRates.form.save">Save rate</span>
+                    </button>
+                  </div>
+                </form>
+              </td>
+            </tr>
+          }
+
+          @if (expandedRole() === row.role) {
+            <tr class="history-row">
+              <td colspan="5">
+                @if (row.history.length === 0) {
+                  <p class="muted" abfTranslate="wageRates.history.none">No rates have been recorded for this role.</p>
+                } @else {
+                  <table class="table table-sm history" [attr.data-cy]="'wageRateHistory-' + row.role">
+                    <thead>
+                      <tr>
+                        <th scope="col" class="right" abfTranslate="wageRates.column.perShift">Per shift</th>
+                        <th scope="col" abfTranslate="wageRates.column.inForceSince">In force since</th>
+                        <th scope="col" abfTranslate="wageRates.column.reason">Reason</th>
+                        <th scope="col" abfTranslate="wageRates.column.lastChanged">Last changed</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (rate of row.history; track rate.id) {
+                        <tr [class.scheduled]="isScheduled(rate)">
+                          <td class="right amount">
+                            <span class="num">{{ rate.amount }}</span>
+                            <span class="cur">{{ rate.currency }}</span>
+                          </td>
+                          <td>
+                            {{ rate.validFrom | formatMediumDate }}
+                            @if (isScheduled(rate)) {
+                              <!-- Future-dated: recorded, but not yet what anyone is paid. -->
+                              <span class="pill pill--scheduled" abfTranslate="wageRates.history.scheduled">Scheduled</span>
+                            }
+                          </td>
+                          <td class="muted">{{ rate.note || '—' }}</td>
+                          <td class="muted">
+                            @if (rate.lastModifiedDate) {
+                              {{ rate.lastModifiedDate | formatMediumDatetime }}
+                              @if (rate.lastModifiedBy) {
+                                <span class="by">{{ rate.lastModifiedBy }}</span>
+                              }
+                            } @else {
+                              &mdash;
+                            }
+                          </td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                }
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+</section>
