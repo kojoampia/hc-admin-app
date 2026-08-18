@@ -33,5 +33,11 @@ export interface IProfessionalEarnings {
    */
   unpricedShifts: number;
   currency: string | null;
+  /**
+   * Whether the professional has been archived out of the directory. Reported by the api rather
+   * than filtered on: archiving removes somebody from the lists you browse and says nothing about
+   * whether work already done was done, so they stay in the wage bill and the row can be marked.
+   */
+  archived: boolean;
   buckets: IEarningsBucket[];
 }

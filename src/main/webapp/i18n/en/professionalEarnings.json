@@ -5,12 +5,6 @@
     "loading": "Loading…",
     "failed": "Earnings could not be loaded, so no figures are shown. This is not a statement that nothing was earned.",
     "none": "No completed shifts in this period. Shifts rostered for today or later are not counted until they have been worked.",
-    "granularity": {
-      "label": "Group earnings by",
-      "daily": "Daily",
-      "weekly": "Weekly",
-      "monthly": "Monthly"
-    },
     "total": {
       "shifts": "Shifts completed",
       "accrued": "Value accrued",
@@ -21,10 +15,32 @@
       "subtitle": "Each shift valued at the rate in force on the day it was worked"
     },
     "column": {
-      "period": "Period",
+      "day": "Day",
       "shifts": "Shifts completed",
       "accrued": "Value accrued",
       "total": "Total"
-    }
+    },
+    "unit": {
+      "label": "Group earnings by",
+      "week": "Week",
+      "month": "Month"
+    },
+    "period": {
+      "previous": "Previous period",
+      "next": "Next period",
+      "this": {
+        "week": "This week",
+        "month": "This month"
+      },
+      "last": {
+        "week": "Last week",
+        "month": "Last month"
+      },
+      "named": {
+        "week": "Week of {{ date }}",
+        "month": "{{ date }}"
+      }
+    },
+    "notStarted": "This period has only just started — nothing has been worked in it yet."
   }
 }

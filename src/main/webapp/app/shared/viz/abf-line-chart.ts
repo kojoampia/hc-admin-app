@@ -6,6 +6,22 @@ export interface LinePoint {
 }
 
 /**
+ * At most this many x-axis labels, whatever the series length.
+ *
+ * A label is drawn per point, so a month of daily figures puts 31 of them across ~590 viewBox units
+ * — roughly 19 units each, against labels like "12 Aug" that need about 40. They overlap into a
+ * grey smear that reads as a rendering fault rather than as dense data.
+ */
+const MAX_X_LABELS = 10;
+
+/**
+ * Above this many points, the value printed above each dot is noise rather than information — the
+ * numbers touch and the line disappears behind them. The crosshair tooltip still gives the exact
+ * value for any point, and the table view has all of them.
+ */
+const MAX_VALUE_LABELS = 14;
+
+/**
  * Message volume over time, with a crosshair and tooltip.
  *
  * Geometry is computed into a fixed 640×200 viewBox and the SVG scales to its
@@ -34,7 +50,9 @@ export interface LinePoint {
         <path [attr.d]="areaPath()" fill="var(--abf-series-1)" opacity="0.12" />
         <path [attr.d]="linePath()" fill="none" stroke="var(--abf-series-1)" stroke-width="2.4" stroke-linejoin="round" />
 
-        @for (mark of marks(); track mark.label) {
+        <!-- track by index, not label: two points can legitimately carry the same label (a series
+             spanning a year end has two "Jan"), and a duplicate track key is a runtime error. -->
+        @for (mark of marks(); track mark.index) {
           @if (active() === mark.index) {
             <line class="viz-grid" [attr.x1]="mark.x" [attr.y1]="PT" [attr.x2]="mark.x" [attr.y2]="H - PB" stroke-dasharray="3 3" />
           }
@@ -46,9 +64,14 @@ export interface LinePoint {
             stroke="#fff"
             stroke-width="1.5"
           />
-          <!-- Direct value labels: the numbers are on the chart, not only in a tooltip. -->
-          <text class="viz-value" [attr.x]="mark.x" [attr.y]="mark.y - 10" text-anchor="middle">{{ mark.value }}</text>
-          <text class="viz-axis viz-axis--x" [attr.x]="mark.x" [attr.y]="H - 9" text-anchor="middle">{{ mark.label }}</text>
+          <!-- Direct value labels: the numbers are on the chart, not only in a tooltip — until there
+               are too many of them to read, at which point the tooltip and the table carry them. -->
+          @if (showValues()) {
+            <text class="viz-value" [attr.x]="mark.x" [attr.y]="mark.y - 10" text-anchor="middle">{{ mark.value }}</text>
+          }
+          @if (mark.showLabel) {
+            <text class="viz-axis viz-axis--x" [attr.x]="mark.x" [attr.y]="H - 9" text-anchor="middle">{{ mark.label }}</text>
+          }
 
           <!-- A wide, invisible hit area so the crosshair is reachable by pointer and by keyboard. -->
           <rect
@@ -108,16 +131,32 @@ export class AbfLineChart {
     return values;
   });
 
+  /**
+   * How many points apart the x-axis labels are placed. 1 means every point is labelled.
+   */
   // eslint-disable-next-line @typescript-eslint/member-ordering
-  readonly marks = computed(() =>
-    this.points().map((point, index) => ({
+  readonly labelStride = computed(() => Math.max(1, Math.ceil(this.points().length / MAX_X_LABELS)));
+
+  // eslint-disable-next-line @typescript-eslint/member-ordering
+  readonly showValues = computed(() => this.points().length <= MAX_VALUE_LABELS);
+
+  // eslint-disable-next-line @typescript-eslint/member-ordering
+  readonly marks = computed(() => {
+    const stride = this.labelStride();
+    const last = this.points().length - 1;
+    return this.points().map((point, index) => ({
       index,
       label: point.label,
       value: point.value,
+      // Counted back from the END, so the most recent point is always labelled and the spacing
+      // stays even. Anchoring on the first instead leaves the last two labels crowded together
+      // whenever the length is not a multiple of the stride, and the newest figure is the one
+      // someone is looking for.
+      showLabel: (last - index) % stride === 0,
       x: this.x(index),
       y: this.y(point.value),
-    })),
-  );
+    }));
+  });
 
   // eslint-disable-next-line @typescript-eslint/member-ordering
   readonly activeMark = computed(() => {

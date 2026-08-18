@@ -24,9 +24,52 @@
   }
 }
 
+// Sits under the heading, not beside the unit toggle: the two answer different questions — which
+// period, and how wide a period — and pairing them reads as one four-button control.
+.pager {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+
+  .period {
+    min-width: 11ch;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--abf-navy);
+    text-align: center;
+  }
+
+  .step {
+    width: 24px;
+    height: 24px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--abf-line);
+    border-radius: 6px;
+    background: #fff;
+    font-size: 16px;
+    line-height: 1;
+    color: var(--abf-navy);
+    cursor: pointer;
+
+    &:hover:not(:disabled) {
+      background: var(--abf-cream);
+    }
+
+    // Dimmed, not hidden. A control that disappears at the edge of its range reads as a bug; one
+    // that greys out says "this is as far forward as there is".
+    &:disabled {
+      opacity: 0.35;
+      cursor: default;
+    }
+  }
+}
+
 // Same shape as the chart card's Chart/Table toggle, so the two sets of buttons on this panel read
 // as one control family rather than two unrelated widgets.
-.granularity {
+.units {
   display: inline-flex;
   border: 1px solid var(--abf-line);
   border-radius: 999px;
