@@ -57,6 +57,7 @@ export const SHELL_NAVIGATION: readonly ShellNavItem[] = [
   { route: 'service-plan', label: 'global.menu.console.servicePlans', icon: 'shield-halved', group: 'global.menu.group.catalogue' },
   { route: 'category', label: 'global.menu.console.catalog', icon: 'folder-open', group: 'global.menu.group.catalogue' },
   { route: 'platform-health', label: 'global.menu.console.platformHealth', icon: 'gauge-high', group: 'global.menu.group.catalogue' },
+  { route: 'wage-rates', label: 'global.menu.console.wageRates', icon: 'money-bill', group: 'global.menu.group.catalogue' },
 
   { route: 'account', label: 'global.menu.account.main', icon: 'user', group: 'global.menu.group.account' },
   { route: 'organisation-profile', label: 'global.menu.console.organisation', icon: 'building', group: 'global.menu.group.account' },

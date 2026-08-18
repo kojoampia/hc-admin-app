@@ -1,0 +1,35 @@
+{
+  "wageRates": {
+    "pageTitle": "Wage remuneration",
+    "title": "Wage remuneration",
+    "subtitle": "What one shift pays, by professional type",
+    "refresh": "Refresh",
+    "reprice": "Set new rate",
+    "notSet": "Not set",
+    "saved": "New rate recorded for {{ role }}.",
+    "noneConfigured": "No wage rates are configured yet. Until a role is priced, shifts worked by it are counted but valued at nothing.",
+    "effectiveDatingNote": "A new rate applies from the date you give it. Shifts already worked keep the rate that was in force on the day — changing a price never restates a wage bill that has already been paid.",
+    "column": {
+      "role": "Professional type",
+      "perShift": "Per shift",
+      "inForceSince": "In force since",
+      "lastChanged": "Last changed",
+      "reason": "Reason",
+      "actions": "Actions"
+    },
+    "form": {
+      "title": "New rate for {{ role }}",
+      "amount": "Amount per shift",
+      "amountRequired": "Enter an amount of zero or more.",
+      "validFrom": "In force from",
+      "validFromHint": "Shifts worked before this date keep the previous rate.",
+      "note": "Reason",
+      "save": "Save rate"
+    },
+    "history": {
+      "toggle": "History",
+      "none": "No rates have been recorded for this role.",
+      "scheduled": "Scheduled"
+    }
+  }
+}

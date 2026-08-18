@@ -43,7 +43,8 @@
           "DOCTOR": "Doctors",
           "NURSE": "Nurses",
           "PARAMEDIC": "Paramedics",
-          "CAREGIVER": "Caregivers"
+          "CAREGIVER": "Caregivers",
+          "THERAPIST": "Therapists"
         }
       },
       "caseLoad": {

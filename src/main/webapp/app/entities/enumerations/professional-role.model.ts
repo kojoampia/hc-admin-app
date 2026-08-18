@@ -3,6 +3,8 @@ export enum ProfessionalRole {
 
   PARAMEDIC = 'PARAMEDIC',
 
+  THERAPIST = 'THERAPIST',
+
   NURSE = 'NURSE',
 
   DOCTOR = 'DOCTOR',
