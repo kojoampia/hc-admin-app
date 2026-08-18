@@ -1,3 +1,11 @@
 /* The record idiom lives in _console-components.scss and is imported per component — see the note
    on patient-detail.scss. */
 @import 'console-components';
+
+/* A card that takes the whole row of `.record-grid`, whatever the grid is currently that wide.
+   `1 / -1` rather than `span 3`: the grid drops to two columns under 1080px and one under 820px,
+   and `span 3` would overflow the track count at both — the line-based form follows the grid down
+   instead of having to be restated at every breakpoint. */
+.card--full {
+  grid-column: 1 / -1;
+}
