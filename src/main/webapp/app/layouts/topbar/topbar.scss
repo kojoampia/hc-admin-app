@@ -130,3 +130,17 @@
     display: none;
   }
 }
+
+/* The mirror of .abf-topbar__menu above, which is hidden on desktop and shown below the breakpoint.
+   This one is the opposite: the rail only exists where the sidebar is part of the layout. Same
+   `.abf-topbar` prefix for the specificity reason documented on that rule — .icon-btn's
+   `display: grid` would otherwise win on source order. */
+.abf-topbar .abf-topbar__rail {
+  display: grid;
+}
+
+@media (max-width: $abf-shell-bp) {
+  .abf-topbar .abf-topbar__rail {
+    display: none;
+  }
+}

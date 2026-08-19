@@ -1,5 +1,5 @@
 @if (isAuthenticated()) {
-  <div class="abf-shell">
+  <div class="abf-shell" [class.abf-shell--rail]="isSidebarCollapsed()">
     <router-outlet name="navbar" />
 
     <div class="abf-main">

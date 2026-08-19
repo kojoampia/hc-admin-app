@@ -267,3 +267,89 @@ Scrim — only ever visible while the drawer is open
     transition: none;
   }
 }
+
+/* ---- The collapsed rail -------------------------------------------------------------------
+
+   50px of icons and nothing else. The width itself comes from --abf-sidebar-w on .abf-shell, set
+   by the main component; everything here is about what survives inside that strip.
+
+   Text is hidden with `display: none` rather than a zero width or clip, so it leaves the flow
+   entirely and cannot force the strip wider than 50px — a link whose label is merely invisible
+   still takes part in layout, and the rail would quietly stop being 50px.
+
+   Only applies above the mobile breakpoint. Under it the sidebar is an overlay drawer with its own
+   fixed 262px width, and a drawer showing bare icons would be a worse phone experience than the
+   full menu it replaces. */
+@media (min-width: $abf-shell-bp + 1) {
+  .abf-sidebar--rail {
+    padding-left: 0;
+    padding-right: 0;
+    overflow: hidden;
+
+    /* Group headings ("OPERATIONS", "DIRECTORY") have nothing to show without their text, and an
+       empty heading still occupies vertical space. */
+    .abf-nav-lbl {
+      display: none;
+    }
+
+    .side-brand {
+      justify-content: center;
+      padding-left: 0;
+      padding-right: 0;
+
+      /* The mark stays; the wordmark and role chip go. */
+      .nm,
+      .sub,
+      .role-tag {
+        display: none;
+      }
+    }
+
+    .abf-nav {
+      margin: 0;
+      padding: 0;
+
+      a {
+        justify-content: center;
+        gap: 0;
+        padding: 9.5px 0;
+
+        > span {
+          display: none;
+        }
+      }
+    }
+
+    /* The badge is the exception: an unread count is the one thing worth seeing at a glance, and
+       losing it silently would make the rail feel like it had dropped a feature. It rides the
+       corner of the icon instead of sitting after the label. */
+    .abf-nav a .badge {
+      display: grid;
+      position: absolute;
+      top: 3px;
+      right: 5px;
+      min-width: 15px;
+      padding: 0 3px;
+      font-size: 9px;
+      line-height: 15px;
+    }
+
+    .abf-nav a {
+      position: relative;
+    }
+
+    .side-foot {
+      .side-user {
+        justify-content: center;
+        padding-left: 0;
+        padding-right: 0;
+      }
+
+      .grow,
+      .nm,
+      .sub {
+        display: none;
+      }
+    }
+  }
+}

@@ -22,11 +22,28 @@
   background: var(--abf-bg);
 }
 
+/* No max-width, deliberately.
+
+   It was capped at 1240px, which on any wide screen left the content hugging the left with dead
+   space beside it — and, worse, made the directory tables scroll horizontally while that space sat
+   empty. `.table-responsive` is Bootstrap's `overflow-x: auto`, so a table overflows its CONTAINER,
+   not the viewport: the cap was the thing forcing the scrollbar.
+
+   The clamped padding is what keeps the content off the edges, and it grows with the viewport, so
+   there is no need for a cap to stop text touching the frame. Anything that genuinely needs a
+   reading measure sets its own — `.abf-prose` and the like — rather than the shell imposing one on
+   every screen. */
 .abf-content {
   padding: clamp(18px, 2.6vw, 30px) clamp(18px, 3vw, 34px) 60px;
-  max-width: 1240px;
   width: 100%;
+  min-width: 0;
   flex: 1;
+}
+
+/* The desktop rail. Only the custom property changes; the grid, the sidebar and every transition
+   below read it, so the whole shell narrows from this one line. */
+.abf-shell--rail {
+  --abf-sidebar-w: 50px;
 }
 
 @media (max-width: $abf-shell-bp) {

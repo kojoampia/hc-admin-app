@@ -11,6 +11,21 @@
     <fa-icon icon="bars" />
   </button>
 
+  <!-- The desktop counterpart of the hamburger above: that one opens the mobile drawer, this one
+       collapses the always-present sidebar to a rail. They occupy the same slot and are shown at
+       opposite breakpoints, so exactly one is ever visible and there is one control to learn. -->
+  <button
+    type="button"
+    data-cy="railToggle"
+    class="icon-btn abf-topbar__rail"
+    (click)="toggleSidebarCollapsed()"
+    [attr.aria-label]="'global.menu.collapse' | translate"
+    [attr.aria-expanded]="!isSidebarCollapsed()"
+    aria-controls="abf-sidebar"
+  >
+    <fa-icon [icon]="isSidebarCollapsed() ? 'angles-right' : 'angles-left'" />
+  </button>
+
   <div class="abf-topbar__heading">
     <div data-cy="breadcrumb" class="crumb">{{ breadcrumb() | translate }}</div>
     <h2 data-cy="pageTitle">{{ pageTitle() | translate }}</h2>

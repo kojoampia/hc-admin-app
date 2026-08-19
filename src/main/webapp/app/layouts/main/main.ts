@@ -6,6 +6,7 @@ import dayjs from 'dayjs/esm';
 
 import { AppPageTitleStrategy } from 'app/app-page-title-strategy';
 import { AccountService } from 'app/core/auth/account.service';
+import { ShellStateService } from '../shell-state.service';
 import Tabbar from '../tabbar/tabbar';
 import Topbar from '../topbar/topbar';
 
@@ -40,6 +41,9 @@ export default class Main implements OnInit {
 
   // eslint-disable-next-line @typescript-eslint/member-ordering
   readonly isAuthenticated = computed(() => this.accountService.account() !== null);
+  /** Drives only the grid column width; the sidebar styles its own contents. */
+  // eslint-disable-next-line @typescript-eslint/member-ordering
+  readonly isSidebarCollapsed = inject(ShellStateService).isSidebarCollapsed;
 
   constructor() {
     this.htmlElement = this.document.documentElement;

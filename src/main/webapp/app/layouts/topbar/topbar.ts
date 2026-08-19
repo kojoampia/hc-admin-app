@@ -77,6 +77,8 @@ export default class Topbar {
   // eslint-disable-next-line @typescript-eslint/member-ordering
   readonly isSidebarOpen = this.shellState.isSidebarOpen;
   // eslint-disable-next-line @typescript-eslint/member-ordering
+  readonly isSidebarCollapsed = this.shellState.isSidebarCollapsed;
+  // eslint-disable-next-line @typescript-eslint/member-ordering
   readonly unreadMessages = this.counters.unreadMessages;
 
   constructor() {
@@ -92,6 +94,10 @@ export default class Topbar {
         this.pageTitle.set(data.pageTitle ?? 'global.title');
         this.breadcrumb.set(data.breadcrumb ?? 'global.menu.group.operations');
       });
+  }
+
+  toggleSidebarCollapsed(): void {
+    this.shellState.toggleSidebarCollapsed();
   }
 
   toggleSidebar(): void {
