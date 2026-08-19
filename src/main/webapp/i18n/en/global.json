@@ -63,6 +63,7 @@
       "primary": "Primary navigation",
       "secondary": "Quick navigation",
       "toggle": "Toggle navigation",
+      "collapse": "Collapse or expand the sidebar",
       "group": {
         "operations": "Operations",
         "directory": "Directory",

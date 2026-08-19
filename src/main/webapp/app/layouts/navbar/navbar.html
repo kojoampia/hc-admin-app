@@ -1,6 +1,12 @@
 @let user = account();
 
-<aside data-cy="sidebar" class="abf-sidebar" [class.abf-sidebar--open]="isOpen()" id="abf-sidebar">
+<aside
+  data-cy="sidebar"
+  class="abf-sidebar"
+  [class.abf-sidebar--open]="isOpen()"
+  [class.abf-sidebar--rail]="isCollapsed()"
+  id="abf-sidebar"
+>
   <div class="side-brand">
     <img src="content/images/hc-logo.png" alt="" />
     <div>

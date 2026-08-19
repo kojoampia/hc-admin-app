@@ -40,6 +40,8 @@ export default class Navbar {
 
   // eslint-disable-next-line @typescript-eslint/member-ordering
   readonly isOpen = this.shellState.isSidebarOpen;
+  // eslint-disable-next-line @typescript-eslint/member-ordering
+  readonly isCollapsed = this.shellState.isSidebarCollapsed;
 
   private readonly role = computed(() => roleByAuthorities(this.account()?.authorities));
 
