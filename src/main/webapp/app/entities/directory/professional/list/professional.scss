@@ -1,0 +1,32 @@
+@import 'console-components';
+@import 'directory-list';
+
+/*
+ * Role tile tints.
+ *
+ * Five roles, five tones from the shared palette. Colour is never the only signal — each tile
+ * carries its role name in words underneath, so the tints separate them at a glance without being
+ * the thing that has to be read.
+ */
+.stat .ic {
+  &.ic--doctor {
+    background: #e8edf4;
+    color: var(--abf-navy);
+  }
+  &.ic--nurse {
+    background: var(--abf-ok-bg);
+    color: var(--abf-ok);
+  }
+  &.ic--paramedic {
+    background: var(--abf-gold-050);
+    color: var(--abf-gold);
+  }
+  &.ic--caregiver {
+    background: var(--abf-warn-bg);
+    color: var(--abf-warn);
+  }
+  &.ic--therapist {
+    background: var(--abf-cream);
+    color: var(--abf-grey);
+  }
+}

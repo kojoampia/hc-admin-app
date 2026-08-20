@@ -9,7 +9,19 @@
         "notFound": "No Vendors found",
         "showArchivedLabel": "Show archived",
         "showActiveLabel": "Show active",
-        "noneArchived": "No archived Vendors"
+        "noneArchived": "No archived Vendors",
+        "subtitle": "Suppliers the network contracts with",
+        "noneMatching": "No vendors match this filter",
+        "tile": {
+          "activeContracts": "Active contracts",
+          "underReview": "Review or pending",
+          "spend": "Spend to date (GHS)",
+          "categories": "Supply categories"
+        },
+        "column": {
+          "contract": "Contract",
+          "spend": "Spend"
+        }
       },
       "created": "A new Vendor is created with identifier {{ param }}",
       "updated": "A Vendor is updated with identifier {{ param }}",

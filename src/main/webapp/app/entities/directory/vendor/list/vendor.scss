@@ -1,0 +1,27 @@
+@import 'console-components';
+@import 'directory-list';
+
+/*
+ * Tile icon tints. The palette is shared; which tone means what is per screen.
+ *
+ * Gold for money and navy for the taxonomy count, matching how the dashboard already tints its
+ * commercial figures — the two are statements rather than filters, so they are not buttons.
+ */
+.stat .ic {
+  &.ic--ok {
+    background: var(--abf-ok-bg);
+    color: var(--abf-ok);
+  }
+  &.ic--warn {
+    background: var(--abf-warn-bg);
+    color: var(--abf-warn);
+  }
+  &.ic--gold {
+    background: var(--abf-gold-050);
+    color: var(--abf-gold);
+  }
+  &.ic--navy {
+    background: #e8edf4;
+    color: var(--abf-navy);
+  }
+}

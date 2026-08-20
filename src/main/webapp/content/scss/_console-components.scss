@@ -235,12 +235,19 @@
 .abf-g-4 {
   grid-template-columns: repeat(4, 1fr);
 }
+/* Five across, for a tile per ProfessionalRole. Collapses like .abf-g-4 does. */
+.abf-g-5 {
+  grid-template-columns: repeat(5, 1fr);
+}
 .abf-g-auto {
   grid-template-columns: repeat(auto-fill, minmax(232px, 1fr));
 }
 @media (max-width: 1080px) {
   .abf-g-4 {
     grid-template-columns: repeat(2, 1fr);
+  }
+  .abf-g-5 {
+    grid-template-columns: repeat(3, 1fr);
   }
   .abf-g-3 {
     grid-template-columns: repeat(2, 1fr);
@@ -256,6 +263,9 @@
 }
 @media (max-width: 560px) {
   .abf-g-4 {
+    grid-template-columns: 1fr;
+  }
+  .abf-g-5 {
     grid-template-columns: 1fr;
   }
 }

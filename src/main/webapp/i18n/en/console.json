@@ -31,6 +31,7 @@
       "DONE": "Done"
     },
     "professionalRole": {
+      "null": "—",
       "CAREGIVER": "Caregiver",
       "PARAMEDIC": "Paramedic",
       "THERAPIST": "Therapist",

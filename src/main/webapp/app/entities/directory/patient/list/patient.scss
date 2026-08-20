@@ -1,0 +1,30 @@
+@import 'console-components';
+@import 'directory-list';
+
+/*
+ * Status tile tints, keyed to the same tones the status pill uses.
+ *
+ * Deliberately consistent with `StatusPill`: a suspended patient's tile and their row's pill are
+ * the same red, so the tile and the table are visibly about the same thing. Colour is never the
+ * only signal — every tile carries its status in words.
+ */
+.stat .ic {
+  &.ic--active {
+    background: var(--abf-ok-bg);
+    color: var(--abf-ok);
+  }
+  &.ic--pending,
+  &.ic--under_review {
+    background: var(--abf-warn-bg);
+    color: var(--abf-warn);
+  }
+  &.ic--suspended {
+    background: var(--abf-danger-bg);
+    color: var(--abf-danger);
+  }
+  &.ic--on_leave,
+  &.ic--navy {
+    background: #e8edf4;
+    color: var(--abf-navy);
+  }
+}

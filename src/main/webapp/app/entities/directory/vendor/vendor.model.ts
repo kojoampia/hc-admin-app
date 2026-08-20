@@ -43,3 +43,21 @@ export interface IVendor {
 }
 
 export type NewVendor = Omit<IVendor, 'id'> & { id: null };
+
+/**
+ * The four figures above the directory, from `GET /api/vendors/summary`.
+ *
+ * Computed over the whole collection, which is the only place two of them can come from:
+ * `spendToDate` is a sum and `categoryCount` a distinct count, and a page of 20 rows cannot produce
+ * either. Totalling what happens to be on screen would print a figure that reads as the whole book
+ * of business and is not.
+ *
+ * There is no currency field because `Vendor` has no currency. Amounts are cedis by convention and
+ * the tile says so in its label, exactly as the vendor record's "Spend to date (GHS)" does.
+ */
+export interface IVendorSummary {
+  spendToDate: number;
+  categoryCount: number;
+  activeContracts: number;
+  underReview: number;
+}
