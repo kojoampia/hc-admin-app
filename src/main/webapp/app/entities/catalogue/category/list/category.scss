@@ -1,0 +1,174 @@
+@import 'console-components';
+
+/*
+ * Categories and activities.
+ *
+ * Colour is read through the CSS custom properties `global.scss` publishes on `:root`, never as a
+ * literal: `content/scss/_hc-tokens.scss` is the single source of truth, and a component stylesheet
+ * cannot see Sass variables from there anyway.
+ */
+
+.category-board {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+/* A card that opens a table is a button, and has to say which one is open. */
+.category-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: left;
+  background: var(--abf-card);
+  border: 1px solid var(--abf-line);
+  border-radius: var(--abf-r);
+  box-shadow: var(--abf-sh-sm);
+  padding: 14px 16px;
+  cursor: pointer;
+
+  &:hover {
+    border-color: var(--abf-navy-700);
+  }
+
+  &.on {
+    border-color: var(--abf-navy);
+    box-shadow: 0 0 0 2px rgba(13, 48, 88, 0.12);
+  }
+
+  .head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .name {
+    font-weight: 600;
+    color: var(--abf-navy);
+  }
+
+  .count {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--abf-ink);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .desc {
+    font-size: 0.82rem;
+    color: var(--abf-grey);
+  }
+
+  .live {
+    font-size: 0.76rem;
+    color: var(--abf-grey);
+
+    /* Green only when every activity in the category is bookable; otherwise it is just a figure. */
+    .all-live {
+      color: var(--abf-ok);
+      font-weight: 600;
+    }
+  }
+}
+
+.activity-panel {
+  background: var(--abf-card);
+  border: 1px solid var(--abf-line);
+  border-radius: var(--abf-r-lg);
+  box-shadow: var(--abf-sh-sm);
+  padding: 18px;
+  margin-bottom: 24px;
+
+  h3 {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--abf-navy);
+    margin: 0 0 14px;
+  }
+
+  .pending {
+    font-size: 0.88rem;
+    color: var(--abf-grey-400);
+    font-style: italic;
+    margin: 0;
+  }
+}
+
+.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.wrap {
+  white-space: normal;
+}
+
+/*
+ * The live switch.
+ *
+ * Navy when on rather than gold: gold is 2.74:1 against white and fails AA, so it never carries a
+ * state that has to be read. The label is a word as well as a position — a colour-only switch says
+ * nothing to a reader who cannot separate the two states by hue.
+ */
+.live-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  font-size: 0.8rem;
+  color: var(--abf-grey);
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: progress;
+  }
+
+  .knob {
+    position: relative;
+    width: 34px;
+    height: 18px;
+    border-radius: 9px;
+    background: var(--abf-grey-400);
+    transition: background 0.15s ease;
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #fff;
+      transition: transform 0.15s ease;
+    }
+  }
+
+  &.on {
+    color: var(--abf-ok);
+    font-weight: 600;
+
+    .knob {
+      background: var(--abf-ok);
+
+      &::after {
+        transform: translateX(16px);
+      }
+    }
+  }
+
+  &:focus-visible .knob {
+    outline: 2px solid var(--abf-navy);
+    outline-offset: 2px;
+  }
+}

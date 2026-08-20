@@ -7,7 +7,7 @@ import { ADMIN_SERVICE } from 'app/config/microservice.constants';
 import { ApplicationConfigService } from 'app/core/config/application-config.service';
 import { createRequestOption } from 'app/core/request/request-util';
 import { isPresent } from 'app/core/util/operators';
-import { ICategory, NewCategory } from '../category.model';
+import { ICategory, ICategorySummary, NewCategory } from '../category.model';
 
 export type PartialUpdateCategory = Partial<ICategory> & Pick<ICategory, 'id'>;
 
@@ -55,6 +55,15 @@ export class CategoryService extends CategoriesService {
   query(req?: any): Observable<HttpResponse<ICategory[]>> {
     const options = createRequestOption(req);
     return this.http.get<ICategory[]>(this.resourceUrl, { params: options, observe: 'response' });
+  }
+
+  /**
+   * Activity counts per category, over the whole catalogue rather than the page of cards on screen.
+   *
+   * Returned for every category, so turning a page of cards needs no second request.
+   */
+  summary(): Observable<ICategorySummary> {
+    return this.http.get<ICategorySummary>(`${this.resourceUrl}/summary`);
   }
 
   delete(id: string): Observable<undefined> {

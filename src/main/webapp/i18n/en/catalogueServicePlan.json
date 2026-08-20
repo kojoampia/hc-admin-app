@@ -2,11 +2,19 @@
   "hcAdminApp": {
     "catalogueServicePlan": {
       "home": {
-        "title": "Service Plans",
+        "title": "Service plans",
         "refreshListLabel": "Refresh list",
-        "createLabel": "Create a new Service Plan",
+        "createLabel": "New plan",
         "createOrEditLabel": "Create or edit a Service Plan",
-        "notFound": "No Service Plans found"
+        "notFound": "No service plans found",
+        "perMonth": "/ month",
+        "featuresPending": "Loading features…",
+        "subscribers": "subscribers",
+        "viewSubscribers": "Subscribers",
+        "planMix": "Plan mix",
+        "share": "Share",
+        "monthlyRevenue": "Monthly revenue",
+        "total": "Total"
       },
       "created": "A new Service Plan is created with identifier {{ param }}",
       "updated": "A Service Plan is updated with identifier {{ param }}",
