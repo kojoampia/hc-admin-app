@@ -7,7 +7,7 @@ import { ADMIN_SERVICE } from 'app/config/microservice.constants';
 import { ApplicationConfigService } from 'app/core/config/application-config.service';
 import { createRequestOption } from 'app/core/request/request-util';
 import { isPresent } from 'app/core/util/operators';
-import { IServicePlan, NewServicePlan } from '../service-plan.model';
+import { IServicePlan, IServicePlanSummary, NewServicePlan } from '../service-plan.model';
 
 export type PartialUpdateServicePlan = Partial<IServicePlan> & Pick<IServicePlan, 'id'>;
 
@@ -61,6 +61,15 @@ export class ServicePlanService extends ServicePlansService {
   query(req?: any): Observable<HttpResponse<IServicePlan[]>> {
     const options = createRequestOption(req);
     return this.http.get<IServicePlan[]>(this.resourceUrl, { params: options, observe: 'response' });
+  }
+
+  /**
+   * The plan mix, over the whole patient directory rather than the page of plans on screen.
+   *
+   * No date conversion, so it does not go through a converter — every field is a number or a string.
+   */
+  summary(): Observable<IServicePlanSummary> {
+    return this.http.get<IServicePlanSummary>(`${this.resourceUrl}/summary`);
   }
 
   delete(id: string): Observable<undefined> {

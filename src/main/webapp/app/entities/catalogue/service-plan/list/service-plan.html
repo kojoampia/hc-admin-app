@@ -1,9 +1,9 @@
 <div>
   <h2 id="page-heading" data-cy="ServicePlanHeading">
-    <span abfTranslate="hcAdminApp.catalogueServicePlan.home.title">Service Plans</span>
+    <span abfTranslate="hcAdminApp.catalogueServicePlan.home.title">Service plans</span>
 
     <div class="d-flex justify-content-end">
-      <button class="btn btn-info me-2" (click)="load()" [disabled]="isLoading()">
+      <button class="btn btn-info me-2" (click)="refresh()" [disabled]="isLoading()">
         <fa-icon icon="sync" [animation]="isLoading() ? 'spin' : undefined" />
         <span abfTranslate="hcAdminApp.catalogueServicePlan.home.refreshListLabel">Refresh list</span>
       </button>
@@ -15,7 +15,7 @@
         [routerLink]="['/service-plan/new']"
       >
         <fa-icon icon="plus" />
-        <span abfTranslate="hcAdminApp.catalogueServicePlan.home.createLabel">Create a new Service Plan</span>
+        <span abfTranslate="hcAdminApp.catalogueServicePlan.home.createLabel">New plan</span>
       </button>
     </div>
   </h2>
@@ -26,107 +26,148 @@
 
   @if (servicePlans().length === 0) {
     <div class="alert alert-warning" id="no-result">
-      <span abfTranslate="hcAdminApp.catalogueServicePlan.home.notFound">No Service Plans found</span>
+      <span abfTranslate="hcAdminApp.catalogueServicePlan.home.notFound">No service plans found</span>
     </div>
   } @else {
+    <!--
+      One card per plan.
+
+      The subscriber figure comes from the mix, never from the plan's own subscriberCount — that
+      counter is denormalised, unmaintained, and disagreed with the patient directory by a factor of
+      ten. It renders "—" until the summary lands and on failure, so a reader can tell a plan nobody
+      holds from a figure that did not arrive.
+    -->
+    <div class="plan-board" data-cy="planCards">
+      @for (plan of servicePlans(); track trackId(plan)) {
+        <article class="plan-card" [class.featured]="plan.featured" [attr.data-cy]="'planCard-' + plan.id">
+          <header>
+            @if (plan.tierLabel) {
+              <span class="tier-label">{{ plan.tierLabel }}</span>
+            }
+            <h3>{{ plan.name }}</h3>
+            <p class="price">
+              <b>{{ plan.monthlyPrice !== null && plan.monthlyPrice !== undefined ? (plan.monthlyPrice | number: '1.0-2') : '—' }}</b>
+              <span class="unit"
+                >{{ plan.currency }} <span abfTranslate="hcAdminApp.catalogueServicePlan.home.perMonth">/ month</span></span
+              >
+            </p>
+          </header>
+
+          @if (plan.summary) {
+            <p class="summary">{{ plan.summary }}</p>
+          }
+
+          <!--
+            Absent while loading or on failure, rather than an empty list: "includes nothing" and
+            "could not be read" are different statements about a plan somebody is being sold.
+          -->
+          @if (features()[plan.id]; as planFeatures) {
+            <ul class="features">
+              @for (feature of planFeatures; track feature.id) {
+                <li><fa-icon icon="check" /> {{ feature.label }}</li>
+              }
+            </ul>
+          } @else {
+            <p class="features-pending" abfTranslate="hcAdminApp.catalogueServicePlan.home.featuresPending">Loading features…</p>
+          }
+
+          <footer>
+            <span class="subscribers" [attr.data-cy]="'planSubscribers-' + plan.id">
+              <b>{{ mixFor(plan.id)?.subscribers ?? '—' }}</b>
+              <span abfTranslate="hcAdminApp.catalogueServicePlan.home.subscribers">subscribers</span>
+            </span>
+            <span class="actions">
+              <a class="btn btn-ghost btn-sm" [routerLink]="['/service-plan', plan.id, 'edit']" [attr.data-cy]="'planEdit-' + plan.id">
+                <fa-icon icon="pencil-alt" />
+                <span abfTranslate="entity.action.edit">Edit</span>
+              </a>
+              <a
+                class="btn btn-ghost btn-sm"
+                [routerLink]="['/patient']"
+                [queryParams]="{ plan: plan.id }"
+                [attr.data-cy]="'planSubscribersLink-' + plan.id"
+              >
+                <fa-icon icon="users" />
+                <span abfTranslate="hcAdminApp.catalogueServicePlan.home.viewSubscribers">Subscribers</span>
+              </a>
+            </span>
+          </footer>
+        </article>
+      }
+    </div>
+
+    <!--
+      Plan mix.
+
+      Share and subscribers are computed over the whole patient directory; no page of plans can
+      produce either. Every computed cell renders "—" until the summary answers and on failure, and
+      a number only when the server sent one — which is what makes a zero on this screen evidence
+      that the endpoint replied.
+    -->
+    <h3 class="mix-heading" abfTranslate="hcAdminApp.catalogueServicePlan.home.planMix">Plan mix</h3>
+
     <div class="table-responsive table-entities" id="entities">
       <table class="table table-striped" aria-describedby="page-heading">
         <thead>
           <tr abfSort [(sortState)]="sortState" (sortChange)="navigateToWithComponentValues($event)">
-            <th scope="col" abfSortBy="id">
-              <div class="d-flex">
-                <span abfTranslate="hcAdminApp.catalogueServicePlan.id">Id</span>
-
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
             <th scope="col" abfSortBy="name">
               <div class="d-flex">
-                <span abfTranslate="hcAdminApp.catalogueServicePlan.name">Name</span>
-
-                <fa-icon class="p-1" icon="sort" />
+                <span abfTranslate="hcAdminApp.catalogueServicePlan.name">Plan</span>
+                @if (!sortState().predicate || sortState().predicate === 'name') {
+                  <fa-icon class="p-1" icon="sort" />
+                }
               </div>
             </th>
-            <th scope="col" abfSortBy="tier">
+            <th scope="col" abfSortBy="monthlyPrice" class="num">
               <div class="d-flex">
-                <span abfTranslate="hcAdminApp.catalogueServicePlan.tier">Tier</span>
-
+                <span abfTranslate="hcAdminApp.catalogueServicePlan.monthlyPrice">Monthly price</span>
                 <fa-icon class="p-1" icon="sort" />
               </div>
             </th>
-            <th scope="col" abfSortBy="tierLabel">
-              <div class="d-flex">
-                <span abfTranslate="hcAdminApp.catalogueServicePlan.tierLabel">Tier Label</span>
-
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
-            <th scope="col" abfSortBy="monthlyPrice">
-              <div class="d-flex">
-                <span abfTranslate="hcAdminApp.catalogueServicePlan.monthlyPrice">Monthly Price</span>
-
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
-            <th scope="col" abfSortBy="currency">
-              <div class="d-flex">
-                <span abfTranslate="hcAdminApp.catalogueServicePlan.currency">Currency</span>
-
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
-            <th scope="col" abfSortBy="summary">
-              <div class="d-flex">
-                <span abfTranslate="hcAdminApp.catalogueServicePlan.summary">Summary</span>
-
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
-            <th scope="col" abfSortBy="featured">
-              <div class="d-flex">
-                <span abfTranslate="hcAdminApp.catalogueServicePlan.featured">Featured</span>
-
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
-            <th scope="col" abfSortBy="subscriberCount">
-              <div class="d-flex">
-                <span abfTranslate="hcAdminApp.catalogueServicePlan.subscriberCount">Subscriber Count</span>
-
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
+            <th scope="col" class="num" abfTranslate="hcAdminApp.catalogueServicePlan.home.subscribersColumn">Subscribers</th>
+            <th scope="col" class="num" abfTranslate="hcAdminApp.catalogueServicePlan.home.share">Share</th>
+            <th scope="col" class="num" abfTranslate="hcAdminApp.catalogueServicePlan.home.monthlyRevenue">Monthly revenue</th>
             <th scope="col"></th>
           </tr>
         </thead>
         <tbody>
           @for (servicePlan of servicePlans(); track trackId(servicePlan)) {
             <tr data-cy="entityTable">
-              <td>
-                <a [routerLink]="['/service-plan', servicePlan.id, 'view']">{{ servicePlan.id }}</a>
+              <th scope="row">
+                <a [routerLink]="['/service-plan', servicePlan.id, 'view']">{{ servicePlan.name }}</a>
+              </th>
+              <td class="num">
+                {{
+                  servicePlan.monthlyPrice !== null && servicePlan.monthlyPrice !== undefined
+                    ? (servicePlan.monthlyPrice | number: '1.0-2')
+                    : '—'
+                }}
               </td>
-              <td>{{ servicePlan.name }}</td>
-              <td [abfTranslate]="'hcAdminApp.PlanTier.' + (servicePlan.tier ?? 'null')">
-                {{ { null: '', ESSENTIAL: 'ESSENTIAL', PLUS: 'PLUS', FAMILY: 'FAMILY' }[servicePlan.tier ?? 'null'] }}
+              <td class="num" [attr.data-cy]="'mixSubscribers-' + servicePlan.id">{{ mixFor(servicePlan.id)?.subscribers ?? '—' }}</td>
+              <td class="num" [attr.data-cy]="'mixShare-' + servicePlan.id">
+                @if (mixFor(servicePlan.id)?.share !== null && mixFor(servicePlan.id)?.share !== undefined) {
+                  {{ mixFor(servicePlan.id)!.share | number: '1.1-1' }}%
+                } @else {
+                  —
+                }
               </td>
-              <td>{{ servicePlan.tierLabel }}</td>
-              <td>{{ servicePlan.monthlyPrice }}</td>
-              <td>{{ servicePlan.currency }}</td>
-              <td>{{ servicePlan.summary }}</td>
-              <td>{{ servicePlan.featured }}</td>
-              <td>{{ servicePlan.subscriberCount }}</td>
+              <td class="num" [attr.data-cy]="'mixRevenue-' + servicePlan.id">
+                @if (mixFor(servicePlan.id); as row) {
+                  {{ row.monthlyRevenue | number: '1.0-2' }}
+                } @else {
+                  —
+                }
+              </td>
               <td class="text-end">
                 <div class="btn-group">
                   <a [routerLink]="['/service-plan', servicePlan.id, 'view']" class="btn btn-info btn-sm" data-cy="entityDetailsButton">
                     <fa-icon icon="eye" />
                     <span class="d-none d-md-inline" abfTranslate="entity.action.view">View</span>
                   </a>
-
                   <a [routerLink]="['/service-plan', servicePlan.id, 'edit']" class="btn btn-primary btn-sm" data-cy="entityEditButton">
                     <fa-icon icon="pencil-alt" />
                     <span class="d-none d-md-inline" abfTranslate="entity.action.edit">Edit</span>
                   </a>
-
                   <button type="submit" (click)="delete(servicePlan)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
                     <fa-icon icon="times" />
                     <span class="d-none d-md-inline" abfTranslate="entity.action.delete">Delete</span>
@@ -136,9 +177,22 @@
             </tr>
           }
         </tbody>
+        <tfoot>
+          <tr class="mix-total">
+            <th scope="row" abfTranslate="hcAdminApp.catalogueServicePlan.home.total">Total</th>
+            <td></td>
+            <td class="num" data-cy="mixTotalSubscribers">{{ summary()?.totalSubscribers ?? '—' }}</td>
+            <td class="num">{{ summary() ? '100.0%' : '—' }}</td>
+            <td class="num" data-cy="mixTotalRevenue">
+              {{ totalRevenue() !== null ? (totalRevenue() | number: '1.0-2') : '—' }}
+            </td>
+            <td></td>
+          </tr>
+        </tfoot>
       </table>
     </div>
   }
+
   @if (servicePlans().length > 0) {
     <div>
       <div class="d-flex justify-content-center">

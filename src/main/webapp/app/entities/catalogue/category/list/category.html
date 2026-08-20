@@ -1,12 +1,17 @@
 <div>
   <h2 id="page-heading" data-cy="CategoryHeading">
-    <span abfTranslate="hcAdminApp.catalogueCategory.home.title">Categories</span>
+    <span abfTranslate="hcAdminApp.catalogueCategory.home.title">Categories &amp; activities</span>
 
     <div class="d-flex justify-content-end">
-      <button class="btn btn-info me-2" (click)="load()" [disabled]="isLoading()">
+      <button class="btn btn-info me-2" (click)="refresh()" [disabled]="isLoading()">
         <fa-icon icon="sync" [animation]="isLoading() ? 'spin' : undefined" />
         <span abfTranslate="hcAdminApp.catalogueCategory.home.refreshListLabel">Refresh list</span>
       </button>
+
+      <a class="btn btn-secondary me-2" [routerLink]="['/service-activity/new']" data-cy="activityCreateButton">
+        <fa-icon icon="plus" />
+        <span abfTranslate="hcAdminApp.catalogueCategory.home.createActivityLabel">New activity</span>
+      </a>
 
       <button
         id="jh-create-entity"
@@ -15,7 +20,7 @@
         [routerLink]="['/category/new']"
       >
         <fa-icon icon="plus" />
-        <span abfTranslate="hcAdminApp.catalogueCategory.home.createLabel">Create a new Category</span>
+        <span abfTranslate="hcAdminApp.catalogueCategory.home.createLabel">New category</span>
       </button>
     </div>
   </h2>
@@ -26,65 +31,178 @@
 
   @if (categories().length === 0) {
     <div class="alert alert-warning" id="no-result">
-      <span abfTranslate="hcAdminApp.catalogueCategory.home.notFound">No Categories found</span>
+      <span abfTranslate="hcAdminApp.catalogueCategory.home.notFound">No categories found</span>
     </div>
   } @else {
+    <!--
+      A card per category, each opening its activities below.
+
+      Counts come from the summary over the whole catalogue and render "—" until it lands, so a
+      category holding nothing (0) reads differently from one whose count did not arrive.
+    -->
+    <div class="category-board" data-cy="categoryCards">
+      @for (category of categories(); track trackId(category)) {
+        <button
+          type="button"
+          class="category-card"
+          [class.on]="openCategoryId() === category.id"
+          (click)="toggleCategory(category.id)"
+          [attr.data-cy]="'categoryCard-' + category.id"
+        >
+          <span class="head">
+            <span class="name">{{ category.name }}</span>
+            <span class="count" [attr.data-cy]="'categoryCount-' + category.id">{{ countFor(category.id)?.activities ?? '—' }}</span>
+          </span>
+          @if (category.description) {
+            <span class="desc">{{ category.description }}</span>
+          }
+          <span class="live" [attr.data-cy]="'categoryLive-' + category.id">
+            @if (countFor(category.id); as counts) {
+              <span [class.all-live]="counts.live === counts.activities">
+                {{ counts.live }} <span abfTranslate="hcAdminApp.catalogueCategory.home.live">live</span>
+              </span>
+            } @else {
+              <span>—</span>
+            }
+          </span>
+        </button>
+      }
+    </div>
+
+    <!--
+      The activities table for whichever card is open.
+
+      This is what the generated screen could not reach at all: pricing and the live/withdrawn
+      toggle had no home in the console, and service-activity existed as an orphaned entity screen.
+    -->
+    @if (openCategory(); as category) {
+      <section class="activity-panel" data-cy="activityPanel">
+        <h3>
+          {{ category.name }}
+          <a class="btn btn-ghost btn-sm" [routerLink]="['/service-activity/new']" data-cy="activityCreateInline">
+            <fa-icon icon="plus" />
+            <span abfTranslate="hcAdminApp.catalogueCategory.home.createActivityLabel">New activity</span>
+          </a>
+        </h3>
+
+        @if (activities() === null) {
+          <p class="pending" abfTranslate="hcAdminApp.catalogueCategory.home.activitiesPending">Loading activities…</p>
+        } @else if (activities()!.length === 0) {
+          <p class="pending" abfTranslate="hcAdminApp.catalogueCategory.home.noActivities">This category has no activities yet.</p>
+        } @else {
+          <div class="table-responsive table-entities">
+            <table class="table table-striped" aria-describedby="page-heading">
+              <thead>
+                <tr>
+                  <th scope="col" abfTranslate="hcAdminApp.catalogueServiceActivity.name">Activity</th>
+                  <th scope="col" abfTranslate="hcAdminApp.catalogueServiceActivity.unit">Unit</th>
+                  <th scope="col" abfTranslate="hcAdminApp.catalogueServiceActivity.duration">Duration</th>
+                  <th scope="col" class="num" abfTranslate="hcAdminApp.catalogueServiceActivity.unitPrice">Price</th>
+                  <th scope="col" abfTranslate="hcAdminApp.catalogueCategory.home.liveColumn">Live</th>
+                  <th scope="col"></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (activity of activities(); track activity.id) {
+                  <tr [attr.data-cy]="'activityRow-' + activity.id">
+                    <th scope="row">
+                      <a [routerLink]="['/service-activity', activity.id, 'view']">{{ activity.name }}</a>
+                    </th>
+                    <td>{{ activity.unit ?? '—' }}</td>
+                    <td>{{ activity.duration ?? '—' }}</td>
+                    <td class="num">
+                      {{ activity.unitPrice !== null && activity.unitPrice !== undefined ? (activity.unitPrice | number: '1.0-2') : '—' }}
+                    </td>
+                    <td>
+                      <!--
+                        A control, not a badge. The design draws a toggle, and until now the only
+                        route to this field was the full generated update form.
+                      -->
+                      <button
+                        type="button"
+                        class="live-toggle"
+                        role="switch"
+                        [class.on]="activity.published"
+                        [attr.aria-checked]="activity.published ? 'true' : 'false'"
+                        [disabled]="isSaving(activity.id)"
+                        (click)="togglePublished(activity)"
+                        [attr.data-cy]="'activityToggle-' + activity.id"
+                      >
+                        <span class="knob"></span>
+                        <span class="label">
+                          @if (activity.published) {
+                            <span abfTranslate="hcAdminApp.catalogueCategory.home.live">live</span>
+                          } @else {
+                            <span abfTranslate="hcAdminApp.catalogueCategory.home.withdrawn">withdrawn</span>
+                          }
+                        </span>
+                      </button>
+                    </td>
+                    <td class="text-end">
+                      <a
+                        [routerLink]="['/service-activity', activity.id, 'edit']"
+                        class="btn btn-primary btn-sm"
+                        [attr.data-cy]="'activityEdit-' + activity.id"
+                      >
+                        <fa-icon icon="pencil-alt" />
+                        <span class="d-none d-md-inline" abfTranslate="entity.action.edit">Edit</span>
+                      </a>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </section>
+    }
+
+    <!--
+      The category rows themselves stay reachable for edit and delete: the cards above are a way in
+      to the activities, not a replacement for managing the categories.
+    -->
     <div class="table-responsive table-entities" id="entities">
       <table class="table table-striped" aria-describedby="page-heading">
         <thead>
           <tr abfSort [(sortState)]="sortState" (sortChange)="navigateToWithComponentValues($event)">
-            <th scope="col" abfSortBy="id">
-              <div class="d-flex">
-                <span abfTranslate="hcAdminApp.catalogueCategory.id">Id</span>
-
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
             <th scope="col" abfSortBy="name">
               <div class="d-flex">
-                <span abfTranslate="hcAdminApp.catalogueCategory.name">Name</span>
-
-                <fa-icon class="p-1" icon="sort" />
+                <span abfTranslate="hcAdminApp.catalogueCategory.name">Category</span>
+                @if (!sortState().predicate || sortState().predicate === 'name') {
+                  <fa-icon class="p-1" icon="sort" />
+                }
               </div>
             </th>
             <th scope="col" abfSortBy="description">
               <div class="d-flex">
                 <span abfTranslate="hcAdminApp.catalogueCategory.description">Description</span>
-
                 <fa-icon class="p-1" icon="sort" />
               </div>
             </th>
-            <th scope="col" abfSortBy="iconKey">
-              <div class="d-flex">
-                <span abfTranslate="hcAdminApp.catalogueCategory.iconKey">Icon Key</span>
-
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
+            <th scope="col" class="num" abfTranslate="hcAdminApp.catalogueCategory.home.activityCount">Activities</th>
+            <th scope="col" class="num" abfTranslate="hcAdminApp.catalogueCategory.home.liveColumn">Live</th>
             <th scope="col"></th>
           </tr>
         </thead>
         <tbody>
           @for (category of categories(); track trackId(category)) {
             <tr data-cy="entityTable">
-              <td>
-                <a [routerLink]="['/category', category.id, 'view']">{{ category.id }}</a>
-              </td>
-              <td>{{ category.name }}</td>
-              <td>{{ category.description }}</td>
-              <td>{{ category.iconKey }}</td>
+              <th scope="row">
+                <a [routerLink]="['/category', category.id, 'view']">{{ category.name }}</a>
+              </th>
+              <td class="wrap">{{ category.description ?? '—' }}</td>
+              <td class="num">{{ countFor(category.id)?.activities ?? '—' }}</td>
+              <td class="num">{{ countFor(category.id)?.live ?? '—' }}</td>
               <td class="text-end">
                 <div class="btn-group">
                   <a [routerLink]="['/category', category.id, 'view']" class="btn btn-info btn-sm" data-cy="entityDetailsButton">
                     <fa-icon icon="eye" />
                     <span class="d-none d-md-inline" abfTranslate="entity.action.view">View</span>
                   </a>
-
                   <a [routerLink]="['/category', category.id, 'edit']" class="btn btn-primary btn-sm" data-cy="entityEditButton">
                     <fa-icon icon="pencil-alt" />
                     <span class="d-none d-md-inline" abfTranslate="entity.action.edit">Edit</span>
                   </a>
-
                   <button type="submit" (click)="delete(category)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
                     <fa-icon icon="times" />
                     <span class="d-none d-md-inline" abfTranslate="entity.action.delete">Delete</span>
@@ -97,6 +215,7 @@
       </table>
     </div>
   }
+
   @if (categories().length > 0) {
     <div>
       <div class="d-flex justify-content-center">

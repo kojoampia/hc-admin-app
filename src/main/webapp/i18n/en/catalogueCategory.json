@@ -2,11 +2,18 @@
   "hcAdminApp": {
     "catalogueCategory": {
       "home": {
-        "title": "Categories",
+        "title": "Categories & activities",
         "refreshListLabel": "Refresh list",
-        "createLabel": "Create a new Category",
+        "createLabel": "New category",
+        "createActivityLabel": "New activity",
         "createOrEditLabel": "Create or edit a Category",
-        "notFound": "No Categories found"
+        "notFound": "No categories found",
+        "activitiesPending": "Loading activities…",
+        "noActivities": "This category has no activities yet.",
+        "activityCount": "Activities",
+        "live": "live",
+        "liveColumn": "Live",
+        "withdrawn": "withdrawn"
       },
       "created": "A new Category is created with identifier {{ param }}",
       "updated": "A Category is updated with identifier {{ param }}",
