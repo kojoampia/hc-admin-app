@@ -1,152 +1,158 @@
-<div>
-  <h2 id="page-heading" data-cy="VendorHeading">
-    <span abfTranslate="hcAdminApp.directoryVendor.home.title">Vendors</span>
+<div class="sec-head">
+  <div>
+    <h3 id="page-heading" data-cy="VendorHeading" abfTranslate="hcAdminApp.directoryVendor.home.title">Vendors</h3>
+    <p abfTranslate="hcAdminApp.directoryVendor.home.subtitle">Suppliers the network contracts with</p>
+  </div>
+  <div class="head-tools no-print">
+    <button class="btn btn-ghost btn-sm" (click)="refresh()" [disabled]="isLoading()">
+      <fa-icon icon="sync" [animation]="isLoading() ? 'spin' : undefined" />
+      <span abfTranslate="hcAdminApp.directoryVendor.home.refreshListLabel">Refresh list</span>
+    </button>
 
-    <div class="d-flex justify-content-end">
-      <button class="btn btn-info me-2" (click)="load()" [disabled]="isLoading()">
-        <fa-icon icon="sync" [animation]="isLoading() ? 'spin' : undefined" />
-        <span abfTranslate="hcAdminApp.directoryVendor.home.refreshListLabel">Refresh list</span>
-      </button>
+    <button
+      id="toggle-archived"
+      data-cy="entityShowArchivedButton"
+      class="btn btn-ghost btn-sm"
+      (click)="toggleArchived()"
+      [attr.aria-pressed]="showArchived()"
+    >
+      <fa-icon [icon]="showArchived() ? 'list' : 'box-archive'" />
+      @if (showArchived()) {
+        <span abfTranslate="hcAdminApp.directoryVendor.home.showActiveLabel">Show active</span>
+      } @else {
+        <span abfTranslate="hcAdminApp.directoryVendor.home.showArchivedLabel">Show archived</span>
+      }
+    </button>
 
-      <button
-        id="toggle-archived"
-        data-cy="entityShowArchivedButton"
-        class="btn btn-secondary me-2"
-        (click)="toggleArchived()"
-        [attr.aria-pressed]="showArchived()"
-      >
-        <fa-icon [icon]="showArchived() ? 'list' : 'box-archive'" />
-        @if (showArchived()) {
-          <span abfTranslate="hcAdminApp.directoryVendor.home.showActiveLabel">Show active</span>
-        } @else {
-          <span abfTranslate="hcAdminApp.directoryVendor.home.showArchivedLabel">Show archived</span>
+    <a
+      class="btn btn-primary btn-sm jh-create-entity create-vendor"
+      id="jh-create-entity"
+      data-cy="entityCreateButton"
+      [routerLink]="['/vendor/new']"
+    >
+      <fa-icon icon="plus" />
+      <span abfTranslate="hcAdminApp.directoryVendor.home.createLabel">Create a new Vendor</span>
+    </a>
+  </div>
+</div>
+
+<abf-alert-error />
+<abf-alert />
+
+<!--
+  Four tiles. The two on the right are a sum and a distinct count over the whole collection and
+  come from GET /api/vendors/summary; totalling the rows on screen would print a page as if it
+  were the book of business. They render "—" rather than 0 while unknown: no answer yet and none
+  recorded are different facts.
+-->
+<div class="abf-grid abf-g-4 mb-18" data-cy="vendorTiles">
+  <button type="button" class="stat" [class.on]="status() === 'ACTIVE'" (click)="toggleStatus('ACTIVE')" data-cy="tileActive">
+    <span class="ic ic--ok"><fa-icon icon="file-lines" /></span>
+    <b>{{ summary()?.activeContracts ?? '—' }}</b>
+    <span abfTranslate="hcAdminApp.directoryVendor.home.tile.activeContracts">Active contracts</span>
+  </button>
+
+  <button type="button" class="stat" [class.on]="status() === 'UNDER_REVIEW'" (click)="toggleStatus('UNDER_REVIEW')" data-cy="tileReview">
+    <span class="ic ic--warn"><fa-icon icon="triangle-exclamation" /></span>
+    <b>{{ summary()?.underReview ?? '—' }}</b>
+    <span abfTranslate="hcAdminApp.directoryVendor.home.tile.underReview">Review or pending</span>
+  </button>
+
+  <div class="stat" data-cy="tileSpend">
+    <span class="ic ic--gold"><fa-icon icon="money-bill" /></span>
+    <b>{{ summary() ? (summary()!.spendToDate | number: '1.0-0') : '—' }}</b>
+    <span abfTranslate="hcAdminApp.directoryVendor.home.tile.spend">Spend to date (GHS)</span>
+  </div>
+
+  <div class="stat" data-cy="tileCategories">
+    <span class="ic ic--navy"><fa-icon icon="layer-group" /></span>
+    <b>{{ summary()?.categoryCount ?? '—' }}</b>
+    <span abfTranslate="hcAdminApp.directoryVendor.home.tile.categories">Supply categories</span>
+  </div>
+</div>
+
+<!--
+  Every status, not the two the tiles headline: a suspended or on-leave vendor is reachable here
+  and counted nowhere otherwise. Counts describe the unarchived directory and so do not move when
+  the archived half is on screen.
+-->
+<div class="tools no-print">
+  <div class="chip-row">
+    @for (option of STATUSES; track option) {
+      <button type="button" class="chip" [class.on]="status() === option" (click)="toggleStatus(option)" [attr.data-cy]="'chip-' + option">
+        {{ 'console.status.' + option | translate }}
+        @if (counts()[option] !== undefined) {
+          <span class="chip-count">{{ counts()[option] }}</span>
         }
       </button>
+    }
+  </div>
 
-      <button
-        id="jh-create-entity"
-        data-cy="entityCreateButton"
-        class="btn btn-primary jh-create-entity create-vendor"
-        [routerLink]="['/vendor/new']"
-      >
-        <fa-icon icon="plus" />
-        <span abfTranslate="hcAdminApp.directoryVendor.home.createLabel">Create a new Vendor</span>
-      </button>
-    </div>
-  </h2>
+  @if (hasFilter()) {
+    <button type="button" class="btn-quiet sm" (click)="clearFilter()" abfTranslate="console.filter.clear" data-cy="clearFilter">
+      Clear filters
+    </button>
+  }
+</div>
 
-  <abf-alert-error />
-
-  <abf-alert />
-
-  @if (vendors().length === 0) {
-    <div class="alert alert-warning" id="no-result">
-      @if (showArchived()) {
-        <span abfTranslate="hcAdminApp.directoryVendor.home.noneArchived">No archived Vendors</span>
-      } @else {
-        <span abfTranslate="hcAdminApp.directoryVendor.home.notFound">No Vendors found</span>
-      }
-    </div>
-  } @else {
+@if (vendors().length === 0) {
+  <div class="alert alert-warning" id="no-result">
+    @if (showArchived()) {
+      <span abfTranslate="hcAdminApp.directoryVendor.home.noneArchived">No archived Vendors</span>
+    } @else if (hasFilter()) {
+      <span abfTranslate="hcAdminApp.directoryVendor.home.noneMatching">No vendors match this filter</span>
+    } @else {
+      <span abfTranslate="hcAdminApp.directoryVendor.home.notFound">No Vendors found</span>
+    }
+  </div>
+} @else {
+  <div class="card">
     <div class="table-responsive table-entities" id="entities">
-      <table class="table table-striped" aria-describedby="page-heading">
+      <table class="table dir-table" aria-describedby="page-heading">
         <thead>
           <tr abfSort [(sortState)]="sortState" (sortChange)="navigateToWithComponentValues($event)">
-            <th scope="col" abfSortBy="id">
-              <div class="d-flex">
-                <span abfTranslate="hcAdminApp.directoryVendor.id">Id</span>
-
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
             <th scope="col" abfSortBy="name">
               <div class="d-flex">
-                <span abfTranslate="hcAdminApp.directoryVendor.name">Name</span>
-
+                <span abfTranslate="hcAdminApp.directoryVendor.name">Vendor</span>
                 <fa-icon class="p-1" icon="sort" />
               </div>
             </th>
             <th scope="col" abfSortBy="category">
               <div class="d-flex">
                 <span abfTranslate="hcAdminApp.directoryVendor.category">Category</span>
-
                 <fa-icon class="p-1" icon="sort" />
               </div>
             </th>
-            <th scope="col" abfSortBy="serviceSummary">
-              <div class="d-flex">
-                <span abfTranslate="hcAdminApp.directoryVendor.serviceSummary">Service Summary</span>
-
-                <fa-icon class="p-1" icon="sort" />
-              </div>
+            <th scope="col">
+              <span abfTranslate="hcAdminApp.directoryVendor.serviceSummary">Service</span>
             </th>
             <th scope="col" abfSortBy="contactName">
               <div class="d-flex">
-                <span abfTranslate="hcAdminApp.directoryVendor.contactName">Contact Name</span>
-
+                <span abfTranslate="hcAdminApp.directoryVendor.contactName">Contact</span>
                 <fa-icon class="p-1" icon="sort" />
               </div>
             </th>
-            <th scope="col" abfSortBy="phone">
+            <th scope="col" abfSortBy="contractRenewsOn">
               <div class="d-flex">
-                <span abfTranslate="hcAdminApp.directoryVendor.phone">Phone</span>
-
+                <span abfTranslate="hcAdminApp.directoryVendor.home.column.contract">Contract</span>
                 <fa-icon class="p-1" icon="sort" />
               </div>
             </th>
-            <th scope="col" abfSortBy="email">
+            <th scope="col" class="num" abfSortBy="orderCount">
               <div class="d-flex">
-                <span abfTranslate="hcAdminApp.directoryVendor.email">Email</span>
-
+                <span abfTranslate="hcAdminApp.directoryVendor.orderCount">Orders</span>
                 <fa-icon class="p-1" icon="sort" />
               </div>
             </th>
-            <th scope="col" abfSortBy="city">
+            <th scope="col" class="num" abfSortBy="spendToDate">
               <div class="d-flex">
-                <span abfTranslate="hcAdminApp.directoryVendor.city">City</span>
-
+                <span abfTranslate="hcAdminApp.directoryVendor.home.column.spend">Spend</span>
                 <fa-icon class="p-1" icon="sort" />
               </div>
             </th>
             <th scope="col" abfSortBy="status">
               <div class="d-flex">
                 <span abfTranslate="hcAdminApp.directoryVendor.status">Status</span>
-
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
-            <th scope="col" abfSortBy="contractNote">
-              <div class="d-flex">
-                <span abfTranslate="hcAdminApp.directoryVendor.contractNote">Contract Note</span>
-
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
-            <th scope="col" abfSortBy="contractRenewsOn">
-              <div class="d-flex">
-                <span abfTranslate="hcAdminApp.directoryVendor.contractRenewsOn">Contract Renews On</span>
-
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
-            <th scope="col" abfSortBy="orderCount">
-              <div class="d-flex">
-                <span abfTranslate="hcAdminApp.directoryVendor.orderCount">Order Count</span>
-
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
-            <th scope="col" abfSortBy="spendToDate">
-              <div class="d-flex">
-                <span abfTranslate="hcAdminApp.directoryVendor.spendToDate">Spend To Date</span>
-
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
-            <th scope="col" abfSortBy="rating">
-              <div class="d-flex">
-                <span abfTranslate="hcAdminApp.directoryVendor.rating">Rating</span>
-
                 <fa-icon class="p-1" icon="sort" />
               </div>
             </th>
@@ -157,40 +163,42 @@
           @for (vendor of vendors(); track trackId(vendor)) {
             <tr data-cy="entityTable">
               <td>
-                <a [routerLink]="['/vendor', vendor.id, 'view']">{{ vendor.id }}</a>
+                <a class="dir-name" [routerLink]="['/vendor', vendor.id, 'view']">{{ vendor.name ?? vendor.id }}</a>
+                @if (vendor.city) {
+                  <div class="sub">{{ vendor.city }}</div>
+                }
               </td>
-              <td>{{ vendor.name }}</td>
-              <td>{{ vendor.category }}</td>
-              <td>{{ vendor.serviceSummary }}</td>
-              <td>{{ vendor.contactName }}</td>
-              <td>{{ vendor.phone }}</td>
-              <td>{{ vendor.email }}</td>
-              <td>{{ vendor.city }}</td>
-              <td [abfTranslate]="'hcAdminApp.AccountStatus.' + (vendor.status ?? 'null')">
-                {{
-                  {
-                    null: '',
-                    ACTIVE: 'ACTIVE',
-                    PENDING: 'PENDING',
-                    SUSPENDED: 'SUSPENDED',
-                    ON_LEAVE: 'ON_LEAVE',
-                    UNDER_REVIEW: 'UNDER_REVIEW',
-                  }[vendor.status ?? 'null']
-                }}
+              <td>{{ vendor.category ?? '—' }}</td>
+              <td class="wrap">{{ vendor.serviceSummary ?? '—' }}</td>
+              <td>
+                {{ vendor.contactName ?? '—' }}
+                @if (vendor.phone || vendor.email) {
+                  <div class="sub">{{ vendor.phone ?? vendor.email }}</div>
+                }
               </td>
-              <td>{{ vendor.contractNote }}</td>
-              <td>{{ vendor.contractRenewsOn | formatMediumDate }}</td>
-              <td>{{ vendor.orderCount }}</td>
-              <td>{{ vendor.spendToDate }}</td>
-              <td>{{ vendor.rating }}</td>
+              <td>
+                @if (vendor.contractRenewsOn) {
+                  <span abfTranslate="hcAdminApp.directoryVendor.detail.renews">Renews</span>
+                  {{ vendor.contractRenewsOn | formatMediumDate }}
+                } @else {
+                  <span>—</span>
+                }
+                @if (vendor.contractNote) {
+                  <div class="sub">{{ vendor.contractNote }}</div>
+                }
+              </td>
+              <td class="num">{{ vendor.orderCount ?? '—' }}</td>
+              <td class="num">
+                {{ vendor.spendToDate !== null && vendor.spendToDate !== undefined ? (vendor.spendToDate | number: '1.0-0') : '—' }}
+              </td>
+              <td><abf-status-pill [status]="vendor.status" /></td>
               <td class="text-end">
                 <div class="btn-group">
-                  <a [routerLink]="['/vendor', vendor.id, 'view']" class="btn btn-info btn-sm" data-cy="entityDetailsButton">
+                  <a [routerLink]="['/vendor', vendor.id, 'view']" class="btn btn-ghost btn-sm" data-cy="entityDetailsButton">
                     <fa-icon icon="eye" />
                     <span class="d-none d-md-inline" abfTranslate="entity.action.view">View</span>
                   </a>
-
-                  <a [routerLink]="['/vendor', vendor.id, 'edit']" class="btn btn-primary btn-sm" data-cy="entityEditButton">
+                  <a [routerLink]="['/vendor', vendor.id, 'edit']" class="btn btn-ghost btn-sm" data-cy="entityEditButton">
                     <fa-icon icon="pencil-alt" />
                     <span class="d-none d-md-inline" abfTranslate="entity.action.edit">Edit</span>
                   </a>
@@ -201,24 +209,25 @@
         </tbody>
       </table>
     </div>
-  }
-  @if (vendors().length > 0) {
-    <div>
-      <div class="d-flex justify-content-center">
-        <abf-item-count [params]="{ page: page(), totalItems: totalItems(), itemsPerPage: itemsPerPage() }" />
-      </div>
+  </div>
+}
 
-      <div class="d-flex justify-content-center">
-        <ngb-pagination
-          [collectionSize]="totalItems()"
-          [page]="page()"
-          [pageSize]="itemsPerPage()"
-          [maxSize]="5"
-          [rotate]="true"
-          [boundaryLinks]="true"
-          (pageChange)="navigateToPage($event)"
-        />
-      </div>
+@if (vendors().length > 0) {
+  <div>
+    <div class="d-flex justify-content-center">
+      <abf-item-count [params]="{ page: page(), totalItems: totalItems(), itemsPerPage: itemsPerPage() }" />
     </div>
-  }
-</div>
+
+    <div class="d-flex justify-content-center">
+      <ngb-pagination
+        [collectionSize]="totalItems()"
+        [page]="page()"
+        [pageSize]="itemsPerPage()"
+        [maxSize]="5"
+        [rotate]="true"
+        [boundaryLinks]="true"
+        (pageChange)="navigateToPage($event)"
+      />
+    </div>
+  </div>
+}

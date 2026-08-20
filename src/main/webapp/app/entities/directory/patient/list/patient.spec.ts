@@ -1,5 +1,5 @@
 import { MockInstance, afterEach, beforeEach, describe, expect, it, vitest } from 'vitest';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController, TestRequest, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed, inject } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
 
@@ -15,8 +15,11 @@ import {
   faSortUp,
   faSync,
   faTimes,
+  faUser,
+  faUsers,
 } from '@fortawesome/free-solid-svg-icons';
 import { provideTranslateService } from '@ngx-translate/core';
+import dayjs from 'dayjs/esm';
 import { Subject, of } from 'rxjs';
 
 import { sampleWithRequiredData } from '../patient.test-samples';
@@ -70,11 +73,40 @@ describe('Patient Management Component', () => {
     routerNavigateSpy = vitest.spyOn(comp.router, 'navigate');
 
     const library = TestBed.inject(FaIconLibrary);
-    library.addIcons(faBoxArchive, faEye, faList, faPencilAlt, faPlus, faSort, faSortDown, faSortUp, faSync, faTimes);
+    // The tile icons go in alongside the table's: an icon missing from the library throws at
+    // render, so every test fails on the tiles rather than on what it asserts.
+    library.addIcons(faBoxArchive, faEye, faList, faPencilAlt, faPlus, faSort, faSortDown, faSortUp, faSync, faTimes, faUser, faUsers);
     httpMock = TestBed.inject(HttpTestingController);
   });
 
+  /**
+   * The table's own request.
+   *
+   * `ngOnInit` loads the tiles as well — the directory total plus one count per status — so a bare
+   * `expectOne({ method: 'GET' })` now matches seven requests and fails. The list request is the
+   * one asking for a whole page rather than `size=1`.
+   */
+  function expectListRequest(): TestRequest {
+    return httpMock.expectOne(req => req.url.endsWith('/api/patients') && req.params.get('size') !== '1');
+  }
+
+  /**
+   * Answer the tile and clinical-lead requests.
+   *
+   * An unanswered request makes `httpMock.verify()` fail in `afterEach`, so every test would
+   * report "open requests" instead of whatever it was actually asserting.
+   */
+  function flushTiles(): void {
+    for (const req of httpMock.match(r => r.url.endsWith('/api/patients') && r.params.get('size') === '1')) {
+      req.flush([], { headers: { 'X-Total-Count': '0' } });
+    }
+    for (const req of httpMock.match(r => r.url.includes('/api/professionals/'))) {
+      req.flush({ id: 'unused' });
+    }
+  }
+
   afterEach(() => {
+    flushTiles();
     TestBed.resetTestingModule();
     httpMock.verify();
   });
@@ -82,7 +114,7 @@ describe('Patient Management Component', () => {
   it('should call load all on init', async () => {
     // WHEN
     TestBed.tick();
-    const req = httpMock.expectOne({ method: 'GET' });
+    const req = expectListRequest();
     req.flush([{ id: '88928db1-656e-430d-95c0-5cde75285e55' }], {
       headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' },
     });
@@ -96,13 +128,13 @@ describe('Patient Management Component', () => {
   it('should cancel previous requests when loading a new page', async () => {
     // WHEN
     TestBed.tick();
-    const req = httpMock.expectOne({ method: 'GET' });
+    const req = expectListRequest();
     await vitest.runAllTimersAsync();
 
     comp.page.set(3);
     comp.load();
     await vitest.runAllTimersAsync();
-    const req2 = httpMock.expectOne({ method: 'GET' });
+    const req2 = expectListRequest();
     req2.flush([{ id: '88928db1-656e-430d-95c0-5cde75285e55' }], {
       headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' },
     });
@@ -117,7 +149,7 @@ describe('Patient Management Component', () => {
   it('should not fail on resource error state', async () => {
     // GIVEN - first load triggers an HTTP error
     TestBed.tick();
-    const errorReq = httpMock.expectOne({ method: 'GET' });
+    const errorReq = expectListRequest();
     errorReq.flush('error', { status: 500, statusText: 'Server Error' });
     await vitest.runAllTimersAsync();
 
@@ -128,7 +160,7 @@ describe('Patient Management Component', () => {
     // WHEN - second load should still work
     comp.load();
     TestBed.tick();
-    const successReq = httpMock.expectOne({ method: 'GET' });
+    const successReq = expectListRequest();
     successReq.flush([{ id: '88928db1-656e-430d-95c0-5cde75285e55' }], {
       headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' },
     });
@@ -174,7 +206,7 @@ describe('Patient Management Component', () => {
   it('should calculate the sort attribute for an id', () => {
     // WHEN
     TestBed.tick();
-    httpMock.expectOne({ method: 'GET' });
+    expectListRequest();
 
     // THEN
     expect(service.patientsParams()).toMatchObject(expect.objectContaining({ sort: ['id,desc'] }));
@@ -183,7 +215,7 @@ describe('Patient Management Component', () => {
   describe('archived filter', () => {
     it('should ask for the un-archived half by default', () => {
       TestBed.tick();
-      httpMock.expectOne({ method: 'GET' });
+      expectListRequest();
 
       // notEquals, not equals=false: a record saved before isArchived existed has no value at
       // all, and equals=false would not match it — the whole directory would read as empty.
@@ -195,12 +227,12 @@ describe('Patient Management Component', () => {
       // Consume the load the component issues on init, or verify() in afterEach
       // sees two open requests and the failure reads as a leak rather than this.
       TestBed.tick();
-      httpMock.expectOne({ method: 'GET' });
+      expectListRequest();
 
       comp.showArchived.set(true);
       comp.load();
       TestBed.tick();
-      httpMock.expectOne({ method: 'GET' });
+      expectListRequest();
 
       expect(service.patientsParams()).toMatchObject(expect.objectContaining({ 'isArchived.equals': true }));
     });
@@ -220,6 +252,129 @@ describe('Patient Management Component', () => {
       comp.toggleArchived();
 
       expect(navigate).toHaveBeenCalledWith(['./'], expect.objectContaining({ queryParams: expect.objectContaining({ archived: null }) }));
+    });
+  });
+
+  describe('the name column the generated screen did not have', () => {
+    it('should read the name from the linked profile', () => {
+      const patient = { id: 'a1', profile: { id: 'profile-a1', firstName: 'Efua', lastName: 'Mensah' } } as never;
+
+      expect(comp.displayName(patient)).toBe('Efua Mensah');
+      expect(comp.initials(patient)).toBe('EM');
+    });
+
+    it('should fall back to the id rather than showing nothing', () => {
+      // The finding was that rows read "a1", "profile-a1", "angel-a1" with no name anywhere. A
+      // record with no profile still has to identify itself.
+      expect(comp.displayName({ id: 'a1' })).toBe('a1');
+    });
+  });
+
+  describe('age', () => {
+    it('should parse a date of birth the service left as a string', () => {
+      // PatientService converts joinedOn and lastActiveOn only; the nested profile is passed
+      // through as the server sent it. So dateOfBirth is a string at runtime while the compiler
+      // believes it is a dayjs.Dayjs — piping it straight to a date pipe throws.
+      const born = dayjs().subtract(41, 'year').subtract(3, 'month');
+      const patient = { id: 'a1', profile: { id: 'p', dateOfBirth: born.format('YYYY-MM-DD') } } as never;
+
+      expect(comp.age(patient)).toBe(41);
+    });
+
+    it('should be null when there is no usable date of birth', () => {
+      expect(comp.age({ id: 'a1' })).toBeNull();
+      expect(comp.age({ id: 'a1', profile: { id: 'p', dateOfBirth: 'not-a-date' } } as never)).toBeNull();
+    });
+  });
+
+  describe('clinical lead', () => {
+    it('should show the licence number until the name arrives, and never a blank cell', () => {
+      // GET /api/patients cannot supply the name: Patient.clinicalLead carries
+      // @JsonIgnoreProperties({"profile", ...}) on the api, so the row has a licence and no name.
+      const patient = { id: 'a1', clinicalLead: { id: 'p1', licenceNumber: 'MDC/RN/23-4471' } } as never;
+
+      expect(comp.clinicalLead(patient)).toBe('MDC/RN/23-4471');
+
+      comp.leadNames.set({ p1: 'Kwame Boateng' });
+      expect(comp.clinicalLead(patient)).toBe('Kwame Boateng');
+    });
+
+    it('should be null when no lead is assigned', () => {
+      expect(comp.clinicalLead({ id: 'a1' })).toBeNull();
+    });
+
+    it('should resolve each distinct lead on the page once, not once per row', async () => {
+      TestBed.tick();
+      const list = expectListRequest();
+      list.flush(
+        [
+          { id: 'a1', clinicalLead: { id: 'p1' } },
+          { id: 'a2', clinicalLead: { id: 'p1' } },
+          { id: 'a3', clinicalLead: { id: 'p2' } },
+          { id: 'a4' },
+        ],
+        { headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' } },
+      );
+      await vitest.runAllTimersAsync();
+
+      // Three rows name a lead but only two leads are distinct, and the fourth names none.
+      const lookups = httpMock.match(r => r.url.includes('/api/professionals/'));
+      expect(lookups).toHaveLength(2);
+      expect(lookups.map(r => r.request.url.split('/').pop()).sort()).toEqual(['p1', 'p2']);
+    });
+  });
+
+  describe('status tiles', () => {
+    it('should cover every status, so no patient is reachable through no tile', () => {
+      // The demo draws Active, Pending and Suspended beside an All, which leaves an on-leave or
+      // under-review patient inside All and reachable by no tile of its own.
+      expect(comp.STATUSES).toEqual(['ACTIVE', 'PENDING', 'SUSPENDED', 'ON_LEAVE', 'UNDER_REVIEW']);
+    });
+
+    it('should count each status and the directory total over the unarchived half', () => {
+      TestBed.tick();
+      expectListRequest();
+
+      const tileRequests = httpMock.match(r => r.url.endsWith('/api/patients') && r.params.get('size') === '1');
+
+      // One per status, plus the All tile.
+      expect(tileRequests).toHaveLength(comp.STATUSES.length + 1);
+      expect(tileRequests.every(r => r.request.params.get('isArchived.notEquals') === 'true')).toBe(true);
+    });
+
+    it('should not reload the tiles when turning a page', () => {
+      TestBed.tick();
+      expectListRequest();
+      flushTiles();
+
+      comp.load();
+      TestBed.tick();
+      expectListRequest();
+
+      expect(httpMock.match(r => r.url.endsWith('/api/patients') && r.params.get('size') === '1')).toHaveLength(0);
+    });
+  });
+
+  describe('status filter', () => {
+    it('should send the selected status to the server rather than filtering a page', () => {
+      TestBed.tick();
+      expectListRequest();
+      flushTiles();
+
+      comp.status.set('SUSPENDED');
+      comp.load();
+      TestBed.tick();
+      expectListRequest();
+
+      expect(service.patientsParams()).toMatchObject(expect.objectContaining({ 'status.equals': 'SUSPENDED' }));
+    });
+
+    it('should ignore a status the enum does not have', () => {
+      // A hand-edited URL would otherwise reach the api as an unknown enum value, which is a 400 —
+      // and the screen would read as broken rather than as unfiltered.
+      comp['fillComponentAttributeFromRoute'](convertToParamMap({ status: 'NONSENSE' }), {});
+
+      expect(comp.status()).toBeNull();
     });
   });
 });

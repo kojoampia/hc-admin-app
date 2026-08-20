@@ -9,7 +9,16 @@
         "notFound": "No Professionals found",
         "showArchivedLabel": "Show archived",
         "showActiveLabel": "Show active",
-        "noneArchived": "No archived Professionals"
+        "noneArchived": "No archived Professionals",
+        "subtitle": "Clinicians and carers on the network",
+        "roster": "Roster",
+        "noneMatching": "No professionals match this filter",
+        "tile": {
+          "active": "{{ count }} active"
+        },
+        "column": {
+          "professional": "Professional"
+        }
       },
       "created": "A new Professional is created with identifier {{ param }}",
       "updated": "A Professional is updated with identifier {{ param }}",

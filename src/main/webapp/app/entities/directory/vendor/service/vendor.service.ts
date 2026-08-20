@@ -9,7 +9,7 @@ import { ADMIN_SERVICE } from 'app/config/microservice.constants';
 import { ApplicationConfigService } from 'app/core/config/application-config.service';
 import { createRequestOption } from 'app/core/request/request-util';
 import { isPresent } from 'app/core/util/operators';
-import { IVendor, NewVendor } from '../vendor.model';
+import { IVendor, IVendorSummary, NewVendor } from '../vendor.model';
 
 export type PartialUpdateVendor = Partial<IVendor> & Pick<IVendor, 'id'>;
 
@@ -78,6 +78,16 @@ export class VendorService extends VendorsService {
 
   find(id: string): Observable<IVendor> {
     return this.http.get<RestVendor>(`${this.resourceUrl}/${encodeURIComponent(id)}`).pipe(map(res => this.convertResponseFromServer(res)));
+  }
+
+  /**
+   * The directory's four tiles, over the whole collection rather than the current page.
+   *
+   * No date conversion, so it does not go through `convertResponseFromServer` — every field is a
+   * number.
+   */
+  summary(): Observable<IVendorSummary> {
+    return this.http.get<IVendorSummary>(`${this.resourceUrl}/summary`);
   }
 
   query(req?: any): Observable<HttpResponse<IVendor[]>> {
