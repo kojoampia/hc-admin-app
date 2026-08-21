@@ -156,15 +156,23 @@ export default class Dashboard implements OnInit {
   readonly messageVolume = computed(() => (this.metrics()?.messageVolume ?? []).map(row => ({ label: row.month, value: row.count })));
 
   /**
-   * The account-mix stack. Segment labels are translated here rather than in
-   * the template because the SVG renders them as `<text>`, which has no pipe
-   * to run them through.
+   * The account-mix stack: who holds an account on the platform.
+   *
+   * Segment labels are translated here rather than in the template because the
+   * SVG renders them as `<text>`, which has no pipe to run them through.
+   *
+   * The keys are `patients` / `professionals` / `vendors` and come from the api
+   * in that fixed order — deliberately not sorted, so a segment's colour keeps
+   * its meaning when two counts cross. Item 10: this drew professionals by role
+   * until 2026-08-21, a breakdown of one tile rather than of the network, and
+   * the role split now lives on the professional directory where its tiles
+   * also filter.
    */
   // eslint-disable-next-line @typescript-eslint/member-ordering
   readonly accountMixSegments = computed(() =>
     (this.metrics()?.accountMix ?? []).map(row => ({
       key: row.key,
-      label: this.roleLabel(row.key),
+      label: this.translateService.instant(`dashboard.charts.mix.${row.key}`) as string,
       value: row.value,
     })),
   );
@@ -249,30 +257,10 @@ export default class Dashboard implements OnInit {
     return VIZ_SERIES[index % VIZ_SERIES.length];
   }
 
-  /**
-   * The account-mix keys are `ProfessionalRole` enum constants — `DOCTOR`,
-   * `NURSE` and so on — because the api groups professionals by role. The
-   * translation therefore only covers the roles the enum held when this file
-   * was written, and `instant()` returns the key itself on a miss: that is how
-   * `dashboard.charts.mix.DOCTOR` came to be rendered as a chart label, in the
-   * legend, the SVG and the table at once. Add a role to the enum and it would
-   * happen again silently, so miss to the constant in readable form instead of
-   * to the key.
-   */
   /** "the week", for the case where there is no roster at all and no week to name. */
   private fallbackWeekName(): string {
     const fallback: string = this.translateService.instant('dashboard.hero.thisWeek');
     return fallback;
-  }
-
-  private roleLabel(role: string): string {
-    const key = `dashboard.charts.mix.roles.${role}`;
-    const translated: string = this.translateService.instant(key);
-    if (translated !== key) {
-      return translated;
-    }
-    const words = role.toLowerCase().replaceAll('_', ' ');
-    return words.charAt(0).toUpperCase() + words.slice(1);
   }
 
   /** Initials for the monogram avatar, from whatever name we actually have. */
