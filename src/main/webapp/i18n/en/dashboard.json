@@ -35,18 +35,14 @@
         "count": "Messages"
       },
       "mix": {
-        "title": "Professionals by role",
-        "subtitle": "How the verified professional roster breaks down",
-        "type": "Role",
-        "accounts": "Professionals",
+        "title": "Account mix",
+        "subtitle": "Who holds an account on the platform",
+        "type": "Account type",
+        "accounts": "Accounts",
         "share": "Share",
-        "roles": {
-          "DOCTOR": "Doctors",
-          "NURSE": "Nurses",
-          "PARAMEDIC": "Paramedics",
-          "CAREGIVER": "Caregivers",
-          "THERAPIST": "Therapists"
-        }
+        "patients": "Patients",
+        "professionals": "Professionals",
+        "vendors": "Vendors"
       },
       "caseLoad": {
         "title": "Case load and visits per professional",
