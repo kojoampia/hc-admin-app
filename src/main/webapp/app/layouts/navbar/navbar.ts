@@ -5,6 +5,7 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { TranslatePipe } from '@ngx-translate/core';
 
 import { AccountService } from 'app/core/auth/account.service';
+import { ConsoleIdentityService } from 'app/console/shared/console-identity.service';
 import { LoginService } from 'app/login/login.service';
 import HasAnyAuthorityDirective from 'app/shared/auth/has-any-authority.directive';
 import { roleByAuthorities } from 'app/shared/auth/console-role';
@@ -50,32 +51,18 @@ export default class Navbar {
   // eslint-disable-next-line @typescript-eslint/member-ordering
   readonly roleLabel = computed(() => this.role().label);
 
+  /**
+   * The card's name and avatar, from the same source the dashboard greets by.
+   *
+   * These were computed here off the gateway account alone, which is why the card read `Admin User`
+   * beside a demo that reads `Efua Mensah`. The person's name is on their `Profile` in the admin
+   * service; `ConsoleIdentityService` owns the lookup and the fallback so the two cannot say
+   * different things about the same person on the same screen.
+   */
   // eslint-disable-next-line @typescript-eslint/member-ordering
-  readonly displayName = computed(() => {
-    const user = this.account();
-    if (!user) {
-      return '';
-    }
-    const full = [user.firstName, user.lastName].filter(Boolean).join(' ').trim();
-    return full || user.login;
-  });
-
+  readonly displayName = inject(ConsoleIdentityService).displayName;
   // eslint-disable-next-line @typescript-eslint/member-ordering
-  readonly initials = computed(() => {
-    const user = this.account();
-    if (!user) {
-      return '';
-    }
-    const parts = [user.firstName, user.lastName].filter((part): part is string => Boolean(part));
-    if (parts.length > 0) {
-      return parts
-        .map(part => part.charAt(0))
-        .join('')
-        .toUpperCase()
-        .slice(0, 2);
-    }
-    return user.login.slice(0, 2).toUpperCase();
-  });
+  readonly initials = inject(ConsoleIdentityService).initials;
 
   /**
    * The navigation grouped by heading, preserving SHELL_NAVIGATION's order

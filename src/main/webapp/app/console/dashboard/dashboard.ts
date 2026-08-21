@@ -8,7 +8,7 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { forkJoin } from 'rxjs';
 
 import { TOTAL_COUNT_RESPONSE_HEADER } from 'app/config/pagination.constants';
-import { AccountService } from 'app/core/auth/account.service';
+import { ConsoleIdentityService } from '../shared/console-identity.service';
 import { MessageService } from 'app/entities/operations/message/service/message.service';
 import { IMessage } from 'app/entities/operations/message/message.model';
 import { PatientService } from 'app/entities/directory/patient/service/patient.service';
@@ -108,12 +108,17 @@ export default class Dashboard implements OnInit {
   private readonly professionalService = inject(ProfessionalService);
   private readonly vendorService = inject(VendorService);
   private readonly messageService = inject(MessageService);
-  private readonly accountService = inject(AccountService);
+  private readonly identityService = inject(ConsoleIdentityService);
   private readonly translateService = inject(TranslateService);
   private readonly router = inject(Router);
 
+  /**
+   * Item 15: the greeting said "Good morning Admin", the gateway account's placeholder for a name.
+   * It reads the person's profile where there is one and degrades to the account and then the login
+   * — see {@link ConsoleIdentityService}, which the sidebar card shares.
+   */
   // eslint-disable-next-line @typescript-eslint/member-ordering
-  readonly firstName = computed(() => this.accountService.account()?.firstName ?? '');
+  readonly firstName = this.identityService.firstName;
 
   /**
    * Which week the cover figure is about, for the hero sentence.
