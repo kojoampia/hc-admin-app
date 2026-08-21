@@ -52,7 +52,7 @@
       <span>{{ tile.label | translate }}</span>
       <span class="dl" [class]="tile.direction">
         <span aria-hidden="true">{{ tile.direction === 'up' ? '▲' : tile.direction === 'down' ? '▼' : '●' }}</span>
-        {{ tile.note | translate }}
+        {{ tile.note | translate: tile.noteParams }}
       </span>
       <abf-sparkline [series]="tile.series" />
     </button>

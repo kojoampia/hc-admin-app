@@ -15,13 +15,13 @@
     },
     "kpi": {
       "patients": "Patient accounts",
-      "patientsNote": "+3 this week",
+      "patientsNote": "+{{count}} this week",
       "professionals": "Professionals",
-      "professionalsNote": "+2 verified",
+      "professionalsNote": "+{{count}} joined this week",
       "unreadMessages": "Unread messages",
-      "unreadMessagesNote": "Desk backlog",
+      "unreadMessagesNote": "{{count}} arrived this week",
       "openTasks": "Open tasks",
-      "openTasksNote": "Across 6 owners"
+      "openTasksNote": "{{count}} closed this week"
     },
     "operations": {
       "title": "Operations",

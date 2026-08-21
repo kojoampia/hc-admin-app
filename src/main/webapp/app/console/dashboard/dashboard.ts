@@ -32,6 +32,14 @@ interface KpiTile {
   readonly tone: 'gold' | 'navy' | 'warn' | 'ok';
   readonly direction: 'up' | 'down' | 'flat';
   readonly note: string;
+  /**
+   * The measurement the note's template interpolates.
+   *
+   * Item 14: the notes were literals — "+3 this week" printed under a count of 12, on the demo and
+   * on the console alike, and they could never change. The strings are format templates now, and
+   * the number comes from the metrics payload.
+   */
+  readonly noteParams: Record<string, number>;
   readonly route: string;
   readonly series: readonly number[];
 }
@@ -144,8 +152,9 @@ export default class Dashboard implements OnInit {
         value: data.network.patients,
         icon: 'user',
         tone: 'gold',
-        direction: 'up',
+        direction: (data.deltas.patients ?? 0) > 0 ? 'up' : 'flat',
         note: 'dashboard.kpi.patientsNote',
+        noteParams: { count: data.deltas.patients ?? 0 },
         route: '/patient',
         series: data.sparklines.patients ?? [],
       },
@@ -155,8 +164,9 @@ export default class Dashboard implements OnInit {
         value: data.network.professionals,
         icon: 'stethoscope',
         tone: 'navy',
-        direction: 'up',
+        direction: (data.deltas.professionals ?? 0) > 0 ? 'up' : 'flat',
         note: 'dashboard.kpi.professionalsNote',
+        noteParams: { count: data.deltas.professionals ?? 0 },
         route: '/professional',
         series: data.sparklines.professionals ?? [],
       },
@@ -168,6 +178,7 @@ export default class Dashboard implements OnInit {
         tone: 'warn',
         direction: data.unreadMessages > 2 ? 'down' : 'flat',
         note: 'dashboard.kpi.unreadMessagesNote',
+        noteParams: { count: data.deltas.messages ?? 0 },
         route: '/message-desk',
         series: data.sparklines.messages ?? [],
       },
@@ -179,6 +190,7 @@ export default class Dashboard implements OnInit {
         tone: 'ok',
         direction: 'flat',
         note: 'dashboard.kpi.openTasksNote',
+        noteParams: { count: data.deltas.tasks ?? 0 },
         route: '/task-board',
         series: data.sparklines.tasks ?? [],
       },

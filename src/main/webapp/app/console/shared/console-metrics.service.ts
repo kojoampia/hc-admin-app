@@ -91,6 +91,15 @@ export interface DashboardMetrics {
   caseLoad: CaseLoadRow[];
   /** Keyed by KPI. A key that is not present simply has no trend line. */
   sparklines: Record<string, number[] | undefined>;
+  /**
+   * What each KPI tile's note says, as numbers.
+   *
+   * Item 14: the notes were i18n literals — "+3 this week" under a patient count of 12, on both
+   * sides, unable to change. The strings are templates now and these fill them. Keyed as the
+   * sparklines are, and each is the measurement its own template names rather than a generic delta
+   * the copy could reinterpret.
+   */
+  deltas: Record<string, number | undefined>;
   capabilities: PlatformCapability[];
   uptime: Uptime;
 }
