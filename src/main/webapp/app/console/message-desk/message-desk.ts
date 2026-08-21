@@ -11,7 +11,7 @@ import { Observable, Subject, debounceTime, distinctUntilChanged, switchMap, tap
 import { ITEMS_PER_PAGE, TOTAL_COUNT_RESPONSE_HEADER } from 'app/config/pagination.constants';
 import { IMessage } from 'app/entities/operations/message/message.model';
 import { MessageService } from 'app/entities/operations/message/service/message.service';
-import { FormatMediumDatePipe } from 'app/shared/date';
+import { FormatMediumDatePipe, FormatTimeOfDayPipe } from 'app/shared/date';
 import { TranslateDirective } from 'app/shared/language';
 import HasAnyAuthorityDirective from 'app/shared/auth/has-any-authority.directive';
 import { ConsoleAuthority } from 'app/shared/auth/console-role';
@@ -19,7 +19,14 @@ import { ConsoleAuthority } from 'app/shared/auth/console-role';
 import { ShellCountersService } from 'app/layouts/shell-counters.service';
 import { StatusPill } from '../shared/status-pill/status-pill';
 
-type FilterKind = 'status' | 'priority';
+/**
+ * The dimensions the desk filters on, each one a named parameter the api declares.
+ *
+ * Every value here is sent as `<kind>.equals`, so adding one means adding the matching
+ * `@RequestParam` — an undeclared parameter is dropped in silence and reads as a filter that
+ * matched everything.
+ */
+type FilterKind = 'status' | 'priority' | 'channel';
 
 interface FilterChip {
   readonly kind: FilterKind;
@@ -48,6 +55,7 @@ interface FilterChip {
     TranslateDirective,
     TranslatePipe,
     FormatMediumDatePipe,
+    FormatTimeOfDayPipe,
     HasAnyAuthorityDirective,
     StatusPill,
   ],
@@ -55,6 +63,8 @@ interface FilterChip {
 export default class MessageDesk implements OnInit {
   readonly STATUSES = ['NEW', 'READ', 'REPLIED'];
   readonly PRIORITIES = ['HIGH', 'NORMAL', 'LOW'];
+  /** `MessageChannel`, in the order the desk's own Channel column reads them. */
+  readonly CHANNELS = ['PATIENT_APP', 'PROFESSIONAL_APP', 'VENDOR_PORTAL', 'EMAIL'];
   readonly adminOnly = [ConsoleAuthority.ADMIN];
 
   readonly messages = signal<IMessage[]>([]);
@@ -113,6 +123,18 @@ export default class MessageDesk implements OnInit {
 
   isChipActive(kind: FilterKind, value: string): boolean {
     return this.chips().some(chip => chip.kind === kind && chip.value === value);
+  }
+
+  /**
+   * Which dictionary an applied chip reads its label from.
+   *
+   * The applied row translated everything as `console.status.<value>`, which was true while the
+   * only two dimensions were status and priority. A channel has its own dictionary — the one the
+   * Channel column already uses — and without this the chip would render the raw key, the failure
+   * `dashboard-labels.spec.ts` exists for one screen over.
+   */
+  chipLabel(chip: FilterChip): string {
+    return chip.kind === 'channel' ? `console.channel.${chip.value}` : `console.status.${chip.value}`;
   }
 
   removeChip(chip: FilterChip): void {
@@ -180,7 +202,7 @@ export default class MessageDesk implements OnInit {
       query['subject.contains'] = term;
     }
     for (const chip of this.chips()) {
-      query[chip.kind === 'status' ? 'status.equals' : 'priority.equals'] = chip.value;
+      query[`${chip.kind}.equals`] = chip.value;
     }
 
     return this.messageService.query(query);
