@@ -4,6 +4,8 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { provideHttpClient } from '@angular/common/http';
 
 import { AccountSettingsService } from './account-settings.service';
+import dayjs from 'dayjs/esm';
+
 import { Account } from 'app/core/auth/account.model';
 
 /**
@@ -79,6 +81,21 @@ describe('AccountSettingsService', () => {
       expect(req.request.body.accountId).toEqual('admin');
       req.flush({ id: 'p1' });
     });
+
+    /**
+     * And the date goes back as a `LocalDate`, not as an instant.
+     *
+     * `dayjs.toJSON()` produces `1900-01-01T00:00:00.000Z`, which is not what the api parses into a
+     * `LocalDate` — so the round trip has to convert in both directions or saving a profile that
+     * reads correctly still fails.
+     */
+    it('sends the date as a plain LocalDate, both ways', () => {
+      service.createProfile(anAccount(), { id: null, accountId: null, dateOfBirth: dayjs('1900-01-01') }).subscribe();
+
+      const req = httpMock.expectOne(r => r.method === 'POST' && r.url.endsWith('api/profiles'));
+      expect(req.request.body.dateOfBirth).toEqual('1900-01-01');
+      req.flush({ id: 'p1' });
+    });
   });
 
   describe('finding a profile', () => {
@@ -105,6 +122,27 @@ describe('AccountSettingsService', () => {
       httpMock.expectOne(r => r.url.includes('by-account')).flush({ id: 'p1', firstName: 'Ama', accountId: 'admin' });
 
       expect(result.firstName).toEqual('Ama');
+    });
+
+    /**
+     * `dateOfBirth` is a `LocalDate` on the api and a string in JSON; `IProfile` declares a
+     * `dayjs.Dayjs` and the screen calls `.format()` on it.
+     *
+     * This was missed when the service was written and could not have been noticed: the read always
+     * 404ed, so the branch that touches a returned profile had never run once. The first request
+     * that succeeded — on the quality stack, after the login fix — threw
+     * `dateOfBirth.format is not a function` inside the subscriber. Angular logs that to the console
+     * and surfaces it nowhere, so the page went on showing the empty create form it had always
+     * shown, and it looked exactly like a profile that does not exist.
+     */
+    it('converts the date on the way in, so the form can format it', () => {
+      let result: any;
+      service.findProfile(anAccount()).subscribe(value => (result = value));
+
+      httpMock.expectOne(r => r.url.includes('by-account')).flush({ id: 'p1', firstName: 'Efua', dateOfBirth: '1900-01-01' });
+
+      expect(typeof result.dateOfBirth.format).toBe('function');
+      expect(result.dateOfBirth.format('YYYY-MM-DD')).toEqual('1900-01-01');
     });
 
     /** A real failure must still be a failure — swallowing every error would hide an outage. */
