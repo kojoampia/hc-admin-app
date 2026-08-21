@@ -63,6 +63,26 @@ abf-sparkline {
   }
 }
 
+/**
+ * The footer under a capped list: what the card is not showing, and one link
+ * per directory to go and see it. Quieter than a row, because it is not one.
+ */
+.lrow.more {
+  gap: 8px;
+  flex-wrap: wrap;
+  background: var(--abf-cream);
+
+  .st {
+    font-size: 12.5px;
+    color: var(--abf-grey);
+  }
+
+  .btn-quiet b {
+    margin-left: 4px;
+    color: var(--abf-navy);
+  }
+}
+
 .empty {
   display: grid;
   place-items: center;

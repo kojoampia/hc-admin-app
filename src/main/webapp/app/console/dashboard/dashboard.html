@@ -177,6 +177,17 @@
           <b abfTranslate="dashboard.approvals.empty">Nothing waiting for approval</b>
         </div>
       }
+
+      @if (hiddenApprovals() > 0) {
+        <div class="lrow more" data-cy="approvalsOverflow">
+          <span class="grow st">{{ 'dashboard.approvals.more' | translate: { count: hiddenApprovals() } }}</span>
+          @for (group of approvalOverflow(); track group.kind) {
+            <a class="btn-quiet sm" [routerLink]="group.route" [queryParams]="{ status: 'PENDING' }">
+              {{ group.label | translate }} <b>{{ group.count }}</b>
+            </a>
+          }
+        </div>
+      }
     </div>
   </div>
 

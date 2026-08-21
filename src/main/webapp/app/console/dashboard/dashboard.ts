@@ -1,11 +1,13 @@
+import { HttpResponse } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { IconProp } from '@fortawesome/fontawesome-svg-core';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
-import { forkJoin, map } from 'rxjs';
+import { forkJoin } from 'rxjs';
 
+import { TOTAL_COUNT_RESPONSE_HEADER } from 'app/config/pagination.constants';
 import { AccountService } from 'app/core/auth/account.service';
 import { MessageService } from 'app/entities/operations/message/service/message.service';
 import { IMessage } from 'app/entities/operations/message/message.model';
@@ -34,13 +36,37 @@ interface KpiTile {
   readonly series: readonly number[];
 }
 
+type ApprovalKind = 'patient' | 'professional' | 'vendor';
+
 interface ApprovalRow {
-  readonly kind: 'patient' | 'professional' | 'vendor';
+  readonly kind: ApprovalKind;
   readonly id: string;
   readonly name: string;
   readonly detail: string;
   readonly route: string;
 }
+
+/** One directory with pending records the card did not have room for. */
+interface ApprovalOverflow {
+  readonly kind: ApprovalKind;
+  readonly label: string;
+  readonly count: number;
+  readonly route: string;
+}
+
+/**
+ * How many approval rows the card shows, matching the design.
+ *
+ * It rendered every pending record until 2026-08-21 — 28 of them on seeded
+ * data, three screens of dashboard below a hero about the week. The cap is only
+ * half of the fix: a truncated list with no route to the rest is the failure
+ * `CLAUDE.md` documents for pagination, so what is hidden is counted and each
+ * directory is linked with its own filter.
+ */
+const APPROVAL_ROWS = 5;
+
+/** The pending total for one directory, which is the header rather than the page. */
+const totalCount = (response: HttpResponse<unknown[]>): number => Number(response.headers.get(TOTAL_COUNT_RESPONSE_HEADER) ?? 0);
 
 /**
  * The admin dashboard.
@@ -72,6 +98,8 @@ interface ApprovalRow {
 export default class Dashboard implements OnInit {
   readonly metrics = signal<DashboardMetrics | null>(null);
   readonly approvals = signal<ApprovalRow[]>([]);
+  readonly approvalOverflow = signal<ApprovalOverflow[]>([]);
+  readonly hiddenApprovals = signal(0);
   readonly latestMessages = signal<IMessage[]>([]);
   readonly isLoading = signal(true);
 
@@ -209,41 +237,73 @@ export default class Dashboard implements OnInit {
     void this.router.navigate([tile.route]);
   }
 
+  /**
+   * The pending-approval card: at most `APPROVAL_ROWS` rows, and the count of
+   * what that leaves out.
+   *
+   * Each directory is asked for one page of `APPROVAL_ROWS` rather than 20, so
+   * the request is the size of the card. The totals come off `X-Total-Count`,
+   * which is the whole pending count for that directory whatever the page size
+   * — that is what makes "and 7 more" a real number rather than a count of the
+   * rows that happened to arrive.
+   */
   private loadApprovals(): void {
-    const pending = { page: 0, size: 20, 'status.equals': 'PENDING' };
+    const pending = { page: 0, size: APPROVAL_ROWS, 'status.equals': 'PENDING' };
 
     forkJoin({
-      patients: this.patientService.query(pending).pipe(map(response => response.body ?? [])),
-      professionals: this.professionalService.query(pending).pipe(map(response => response.body ?? [])),
-      vendors: this.vendorService.query(pending).pipe(map(response => response.body ?? [])),
+      patients: this.patientService.query(pending),
+      professionals: this.professionalService.query(pending),
+      vendors: this.vendorService.query(pending),
     }).subscribe({
       next: ({ patients, professionals, vendors }) => {
-        this.approvals.set([
-          ...patients.map((patient: IPatient) => ({
-            kind: 'patient' as const,
-            id: patient.id,
-            name: [patient.profile?.firstName, patient.profile?.lastName].filter(Boolean).join(' '),
-            detail: 'dashboard.approvals.patient',
-            route: `/patient/${patient.id}/view`,
-          })),
-          ...professionals.map((professional: IProfessional) => ({
-            kind: 'professional' as const,
-            id: professional.id,
-            name: [professional.profile?.firstName, professional.profile?.lastName].filter(Boolean).join(' '),
-            detail: 'dashboard.approvals.professional',
-            route: `/professional/${professional.id}/view`,
-          })),
-          ...vendors.map((vendor: IVendor) => ({
-            kind: 'vendor' as const,
-            id: vendor.id,
-            name: vendor.name ?? '',
-            detail: 'dashboard.approvals.vendor',
-            route: `/vendor/${vendor.id}/view`,
-          })),
-        ]);
+        this.setApprovals(
+          [
+            ...(patients.body ?? []).map((patient: IPatient) => ({
+              kind: 'patient' as const,
+              id: patient.id,
+              name: [patient.profile?.firstName, patient.profile?.lastName].filter(Boolean).join(' '),
+              detail: 'dashboard.approvals.patient',
+              route: `/patient/${patient.id}/view`,
+            })),
+            ...(professionals.body ?? []).map((professional: IProfessional) => ({
+              kind: 'professional' as const,
+              id: professional.id,
+              name: [professional.profile?.firstName, professional.profile?.lastName].filter(Boolean).join(' '),
+              detail: 'dashboard.approvals.professional',
+              route: `/professional/${professional.id}/view`,
+            })),
+            ...(vendors.body ?? []).map((vendor: IVendor) => ({
+              kind: 'vendor' as const,
+              id: vendor.id,
+              name: vendor.name ?? '',
+              detail: 'dashboard.approvals.vendor',
+              route: `/vendor/${vendor.id}/view`,
+            })),
+          ],
+          {
+            patient: totalCount(patients),
+            professional: totalCount(professionals),
+            vendor: totalCount(vendors),
+          },
+        );
       },
-      error: () => this.approvals.set([]),
+      error: () => this.setApprovals([], { patient: 0, professional: 0, vendor: 0 }),
     });
+  }
+
+  /** Caps the rows, and turns whatever is left over into one link per directory. */
+  private setApprovals(rows: ApprovalRow[], totals: Record<ApprovalKind, number>): void {
+    const shown = rows.slice(0, APPROVAL_ROWS);
+    const pending = totals.patient + totals.professional + totals.vendor;
+    const groups: ApprovalOverflow[] = [
+      { kind: 'patient', label: 'dashboard.approvals.patients', count: totals.patient, route: '/patient' },
+      { kind: 'professional', label: 'dashboard.approvals.professionals', count: totals.professional, route: '/professional' },
+      { kind: 'vendor', label: 'dashboard.approvals.vendors', count: totals.vendor, route: '/vendor' },
+    ];
+
+    this.approvals.set(shown);
+    this.hiddenApprovals.set(Math.max(0, pending - shown.length));
+    this.approvalOverflow.set(groups.filter(group => group.count > 0));
   }
 
   // eslint-disable-next-line @typescript-eslint/member-ordering
