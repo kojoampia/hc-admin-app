@@ -9,6 +9,10 @@
       "degraded": "Degraded",
       "median": "Median response",
       "uptime": "Uptime, {{ days }} days"
+    },
+    "probe": {
+      "action": "Re-run probe",
+      "checked": "checked"
     }
   }
 }
