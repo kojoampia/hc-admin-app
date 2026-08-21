@@ -58,7 +58,11 @@
       "patient": "Patient registration",
       "professional": "Professional application",
       "vendor": "Vendor onboarding",
-      "empty": "Nothing waiting for approval"
+      "empty": "Nothing waiting for approval",
+      "more": "and {{count}} more waiting",
+      "patients": "Patients",
+      "professionals": "Professionals",
+      "vendors": "Vendors"
     },
     "desk": {
       "title": "Latest at the desk",

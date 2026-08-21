@@ -1,4 +1,4 @@
-import { Injectable, computed, inject, signal } from '@angular/core';
+import { Injectable, computed, effect, inject, signal } from '@angular/core';
 
 import { forkJoin, map } from 'rxjs';
 
@@ -15,6 +15,14 @@ import { TaskService } from 'app/entities/operations/task/service/task.service';
  * one-row query — the answer is the `X-Total-Count` header, not the body, so
  * this never pulls a collection down to count it. Screens that change either
  * number call `refresh()`; there is no polling.
+ *
+ * **The first read is driven by the account, not by a screen.** Until 2026-08-21
+ * every caller of `refresh()` was an action on the message desk or the task
+ * board, so a session that never opened those two screens showed both badges at
+ * their initial `0` — the number the shell exists to surface, absent, looking
+ * exactly like "nothing to do". Signing in now refreshes them and signing out
+ * zeroes them, which is a property of this service rather than a call somebody
+ * has to remember to add to the next shell component.
  */
 @Injectable({ providedIn: 'root' })
 export class ShellCountersService {
@@ -35,6 +43,20 @@ export class ShellCountersService {
     unreadMessages: this.unread(),
     openTasks: this.open(),
   }));
+
+  constructor() {
+    // Reads the account signal, so it re-runs on every transition: sign-in
+    // fetches the two counts, sign-out clears them rather than leaving the
+    // previous user's numbers on the chrome.
+    effect(() => {
+      if (this.accountService.account()) {
+        this.refresh();
+      } else {
+        this.unread.set(0);
+        this.open.set(0);
+      }
+    });
+  }
 
   refresh(): void {
     if (!this.accountService.isAuthenticated()) {
