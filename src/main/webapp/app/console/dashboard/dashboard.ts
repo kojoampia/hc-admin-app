@@ -87,6 +87,17 @@ export default class Dashboard implements OnInit {
   // eslint-disable-next-line @typescript-eslint/member-ordering
   readonly firstName = computed(() => this.accountService.account()?.firstName ?? '');
 
+  /**
+   * Which week the cover figure is about, for the hero sentence.
+   *
+   * The sentence read "roster cover at {{ cover }}% for the week" and named no week, which is
+   * precisely how a figure computed for one week could sit beside a duty roster showing another and
+   * read as agreement. The api now says which week it counted; falling back to "the week" keeps the
+   * sentence grammatical when there is no roster at all, and that case reads 0% anyway.
+   */
+  // eslint-disable-next-line @typescript-eslint/member-ordering
+  readonly rosterWeekName = computed(() => this.metrics()?.roster.weekLabel ?? this.fallbackWeekName());
+
   // eslint-disable-next-line @typescript-eslint/member-ordering
   readonly kpis = computed<KpiTile[]>(() => {
     const data = this.metrics();
@@ -248,6 +259,12 @@ export default class Dashboard implements OnInit {
    * happen again silently, so miss to the constant in readable form instead of
    * to the key.
    */
+  /** "the week", for the case where there is no roster at all and no week to name. */
+  private fallbackWeekName(): string {
+    const fallback: string = this.translateService.instant('dashboard.hero.thisWeek');
+    return fallback;
+  }
+
   private roleLabel(role: string): string {
     const key = `dashboard.charts.mix.roles.${role}`;
     const translated: string = this.translateService.instant(key);

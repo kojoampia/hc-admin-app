@@ -66,6 +66,24 @@ export class AccountSettingsService {
     };
   }
 
+  /**
+   * What `Profile.accountId` holds for a given account: the gateway **login**.
+   *
+   * Every method below goes through this rather than reading a field off the account at the call
+   * site, because the mistake it prevents is silent in both directions. `Account` also carries `id`
+   * — the gateway user id — and the two are interchangeable-looking opaque strings. Reading with the
+   * wrong one returns 404, which this service translates to "no profile yet", so the screen offers
+   * to create a record that already exists; writing with the wrong one stores a profile no resolver
+   * on any of the three stacks can find. Neither raises anything.
+   *
+   * The login is the JWT subject, so it is the one identifier every stack's token carries. See the
+   * api's `ProfileRepository.findByAccount`, and hc-professional's `OnboardingService`, which
+   * force-sets the same field the same way for the same reason.
+   */
+  private static accountKey(account: Account): string {
+    return account.login;
+  }
+
   save(settings: AccountSettings): Observable<object> {
     return this.http.post(this.accountUrl, settings);
   }
@@ -82,9 +100,10 @@ export class AccountSettingsService {
    * between "edit" and "create" without treating a missing profile as a failure, and without every
    * caller having to know that a 404 is expected.
    */
-  findProfile(accountId: string): Observable<IProfile | null> {
+  findProfile(account: Account): Observable<IProfile | null> {
+    const key = AccountSettingsService.accountKey(account);
     return new Observable<IProfile | null>(subscriber => {
-      const subscription = this.http.get<IProfile>(`${this.profileByAccountUrl}/${encodeURIComponent(accountId)}`).subscribe({
+      const subscription = this.http.get<IProfile>(`${this.profileByAccountUrl}/${encodeURIComponent(key)}`).subscribe({
         next(profile) {
           subscriber.next(profile);
           subscriber.complete();
@@ -102,11 +121,18 @@ export class AccountSettingsService {
     });
   }
 
-  createProfile(profile: NewProfile): Observable<IProfile> {
-    return this.http.post<IProfile>(this.profilesUrl, profile);
+  /** `accountId` is set from the account, never from the form — see {@link accountKey}. */
+  createProfile(account: Account, profile: NewProfile): Observable<IProfile> {
+    return this.http.post<IProfile>(this.profilesUrl, { ...profile, accountId: AccountSettingsService.accountKey(account) });
   }
 
-  updateProfile(profile: IProfile): Observable<IProfile> {
-    return this.http.put<IProfile>(`${this.profilesUrl}/${encodeURIComponent(profile.id)}`, profile);
+  /**
+   * `accountId` is re-set on update as well as on create. A profile stored with the wrong key stays
+   * wrong otherwise: `PUT` sends the whole document, and passing through what was read back would
+   * preserve the bad link rather than correct it.
+   */
+  updateProfile(account: Account, profile: IProfile): Observable<IProfile> {
+    const body = { ...profile, accountId: AccountSettingsService.accountKey(account) };
+    return this.http.put<IProfile>(`${this.profilesUrl}/${encodeURIComponent(profile.id)}`, body);
   }
 }

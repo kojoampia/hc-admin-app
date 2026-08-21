@@ -124,14 +124,23 @@ export default class DutyRoster implements OnInit {
     this.load();
   }
 
+  /**
+   * The week comes from the server, not from "the most recent one I can see".
+   *
+   * This asked for `size: 1, sort: startDate,desc` and took the head, while the dashboard hero
+   * derived its own Monday-to-Sunday window — two rules for one question, on two screens one click
+   * apart. They happened to agree on the seeded data and would have parted the moment a week was
+   * drafted ahead, with no error on either side. `/api/roster-weeks/current` is now the only answer,
+   * and it deliberately returns the latest week that has *started* rather than the latest that
+   * exists.
+   */
   load(): void {
     forkJoin({
-      weeks: this.rosterWeekService.query({ page: 0, size: 1, sort: ['startDate,desc'] }).pipe(map(response => response.body ?? [])),
+      week: this.rosterWeekService.findCurrent(),
       professionals: this.professionalService.query({ page: 0, size: 100, sort: ['id,asc'] }).pipe(map(response => response.body ?? [])),
     })
       .pipe(
-        switchMap(({ weeks, professionals }) => {
-          const week = weeks.length > 0 ? weeks[0] : null;
+        switchMap(({ week, professionals }) => {
           this.week.set(week);
           if (!week) {
             return of({ professionals, assignments: [] as IShiftAssignment[] });

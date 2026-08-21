@@ -26,11 +26,23 @@ export interface NetworkTotals {
   vendors: number;
 }
 
+/**
+ * Counted the way `console/duty-roster` counts it — capacity is rosterable professionals × 7, and an
+ * unassigned slot is a cell with no assignment rather than an assignment with no professional. The
+ * two screens sit one click apart and used to disagree: the hero said 0% cover while the grid said
+ * 80% over the same roster.
+ *
+ * `weekLabel` and `weekStartDate` say which week the figures are about, and are null only when there
+ * is no roster week at all. Render the label — "for the week" with no week named is how one week's
+ * number sits beside another week's grid and looks reconciled.
+ */
 export interface RosterSummary {
   coverPercent: number;
   unassignedSlots: number;
   rosteredStaff: number;
   shiftsThisWeek: number;
+  weekLabel: string | null;
+  weekStartDate: string | null;
 }
 
 export interface DegradedService {
