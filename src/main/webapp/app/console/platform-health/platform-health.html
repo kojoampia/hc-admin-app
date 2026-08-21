@@ -46,10 +46,32 @@
           <span class="port">{{ service.port }}</span>
           <span class="grow">
             <span class="nm">{{ service.name }}</span>
-            <span class="sb">{{ service.host }}</span>
+            <span class="sb">
+              {{ service.host }}
+              @if (service.lastProbedAt) {
+                · <span abfTranslate="platformHealth.probe.checked">checked</span> {{ service.lastProbedAt | formatMediumDatetime }}
+              }
+            </span>
           </span>
           <abf-status-pill [status]="service.health" />
-          <span class="ms">{{ service.responseMs }} ms</span>
+          <span class="ms">
+            @if (service.responseMs !== null && service.responseMs !== undefined) {
+              {{ service.responseMs }} ms
+            } @else {
+              —
+            }
+          </span>
+          <button
+            type="button"
+            class="btn btn-ghost btn-sm no-print"
+            data-cy="probeButton"
+            [disabled]="isProbing(service)"
+            (click)="probe(service)"
+            *abfHasAnyAuthority="adminOnly"
+          >
+            <fa-icon icon="sync" [class.fa-spin]="isProbing(service)" />
+            <span abfTranslate="platformHealth.probe.action">Re-run probe</span>
+          </button>
         </div>
       }
     </section>

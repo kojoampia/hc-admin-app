@@ -5,8 +5,11 @@ import { map } from 'rxjs';
 
 import { IPlatformService } from 'app/entities/platform/platform-service/platform-service.model';
 import { PlatformServiceService } from 'app/entities/platform/platform-service/service/platform-service.service';
+import { FormatMediumDatetimePipe } from 'app/shared/date';
 import { TranslateDirective } from 'app/shared/language';
 import { TranslatePipe } from '@ngx-translate/core';
+import HasAnyAuthorityDirective from 'app/shared/auth/has-any-authority.directive';
+import { ConsoleAuthority } from 'app/shared/auth/console-role';
 
 import { ConsoleMetricsService, PlatformCapability, Uptime } from '../shared/console-metrics.service';
 import { StatusPill } from '../shared/status-pill/status-pill';
@@ -26,11 +29,16 @@ import { StatusPill } from '../shared/status-pill/status-pill';
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './platform-health.html',
   styleUrl: './platform-health.scss',
-  imports: [FontAwesomeModule, TranslateDirective, TranslatePipe, StatusPill],
+  imports: [FontAwesomeModule, TranslateDirective, TranslatePipe, FormatMediumDatetimePipe, HasAnyAuthorityDirective, StatusPill],
 })
 export default class PlatformHealth implements OnInit {
+  readonly adminOnly = [ConsoleAuthority.ADMIN];
+
   readonly services = signal<IPlatformService[]>([]);
   readonly capabilities = signal<PlatformCapability[]>([]);
+
+  /** The service currently being probed, so its row can say so and its button can be disabled. */
+  readonly probing = signal<string | null>(null);
 
   /**
    * Availability, and the window it was measured over.
@@ -102,5 +110,35 @@ export default class PlatformHealth implements OnInit {
       this.capabilities.set(metrics.capabilities);
       this.uptime.set(metrics.uptime);
     });
+  }
+
+  /**
+   * Item 22: re-check one service now.
+   *
+   * <p>Only the probed row is replaced. Reloading the whole page after a probe would be simpler and
+   * would also discard the twelve rows the operator did not ask about, replacing them with a fresh
+   * read that says the same thing — and on a slow list, it makes a single-row action look like a
+   * whole-screen refresh.
+   *
+   * <p>A failed request leaves the row exactly as it was. The probe's own bad news — DOWN — arrives
+   * as a successful response, so the two must not be shown the same way: this one means the console
+   * could not ask, not that the service did not answer.
+   */
+  probe(service: IPlatformService): void {
+    if (this.probing()) {
+      return;
+    }
+    this.probing.set(service.id);
+    this.platformServiceService.probe(service.id).subscribe({
+      next: probed => {
+        this.services.update(services => services.map(current => (current.id === probed.id ? probed : current)));
+        this.probing.set(null);
+      },
+      error: () => this.probing.set(null),
+    });
+  }
+
+  isProbing(service: IPlatformService): boolean {
+    return this.probing() === service.id;
   }
 }
