@@ -181,6 +181,13 @@
   color: var(--abf-grey-400);
 }
 
+/** The owner filter. Narrow, so it sits beside the chips rather than under them. */
+.pick select {
+  min-width: 150px;
+  max-width: 220px;
+  width: auto;
+}
+
 .visually-hidden {
   position: absolute;
   width: 1px;

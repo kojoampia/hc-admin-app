@@ -20,7 +20,43 @@
       (input)="onSearch($any($event.target).value)"
     />
   </label>
+
+  <div class="chip-row" data-cy="priorityFilter">
+    @for (priority of priorities; track priority) {
+      <button type="button" class="chip" [class.on]="isPriorityActive(priority)" (click)="togglePriority(priority)">
+        {{ 'console.status.' + priority | translate }}
+      </button>
+    }
+  </div>
+
+  @if (owners().length > 0) {
+    <label class="pick">
+      <span class="visually-hidden" abfTranslate="taskBoard.filter.owner">Owner</span>
+      <select
+        class="form-select form-select-sm"
+        data-cy="ownerFilter"
+        [attr.aria-label]="'taskBoard.filter.owner' | translate"
+        [value]="owner() ?? ''"
+        (change)="onOwner($any($event.target).value)"
+      >
+        <option value="">{{ 'taskBoard.filter.allOwners' | translate }}</option>
+        @for (person of owners(); track person.id) {
+          <option [value]="person.id">{{ person.name }}</option>
+        }
+      </select>
+    </label>
+  }
+
+  @if (hasFilters()) {
+    <button type="button" class="btn-quiet sm" (click)="clearFilters()" abfTranslate="console.filter.clear">Clear</button>
+  }
 </div>
+
+@if (isTruncated()) {
+  <p class="tiny muted no-print" data-cy="boardTruncated" abfTranslate="taskBoard.truncated">
+    Showing the first 200 tasks — the columns below count those, not the whole backlog.
+  </p>
+}
 
 <div class="kan">
   @for (column of board(); track column.state) {

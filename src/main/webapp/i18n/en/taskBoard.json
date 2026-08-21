@@ -18,6 +18,11 @@
       "due": "Due",
       "moveTo": "Move to",
       "raisedFrom": "Raised from the message:"
-    }
+    },
+    "filter": {
+      "owner": "Owner",
+      "allOwners": "All owners"
+    },
+    "truncated": "Showing the first 200 tasks — the columns below count those, not the whole backlog."
   }
 }
