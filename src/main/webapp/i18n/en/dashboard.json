@@ -3,9 +3,10 @@
     "pageTitle": "Admin dashboard",
     "hero": {
       "greeting": "Good morning {{ name }} — the network is steady",
-      "summary": "{{ unread }} messages waiting at the desk, {{ approvals }} accounts pending approval and roster cover at {{ cover }}% for the week. {{ degraded }} service running degraded.",
+      "summary": "{{ unread }} messages waiting at the desk, {{ approvals }} accounts pending approval and roster cover at {{ cover }}% for {{ week }}. {{ degraded }} service running degraded.",
       "openDesk": "Open message desk",
-      "dutyRoster": "Duty roster"
+      "dutyRoster": "Duty roster",
+      "thisWeek": "the week"
     },
     "glance": {
       "title": "Network at a glance",

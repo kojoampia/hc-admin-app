@@ -1,8 +1,8 @@
-import { HttpClient, HttpResponse, httpResource } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpResponse, httpResource } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 
 import dayjs from 'dayjs/esm';
-import { Observable, map } from 'rxjs';
+import { Observable, catchError, map, of, throwError } from 'rxjs';
 
 import { DATE_FORMAT } from 'app/config/input.constants';
 import { ADMIN_SERVICE } from 'app/config/microservice.constants';
@@ -82,6 +82,25 @@ export class RosterWeekService extends RosterWeeksService {
     return this.http
       .get<RestRosterWeek>(`${this.resourceUrl}/${encodeURIComponent(id)}`)
       .pipe(map(res => this.convertResponseFromServer(res)));
+  }
+
+  /**
+   * The roster week in force — the latest one that has started.
+   *
+   * Hand-written, not generated: the point is that the server decides. The duty-roster grid and the
+   * dashboard hero both state figures for "the week" and sit one click apart, and they used to pick
+   * their week separately — the grid by taking the most recent week it could find, the dashboard by
+   * date arithmetic of its own. Two rules that agree on today's data and diverge the moment somebody
+   * drafts a week ahead is the version of this worth preventing, because nothing reports it.
+   *
+   * `null` when there is no roster week at all, which the api answers as 404. That is production's
+   * normal state, not a failure, so the screen renders an empty roster rather than an error.
+   */
+  findCurrent(): Observable<IRosterWeek | null> {
+    return this.http.get<RestRosterWeek>(`${this.resourceUrl}/current`, { observe: 'response' }).pipe(
+      map(res => (res.body ? this.convertValueFromServer(res.body) : null)),
+      catchError((error: HttpErrorResponse) => (error.status === 404 ? of(null) : throwError(() => error))),
+    );
   }
 
   query(req?: any): Observable<HttpResponse<IRosterWeek[]>> {
