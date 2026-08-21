@@ -37,11 +37,47 @@ describe('AccountSettingsService', () => {
     });
 
     it('asks the admin service about the profile, with one', () => {
-      service.findProfile('acct-1').subscribe();
+      service.findProfile(anAccount()).subscribe();
 
       const req = httpMock.expectOne(r => r.url.includes('api/profiles/by-account'));
       expect(req.request.url).toContain('services/hcadminservice/');
       req.flush({}, { status: 404, statusText: 'Not Found' });
+    });
+  });
+
+  /**
+   * `Profile.accountId` holds the gateway **login**, and the account carries an id that looks just
+   * as much like a key. Asking with the id returns 404, which this service reports as "no profile"
+   * — so the screen offered every administrator a blank create form for a record that existed, and
+   * no test disagreed because every one of them passed the same opaque string in and out.
+   *
+   * These three assert the identifier by kind, which is the only thing that separates them.
+   */
+  describe('which identifier joins an account to a person', () => {
+    it('reads by the login, not by the gateway user id', () => {
+      service.findProfile(anAccount()).subscribe();
+
+      const req = httpMock.expectOne(r => r.url.includes('by-account'));
+      expect(req.request.url).toContain('by-account/admin');
+      expect(req.request.url).not.toContain('acct-1');
+      req.flush({}, { status: 404, statusText: 'Not Found' });
+    });
+
+    it('creates with the login, whatever the caller put in the body', () => {
+      service.createProfile(anAccount(), { id: null, accountId: 'acct-1', firstName: 'Efua' }).subscribe();
+
+      const req = httpMock.expectOne(r => r.method === 'POST' && r.url.endsWith('api/profiles'));
+      expect(req.request.body.accountId).toEqual('admin');
+      req.flush({ id: 'p1' });
+    });
+
+    /** A profile already stored against the wrong key is corrected by a save, not carried forward. */
+    it('rewrites the link on update rather than passing back what it read', () => {
+      service.updateProfile(anAccount(), { id: 'p1', accountId: 'acct-1' }).subscribe();
+
+      const req = httpMock.expectOne(r => r.method === 'PUT');
+      expect(req.request.body.accountId).toEqual('admin');
+      req.flush({ id: 'p1' });
     });
   });
 
@@ -54,7 +90,7 @@ describe('AccountSettingsService', () => {
     it('answers null when the account has no profile, rather than failing', () => {
       let result: unknown = 'untouched';
       let errored = false;
-      service.findProfile('acct-with-none').subscribe({ next: value => (result = value), error: () => (errored = true) });
+      service.findProfile(anAccount()).subscribe({ next: value => (result = value), error: () => (errored = true) });
 
       httpMock.expectOne(r => r.url.includes('by-account')).flush(null, { status: 404, statusText: 'Not Found' });
 
@@ -64,9 +100,9 @@ describe('AccountSettingsService', () => {
 
     it('returns the profile when there is one', () => {
       let result: any;
-      service.findProfile('acct-1').subscribe(value => (result = value));
+      service.findProfile(anAccount()).subscribe(value => (result = value));
 
-      httpMock.expectOne(r => r.url.includes('by-account')).flush({ id: 'p1', firstName: 'Ama', accountId: 'acct-1' });
+      httpMock.expectOne(r => r.url.includes('by-account')).flush({ id: 'p1', firstName: 'Ama', accountId: 'admin' });
 
       expect(result.firstName).toEqual('Ama');
     });
@@ -74,7 +110,7 @@ describe('AccountSettingsService', () => {
     /** A real failure must still be a failure — swallowing every error would hide an outage. */
     it('still reports errors that are not a missing profile', () => {
       let errored = false;
-      service.findProfile('acct-1').subscribe({ error: () => (errored = true) });
+      service.findProfile(anAccount()).subscribe({ error: () => (errored = true) });
 
       httpMock.expectOne(r => r.url.includes('by-account')).flush('boom', { status: 500, statusText: 'Server Error' });
 
@@ -95,12 +131,12 @@ describe('AccountSettingsService', () => {
     });
 
     it('creates a profile with POST and updates one with PUT', () => {
-      service.createProfile({ id: null, accountId: 'acct-1' }).subscribe();
+      service.createProfile(anAccount(), { id: null, accountId: null }).subscribe();
       const created = httpMock.expectOne(r => r.method === 'POST' && r.url.endsWith('api/profiles'));
-      expect(created.request.body.accountId).toEqual('acct-1');
+      expect(created.request.body.accountId).toEqual('admin');
       created.flush({ id: 'p1' });
 
-      service.updateProfile({ id: 'p1', accountId: 'acct-1' }).subscribe();
+      service.updateProfile(anAccount(), { id: 'p1', accountId: 'admin' }).subscribe();
       const updated = httpMock.expectOne(r => r.method === 'PUT');
       expect(updated.request.url).toContain('api/profiles/p1');
       updated.flush({ id: 'p1' });

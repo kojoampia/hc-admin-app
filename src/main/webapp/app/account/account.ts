@@ -109,25 +109,23 @@ export default class AccountPage implements OnInit {
       email: account.email,
     });
 
-    if (account.id) {
-      this.settingsService.findProfile(account.id).subscribe(profile => {
-        this.profile.set(profile);
-        if (profile) {
-          this.profileForm.patchValue({
-            title: profile.title ?? null,
-            firstName: profile.firstName ?? '',
-            middleName: profile.middleName ?? null,
-            lastName: profile.lastName ?? '',
-            dateOfBirth: profile.dateOfBirth ? profile.dateOfBirth.format('YYYY-MM-DD') : '',
-            sex: profile.sex ?? '',
-            mobilePhone: profile.mobilePhone ?? '',
-            email: profile.email ?? '',
-            idType: profile.idType ?? '',
-            idNumber: profile.idNumber ?? '',
-          });
-        }
-      });
-    }
+    this.settingsService.findProfile(account).subscribe(profile => {
+      this.profile.set(profile);
+      if (profile) {
+        this.profileForm.patchValue({
+          title: profile.title ?? null,
+          firstName: profile.firstName ?? '',
+          middleName: profile.middleName ?? null,
+          lastName: profile.lastName ?? '',
+          dateOfBirth: profile.dateOfBirth ? profile.dateOfBirth.format('YYYY-MM-DD') : '',
+          sex: profile.sex ?? '',
+          mobilePhone: profile.mobilePhone ?? '',
+          email: profile.email ?? '',
+          idType: profile.idType ?? '',
+          idNumber: profile.idNumber ?? '',
+        });
+      }
+    });
   }
 
   saveDetails(): void {
@@ -171,13 +169,14 @@ export default class AccountPage implements OnInit {
 
   saveProfile(): void {
     const account = this.account();
-    if (this.profileForm.invalid || !account?.id) {
+    if (this.profileForm.invalid || !account) {
       return;
     }
     this.begin();
     const form = this.profileForm.getRawValue();
+    // No `accountId` here: the service sets it from the account, so the form cannot get the join
+    // key wrong and there is one place that knows what it is.
     const body = {
-      accountId: account.id,
       title: form.title as IProfile['title'],
       firstName: form.firstName,
       middleName: form.middleName,
@@ -192,8 +191,8 @@ export default class AccountPage implements OnInit {
 
     const existing = this.profile();
     const request = existing
-      ? this.settingsService.updateProfile({ ...existing, ...body })
-      : this.settingsService.createProfile({ ...body, id: null });
+      ? this.settingsService.updateProfile(account, { ...existing, ...body })
+      : this.settingsService.createProfile(account, { ...body, id: null });
 
     request.subscribe({
       next: profile => {
