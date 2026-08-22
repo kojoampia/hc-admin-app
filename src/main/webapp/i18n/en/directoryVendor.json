@@ -64,7 +64,12 @@
       "rating": "Rating",
       "document": "Document",
       "archivedNotice": "This record is archived and does not appear in the directory.",
-      "isArchived": "Archived"
+      "isArchived": "Archived",
+      "step": {
+        "business": "Business",
+        "contract": "Contract",
+        "trading": "Trading"
+      }
     }
   }
 }

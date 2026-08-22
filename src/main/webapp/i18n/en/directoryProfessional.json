@@ -62,7 +62,12 @@
       "team": "Team",
       "hub": "Hub",
       "archivedNotice": "This record is archived and does not appear in the directory.",
-      "isArchived": "Archived"
+      "isArchived": "Archived",
+      "step": {
+        "practice": "Practice",
+        "standing": "Standing",
+        "placement": "Placement"
+      }
     }
   }
 }

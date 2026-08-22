@@ -27,12 +27,23 @@ import { PatientService } from '../service/patient.service';
 
 import { PatientFormGroup, PatientFormService } from './patient-form.service';
 import RecordLabelPipe from 'app/shared/format/record-label.pipe';
+import { FormWizard } from 'app/shared/form/form-wizard';
+import WizardSteps from 'app/shared/form/wizard-steps';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'abf-patient-update',
   templateUrl: './patient-update.html',
-  imports: [RecordLabelPipe, TranslateDirective, TranslatePipe, FontAwesomeModule, AlertError, ReactiveFormsModule, NgbInputDatepicker],
+  imports: [
+    WizardSteps,
+    RecordLabelPipe,
+    TranslateDirective,
+    TranslatePipe,
+    FontAwesomeModule,
+    AlertError,
+    ReactiveFormsModule,
+    NgbInputDatepicker,
+  ],
 })
 export class PatientUpdate implements OnInit {
   readonly isSaving = signal(false);
@@ -56,6 +67,20 @@ export class PatientUpdate implements OnInit {
 
   // eslint-disable-next-line @typescript-eslint/member-ordering
   editForm: PatientFormGroup = this.patientFormService.createPatientFormGroup();
+
+  /**
+   * The form in steps, grouped by what the fields are about rather than by how many fit.
+   *
+   * <p>The grouping is the useful part: a step is a question somebody can answer in one
+   * sitting, and the control names below are what gates leaving it — see {@link FormWizard},
+   * which refuses to advance past an invalid step rather than saving up the errors for the end.
+   */
+  // eslint-disable-next-line @typescript-eslint/member-ordering
+  readonly wizard = new FormWizard(this.editForm, [
+    { label: 'hcAdminApp.directoryPatient.step.account', controls: ['status', 'joinedOn', 'lastActiveOn', 'caseCount'] },
+    { label: 'hcAdminApp.directoryPatient.step.person', controls: ['profile', 'angel'] },
+    { label: 'hcAdminApp.directoryPatient.step.care', controls: ['plan', 'clinicalLead', 'hub'] },
+  ]);
 
   compareProfile = (o1: IProfile | null, o2: IProfile | null): boolean => this.profileService.compareProfile(o1, o2);
 

@@ -30,7 +30,7 @@ describe('global stylesheet', () => {
   /**
    * The generated update components declare no `styleUrl`, so anything they use has to be global.
    */
-  it.each(['.abf-form'])('defines %s globally', selector => {
+  it.each(['.abf-form', '.abf-steps'])('defines %s globally', selector => {
     expect(consoleAdmin).toContain(selector);
     expect(consoleComponents).not.toContain(selector);
   });
