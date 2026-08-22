@@ -254,3 +254,114 @@ abf-docs {
     background: var(--abf-card);
   }
 }
+
+/* ==========================================================================
+   Create and edit forms
+   ==========================================================================
+
+   The generated forms arrived as `d-flex justify-content-center > .col-8 > h2`
+   — Bootstrap's own scaffolding, on a console that otherwise never uses it.
+   They now wear the same section head, card and spacing as every screen the
+   BridgeCare redesign produced, which is what these classes are.
+
+   The grid is two columns from 760px and one below it. `:has()` gives a
+   textarea, a checkbox row or a long field the full width without every field
+   div needing a modifier class the generator does not know to emit — the
+   templates are regenerated from a JDL, so a rule that survives regeneration
+   is worth more than a tidier one that does not. */
+.abf-form {
+  max-width: 880px;
+
+  /* The section head and card are re-stated here rather than reused from
+     _console-components.scss, and that is the whole reason this block lives in
+     the global stylesheet. Angular scopes a component's styles, so those
+     classes reach a screen only when its own .scss imports console-components
+     — which every hand-written console screen does and no generated update
+     component has. Styling a generated form through them looked right in the
+     source and rendered as an unstyled column of full-width inputs. */
+  .sec-head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 14px;
+    margin: 26px 0 13px;
+
+    h3 {
+      margin: 0;
+      font-size: 1.05rem;
+      letter-spacing: -0.01em;
+    }
+  }
+
+  .card {
+    background: var(--abf-card);
+    border: 1px solid var(--abf-line);
+    border-radius: var(--abf-r);
+    box-shadow: var(--abf-sh-sm);
+  }
+
+  .card-pad {
+    padding: 18px;
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0 18px;
+
+    @media (min-width: 760px) {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    /* Angular's @let declarations sit between the field divs and render nothing. */
+    > .mb-3 {
+      min-width: 0;
+    }
+
+    > .mb-3:has(textarea),
+    > .mb-3:has(.form-check),
+    > .mb-3:has(input[type='file']) {
+      grid-column: 1 / -1;
+    }
+  }
+
+  /* The actions leave the card: they act on the whole form, not on the last
+     field above them, and inside the card they read as part of it. */
+  &__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 9px;
+    margin: 18px 0 40px;
+  }
+
+  .form-label {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--abf-grey);
+    margin-bottom: 4px;
+  }
+
+  .form-control,
+  .form-select {
+    border-radius: 9px;
+    border-color: var(--abf-line);
+  }
+
+  .form-control:focus,
+  .form-select:focus {
+    border-color: var(--abf-navy);
+    box-shadow: 0 0 0 3px rgba(13, 48, 88, 0.12);
+  }
+
+  /* The generated selects carry .form-control rather than .form-select, so the
+     caret Bootstrap draws on the latter is missing. Restored here rather than
+     by editing twenty templates the generator will overwrite. */
+  select.form-control {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%235b6470' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 14px;
+    padding-right: 36px;
+  }
+}
