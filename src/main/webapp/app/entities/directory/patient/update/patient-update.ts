@@ -26,12 +26,13 @@ import { IPatient } from '../patient.model';
 import { PatientService } from '../service/patient.service';
 
 import { PatientFormGroup, PatientFormService } from './patient-form.service';
+import RecordLabelPipe from 'app/shared/format/record-label.pipe';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'abf-patient-update',
   templateUrl: './patient-update.html',
-  imports: [TranslateDirective, TranslatePipe, FontAwesomeModule, AlertError, ReactiveFormsModule, NgbInputDatepicker],
+  imports: [RecordLabelPipe, TranslateDirective, TranslatePipe, FontAwesomeModule, AlertError, ReactiveFormsModule, NgbInputDatepicker],
 })
 export class PatientUpdate implements OnInit {
   readonly isSaving = signal(false);

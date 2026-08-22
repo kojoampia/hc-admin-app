@@ -16,12 +16,13 @@ import { IOrganisation } from '../organisation.model';
 import { OrganisationService } from '../service/organisation.service';
 
 import { OrganisationFormGroup, OrganisationFormService } from './organisation-form.service';
+import RecordLabelPipe from 'app/shared/format/record-label.pipe';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'abf-organisation-update',
   templateUrl: './organisation-update.html',
-  imports: [TranslateDirective, TranslatePipe, FontAwesomeModule, AlertError, ReactiveFormsModule, NgbInputDatepicker],
+  imports: [RecordLabelPipe, TranslateDirective, TranslatePipe, FontAwesomeModule, AlertError, ReactiveFormsModule, NgbInputDatepicker],
 })
 export class OrganisationUpdate implements OnInit {
   readonly isSaving = signal(false);

@@ -22,12 +22,13 @@ import { ITask } from '../task.model';
 
 import { TaskFormGroup, TaskFormService } from './task-form.service';
 import { MessageService } from 'app/entities/operations/message/service/message.service';
+import RecordLabelPipe from 'app/shared/format/record-label.pipe';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'abf-task-update',
   templateUrl: './task-update.html',
-  imports: [TranslateDirective, TranslatePipe, FontAwesomeModule, AlertError, ReactiveFormsModule, NgbInputDatepicker],
+  imports: [RecordLabelPipe, TranslateDirective, TranslatePipe, FontAwesomeModule, AlertError, ReactiveFormsModule, NgbInputDatepicker],
 })
 export class TaskUpdate implements OnInit {
   readonly isSaving = signal(false);

@@ -1,20 +1,17 @@
-<div class="d-flex justify-content-center">
-  <div class="col-8">
-    <form name="editForm" novalidate (ngSubmit)="save()" [formGroup]="editForm">
-      <h2 id="abf-profile-heading" data-cy="ProfileCreateUpdateHeading" abfTranslate="hcAdminApp.directoryProfile.home.createOrEditLabel">
-        Create or edit a Profile
-      </h2>
-
+<div class="abf-form">
+  <form name="editForm" novalidate (ngSubmit)="save()" [formGroup]="editForm">
+    <div class="sec-head">
       <div>
-        <abf-alert-error />
+        <h3 id="abf-profile-heading" data-cy="ProfileCreateUpdateHeading" abfTranslate="hcAdminApp.directoryProfile.home.createOrEditLabel">
+          Create or edit a Profile
+        </h3>
+      </div>
+    </div>
 
-        @if (editForm.controls.id.value !== null) {
-          <div class="mb-3">
-            <label class="form-label" for="field_id" abfTranslate="hcAdminApp.directoryProfile.id">Id</label>
-            <input type="text" class="form-control" name="id" id="field_id" data-cy="id" formControlName="id" />
-          </div>
-        }
+    <div class="card card-pad">
+      <abf-alert-error />
 
+      <div class="abf-form__grid">
         @let accountIdRef = editForm.get('accountId')!;
         <div class="mb-3">
           <label class="form-label" for="field_accountId" abfTranslate="hcAdminApp.directoryProfile.accountId">Account Id</label>
@@ -240,27 +237,27 @@
           >
             <option [ngValue]="null"></option>
             @for (addressOption of addressesCollection(); track $index) {
-              <option [ngValue]="addressOption">{{ addressOption.id }}</option>
+              <option [ngValue]="addressOption">{{ addressOption | abfRecordLabel }}</option>
             }
           </select>
         </div>
       </div>
+    </div>
 
-      <div>
-        <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary" (click)="previousState()">
-          <fa-icon icon="ban" />&nbsp;<span abfTranslate="entity.action.cancel">Cancel</span>
-        </button>
+    <div class="abf-form__actions no-print">
+      <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary" (click)="previousState()">
+        <fa-icon icon="ban" />&nbsp;<span abfTranslate="entity.action.cancel">Cancel</span>
+      </button>
 
-        <button
-          type="submit"
-          id="save-entity"
-          data-cy="entityCreateSaveButton"
-          [disabled]="editForm.invalid || isSaving()"
-          class="btn btn-primary"
-        >
-          <fa-icon icon="save" />&nbsp;<span abfTranslate="entity.action.save">Save</span>
-        </button>
-      </div>
-    </form>
-  </div>
+      <button
+        type="submit"
+        id="save-entity"
+        data-cy="entityCreateSaveButton"
+        [disabled]="editForm.invalid || isSaving()"
+        class="btn btn-primary"
+      >
+        <fa-icon icon="save" />&nbsp;<span abfTranslate="entity.action.save">Save</span>
+      </button>
+    </div>
+  </form>
 </div>

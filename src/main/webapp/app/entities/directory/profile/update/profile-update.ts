@@ -20,12 +20,13 @@ import { IProfile } from '../profile.model';
 import { ProfileService } from '../service/profile.service';
 
 import { ProfileFormGroup, ProfileFormService } from './profile-form.service';
+import RecordLabelPipe from 'app/shared/format/record-label.pipe';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'abf-profile-update',
   templateUrl: './profile-update.html',
-  imports: [TranslateDirective, TranslatePipe, FontAwesomeModule, AlertError, ReactiveFormsModule, NgbInputDatepicker],
+  imports: [RecordLabelPipe, TranslateDirective, TranslatePipe, FontAwesomeModule, AlertError, ReactiveFormsModule, NgbInputDatepicker],
 })
 export class ProfileUpdate implements OnInit {
   readonly isSaving = signal(false);

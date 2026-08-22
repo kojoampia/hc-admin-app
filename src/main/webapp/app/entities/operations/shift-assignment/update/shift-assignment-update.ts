@@ -21,12 +21,13 @@ import { ShiftAssignmentService } from '../service/shift-assignment.service';
 import { IShiftAssignment } from '../shift-assignment.model';
 
 import { ShiftAssignmentFormGroup, ShiftAssignmentFormService } from './shift-assignment-form.service';
+import RecordLabelPipe from 'app/shared/format/record-label.pipe';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'abf-shift-assignment-update',
   templateUrl: './shift-assignment-update.html',
-  imports: [TranslateDirective, TranslatePipe, FontAwesomeModule, AlertError, ReactiveFormsModule, NgbInputDatepicker],
+  imports: [RecordLabelPipe, TranslateDirective, TranslatePipe, FontAwesomeModule, AlertError, ReactiveFormsModule, NgbInputDatepicker],
 })
 export class ShiftAssignmentUpdate implements OnInit {
   readonly isSaving = signal(false);

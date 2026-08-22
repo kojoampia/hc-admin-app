@@ -17,12 +17,13 @@ import { ICareActivity } from '../care-activity.model';
 import { CareActivityService } from '../service/care-activity.service';
 
 import { CareActivityFormGroup, CareActivityFormService } from './care-activity-form.service';
+import RecordLabelPipe from 'app/shared/format/record-label.pipe';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'abf-care-activity-update',
   templateUrl: './care-activity-update.html',
-  imports: [TranslateDirective, TranslatePipe, FontAwesomeModule, AlertError, ReactiveFormsModule, NgbInputDatepicker],
+  imports: [RecordLabelPipe, TranslateDirective, TranslatePipe, FontAwesomeModule, AlertError, ReactiveFormsModule, NgbInputDatepicker],
 })
 export class CareActivityUpdate implements OnInit {
   readonly isSaving = signal(false);

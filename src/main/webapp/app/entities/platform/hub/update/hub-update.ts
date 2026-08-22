@@ -15,12 +15,13 @@ import { IHub } from '../hub.model';
 import { HubService } from '../service/hub.service';
 
 import { HubFormGroup, HubFormService } from './hub-form.service';
+import RecordLabelPipe from 'app/shared/format/record-label.pipe';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'abf-hub-update',
   templateUrl: './hub-update.html',
-  imports: [TranslateDirective, TranslatePipe, FontAwesomeModule, AlertError, ReactiveFormsModule],
+  imports: [RecordLabelPipe, TranslateDirective, TranslatePipe, FontAwesomeModule, AlertError, ReactiveFormsModule],
 })
 export class HubUpdate implements OnInit {
   readonly isSaving = signal(false);
