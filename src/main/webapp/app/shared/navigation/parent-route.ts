@@ -24,6 +24,15 @@ const ACTIONS = new Set(['new', 'edit', 'view']);
 const NO_DETAIL_ROUTE = new Set(['credential']);
 
 /**
+ * Path prefixes that route children but render nothing themselves.
+ *
+ * <p>`/admin` is a `loadChildren` parent with no component: navigating to it leaves the shell up and
+ * the content area empty. Nothing about a URL says so — it looks exactly like a list route one
+ * segment shorter — so it is named here, and a back link that would land on it is dropped instead.
+ */
+const NOT_A_SCREEN = new Set(['admin']);
+
+/**
  * Where "back" goes from a URL, or `null` when the screen is a navigation destination in its own
  * right and should not offer one.
  *
@@ -48,6 +57,14 @@ export function parentOf(url: string): ParentRoute | null {
     .filter(segment => segment.length > 0);
 
   if (segments.length < 2) {
+    return null;
+  }
+
+  // A screen reachable from the sidebar is a destination, and a destination is where back goes
+  // rather than somewhere it goes from. The five admin screens are two segments long — the sidebar
+  // lists `admin/user-management`, not `user-management` — so a rule that counted segments alone
+  // offered them a back link to `/admin`, which renders an empty page.
+  if (SHELL_NAVIGATION.some(item => item.route === segments.join('/'))) {
     return null;
   }
 
@@ -78,8 +95,11 @@ export function parentOf(url: string): ParentRoute | null {
  * different conclusions about what a screen is called. Entities with no sidebar entry — addresses,
  * profiles, hubs — fall back to a plain "Back" rather than to a guessed name.
  */
-function listParent(root: string[]): ParentRoute {
+function listParent(root: string[]): ParentRoute | null {
   const path = root.join('/');
+  if (NOT_A_SCREEN.has(path)) {
+    return null;
+  }
   const item = SHELL_NAVIGATION.find(navItem => navItem.route === path);
   return item
     ? { commands: ['/', ...root], label: 'global.action.backTo', params: { name: item.label } }

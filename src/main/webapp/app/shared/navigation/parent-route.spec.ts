@@ -54,6 +54,30 @@ describe('parentOf', () => {
   });
 
   /**
+   * The five admin screens are destinations too, and their routes are two segments long.
+   *
+   * <p>A rule that counted segments alone offered them a back link to `/admin` — a `loadChildren`
+   * parent with no component of its own, so pressing it left the shell up and the content area
+   * blank. Found by pressing it.
+   */
+  it.each(['/admin/user-management', '/admin/health', '/admin/metrics', '/admin/configuration', '/admin/logs'])(
+    'offers no back link on %s, which the sidebar lists',
+    url => {
+      expect(parentOf(url)).toBeNull();
+    },
+  );
+
+  /**
+   * And nothing else may land on `/admin` either.
+   *
+   * <p>`/admin/docs` is a real route the sidebar does not list, so the destination rule above does
+   * not cover it; without naming `admin` as a non-screen it would still link to the blank page.
+   */
+  it('never sends anybody to a route that renders nothing', () => {
+    expect(parentOf('/admin/docs')).toBeNull();
+  });
+
+  /**
    * The label comes from the sidebar's own list, so the back link and the menu entry cannot end up
    * calling the same screen two different things.
    */
