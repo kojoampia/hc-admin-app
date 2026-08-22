@@ -92,9 +92,16 @@ export class FormWizard {
     this.step.set(index);
   }
 
-  /** Which steps are complete, for the rail's ticks. */
+  /**
+   * Which steps to tick on the rail.
+   *
+   * <p>Only steps already passed, and only if they are valid. Validity alone is not "done": a step
+   * whose fields are all optional is valid before anybody has seen it, so the rail ticked the last
+   * step of a blank form — which reads as work already finished and is the one thing a progress
+   * indicator must never say.
+   */
   completed(): boolean[] {
-    return this.steps.map((_, index) => this.isStepValid(index));
+    return this.steps.map((_, index) => index < this.step() && this.isStepValid(index));
   }
 
   /**
