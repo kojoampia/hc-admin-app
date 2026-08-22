@@ -16,12 +16,13 @@ import { TeamService } from '../service/team.service';
 import { ITeam } from '../team.model';
 
 import { TeamFormGroup, TeamFormService } from './team-form.service';
+import RecordLabelPipe from 'app/shared/format/record-label.pipe';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'abf-team-update',
   templateUrl: './team-update.html',
-  imports: [TranslateDirective, TranslatePipe, FontAwesomeModule, AlertError, ReactiveFormsModule],
+  imports: [RecordLabelPipe, TranslateDirective, TranslatePipe, FontAwesomeModule, AlertError, ReactiveFormsModule],
 })
 export class TeamUpdate implements OnInit {
   readonly isSaving = signal(false);

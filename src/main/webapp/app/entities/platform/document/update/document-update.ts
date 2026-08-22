@@ -18,12 +18,13 @@ import { IDocument } from '../document.model';
 import { DocumentService } from '../service/document.service';
 
 import { DocumentFormGroup, DocumentFormService } from './document-form.service';
+import RecordLabelPipe from 'app/shared/format/record-label.pipe';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'abf-document-update',
   templateUrl: './document-update.html',
-  imports: [TranslateDirective, TranslatePipe, FontAwesomeModule, AlertError, ReactiveFormsModule],
+  imports: [RecordLabelPipe, TranslateDirective, TranslatePipe, FontAwesomeModule, AlertError, ReactiveFormsModule],
 })
 export class DocumentUpdate implements OnInit {
   readonly isSaving = signal(false);

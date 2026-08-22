@@ -1,20 +1,17 @@
-<div class="d-flex justify-content-center">
-  <div class="col-8">
-    <form name="editForm" novalidate (ngSubmit)="save()" [formGroup]="editForm">
-      <h2 id="abf-patient-heading" data-cy="PatientCreateUpdateHeading" abfTranslate="hcAdminApp.directoryPatient.home.createOrEditLabel">
-        Create or edit a Patient
-      </h2>
-
+<div class="abf-form">
+  <form name="editForm" novalidate (ngSubmit)="save()" [formGroup]="editForm">
+    <div class="sec-head">
       <div>
-        <abf-alert-error />
+        <h3 id="abf-patient-heading" data-cy="PatientCreateUpdateHeading" abfTranslate="hcAdminApp.directoryPatient.home.createOrEditLabel">
+          Create or edit a Patient
+        </h3>
+      </div>
+    </div>
 
-        @if (editForm.controls.id.value !== null) {
-          <div class="mb-3">
-            <label class="form-label" for="field_id" abfTranslate="hcAdminApp.directoryPatient.id">Id</label>
-            <input type="text" class="form-control" name="id" id="field_id" data-cy="id" formControlName="id" />
-          </div>
-        }
+    <div class="card card-pad">
+      <abf-alert-error />
 
+      <div class="abf-form__grid">
         @let statusRef = editForm.get('status')!;
         <div class="mb-3">
           <label class="form-label" for="field_status" abfTranslate="hcAdminApp.directoryPatient.status">Status</label>
@@ -107,7 +104,7 @@
               <option [ngValue]="null" selected></option>
             }
             @for (profileOption of profilesCollection(); track $index) {
-              <option [ngValue]="profileOption">{{ profileOption.id }}</option>
+              <option [ngValue]="profileOption">{{ profileOption | abfRecordLabel }}</option>
             }
           </select>
         </div>
@@ -124,7 +121,7 @@
           <select class="form-control" id="field_angel" data-cy="angel" name="angel" formControlName="angel" [compareWith]="compareAngel">
             <option [ngValue]="null"></option>
             @for (angelOption of angelsCollection(); track $index) {
-              <option [ngValue]="angelOption">{{ angelOption.id }}</option>
+              <option [ngValue]="angelOption">{{ angelOption | abfRecordLabel }}</option>
             }
           </select>
         </div>
@@ -151,7 +148,7 @@
           >
             <option [ngValue]="null"></option>
             @for (professionalOption of professionalsSharedCollection(); track $index) {
-              <option [ngValue]="professionalOption">{{ professionalOption.licenceNumber }}</option>
+              <option [ngValue]="professionalOption">{{ professionalOption | abfRecordLabel }}</option>
             }
           </select>
         </div>
@@ -166,22 +163,22 @@
           </select>
         </div>
       </div>
+    </div>
 
-      <div>
-        <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary" (click)="previousState()">
-          <fa-icon icon="ban" />&nbsp;<span abfTranslate="entity.action.cancel">Cancel</span>
-        </button>
+    <div class="abf-form__actions no-print">
+      <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary" (click)="previousState()">
+        <fa-icon icon="ban" />&nbsp;<span abfTranslate="entity.action.cancel">Cancel</span>
+      </button>
 
-        <button
-          type="submit"
-          id="save-entity"
-          data-cy="entityCreateSaveButton"
-          [disabled]="editForm.invalid || isSaving()"
-          class="btn btn-primary"
-        >
-          <fa-icon icon="save" />&nbsp;<span abfTranslate="entity.action.save">Save</span>
-        </button>
-      </div>
-    </form>
-  </div>
+      <button
+        type="submit"
+        id="save-entity"
+        data-cy="entityCreateSaveButton"
+        [disabled]="editForm.invalid || isSaving()"
+        class="btn btn-primary"
+      >
+        <fa-icon icon="save" />&nbsp;<span abfTranslate="entity.action.save">Save</span>
+      </button>
+    </div>
+  </form>
 </div>

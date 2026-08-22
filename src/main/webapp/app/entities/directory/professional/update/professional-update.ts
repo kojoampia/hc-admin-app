@@ -25,12 +25,13 @@ import { TeamService } from 'app/entities/platform/team/service/team.service';
 import { IHub } from 'app/entities/platform/hub/hub.model';
 import { HubService } from 'app/entities/platform/hub/service/hub.service';
 import { VerificationStatus } from 'app/entities/enumerations/verification-status.model';
+import RecordLabelPipe from 'app/shared/format/record-label.pipe';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'abf-professional-update',
   templateUrl: './professional-update.html',
-  imports: [TranslateDirective, TranslatePipe, FontAwesomeModule, AlertError, ReactiveFormsModule, NgbInputDatepicker],
+  imports: [RecordLabelPipe, TranslateDirective, TranslatePipe, FontAwesomeModule, AlertError, ReactiveFormsModule, NgbInputDatepicker],
 })
 export class ProfessionalUpdate implements OnInit {
   readonly isSaving = signal(false);
