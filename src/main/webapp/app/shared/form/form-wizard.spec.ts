@@ -130,13 +130,32 @@ describe('FormWizard', () => {
     expect(wizard.step()).toBe(2);
   });
 
-  /** The rail's ticks. */
-  it('reports which steps are complete', () => {
-    expect(wizard.completed()).toEqual([false, false, true]);
+  /**
+   * The rail ticks only what has actually been passed.
+   *
+   * <p>Validity alone is not "done". The third step here has no required fields, so it is valid
+   * before anybody has seen it — and a rail that ticks the last step of a blank form is telling
+   * somebody their work is finished, which is the one thing a progress indicator must never say.
+   */
+  it('ticks only steps already passed', () => {
+    expect(wizard.completed()).toEqual([false, false, false]);
 
     form.controls.name.setValue('x');
+    expect(wizard.completed()).toEqual([false, false, false]);
 
-    expect(wizard.completed()).toEqual([true, false, true]);
+    wizard.next();
+    expect(wizard.completed()).toEqual([true, false, false]);
+  });
+
+  /** A step passed and then broken from the rail loses its tick. */
+  it('drops the tick when a passed step stops being valid', () => {
+    form.controls.name.setValue('x');
+    wizard.next();
+    expect(wizard.completed()[0]).toBe(true);
+
+    form.controls.name.setValue('');
+
+    expect(wizard.completed()[0]).toBe(false);
   });
 
   /** A step naming a control the form does not have must not make the step impossible to leave. */
