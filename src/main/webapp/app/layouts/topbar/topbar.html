@@ -27,7 +27,16 @@
   </button>
 
   <div class="abf-topbar__heading">
-    <div data-cy="breadcrumb" class="crumb">{{ breadcrumb() | translate }}</div>
+    <!-- The back link sits on the breadcrumb line and replaces it on a sub-page: the crumb names
+         the group a screen belongs to, the back link names the screen it came from, and the second
+         is the more useful of the two exactly when there is somewhere to go. -->
+    <div class="crumb">
+      @if (hasBack()) {
+        <abf-back-link />
+      } @else {
+        <span data-cy="breadcrumb">{{ breadcrumb() | translate }}</span>
+      }
+    </div>
     <h2 data-cy="pageTitle">{{ pageTitle() | translate }}</h2>
   </div>
 
