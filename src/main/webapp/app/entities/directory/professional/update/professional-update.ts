@@ -26,12 +26,23 @@ import { IHub } from 'app/entities/platform/hub/hub.model';
 import { HubService } from 'app/entities/platform/hub/service/hub.service';
 import { VerificationStatus } from 'app/entities/enumerations/verification-status.model';
 import RecordLabelPipe from 'app/shared/format/record-label.pipe';
+import { FormWizard } from 'app/shared/form/form-wizard';
+import WizardSteps from 'app/shared/form/wizard-steps';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'abf-professional-update',
   templateUrl: './professional-update.html',
-  imports: [RecordLabelPipe, TranslateDirective, TranslatePipe, FontAwesomeModule, AlertError, ReactiveFormsModule, NgbInputDatepicker],
+  imports: [
+    WizardSteps,
+    RecordLabelPipe,
+    TranslateDirective,
+    TranslatePipe,
+    FontAwesomeModule,
+    AlertError,
+    ReactiveFormsModule,
+    NgbInputDatepicker,
+  ],
 })
 export class ProfessionalUpdate implements OnInit {
   readonly isSaving = signal(false);
@@ -53,6 +64,23 @@ export class ProfessionalUpdate implements OnInit {
 
   // eslint-disable-next-line @typescript-eslint/member-ordering
   editForm: ProfessionalFormGroup = this.professionalFormService.createProfessionalFormGroup();
+
+  /**
+   * The form in steps, grouped by what the fields are about rather than by how many fit.
+   *
+   * <p>The grouping is the useful part: a step is a question somebody can answer in one
+   * sitting, and the control names below are what gates leaving it — see {@link FormWizard},
+   * which refuses to advance past an invalid step rather than saving up the errors for the end.
+   */
+  // eslint-disable-next-line @typescript-eslint/member-ordering
+  readonly wizard = new FormWizard(this.editForm, [
+    { label: 'hcAdminApp.directoryProfessional.step.practice', controls: ['role', 'speciality', 'licenceNumber', 'verification'] },
+    {
+      label: 'hcAdminApp.directoryProfessional.step.standing',
+      controls: ['status', 'patientCount', 'caseCount', 'visitCount', 'rating', 'joinedOn'],
+    },
+    { label: 'hcAdminApp.directoryProfessional.step.placement', controls: ['profile', 'team', 'hub'] },
+  ]);
 
   compareProfile = (o1: IProfile | null, o2: IProfile | null): boolean => this.profileService.compareProfile(o1, o2);
 

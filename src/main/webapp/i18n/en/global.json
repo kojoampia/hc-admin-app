@@ -184,7 +184,8 @@
       "save": "Save",
       "show": "Show {{otherEntity}}",
       "unarchive": "Unarchive",
-      "view": "View"
+      "view": "View",
+      "next": "Next"
     },
     "detail": {
       "field": "Field",

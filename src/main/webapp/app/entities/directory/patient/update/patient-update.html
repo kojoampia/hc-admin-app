@@ -8,177 +8,220 @@
       </div>
     </div>
 
+    <abf-wizard-steps
+      [steps]="wizard.steps"
+      [current]="wizard.step()"
+      [completed]="wizard.completed()"
+      (stepSelect)="wizard.goTo($event)"
+    />
+
     <div class="card card-pad">
       <abf-alert-error />
 
       <div class="abf-form__grid">
-        @let statusRef = editForm.get('status')!;
-        <div class="mb-3">
-          <label class="form-label" for="field_status" abfTranslate="hcAdminApp.directoryPatient.status">Status</label>
-          <select class="form-control" name="status" formControlName="status" id="field_status" data-cy="status">
-            <option [ngValue]="null">{{ 'hcAdminApp.AccountStatus.null' | translate }}</option>
-            @for (accountStatus of accountStatusValues; track $index) {
-              <option [value]="accountStatus">{{ 'hcAdminApp.AccountStatus.' + accountStatus | translate }}</option>
+        @if (wizard.step() === 0) {
+          @let statusRef = editForm.get('status')!;
+          <div class="mb-3">
+            <label class="form-label" for="field_status" abfTranslate="hcAdminApp.directoryPatient.status">Status</label>
+            <select class="form-control" name="status" formControlName="status" id="field_status" data-cy="status">
+              <option [ngValue]="null">{{ 'hcAdminApp.AccountStatus.null' | translate }}</option>
+              @for (accountStatus of accountStatusValues; track $index) {
+                <option [value]="accountStatus">{{ 'hcAdminApp.AccountStatus.' + accountStatus | translate }}</option>
+              }
+            </select>
+            @if (statusRef.invalid && (statusRef.dirty || statusRef.touched)) {
+              <div>
+                @if (statusRef.errors?.required) {
+                  <small class="form-text text-danger" abfTranslate="entity.validation.required">This field is required.</small>
+                }
+              </div>
             }
-          </select>
-          @if (statusRef.invalid && (statusRef.dirty || statusRef.touched)) {
-            <div>
-              @if (statusRef.errors?.required) {
-                <small class="form-text text-danger" abfTranslate="entity.validation.required">This field is required.</small>
-              }
-            </div>
-          }
-        </div>
-
-        @let joinedOnRef = editForm.get('joinedOn')!;
-        <div class="mb-3">
-          <label class="form-label" for="field_joinedOn" abfTranslate="hcAdminApp.directoryPatient.joinedOn">Joined On</label>
-          <div class="input-group">
-            <input
-              id="field_joinedOn"
-              data-cy="joinedOn"
-              type="text"
-              class="form-control"
-              name="joinedOn"
-              ngbDatepicker
-              #joinedOnDp="ngbDatepicker"
-              formControlName="joinedOn"
-            />
-            <button type="button" class="btn btn-secondary" (click)="joinedOnDp.toggle()"><fa-icon icon="calendar-alt" /></button>
           </div>
-          @if (joinedOnRef.invalid && (joinedOnRef.dirty || joinedOnRef.touched)) {
-            <div>
-              @if (joinedOnRef.errors?.required) {
-                <small class="form-text text-danger" abfTranslate="entity.validation.required">This field is required.</small>
-              }
+
+          @let joinedOnRef = editForm.get('joinedOn')!;
+          <div class="mb-3">
+            <label class="form-label" for="field_joinedOn" abfTranslate="hcAdminApp.directoryPatient.joinedOn">Joined On</label>
+            <div class="input-group">
+              <input
+                id="field_joinedOn"
+                data-cy="joinedOn"
+                type="text"
+                class="form-control"
+                name="joinedOn"
+                ngbDatepicker
+                #joinedOnDp="ngbDatepicker"
+                formControlName="joinedOn"
+              />
+              <button type="button" class="btn btn-secondary" (click)="joinedOnDp.toggle()"><fa-icon icon="calendar-alt" /></button>
             </div>
-          }
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label" for="field_lastActiveOn" abfTranslate="hcAdminApp.directoryPatient.lastActiveOn">Last Active On</label>
-          <div class="input-group">
-            <input
-              id="field_lastActiveOn"
-              data-cy="lastActiveOn"
-              type="text"
-              class="form-control"
-              name="lastActiveOn"
-              ngbDatepicker
-              #lastActiveOnDp="ngbDatepicker"
-              formControlName="lastActiveOn"
-            />
-            <button type="button" class="btn btn-secondary" (click)="lastActiveOnDp.toggle()"><fa-icon icon="calendar-alt" /></button>
+            @if (joinedOnRef.invalid && (joinedOnRef.dirty || joinedOnRef.touched)) {
+              <div>
+                @if (joinedOnRef.errors?.required) {
+                  <small class="form-text text-danger" abfTranslate="entity.validation.required">This field is required.</small>
+                }
+              </div>
+            }
           </div>
-        </div>
 
-        @let caseCountRef = editForm.get('caseCount')!;
-        <div class="mb-3">
-          <label class="form-label" for="field_caseCount" abfTranslate="hcAdminApp.directoryPatient.caseCount">Case Count</label>
-          <input type="number" class="form-control" name="caseCount" id="field_caseCount" data-cy="caseCount" formControlName="caseCount" />
-          @if (caseCountRef.invalid && (caseCountRef.dirty || caseCountRef.touched)) {
-            <div>
-              @if (caseCountRef.errors?.min) {
-                <small class="form-text text-danger" abfTranslate="entity.validation.min" [translateValues]="{ min: '0' }"
-                  >This field should be at least 0.</small
+          <div class="mb-3">
+            <label class="form-label" for="field_lastActiveOn" abfTranslate="hcAdminApp.directoryPatient.lastActiveOn"
+              >Last Active On</label
+            >
+            <div class="input-group">
+              <input
+                id="field_lastActiveOn"
+                data-cy="lastActiveOn"
+                type="text"
+                class="form-control"
+                name="lastActiveOn"
+                ngbDatepicker
+                #lastActiveOnDp="ngbDatepicker"
+                formControlName="lastActiveOn"
+              />
+              <button type="button" class="btn btn-secondary" (click)="lastActiveOnDp.toggle()"><fa-icon icon="calendar-alt" /></button>
+            </div>
+          </div>
+
+          @let caseCountRef = editForm.get('caseCount')!;
+          <div class="mb-3">
+            <label class="form-label" for="field_caseCount" abfTranslate="hcAdminApp.directoryPatient.caseCount">Case Count</label>
+            <input
+              type="number"
+              class="form-control"
+              name="caseCount"
+              id="field_caseCount"
+              data-cy="caseCount"
+              formControlName="caseCount"
+            />
+            @if (caseCountRef.invalid && (caseCountRef.dirty || caseCountRef.touched)) {
+              <div>
+                @if (caseCountRef.errors?.min) {
+                  <small class="form-text text-danger" abfTranslate="entity.validation.min" [translateValues]="{ min: '0' }"
+                    >This field should be at least 0.</small
+                  >
+                }
+                <small class="form-text text-danger" [hidden]="!caseCountRef.errors?.number" abfTranslate="entity.validation.number"
+                  >This field should be a number.</small
                 >
-              }
-              <small class="form-text text-danger" [hidden]="!caseCountRef.errors?.number" abfTranslate="entity.validation.number"
-                >This field should be a number.</small
-              >
-            </div>
-          }
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label" for="field_profile" abfTranslate="hcAdminApp.directoryPatient.profile">Profile</label>
-          <select
-            class="form-control"
-            id="field_profile"
-            data-cy="profile"
-            name="profile"
-            formControlName="profile"
-            [compareWith]="compareProfile"
-          >
-            @if (editForm.get(['profile'])!.value === null) {
-              <option [ngValue]="null" selected></option>
-            }
-            @for (profileOption of profilesCollection(); track $index) {
-              <option [ngValue]="profileOption">{{ profileOption | abfRecordLabel }}</option>
-            }
-          </select>
-        </div>
-        @if (editForm.get(['profile'])!.invalid && (editForm.get(['profile'])!.dirty || editForm.get(['profile'])!.touched)) {
-          <div>
-            @if (editForm.get(['profile'])?.errors?.required) {
-              <small class="form-text text-danger" abfTranslate="entity.validation.required">This field is required.</small>
+              </div>
             }
           </div>
         }
 
-        <div class="mb-3">
-          <label class="form-label" for="field_angel" abfTranslate="hcAdminApp.directoryPatient.angel">Angel</label>
-          <select class="form-control" id="field_angel" data-cy="angel" name="angel" formControlName="angel" [compareWith]="compareAngel">
-            <option [ngValue]="null"></option>
-            @for (angelOption of angelsCollection(); track $index) {
-              <option [ngValue]="angelOption">{{ angelOption | abfRecordLabel }}</option>
-            }
-          </select>
-        </div>
+        @if (wizard.step() === 1) {
+          <div class="mb-3">
+            <label class="form-label" for="field_profile" abfTranslate="hcAdminApp.directoryPatient.profile">Profile</label>
+            <select
+              class="form-control"
+              id="field_profile"
+              data-cy="profile"
+              name="profile"
+              formControlName="profile"
+              [compareWith]="compareProfile"
+            >
+              @if (editForm.get(['profile'])!.value === null) {
+                <option [ngValue]="null" selected></option>
+              }
+              @for (profileOption of profilesCollection(); track $index) {
+                <option [ngValue]="profileOption">{{ profileOption | abfRecordLabel }}</option>
+              }
+            </select>
+          </div>
+          @if (editForm.get(['profile'])!.invalid && (editForm.get(['profile'])!.dirty || editForm.get(['profile'])!.touched)) {
+            <div>
+              @if (editForm.get(['profile'])?.errors?.required) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.required">This field is required.</small>
+              }
+            </div>
+          }
 
-        <div class="mb-3">
-          <label class="form-label" for="field_plan" abfTranslate="hcAdminApp.directoryPatient.plan">Plan</label>
-          <select class="form-control" id="field_plan" data-cy="plan" name="plan" formControlName="plan" [compareWith]="compareServicePlan">
-            <option [ngValue]="null"></option>
-            @for (servicePlanOption of servicePlansSharedCollection(); track $index) {
-              <option [ngValue]="servicePlanOption">{{ servicePlanOption.name }}</option>
-            }
-          </select>
-        </div>
+          <div class="mb-3">
+            <label class="form-label" for="field_angel" abfTranslate="hcAdminApp.directoryPatient.angel">Angel</label>
+            <select class="form-control" id="field_angel" data-cy="angel" name="angel" formControlName="angel" [compareWith]="compareAngel">
+              <option [ngValue]="null"></option>
+              @for (angelOption of angelsCollection(); track $index) {
+                <option [ngValue]="angelOption">{{ angelOption | abfRecordLabel }}</option>
+              }
+            </select>
+          </div>
+        }
 
-        <div class="mb-3">
-          <label class="form-label" for="field_clinicalLead" abfTranslate="hcAdminApp.directoryPatient.clinicalLead">Clinical Lead</label>
-          <select
-            class="form-control"
-            id="field_clinicalLead"
-            data-cy="clinicalLead"
-            name="clinicalLead"
-            formControlName="clinicalLead"
-            [compareWith]="compareProfessional"
-          >
-            <option [ngValue]="null"></option>
-            @for (professionalOption of professionalsSharedCollection(); track $index) {
-              <option [ngValue]="professionalOption">{{ professionalOption | abfRecordLabel }}</option>
-            }
-          </select>
-        </div>
+        @if (wizard.step() === 2) {
+          <div class="mb-3">
+            <label class="form-label" for="field_plan" abfTranslate="hcAdminApp.directoryPatient.plan">Plan</label>
+            <select
+              class="form-control"
+              id="field_plan"
+              data-cy="plan"
+              name="plan"
+              formControlName="plan"
+              [compareWith]="compareServicePlan"
+            >
+              <option [ngValue]="null"></option>
+              @for (servicePlanOption of servicePlansSharedCollection(); track $index) {
+                <option [ngValue]="servicePlanOption">{{ servicePlanOption.name }}</option>
+              }
+            </select>
+          </div>
 
-        <div class="mb-3">
-          <label class="form-label" for="field_hub" abfTranslate="hcAdminApp.directoryPatient.hub">Hub</label>
-          <select class="form-control" id="field_hub" data-cy="hub" name="hub" formControlName="hub" [compareWith]="compareHub">
-            <option [ngValue]="null"></option>
-            @for (hubOption of hubsSharedCollection(); track $index) {
-              <option [ngValue]="hubOption">{{ hubOption.name }}</option>
-            }
-          </select>
-        </div>
+          <div class="mb-3">
+            <label class="form-label" for="field_clinicalLead" abfTranslate="hcAdminApp.directoryPatient.clinicalLead">Clinical Lead</label>
+            <select
+              class="form-control"
+              id="field_clinicalLead"
+              data-cy="clinicalLead"
+              name="clinicalLead"
+              formControlName="clinicalLead"
+              [compareWith]="compareProfessional"
+            >
+              <option [ngValue]="null"></option>
+              @for (professionalOption of professionalsSharedCollection(); track $index) {
+                <option [ngValue]="professionalOption">{{ professionalOption | abfRecordLabel }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label" for="field_hub" abfTranslate="hcAdminApp.directoryPatient.hub">Hub</label>
+            <select class="form-control" id="field_hub" data-cy="hub" name="hub" formControlName="hub" [compareWith]="compareHub">
+              <option [ngValue]="null"></option>
+              @for (hubOption of hubsSharedCollection(); track $index) {
+                <option [ngValue]="hubOption">{{ hubOption.name }}</option>
+              }
+            </select>
+          </div>
+        }
       </div>
     </div>
 
-    <div class="abf-form__actions no-print">
+    <div class="abf-form__wizard-actions no-print">
       <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary" (click)="previousState()">
         <fa-icon icon="ban" />&nbsp;<span abfTranslate="entity.action.cancel">Cancel</span>
       </button>
 
-      <button
-        type="submit"
-        id="save-entity"
-        data-cy="entityCreateSaveButton"
-        [disabled]="editForm.invalid || isSaving()"
-        class="btn btn-primary"
-      >
-        <fa-icon icon="save" />&nbsp;<span abfTranslate="entity.action.save">Save</span>
-      </button>
+      <span class="spacer"></span>
+
+      @if (!wizard.isFirst()) {
+        <button type="button" class="btn btn-ghost" data-cy="wizardBack" (click)="wizard.previous()">
+          <fa-icon icon="arrow-left" />&nbsp;<span abfTranslate="entity.action.back">Back</span>
+        </button>
+      }
+
+      @if (wizard.isLast()) {
+        <button
+          type="submit"
+          id="save-entity"
+          data-cy="entityCreateSaveButton"
+          [disabled]="editForm.invalid || isSaving()"
+          class="btn btn-primary"
+        >
+          <fa-icon icon="save" />&nbsp;<span abfTranslate="entity.action.save">Save</span>
+        </button>
+      } @else {
+        <button type="button" class="btn btn-primary" data-cy="wizardNext" (click)="wizard.next()">
+          <span abfTranslate="entity.action.next">Next</span>&nbsp;<fa-icon icon="arrow-right" />
+        </button>
+      }
     </div>
   </form>
 </div>

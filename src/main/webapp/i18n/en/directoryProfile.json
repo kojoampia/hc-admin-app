@@ -31,7 +31,12 @@
       "idNumber": "Id Number",
       "address": "Address",
       "patient": "Patient",
-      "professional": "Professional"
+      "professional": "Professional",
+      "step": {
+        "person": "Person",
+        "contact": "Contact",
+        "identification": "Identification"
+      }
     }
   }
 }

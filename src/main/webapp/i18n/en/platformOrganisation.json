@@ -27,7 +27,12 @@
       "switchboard": "Switchboard",
       "email": "Email",
       "deskHours": "Desk Hours",
-      "address": "Address"
+      "address": "Address",
+      "step": {
+        "identity": "Identity",
+        "contact": "Contact",
+        "address": "Address"
+      }
     }
   }
 }

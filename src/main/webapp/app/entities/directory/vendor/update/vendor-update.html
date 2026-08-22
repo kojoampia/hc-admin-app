@@ -8,285 +8,312 @@
       </div>
     </div>
 
+    <abf-wizard-steps
+      [steps]="wizard.steps"
+      [current]="wizard.step()"
+      [completed]="wizard.completed()"
+      (stepSelect)="wizard.goTo($event)"
+    />
+
     <div class="card card-pad">
       <abf-alert-error />
 
       <div class="abf-form__grid">
-        @let nameRef = editForm.get('name')!;
-        <div class="mb-3">
-          <label class="form-label" for="field_name" abfTranslate="hcAdminApp.directoryVendor.name">Name</label>
-          <input type="text" class="form-control" name="name" id="field_name" data-cy="name" formControlName="name" />
-          @if (nameRef.invalid && (nameRef.dirty || nameRef.touched)) {
-            <div>
-              @if (nameRef.errors?.required) {
-                <small class="form-text text-danger" abfTranslate="entity.validation.required">This field is required.</small>
-              }
-              @if (nameRef.errors?.maxlength) {
-                <small class="form-text text-danger" abfTranslate="entity.validation.maxlength" [translateValues]="{ max: '100' }"
-                  >This field cannot be longer than 100 characters.</small
-                >
-              }
-            </div>
-          }
-        </div>
-
-        @let categoryRef = editForm.get('category')!;
-        <div class="mb-3">
-          <label class="form-label" for="field_category" abfTranslate="hcAdminApp.directoryVendor.category">Category</label>
-          <input type="text" class="form-control" name="category" id="field_category" data-cy="category" formControlName="category" />
-          @if (categoryRef.invalid && (categoryRef.dirty || categoryRef.touched)) {
-            <div>
-              @if (categoryRef.errors?.required) {
-                <small class="form-text text-danger" abfTranslate="entity.validation.required">This field is required.</small>
-              }
-              @if (categoryRef.errors?.maxlength) {
-                <small class="form-text text-danger" abfTranslate="entity.validation.maxlength" [translateValues]="{ max: '40' }"
-                  >This field cannot be longer than 40 characters.</small
-                >
-              }
-            </div>
-          }
-        </div>
-
-        @let serviceSummaryRef = editForm.get('serviceSummary')!;
-        <div class="mb-3">
-          <label class="form-label" for="field_serviceSummary" abfTranslate="hcAdminApp.directoryVendor.serviceSummary"
-            >Service Summary</label
-          >
-          <input
-            type="text"
-            class="form-control"
-            name="serviceSummary"
-            id="field_serviceSummary"
-            data-cy="serviceSummary"
-            formControlName="serviceSummary"
-          />
-          @if (serviceSummaryRef.invalid && (serviceSummaryRef.dirty || serviceSummaryRef.touched)) {
-            <div>
-              @if (serviceSummaryRef.errors?.maxlength) {
-                <small class="form-text text-danger" abfTranslate="entity.validation.maxlength" [translateValues]="{ max: '200' }"
-                  >This field cannot be longer than 200 characters.</small
-                >
-              }
-            </div>
-          }
-        </div>
-
-        @let contactNameRef = editForm.get('contactName')!;
-        <div class="mb-3">
-          <label class="form-label" for="field_contactName" abfTranslate="hcAdminApp.directoryVendor.contactName">Contact Name</label>
-          <input
-            type="text"
-            class="form-control"
-            name="contactName"
-            id="field_contactName"
-            data-cy="contactName"
-            formControlName="contactName"
-          />
-          @if (contactNameRef.invalid && (contactNameRef.dirty || contactNameRef.touched)) {
-            <div>
-              @if (contactNameRef.errors?.maxlength) {
-                <small class="form-text text-danger" abfTranslate="entity.validation.maxlength" [translateValues]="{ max: '80' }"
-                  >This field cannot be longer than 80 characters.</small
-                >
-              }
-            </div>
-          }
-        </div>
-
-        @let phoneRef = editForm.get('phone')!;
-        <div class="mb-3">
-          <label class="form-label" for="field_phone" abfTranslate="hcAdminApp.directoryVendor.phone">Phone</label>
-          <input type="text" class="form-control" name="phone" id="field_phone" data-cy="phone" formControlName="phone" />
-          @if (phoneRef.invalid && (phoneRef.dirty || phoneRef.touched)) {
-            <div>
-              @if (phoneRef.errors?.maxlength) {
-                <small class="form-text text-danger" abfTranslate="entity.validation.maxlength" [translateValues]="{ max: '24' }"
-                  >This field cannot be longer than 24 characters.</small
-                >
-              }
-            </div>
-          }
-        </div>
-
-        @let emailRef = editForm.get('email')!;
-        <div class="mb-3">
-          <label class="form-label" for="field_email" abfTranslate="hcAdminApp.directoryVendor.email">Email</label>
-          <input type="text" class="form-control" name="email" id="field_email" data-cy="email" formControlName="email" />
-          @if (emailRef.invalid && (emailRef.dirty || emailRef.touched)) {
-            <div>
-              @if (emailRef.errors?.maxlength) {
-                <small class="form-text text-danger" abfTranslate="entity.validation.maxlength" [translateValues]="{ max: '120' }"
-                  >This field cannot be longer than 120 characters.</small
-                >
-              }
-            </div>
-          }
-        </div>
-
-        @let cityRef = editForm.get('city')!;
-        <div class="mb-3">
-          <label class="form-label" for="field_city" abfTranslate="hcAdminApp.directoryVendor.city">City</label>
-          <input type="text" class="form-control" name="city" id="field_city" data-cy="city" formControlName="city" />
-          @if (cityRef.invalid && (cityRef.dirty || cityRef.touched)) {
-            <div>
-              @if (cityRef.errors?.maxlength) {
-                <small class="form-text text-danger" abfTranslate="entity.validation.maxlength" [translateValues]="{ max: '60' }"
-                  >This field cannot be longer than 60 characters.</small
-                >
-              }
-            </div>
-          }
-        </div>
-
-        @let statusRef = editForm.get('status')!;
-        <div class="mb-3">
-          <label class="form-label" for="field_status" abfTranslate="hcAdminApp.directoryVendor.status">Status</label>
-          <select class="form-control" name="status" formControlName="status" id="field_status" data-cy="status">
-            <option [ngValue]="null">{{ 'hcAdminApp.AccountStatus.null' | translate }}</option>
-            @for (accountStatus of accountStatusValues; track $index) {
-              <option [value]="accountStatus">{{ 'hcAdminApp.AccountStatus.' + accountStatus | translate }}</option>
+        @if (wizard.step() === 0) {
+          @let nameRef = editForm.get('name')!;
+          <div class="mb-3">
+            <label class="form-label" for="field_name" abfTranslate="hcAdminApp.directoryVendor.name">Name</label>
+            <input type="text" class="form-control" name="name" id="field_name" data-cy="name" formControlName="name" />
+            @if (nameRef.invalid && (nameRef.dirty || nameRef.touched)) {
+              <div>
+                @if (nameRef.errors?.required) {
+                  <small class="form-text text-danger" abfTranslate="entity.validation.required">This field is required.</small>
+                }
+                @if (nameRef.errors?.maxlength) {
+                  <small class="form-text text-danger" abfTranslate="entity.validation.maxlength" [translateValues]="{ max: '100' }"
+                    >This field cannot be longer than 100 characters.</small
+                  >
+                }
+              </div>
             }
-          </select>
-          @if (statusRef.invalid && (statusRef.dirty || statusRef.touched)) {
-            <div>
-              @if (statusRef.errors?.required) {
-                <small class="form-text text-danger" abfTranslate="entity.validation.required">This field is required.</small>
-              }
-            </div>
-          }
-        </div>
+          </div>
 
-        @let contractNoteRef = editForm.get('contractNote')!;
-        <div class="mb-3">
-          <label class="form-label" for="field_contractNote" abfTranslate="hcAdminApp.directoryVendor.contractNote">Contract Note</label>
-          <input
-            type="text"
-            class="form-control"
-            name="contractNote"
-            id="field_contractNote"
-            data-cy="contractNote"
-            formControlName="contractNote"
-          />
-          @if (contractNoteRef.invalid && (contractNoteRef.dirty || contractNoteRef.touched)) {
-            <div>
-              @if (contractNoteRef.errors?.maxlength) {
-                <small class="form-text text-danger" abfTranslate="entity.validation.maxlength" [translateValues]="{ max: '80' }"
-                  >This field cannot be longer than 80 characters.</small
-                >
-              }
-            </div>
-          }
-        </div>
+          @let categoryRef = editForm.get('category')!;
+          <div class="mb-3">
+            <label class="form-label" for="field_category" abfTranslate="hcAdminApp.directoryVendor.category">Category</label>
+            <input type="text" class="form-control" name="category" id="field_category" data-cy="category" formControlName="category" />
+            @if (categoryRef.invalid && (categoryRef.dirty || categoryRef.touched)) {
+              <div>
+                @if (categoryRef.errors?.required) {
+                  <small class="form-text text-danger" abfTranslate="entity.validation.required">This field is required.</small>
+                }
+                @if (categoryRef.errors?.maxlength) {
+                  <small class="form-text text-danger" abfTranslate="entity.validation.maxlength" [translateValues]="{ max: '40' }"
+                    >This field cannot be longer than 40 characters.</small
+                  >
+                }
+              </div>
+            }
+          </div>
 
-        <div class="mb-3">
-          <label class="form-label" for="field_contractRenewsOn" abfTranslate="hcAdminApp.directoryVendor.contractRenewsOn"
-            >Contract Renews On</label
-          >
-          <div class="input-group">
+          @let serviceSummaryRef = editForm.get('serviceSummary')!;
+          <div class="mb-3">
+            <label class="form-label" for="field_serviceSummary" abfTranslate="hcAdminApp.directoryVendor.serviceSummary"
+              >Service Summary</label
+            >
             <input
-              id="field_contractRenewsOn"
-              data-cy="contractRenewsOn"
               type="text"
               class="form-control"
-              name="contractRenewsOn"
-              ngbDatepicker
-              #contractRenewsOnDp="ngbDatepicker"
-              formControlName="contractRenewsOn"
+              name="serviceSummary"
+              id="field_serviceSummary"
+              data-cy="serviceSummary"
+              formControlName="serviceSummary"
             />
-            <button type="button" class="btn btn-secondary" (click)="contractRenewsOnDp.toggle()"><fa-icon icon="calendar-alt" /></button>
+            @if (serviceSummaryRef.invalid && (serviceSummaryRef.dirty || serviceSummaryRef.touched)) {
+              <div>
+                @if (serviceSummaryRef.errors?.maxlength) {
+                  <small class="form-text text-danger" abfTranslate="entity.validation.maxlength" [translateValues]="{ max: '200' }"
+                    >This field cannot be longer than 200 characters.</small
+                  >
+                }
+              </div>
+            }
           </div>
-        </div>
 
-        @let orderCountRef = editForm.get('orderCount')!;
-        <div class="mb-3">
-          <label class="form-label" for="field_orderCount" abfTranslate="hcAdminApp.directoryVendor.orderCount">Order Count</label>
-          <input
-            type="number"
-            class="form-control"
-            name="orderCount"
-            id="field_orderCount"
-            data-cy="orderCount"
-            formControlName="orderCount"
-          />
-          @if (orderCountRef.invalid && (orderCountRef.dirty || orderCountRef.touched)) {
-            <div>
-              @if (orderCountRef.errors?.min) {
-                <small class="form-text text-danger" abfTranslate="entity.validation.min" [translateValues]="{ min: '0' }"
-                  >This field should be at least 0.</small
-                >
-              }
-              <small class="form-text text-danger" [hidden]="!orderCountRef.errors?.number" abfTranslate="entity.validation.number"
-                >This field should be a number.</small
-              >
-            </div>
-          }
-        </div>
+          @let contactNameRef = editForm.get('contactName')!;
+          <div class="mb-3">
+            <label class="form-label" for="field_contactName" abfTranslate="hcAdminApp.directoryVendor.contactName">Contact Name</label>
+            <input
+              type="text"
+              class="form-control"
+              name="contactName"
+              id="field_contactName"
+              data-cy="contactName"
+              formControlName="contactName"
+            />
+            @if (contactNameRef.invalid && (contactNameRef.dirty || contactNameRef.touched)) {
+              <div>
+                @if (contactNameRef.errors?.maxlength) {
+                  <small class="form-text text-danger" abfTranslate="entity.validation.maxlength" [translateValues]="{ max: '80' }"
+                    >This field cannot be longer than 80 characters.</small
+                  >
+                }
+              </div>
+            }
+          </div>
 
-        @let spendToDateRef = editForm.get('spendToDate')!;
-        <div class="mb-3">
-          <label class="form-label" for="field_spendToDate" abfTranslate="hcAdminApp.directoryVendor.spendToDate">Spend To Date</label>
-          <input
-            type="number"
-            class="form-control"
-            name="spendToDate"
-            id="field_spendToDate"
-            data-cy="spendToDate"
-            formControlName="spendToDate"
-          />
-          @if (spendToDateRef.invalid && (spendToDateRef.dirty || spendToDateRef.touched)) {
-            <div>
-              @if (spendToDateRef.errors?.min) {
-                <small class="form-text text-danger" abfTranslate="entity.validation.min" [translateValues]="{ min: '0' }"
-                  >This field should be at least 0.</small
-                >
-              }
-              <small class="form-text text-danger" [hidden]="!spendToDateRef.errors?.number" abfTranslate="entity.validation.number"
-                >This field should be a number.</small
-              >
-            </div>
-          }
-        </div>
+          @let phoneRef = editForm.get('phone')!;
+          <div class="mb-3">
+            <label class="form-label" for="field_phone" abfTranslate="hcAdminApp.directoryVendor.phone">Phone</label>
+            <input type="text" class="form-control" name="phone" id="field_phone" data-cy="phone" formControlName="phone" />
+            @if (phoneRef.invalid && (phoneRef.dirty || phoneRef.touched)) {
+              <div>
+                @if (phoneRef.errors?.maxlength) {
+                  <small class="form-text text-danger" abfTranslate="entity.validation.maxlength" [translateValues]="{ max: '24' }"
+                    >This field cannot be longer than 24 characters.</small
+                  >
+                }
+              </div>
+            }
+          </div>
 
-        @let ratingRef = editForm.get('rating')!;
-        <div class="mb-3">
-          <label class="form-label" for="field_rating" abfTranslate="hcAdminApp.directoryVendor.rating">Rating</label>
-          <input type="number" class="form-control" name="rating" id="field_rating" data-cy="rating" formControlName="rating" />
-          @if (ratingRef.invalid && (ratingRef.dirty || ratingRef.touched)) {
-            <div>
-              @if (ratingRef.errors?.min) {
-                <small class="form-text text-danger" abfTranslate="entity.validation.min" [translateValues]="{ min: '0' }"
-                  >This field should be at least 0.</small
-                >
+          @let emailRef = editForm.get('email')!;
+          <div class="mb-3">
+            <label class="form-label" for="field_email" abfTranslate="hcAdminApp.directoryVendor.email">Email</label>
+            <input type="text" class="form-control" name="email" id="field_email" data-cy="email" formControlName="email" />
+            @if (emailRef.invalid && (emailRef.dirty || emailRef.touched)) {
+              <div>
+                @if (emailRef.errors?.maxlength) {
+                  <small class="form-text text-danger" abfTranslate="entity.validation.maxlength" [translateValues]="{ max: '120' }"
+                    >This field cannot be longer than 120 characters.</small
+                  >
+                }
+              </div>
+            }
+          </div>
+
+          @let cityRef = editForm.get('city')!;
+          <div class="mb-3">
+            <label class="form-label" for="field_city" abfTranslate="hcAdminApp.directoryVendor.city">City</label>
+            <input type="text" class="form-control" name="city" id="field_city" data-cy="city" formControlName="city" />
+            @if (cityRef.invalid && (cityRef.dirty || cityRef.touched)) {
+              <div>
+                @if (cityRef.errors?.maxlength) {
+                  <small class="form-text text-danger" abfTranslate="entity.validation.maxlength" [translateValues]="{ max: '60' }"
+                    >This field cannot be longer than 60 characters.</small
+                  >
+                }
+              </div>
+            }
+          </div>
+        }
+
+        @if (wizard.step() === 1) {
+          @let statusRef = editForm.get('status')!;
+          <div class="mb-3">
+            <label class="form-label" for="field_status" abfTranslate="hcAdminApp.directoryVendor.status">Status</label>
+            <select class="form-control" name="status" formControlName="status" id="field_status" data-cy="status">
+              <option [ngValue]="null">{{ 'hcAdminApp.AccountStatus.null' | translate }}</option>
+              @for (accountStatus of accountStatusValues; track $index) {
+                <option [value]="accountStatus">{{ 'hcAdminApp.AccountStatus.' + accountStatus | translate }}</option>
               }
-              @if (ratingRef.errors?.max) {
-                <small class="form-text text-danger" abfTranslate="entity.validation.max" [translateValues]="{ max: '5' }"
-                  >This field cannot be more than 5.</small
-                >
-              }
-              <small class="form-text text-danger" [hidden]="!ratingRef.errors?.number" abfTranslate="entity.validation.number"
-                >This field should be a number.</small
-              >
+            </select>
+            @if (statusRef.invalid && (statusRef.dirty || statusRef.touched)) {
+              <div>
+                @if (statusRef.errors?.required) {
+                  <small class="form-text text-danger" abfTranslate="entity.validation.required">This field is required.</small>
+                }
+              </div>
+            }
+          </div>
+
+          @let contractNoteRef = editForm.get('contractNote')!;
+          <div class="mb-3">
+            <label class="form-label" for="field_contractNote" abfTranslate="hcAdminApp.directoryVendor.contractNote">Contract Note</label>
+            <input
+              type="text"
+              class="form-control"
+              name="contractNote"
+              id="field_contractNote"
+              data-cy="contractNote"
+              formControlName="contractNote"
+            />
+            @if (contractNoteRef.invalid && (contractNoteRef.dirty || contractNoteRef.touched)) {
+              <div>
+                @if (contractNoteRef.errors?.maxlength) {
+                  <small class="form-text text-danger" abfTranslate="entity.validation.maxlength" [translateValues]="{ max: '80' }"
+                    >This field cannot be longer than 80 characters.</small
+                  >
+                }
+              </div>
+            }
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label" for="field_contractRenewsOn" abfTranslate="hcAdminApp.directoryVendor.contractRenewsOn"
+              >Contract Renews On</label
+            >
+            <div class="input-group">
+              <input
+                id="field_contractRenewsOn"
+                data-cy="contractRenewsOn"
+                type="text"
+                class="form-control"
+                name="contractRenewsOn"
+                ngbDatepicker
+                #contractRenewsOnDp="ngbDatepicker"
+                formControlName="contractRenewsOn"
+              />
+              <button type="button" class="btn btn-secondary" (click)="contractRenewsOnDp.toggle()"><fa-icon icon="calendar-alt" /></button>
             </div>
-          }
-        </div>
+          </div>
+        }
+
+        @if (wizard.step() === 2) {
+          @let orderCountRef = editForm.get('orderCount')!;
+          <div class="mb-3">
+            <label class="form-label" for="field_orderCount" abfTranslate="hcAdminApp.directoryVendor.orderCount">Order Count</label>
+            <input
+              type="number"
+              class="form-control"
+              name="orderCount"
+              id="field_orderCount"
+              data-cy="orderCount"
+              formControlName="orderCount"
+            />
+            @if (orderCountRef.invalid && (orderCountRef.dirty || orderCountRef.touched)) {
+              <div>
+                @if (orderCountRef.errors?.min) {
+                  <small class="form-text text-danger" abfTranslate="entity.validation.min" [translateValues]="{ min: '0' }"
+                    >This field should be at least 0.</small
+                  >
+                }
+                <small class="form-text text-danger" [hidden]="!orderCountRef.errors?.number" abfTranslate="entity.validation.number"
+                  >This field should be a number.</small
+                >
+              </div>
+            }
+          </div>
+
+          @let spendToDateRef = editForm.get('spendToDate')!;
+          <div class="mb-3">
+            <label class="form-label" for="field_spendToDate" abfTranslate="hcAdminApp.directoryVendor.spendToDate">Spend To Date</label>
+            <input
+              type="number"
+              class="form-control"
+              name="spendToDate"
+              id="field_spendToDate"
+              data-cy="spendToDate"
+              formControlName="spendToDate"
+            />
+            @if (spendToDateRef.invalid && (spendToDateRef.dirty || spendToDateRef.touched)) {
+              <div>
+                @if (spendToDateRef.errors?.min) {
+                  <small class="form-text text-danger" abfTranslate="entity.validation.min" [translateValues]="{ min: '0' }"
+                    >This field should be at least 0.</small
+                  >
+                }
+                <small class="form-text text-danger" [hidden]="!spendToDateRef.errors?.number" abfTranslate="entity.validation.number"
+                  >This field should be a number.</small
+                >
+              </div>
+            }
+          </div>
+
+          @let ratingRef = editForm.get('rating')!;
+          <div class="mb-3">
+            <label class="form-label" for="field_rating" abfTranslate="hcAdminApp.directoryVendor.rating">Rating</label>
+            <input type="number" class="form-control" name="rating" id="field_rating" data-cy="rating" formControlName="rating" />
+            @if (ratingRef.invalid && (ratingRef.dirty || ratingRef.touched)) {
+              <div>
+                @if (ratingRef.errors?.min) {
+                  <small class="form-text text-danger" abfTranslate="entity.validation.min" [translateValues]="{ min: '0' }"
+                    >This field should be at least 0.</small
+                  >
+                }
+                @if (ratingRef.errors?.max) {
+                  <small class="form-text text-danger" abfTranslate="entity.validation.max" [translateValues]="{ max: '5' }"
+                    >This field cannot be more than 5.</small
+                  >
+                }
+                <small class="form-text text-danger" [hidden]="!ratingRef.errors?.number" abfTranslate="entity.validation.number"
+                  >This field should be a number.</small
+                >
+              </div>
+            }
+          </div>
+        }
       </div>
     </div>
 
-    <div class="abf-form__actions no-print">
+    <div class="abf-form__wizard-actions no-print">
       <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary" (click)="previousState()">
         <fa-icon icon="ban" />&nbsp;<span abfTranslate="entity.action.cancel">Cancel</span>
       </button>
 
-      <button
-        type="submit"
-        id="save-entity"
-        data-cy="entityCreateSaveButton"
-        [disabled]="editForm.invalid || isSaving()"
-        class="btn btn-primary"
-      >
-        <fa-icon icon="save" />&nbsp;<span abfTranslate="entity.action.save">Save</span>
-      </button>
+      <span class="spacer"></span>
+
+      @if (!wizard.isFirst()) {
+        <button type="button" class="btn btn-ghost" data-cy="wizardBack" (click)="wizard.previous()">
+          <fa-icon icon="arrow-left" />&nbsp;<span abfTranslate="entity.action.back">Back</span>
+        </button>
+      }
+
+      @if (wizard.isLast()) {
+        <button
+          type="submit"
+          id="save-entity"
+          data-cy="entityCreateSaveButton"
+          [disabled]="editForm.invalid || isSaving()"
+          class="btn btn-primary"
+        >
+          <fa-icon icon="save" />&nbsp;<span abfTranslate="entity.action.save">Save</span>
+        </button>
+      } @else {
+        <button type="button" class="btn btn-primary" data-cy="wizardNext" (click)="wizard.next()">
+          <span abfTranslate="entity.action.next">Next</span>&nbsp;<fa-icon icon="arrow-right" />
+        </button>
+      }
     </div>
   </form>
 </div>

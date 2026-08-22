@@ -21,12 +21,23 @@ import { ProfileService } from '../service/profile.service';
 
 import { ProfileFormGroup, ProfileFormService } from './profile-form.service';
 import RecordLabelPipe from 'app/shared/format/record-label.pipe';
+import { FormWizard } from 'app/shared/form/form-wizard';
+import WizardSteps from 'app/shared/form/wizard-steps';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'abf-profile-update',
   templateUrl: './profile-update.html',
-  imports: [RecordLabelPipe, TranslateDirective, TranslatePipe, FontAwesomeModule, AlertError, ReactiveFormsModule, NgbInputDatepicker],
+  imports: [
+    WizardSteps,
+    RecordLabelPipe,
+    TranslateDirective,
+    TranslatePipe,
+    FontAwesomeModule,
+    AlertError,
+    ReactiveFormsModule,
+    NgbInputDatepicker,
+  ],
 })
 export class ProfileUpdate implements OnInit {
   readonly isSaving = signal(false);
@@ -44,6 +55,23 @@ export class ProfileUpdate implements OnInit {
 
   // eslint-disable-next-line @typescript-eslint/member-ordering
   editForm: ProfileFormGroup = this.profileFormService.createProfileFormGroup();
+
+  /**
+   * The form in steps, grouped by what the fields are about rather than by how many fit.
+   *
+   * <p>The grouping is the useful part: a step is a question somebody can answer in one
+   * sitting, and the control names below are what gates leaving it — see {@link FormWizard},
+   * which refuses to advance past an invalid step rather than saving up the errors for the end.
+   */
+  // eslint-disable-next-line @typescript-eslint/member-ordering
+  readonly wizard = new FormWizard(this.editForm, [
+    {
+      label: 'hcAdminApp.directoryProfile.step.person',
+      controls: ['accountId', 'title', 'firstName', 'middleName', 'lastName', 'dateOfBirth', 'sex'],
+    },
+    { label: 'hcAdminApp.directoryProfile.step.contact', controls: ['mobilePhone', 'email'] },
+    { label: 'hcAdminApp.directoryProfile.step.identification', controls: ['idType', 'idNumber', 'address'] },
+  ]);
 
   compareAddress = (o1: IAddress | null, o2: IAddress | null): boolean => this.addressService.compareAddress(o1, o2);
 

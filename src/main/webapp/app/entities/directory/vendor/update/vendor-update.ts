@@ -14,12 +14,14 @@ import { VendorService } from '../service/vendor.service';
 import { IVendor } from '../vendor.model';
 
 import { VendorFormGroup, VendorFormService } from './vendor-form.service';
+import { FormWizard } from 'app/shared/form/form-wizard';
+import WizardSteps from 'app/shared/form/wizard-steps';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'abf-vendor-update',
   templateUrl: './vendor-update.html',
-  imports: [TranslateDirective, TranslatePipe, FontAwesomeModule, AlertError, ReactiveFormsModule, NgbInputDatepicker],
+  imports: [WizardSteps, TranslateDirective, TranslatePipe, FontAwesomeModule, AlertError, ReactiveFormsModule, NgbInputDatepicker],
 })
 export class VendorUpdate implements OnInit {
   readonly isSaving = signal(false);
@@ -32,6 +34,23 @@ export class VendorUpdate implements OnInit {
 
   // eslint-disable-next-line @typescript-eslint/member-ordering
   editForm: VendorFormGroup = this.vendorFormService.createVendorFormGroup();
+
+  /**
+   * The form in steps, grouped by what the fields are about rather than by how many fit.
+   *
+   * <p>The grouping is the useful part: a step is a question somebody can answer in one
+   * sitting, and the control names below are what gates leaving it — see {@link FormWizard},
+   * which refuses to advance past an invalid step rather than saving up the errors for the end.
+   */
+  // eslint-disable-next-line @typescript-eslint/member-ordering
+  readonly wizard = new FormWizard(this.editForm, [
+    {
+      label: 'hcAdminApp.directoryVendor.step.business',
+      controls: ['name', 'category', 'serviceSummary', 'contactName', 'phone', 'email', 'city'],
+    },
+    { label: 'hcAdminApp.directoryVendor.step.contract', controls: ['status', 'contractNote', 'contractRenewsOn'] },
+    { label: 'hcAdminApp.directoryVendor.step.trading', controls: ['orderCount', 'spendToDate', 'rating'] },
+  ]);
 
   ngOnInit(): void {
     this.activatedRoute.data.subscribe(({ vendor }) => {

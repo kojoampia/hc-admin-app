@@ -66,7 +66,12 @@
       "clinicalLead": "Clinical Lead",
       "hub": "Hub",
       "archivedNotice": "This record is archived and does not appear in the directory.",
-      "isArchived": "Archived"
+      "isArchived": "Archived",
+      "step": {
+        "account": "Account",
+        "person": "Person",
+        "care": "Care team"
+      }
     }
   }
 }
