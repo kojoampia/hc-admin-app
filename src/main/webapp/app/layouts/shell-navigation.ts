@@ -117,6 +117,17 @@ export const SHELL_TABS: readonly ShellNavItem[] = SHELL_TAB_ROUTES.map(route =>
  * The topbar's "New" quick-add menu. Each entry routes straight at a
  * generated entity's create form — the console adds no bespoke create
  * screens of its own.
+ *
+ * **An account is not something you start from a global menu.** Patient,
+ * professional and vendor were here until 2026-08-22 and were removed: each is
+ * a person or an organisation with an intake behind it, and the two that end
+ * in an account elsewhere (patients and clinicians both register on their own
+ * stacks) are not the administrator's to invent from the chrome. What is left
+ * is operational — a task, an activity in the catalogue — where the
+ * administrator genuinely is the author.
+ *
+ * The three directories keep their own Create buttons, so creation moved off
+ * the global menu rather than going away.
  */
 export interface QuickAddItem {
   readonly route: string;
@@ -125,9 +136,6 @@ export interface QuickAddItem {
 }
 
 export const QUICK_ADD: readonly QuickAddItem[] = [
-  { route: '/patient/new', label: 'global.menu.quickAdd.patient', icon: 'user-plus' },
-  { route: '/professional/new', label: 'global.menu.quickAdd.professional', icon: 'user-doctor' },
-  { route: '/vendor/new', label: 'global.menu.quickAdd.vendor', icon: 'truck-fast' },
   { route: '/task/new', label: 'global.menu.quickAdd.task', icon: 'clipboard-list' },
   { route: '/service-activity/new', label: 'global.menu.quickAdd.serviceActivity', icon: 'layer-group' },
 ];

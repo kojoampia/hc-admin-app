@@ -87,9 +87,6 @@
         "organisation": "Organisation"
       },
       "quickAdd": {
-        "patient": "Patient account",
-        "professional": "Professional account",
-        "vendor": "Vendor",
         "task": "Task",
         "serviceActivity": "Catalogue activity"
       }
