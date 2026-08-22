@@ -151,7 +151,10 @@
     },
     "action": {
       "new": "New",
-      "print": "Print this screen"
+      "print": "Print this screen",
+      "back": "Back",
+      "backTo": "Back to {{name}}",
+      "backToRecord": "Back to the record"
     },
     "role": {
       "ops": {

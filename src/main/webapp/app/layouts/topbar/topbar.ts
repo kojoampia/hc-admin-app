@@ -8,6 +8,8 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { filter, map, startWith } from 'rxjs';
 
 import HasAnyAuthorityDirective from 'app/shared/auth/has-any-authority.directive';
+import BackLink from 'app/shared/navigation/back-link';
+import { parentOf } from 'app/shared/navigation/parent-route';
 import { TranslateDirective } from 'app/shared/language';
 
 import { QUICK_ADD, QUICK_ADD_AUTHORITIES } from '../shell-navigation';
@@ -39,6 +41,7 @@ import { ShellStateService } from '../shell-state.service';
     HasAnyAuthorityDirective,
     TranslateDirective,
     TranslatePipe,
+    BackLink,
   ],
 })
 export default class Topbar {
@@ -54,6 +57,8 @@ export default class Topbar {
    */
   readonly pageTitle = signal('global.title');
   readonly breadcrumb = signal('global.menu.group.operations');
+  /** Whether this screen has a parent to go back to — see {@link parentOf}. */
+  readonly hasBack = signal(false);
 
   private readonly router = inject(Router);
   private readonly activatedRoute = inject(ActivatedRoute);
@@ -93,6 +98,9 @@ export default class Topbar {
       .subscribe(data => {
         this.pageTitle.set(data.pageTitle ?? 'global.title');
         this.breadcrumb.set(data.breadcrumb ?? 'global.menu.group.operations');
+        // Asked here as well as inside the component, because the crumb and the back link share one
+        // line: the topbar needs to know which of the two to render, not just render both.
+        this.hasBack.set(parentOf(this.router.url) !== null);
       });
   }
 
