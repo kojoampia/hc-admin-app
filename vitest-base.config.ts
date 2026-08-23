@@ -6,6 +6,23 @@ export default defineConfig({
   test: {
     coverage: {
       reportsDirectory: 'target/test-results',
+
+      // A floor at what the suite already covers, so it can only go up.
+      //
+      // Measured 2026-08-23 at 64.14 / 63.75 / 77.24 / 67.53 and set one point below each, rounded
+      // down. Two reasons for the gap rather than pinning the exact number: a threshold equal to
+      // current coverage fails on a rounding difference in an unrelated change, and the point of a
+      // ratchet is to catch a real regression rather than to punish noise.
+      //
+      // `api` and `gateway` have carried JaCoCo minima since the August audit — 0.70 instruction,
+      // 0.45 branch — and the console had none, so its coverage was measured on every run and
+      // enforced on none. Raise these when the number rises; that is the whole mechanism.
+      thresholds: {
+        statements: 63,
+        branches: 62,
+        functions: 76,
+        lines: 66,
+      },
     },
 
     // Hands real timers back at the end of every spec file. Twenty-four generated list specs install
