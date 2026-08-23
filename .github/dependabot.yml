@@ -1,0 +1,31 @@
+# The console had no dependabot config until 2026-08-23, and the gap was invisible in exactly the
+# way that matters: `api/` and `gateway/` both had one, so dependency PRs arrived every week and the
+# repository looked watched. Every one of them was Maven. Nothing has ever opened a PR against this
+# repo's npm tree — the tree that carries Angular, and the one the original audit found
+# sanitization-bypass advisories in.
+#
+# Weekly, not daily: three repositories on one reviewer, and a PR nobody reads is not a gate.
+# The interval and the limits match api/ and gateway/ so the three arrive together on a Monday.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    groups:
+      # Angular's packages are released as a set and their peer ranges pin each other; separate PRs
+      # for @angular/core and @angular/common cannot merge independently.
+      angular:
+        patterns: ['@angular/*', '@angular-devkit/*', 'ng-packagr', 'zone.js']
+      # Likewise the test stack — a Vitest bump without its coverage provider fails on the first run.
+      testing:
+        patterns: ['vitest', '@vitest/*', 'jest*', 'cypress', '@types/jest']
+      linting:
+        patterns: ['eslint*', '@eslint/*', 'typescript-eslint', 'prettier*']
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
