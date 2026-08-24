@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vitest } from 'vitest';
+import { MockInstance, beforeEach, describe, expect, it, vitest } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
@@ -7,8 +7,11 @@ import { FaIconLibrary } from '@fortawesome/angular-fontawesome';
 import {
   faArrowLeft,
   faBoxArchive,
+  faBan,
   faBoxOpen,
   faCalendarAlt,
+  faCheck,
+  faClockRotateLeft,
   faPencilAlt,
   faShieldHalved,
   faSync,
@@ -23,11 +26,14 @@ import { of, throwError } from 'rxjs';
 import { ShiftAssignmentService } from 'app/entities/operations/shift-assignment/service/shift-assignment.service';
 import { RosterWeekService } from 'app/entities/operations/roster-week/service/roster-week.service';
 import { ProfessionalService } from '../service/professional.service';
+import { ProfessionalVerificationService } from '../service/professional-verification.service';
 import { ProfessionalDetail } from './professional-detail';
 
 describe('Professional Management Detail Component', () => {
   let comp: ProfessionalDetail;
   let fixture: ComponentFixture<ProfessionalDetail>;
+  let verificationHistory: MockInstance;
+  let recordVerification: MockInstance;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -50,12 +56,22 @@ describe('Professional Management Detail Component', () => {
     library.addIcons(faPencilAlt);
     library.addIcons(faBoxArchive);
     library.addIcons(faBoxOpen);
-    library.addIcons(faUser, faShieldHalved, faCalendarAlt, faSync, faTriangleExclamation);
+    // clock-rotate-left and the two decision icons go in with the rest: an icon missing from
+    // the library throws at render, so every test in this file fails on the chrome rather than
+    // on what it asserts.
+    library.addIcons(faUser, faShieldHalved, faCalendarAlt, faSync, faTriangleExclamation, faClockRotateLeft, faCheck, faBan);
   });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(ProfessionalDetail);
     comp = fixture.componentInstance;
+    // Setting `professional` now also loads the verification history. Stubbed by default so every
+    // test below is asserting its own subject rather than answering a request it does not care
+    // about; the cases that are about the history override it.
+    verificationHistory = vitest.spyOn(TestBed.inject(ProfessionalVerificationService), 'history').mockReturnValue(of([]));
+    recordVerification = vitest
+      .spyOn(TestBed.inject(ProfessionalVerificationService), 'record')
+      .mockImplementation(request => of({ id: 'v-new', status: request.status, recordedAt: dayjs(), recordedBy: 'admin' }));
   });
 
   describe('OnInit', () => {
@@ -166,26 +182,99 @@ describe('Professional Management Detail Component', () => {
     });
   });
 
-  describe('Re-verification', () => {
-    it('should move the record back to PENDING', () => {
-      const service = TestBed.inject(ProfessionalService);
-      const patch = vitest.spyOn(service, 'partialUpdate').mockReturnValue(of({ id: 'p1' }));
+  /**
+   * Verification is recorded, not patched.
+   *
+   * Until 2026-08-24 each of these actions was a `PATCH { verification: ... }` on the professional,
+   * and the assertions below were written against that. The field is now server-written from a
+   * recorded decision, so the console posts the decision — which is why the first case asserts that
+   * `partialUpdate` is **not** called: reintroducing the patch would restore a path where the badge
+   * can be set with nothing behind it, and would leave every other assertion here passing.
+   */
+  describe('Verification', () => {
+    it('should record a PENDING decision rather than patching the professional', () => {
+      const patch = vitest.spyOn(TestBed.inject(ProfessionalService), 'partialUpdate');
       fixture.componentRef.setInput('professional', { id: 'p1', verification: 'VERIFIED' });
 
       comp.requestReverification();
 
-      expect(patch).toHaveBeenCalledWith({ id: 'p1', verification: 'PENDING' });
+      expect(recordVerification).toHaveBeenCalledWith({ professionalId: 'p1', status: 'PENDING' });
+      expect(patch).not.toHaveBeenCalled();
       expect(comp.verification()).toBe('PENDING');
     });
 
-    it('should do nothing when it is already pending', () => {
-      const service = TestBed.inject(ProfessionalService);
-      const patch = vitest.spyOn(service, 'partialUpdate');
+    it('should record a VERIFIED decision', () => {
+      fixture.componentRef.setInput('professional', { id: 'p1', verification: 'PENDING' });
+
+      comp.verify();
+
+      expect(recordVerification).toHaveBeenCalledWith({ professionalId: 'p1', status: 'VERIFIED' });
+      expect(comp.verification()).toBe('VERIFIED');
+    });
+
+    it('should record a REVOKED decision', () => {
+      fixture.componentRef.setInput('professional', { id: 'p1', verification: 'VERIFIED' });
+
+      comp.revoke();
+
+      expect(recordVerification).toHaveBeenCalledWith({ professionalId: 'p1', status: 'REVOKED' });
+      expect(comp.verification()).toBe('REVOKED');
+    });
+
+    it('should do nothing when the decision would not change anything', () => {
       fixture.componentRef.setInput('professional', { id: 'p1', verification: 'PENDING' });
 
       comp.requestReverification();
 
-      expect(patch).not.toHaveBeenCalled();
+      expect(recordVerification).not.toHaveBeenCalled();
+    });
+
+    /** A failed write must not relabel the badge — the server still says the old state. */
+    it('should leave the badge alone when the write fails', () => {
+      recordVerification.mockReturnValue(throwError(() => new Error('nope')));
+      fixture.componentRef.setInput('professional', { id: 'p1', verification: 'PENDING' });
+
+      comp.verify();
+
+      expect(comp.verification()).toBe('PENDING');
+      expect(comp.isSaving()).toBe(false);
+    });
+
+    it('should show the history newest first, and prepend a decision it just recorded', () => {
+      verificationHistory.mockReturnValue(of([{ id: 'v1', status: 'PENDING', recordedAt: dayjs('2026-08-01T09:00:00Z') }]));
+      fixture.componentRef.setInput('professional', { id: 'p1', verification: 'PENDING' });
+      // The history loads from an effect, which runs on change detection rather than on setInput.
+      fixture.detectChanges();
+
+      expect(comp.verifications()).toHaveLength(1);
+
+      comp.verify();
+
+      // Prepended from the response rather than re-fetched: the server just said what the row is,
+      // and asking again would be asking it to repeat itself.
+      expect(comp.verifications()).toHaveLength(2);
+      expect(comp.verifications()[0].status).toBe('VERIFIED');
+      expect(verificationHistory).toHaveBeenCalledTimes(1);
+    });
+
+    /**
+     * Never verified is a real state, and it renders as an empty history rather than an error —
+     * every applicant mid-onboarding is in it.
+     */
+    it('should show an empty history when nothing has been recorded', () => {
+      fixture.componentRef.setInput('professional', { id: 'p1', verification: 'PENDING' });
+      fixture.detectChanges();
+
+      expect(comp.verifications()).toEqual([]);
+    });
+
+    /** A failed history read empties the panel rather than breaking the record around it. */
+    it('should survive a failed history read', () => {
+      verificationHistory.mockReturnValue(throwError(() => new Error('nope')));
+      fixture.componentRef.setInput('professional', { id: 'p1', verification: 'PENDING' });
+      fixture.detectChanges();
+
+      expect(comp.verifications()).toEqual([]);
     });
   });
 

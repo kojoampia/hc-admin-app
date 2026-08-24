@@ -43,7 +43,12 @@
         "suspend": "Suspend",
         "reinstate": "Reinstate",
         "reverify": "Send for re-verification",
-        "noWeek": "No roster week published."
+        "noWeek": "No roster week published.",
+        "verify": "Mark verified",
+        "revoke": "Revoke",
+        "verificationHistory": "Verification history",
+        "neverVerified": "No verification has been recorded for this professional.",
+        "expires": "Expires"
       },
       "id": "Id",
       "role": "Role",

@@ -14,6 +14,7 @@ import { DEFAULT_SORT_DATA, SORT } from 'app/config/navigation.constants';
 import { ITEMS_PER_PAGE, PAGE_HEADER, TOTAL_COUNT_RESPONSE_HEADER } from 'app/config/pagination.constants';
 import { AccountStatus } from 'app/entities/enumerations/account-status.model';
 import { ProfessionalRole } from 'app/entities/enumerations/professional-role.model';
+import { VerificationStatus } from 'app/entities/enumerations/verification-status.model';
 import { Alert } from 'app/shared/alert/alert';
 import { AlertError } from 'app/shared/alert/alert-error';
 import { TranslateDirective } from 'app/shared/language';
@@ -27,6 +28,9 @@ const ARCHIVED_PARAM = 'archived';
 
 /** Query param carrying the selected role tile, so a filtered directory is a shareable URL. */
 const ROLE_PARAM = 'role';
+
+/** Query param carrying the selected verification chip. */
+const VERIFICATION_PARAM = 'verification';
 
 /** Query param carrying the selected status chip. */
 const STATUS_PARAM = 'status';
@@ -77,6 +81,9 @@ export class Professional implements OnInit {
   readonly ROLES = Object.keys(ProfessionalRole) as (keyof typeof ProfessionalRole)[];
   readonly STATUSES = Object.keys(AccountStatus) as (keyof typeof AccountStatus)[];
 
+  /** Every verification state, so a revoked or expired professional is reachable by a chip. */
+  readonly VERIFICATIONS = Object.keys(VerificationStatus) as (keyof typeof VerificationStatus)[];
+
   subscription: Subscription | null = null;
   readonly professionals = signal<IProfessional[]>([]);
 
@@ -88,6 +95,13 @@ export class Professional implements OnInit {
   /** Which half of the directory is on screen. Mirrored in the `archived` query param. */
   readonly showArchived = signal(false);
   readonly role = signal<keyof typeof ProfessionalRole | null>(null);
+  /**
+   * The verification chip, if one is selected.
+   *
+   * Server-side like the others: counting client-side breaks the moment the directory exceeds one
+   * page, which is the failure `CLAUDE.md` records for pagination.
+   */
+  readonly verification = signal<keyof typeof VerificationStatus | null>(null);
   readonly status = signal<keyof typeof AccountStatus | null>(null);
 
   /** Headcount and active count per role, for the tiles. */
@@ -101,7 +115,7 @@ export class Professional implements OnInit {
   protected readonly sortService = inject(SortService);
 
   // eslint-disable-next-line @typescript-eslint/member-ordering
-  readonly hasFilter = computed(() => this.role() !== null || this.status() !== null);
+  readonly hasFilter = computed(() => this.role() !== null || this.status() !== null || this.verification() !== null);
 
   constructor() {
     effect(() => {
@@ -183,10 +197,18 @@ export class Professional implements OnInit {
     });
   }
 
+  toggleVerification(verification: keyof typeof VerificationStatus): void {
+    void this.router.navigate(['./'], {
+      relativeTo: this.activatedRoute,
+      queryParams: { page: 1, verification: this.verification() === verification ? null : verification },
+      queryParamsHandling: 'merge',
+    });
+  }
+
   clearFilter(): void {
     void this.router.navigate(['./'], {
       relativeTo: this.activatedRoute,
-      queryParams: { page: 1, role: null, status: null },
+      queryParams: { page: 1, role: null, status: null, verification: null },
       queryParamsHandling: 'merge',
     });
   }
@@ -207,6 +229,8 @@ export class Professional implements OnInit {
     this.role.set(role && role in ProfessionalRole ? (role as keyof typeof ProfessionalRole) : null);
     const status = params.get(STATUS_PARAM);
     this.status.set(status && status in AccountStatus ? (status as keyof typeof AccountStatus) : null);
+    const verification = params.get(VERIFICATION_PARAM);
+    this.verification.set(verification && verification in VerificationStatus ? (verification as keyof typeof VerificationStatus) : null);
     const page = params.get(PAGE_HEADER);
     this.page.set(+(page ?? 1));
     this.sortState.set(this.sortService.parseSortParam(params.get(SORT) ?? data[DEFAULT_SORT_DATA]));
@@ -239,6 +263,10 @@ export class Professional implements OnInit {
     if (status) {
       queryObject['status.equals'] = status;
     }
+    const verification = this.verification();
+    if (verification) {
+      queryObject['verification.equals'] = verification;
+    }
     this.professionalService.professionalsParams.set(queryObject);
   }
 
@@ -250,6 +278,7 @@ export class Professional implements OnInit {
       archived: this.showArchived() ? true : null,
       role: this.role(),
       status: this.status(),
+      verification: this.verification(),
     };
 
     void this.router.navigate(['./'], {

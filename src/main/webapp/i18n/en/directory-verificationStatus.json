@@ -4,7 +4,9 @@
       "null": "",
       "VERIFIED": "Verified",
       "PENDING": "Pending",
-      "REJECTED": "Rejected"
+      "REJECTED": "Rejected",
+      "REVOKED": "Revoked",
+      "EXPIRED": "Expired"
     }
   }
 }

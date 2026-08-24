@@ -9,17 +9,20 @@ import { forkJoin, map, of, switchMap } from 'rxjs';
 
 import { StatusPill } from 'app/console/shared/status-pill/status-pill';
 import { AccountService } from 'app/core/auth/account.service';
+import { VerificationStatus } from 'app/entities/enumerations/verification-status.model';
 import { ConsoleAuthority } from 'app/shared/auth/console-role';
 import { IShiftAssignment } from 'app/entities/operations/shift-assignment/shift-assignment.model';
 import { ShiftAssignmentService } from 'app/entities/operations/shift-assignment/service/shift-assignment.service';
 import { RosterWeekService } from 'app/entities/operations/roster-week/service/roster-week.service';
 import { Alert } from 'app/shared/alert/alert';
 import { AlertError } from 'app/shared/alert/alert-error';
-import { FormatMediumDatePipe } from 'app/shared/date';
+import { FormatMediumDatePipe, FormatMediumDatetimePipe } from 'app/shared/date';
 import { TranslateDirective } from 'app/shared/language';
 import { ProfessionalEarnings } from '../earnings/professional-earnings';
 import { IProfessional } from '../professional.model';
+import { IProfessionalVerification } from '../professional-verification.model';
 import { ProfessionalService } from '../service/professional.service';
+import { ProfessionalVerificationService } from '../service/professional-verification.service';
 
 const DAYS_IN_WEEK = 7;
 
@@ -49,6 +52,7 @@ export interface WeekCell {
     TranslatePipe,
     RouterLink,
     FormatMediumDatePipe,
+    FormatMediumDatetimePipe,
     StatusPill,
     ProfessionalEarnings,
   ],
@@ -70,22 +74,32 @@ export class ProfessionalDetail {
   readonly verificationOverride = signal<{ id: string; verification: string } | null>(null);
   readonly isSaving = signal(false);
   readonly week = signal<WeekCell[]>([]);
+  /**
+   * The verification history, newest first.
+   *
+   * Empty is a real state and renders as such: a professional mid-onboarding has never been
+   * verified, and the panel says so rather than looking like a failed request.
+   */
+  readonly verifications = signal<IProfessionalVerification[]>([]);
 
   readonly dayIndexes = Array.from({ length: DAYS_IN_WEEK }, (_, index) => index);
 
   protected readonly professionalService = inject(ProfessionalService);
   private readonly shiftService = inject(ShiftAssignmentService);
   private readonly rosterWeekService = inject(RosterWeekService);
+  private readonly verificationService = inject(ProfessionalVerificationService);
   private readonly accountService = inject(AccountService);
 
   constructor() {
     effect(() => {
       const id = this.professional()?.id;
       this.week.set([]);
+      this.verifications.set([]);
       if (!id) {
         return;
       }
       this.loadWeek(id);
+      this.loadVerifications(id);
     });
   }
 
@@ -203,18 +217,57 @@ export class ProfessionalDetail {
    * no RestTemplate, no WebClient, nothing to call. What is real is moving the record back to
    * PENDING so whoever does verification sees it again, and that is what the label says.
    */
+  /**
+   * Sends this professional back for re-verification, by recording a PENDING decision.
+   *
+   * Was a `PATCH { verification: 'PENDING' }` until 2026-08-24. That path no longer exists: the field
+   * is written only by the server, from a recorded decision, so the console asks for the decision and
+   * the projection follows. The visible behaviour is the same and the record is not — the request
+   * now leaves a row saying who sent it back and when.
+   */
   requestReverification(): void {
+    this.record('PENDING');
+  }
+
+  /** Marks this professional verified. */
+  verify(): void {
+    this.record('VERIFIED');
+  }
+
+  /** Withdraws a verification that was granted. Distinct from REJECTED, which was never granted. */
+  revoke(): void {
+    this.record('REVOKED');
+  }
+
+  /**
+   * Records one decision and folds it into what is on screen.
+   *
+   * The new row is prepended rather than re-fetched: the response is the stored row, so a second
+   * request would ask the server to repeat what it just said. The status override is set for the
+   * same reason the archive and suspend actions set theirs — nothing re-runs the route resolver
+   * after a write, so the badge above would otherwise still show the old state.
+   */
+  private record(status: keyof typeof VerificationStatus): void {
     const current = this.professional();
-    if (!current || this.isSaving() || this.verification() === 'PENDING') {
+    if (!current || this.isSaving() || this.verification() === status) {
       return;
     }
     this.isSaving.set(true);
-    this.professionalService.partialUpdate({ id: current.id, verification: 'PENDING' }).subscribe({
-      next: () => {
-        this.verificationOverride.set({ id: current.id, verification: 'PENDING' });
+    this.verificationService.record({ professionalId: current.id, status }).subscribe({
+      next: recorded => {
+        this.verificationOverride.set({ id: current.id, verification: status });
+        this.verifications.update(rows => [recorded, ...rows]);
         this.isSaving.set(false);
       },
       error: () => this.isSaving.set(false),
+    });
+  }
+
+  /** A failed history read leaves the panel empty rather than breaking the record around it. */
+  private loadVerifications(id: string): void {
+    this.verificationService.history(id).subscribe({
+      next: rows => this.verifications.set(rows),
+      error: () => this.verifications.set([]),
     });
   }
 

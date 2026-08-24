@@ -25,16 +25,21 @@ describe('KPI notes', () => {
   });
 
   /**
-   * The professionals note says "joined", not "verified".
+   * The professionals note says "verified", and the api counts verifications.
    *
-   * <p>The demo says "+2 verified" and nothing in this service records when a professional was
-   * verified. The api counts who joined; the copy has to say the same thing, or the screen is back
-   * to asserting something it has not measured — with a real number underneath it this time, which
-   * makes it more convincing and no more true.
+   * <p>This assertion used to be the inverse — "joined", not "verified" — because nothing recorded
+   * when a professional was verified and the copy had to say what was actually measured. The
+   * measurement arrived on 2026-08-24 with the verification history, so `deltas.professionals` now
+   * counts decisions rather than arrivals and the caption is literal.
+   *
+   * <p>The rule the old assertion protected has not changed and is why this one is still here: the
+   * note must name what the number is. If `DashboardMetricsService.deltas()` is ever pointed back at
+   * `joined_on`, this fails — which is the point. `professionalsJoined` carries the arrivals count
+   * separately for anything that wants it.
    */
   it('describes the professionals note as what the api actually counts', () => {
-    expect(kpi.professionalsNote).toContain('joined');
-    expect(kpi.professionalsNote).not.toContain('verified');
+    expect(kpi.professionalsNote).toContain('verified');
+    expect(kpi.professionalsNote).not.toContain('joined');
   });
 
   /** The unread tile counts a backlog; its note counts arrivals, and says so rather than implying. */

@@ -32,10 +32,10 @@
     <!--
       One card per plan.
 
-      The subscriber figure comes from the mix, never from the plan's own subscriberCount — that
-      counter is denormalised, unmaintained, and disagreed with the patient directory by a factor of
-      ten. It renders "—" until the summary lands and on failure, so a reader can tell a plan nobody
-      holds from a figure that did not arrive.
+      The subscriber figure comes from the mix. The plan row has no subscriber field of its own —
+      the counter it used to carry was denormalised, unmaintained, and disagreed with the patient
+      directory by a factor of ten. It renders "—" until the summary lands and on failure, so a
+      reader can tell a plan nobody holds from a figure that did not arrive.
     -->
     <div class="plan-board" data-cy="planCards">
       @for (plan of servicePlans(); track trackId(plan)) {

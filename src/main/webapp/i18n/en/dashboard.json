@@ -17,7 +17,7 @@
       "patients": "Patient accounts",
       "patientsNote": "+{{count}} this week",
       "professionals": "Professionals",
-      "professionalsNote": "+{{count}} joined this week",
+      "professionalsNote": "+{{count}} verified this week",
       "unreadMessages": "Unread messages",
       "unreadMessagesNote": "{{count}} arrived this week",
       "openTasks": "Open tasks",

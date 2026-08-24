@@ -71,6 +71,30 @@
     }
   </div>
 
+  <!--
+    Verification chips, beside the account-status ones.
+
+    Every state, not only VERIFIED. A chip per state is what makes a revoked or expired professional
+    reachable at all — the same reasoning as the six status tiles on the patient directory, where
+    three-plus-All left an on-leave patient inside All and reachable by no tile of its own.
+
+    Filtered server-side through `verification.equals`, like role and status: counting a page
+    client-side breaks the moment the directory exceeds twenty rows.
+  -->
+  <div class="chip-row">
+    @for (option of VERIFICATIONS; track option) {
+      <button
+        type="button"
+        class="chip"
+        [class.on]="verification() === option"
+        (click)="toggleVerification(option)"
+        [attr.data-cy]="'chip-verification-' + option"
+      >
+        {{ 'hcAdminApp.VerificationStatus.' + option | translate }}
+      </button>
+    }
+  </div>
+
   @if (hasFilter()) {
     <button type="button" class="btn-quiet sm" (click)="clearFilter()" abfTranslate="console.filter.clear" data-cy="clearFilter">
       Clear filters
@@ -163,8 +187,18 @@
               <td>{{ professional.team?.name ?? '—' }}</td>
               <td>
                 {{ professional.licenceNumber ?? '—' }}
+                <!--
+                  A pill rather than the plain line it used to be. Verification is now a decision
+                  with a history behind it and four states rather than three, and REVOKED beside
+                  VERIFIED in the same grey text is a distinction nobody reads at a glance.
+
+                  Namespaced to VerificationStatus, not console.status: the shared dictionary has no
+                  REVOKED or EXPIRED, so those two rendered as a raw key here.
+                -->
                 @if (professional.verification) {
-                  <div class="sub">{{ 'console.status.' + professional.verification | translate }}</div>
+                  <div class="sub">
+                    <abf-status-pill [status]="professional.verification" namespace="hcAdminApp.VerificationStatus" />
+                  </div>
                 }
               </td>
               <td>{{ professional.hub?.name ?? '—' }}</td>

@@ -4,6 +4,7 @@
       "home": {
         "title": "Patients",
         "refreshListLabel": "Refresh list",
+        "exportLabel": "Export",
         "createLabel": "Create a new Patient",
         "createOrEditLabel": "Create or edit a Patient",
         "notFound": "No Patients found",

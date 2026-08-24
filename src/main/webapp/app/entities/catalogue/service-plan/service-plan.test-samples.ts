@@ -17,7 +17,6 @@ export const sampleWithPartialData: IServicePlan = {
   currency: 'ath',
   summary: 'apropos omelet tomatillo',
   featured: true,
-  subscriberCount: 13795,
 };
 
 export const sampleWithFullData: IServicePlan = {
@@ -29,7 +28,6 @@ export const sampleWithFullData: IServicePlan = {
   currency: 'foo',
   summary: 'hm before',
   featured: true,
-  subscriberCount: 11464,
 };
 
 export const sampleWithNewData: NewServicePlan = {

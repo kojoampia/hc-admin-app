@@ -1,4 +1,4 @@
-import { HttpHeaders } from '@angular/common/http';
+import { HttpHeaders, HttpResponse } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, OnInit, computed, effect, inject, signal, untracked } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Data, ParamMap, Router, RouterLink } from '@angular/router';
@@ -16,6 +16,7 @@ import { AccountStatus } from 'app/entities/enumerations/account-status.model';
 import { ProfessionalService } from 'app/entities/directory/professional/service/professional.service';
 import { Alert } from 'app/shared/alert/alert';
 import { AlertError } from 'app/shared/alert/alert-error';
+import HasAnyAuthorityDirective from 'app/shared/auth/has-any-authority.directive';
 import { TranslateDirective } from 'app/shared/language';
 import { ItemCount } from 'app/shared/pagination';
 import { SortByDirective, SortDirective, SortService, type SortState, sortStateSignal } from 'app/shared/sort';
@@ -53,6 +54,7 @@ const STATUS_PARAM = 'status';
     NgbPagination,
     ItemCount,
     StatusPill,
+    HasAnyAuthorityDirective,
   ],
 })
 export class Patient implements OnInit {
@@ -96,6 +98,9 @@ export class Patient implements OnInit {
   // a missing key as `string`, which is exactly the case this map is for — the name is absent until
   // its request lands. Saying so keeps the fallback below honest instead of looking redundant.
   readonly leadNames = signal<Record<string, string | undefined>>({});
+
+  /** True while an export is in flight, so the button cannot be pressed twice into two downloads. */
+  readonly isExporting = signal(false);
 
   readonly router = inject(Router);
   protected readonly patientService = inject(PatientService);
@@ -208,6 +213,33 @@ export class Patient implements OnInit {
   refresh(): void {
     this.load();
     this.loadTiles();
+  }
+
+  /**
+   * Downloads the directory as CSV, over the filters currently on screen.
+   *
+   * The filters are the ones `queryBackend` just sent, read back rather than rebuilt — an export
+   * that disagrees with the list above it is the failure this action has, and it is invisible in
+   * the file. `page`, `size` and `sort` are stripped: sort is meaningful and passed through, but a
+   * page of twenty would make this a download of the visible page wearing the name of an export.
+   *
+   * Admin-only, and the button is behind `*abfHasAnyAuthority` — the server refuses an operator
+   * with 403 regardless, which is where the rule lives.
+   */
+  exportCsv(): void {
+    if (this.isExporting()) {
+      return;
+    }
+    this.isExporting.set(true);
+
+    const { page, size, ...filters } = (this.patientService.patientsParams() ?? {}) as Record<string, any>;
+    this.patientService.exportCsv(filters).subscribe({
+      next: response => {
+        this.isExporting.set(false);
+        this.saveDownload(response);
+      },
+      error: () => this.isExporting.set(false),
+    });
   }
 
   navigateToWithComponentValues(event: SortState): void {
@@ -350,5 +382,26 @@ export class Patient implements OnInit {
         error: () => undefined,
       });
     }
+  }
+
+  /**
+   * Saves a downloaded blob under the name the server gave it.
+   *
+   * The object URL is revoked immediately after the click: it pins the blob in memory for the life
+   * of the document otherwise, and a directory export is not a small one.
+   */
+  private saveDownload(response: HttpResponse<Blob>): void {
+    const body = response.body;
+    if (!body) {
+      return;
+    }
+    const disposition = response.headers.get('Content-Disposition') ?? '';
+    const match = /filename="?([^";]+)"?/.exec(disposition);
+    const url = URL.createObjectURL(body);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = match ? match[1] : 'patients.csv';
+    link.click();
+    URL.revokeObjectURL(url);
   }
 }

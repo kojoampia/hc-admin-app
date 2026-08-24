@@ -24,6 +24,25 @@
       }
     </button>
 
+    <!--
+      Export is admin-only, so it is absent for an operator rather than disabled.
+
+      An operator can page through this directory and cannot download it, which is the one place
+      their blanket read stops — the server answers 403 and that is where the rule lives. A disabled
+      button would advertise a capability the account will never have; hiding it is the same choice
+      the New menu made when patient, professional and vendor came off it.
+    -->
+    <button
+      *abfHasAnyAuthority="'ROLE_ADMIN'"
+      class="btn btn-ghost btn-sm"
+      data-cy="entityExportButton"
+      (click)="exportCsv()"
+      [disabled]="isExporting()"
+    >
+      <fa-icon [icon]="isExporting() ? 'sync' : 'download'" [animation]="isExporting() ? 'spin' : undefined" />
+      <span abfTranslate="hcAdminApp.directoryPatient.home.exportLabel">Export</span>
+    </button>
+
     <a
       class="btn btn-primary btn-sm jh-create-entity create-patient"
       id="jh-create-entity"

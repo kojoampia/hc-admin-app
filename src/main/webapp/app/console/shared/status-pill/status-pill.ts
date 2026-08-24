@@ -17,6 +17,8 @@ const TONES: Record<string, string> = {
   PENDING: 'warn',
   SUSPENDED: 'danger',
   REJECTED: 'danger',
+  REVOKED: 'danger',
+  EXPIRED: 'grey',
   ON_LEAVE: 'navy',
   UNDER_REVIEW: 'warn',
   // Message status
