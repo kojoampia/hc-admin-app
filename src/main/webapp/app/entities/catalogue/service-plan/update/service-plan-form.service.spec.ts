@@ -27,7 +27,6 @@ describe('ServicePlan Form Service', () => {
             currency: expect.any(Object),
             summary: expect.any(Object),
             featured: expect.any(Object),
-            subscriberCount: expect.any(Object),
           }),
         );
       });
@@ -45,7 +44,6 @@ describe('ServicePlan Form Service', () => {
             currency: expect.any(Object),
             summary: expect.any(Object),
             featured: expect.any(Object),
-            subscriberCount: expect.any(Object),
           }),
         );
       });

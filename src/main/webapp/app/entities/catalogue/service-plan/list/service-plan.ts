@@ -35,10 +35,11 @@ import { IPlanMixRow, IServicePlan, IServicePlanSummary } from '../service-plan.
  * subset; `subscribers` is a count over the patient directory. Both come from
  * `GET /api/service-plans/summary`.
  *
- * **`subscriberCount` on the plan itself is not read anywhere on this screen and must not be.** It
- * is a denormalised counter nothing maintains — 41/52/23 against a directory of twelve patients —
- * and the generated table displayed it for months. The mix reconciles to the patient directory
- * instead, so a reader can click through and arrive at the same number.
+ * **The plan itself carries no subscriber figure, and must not be given one.** It used to: a
+ * denormalised `subscriberCount` nothing maintained — 41/52/23 against a directory of twelve
+ * patients — which the generated table displayed for months before it was deleted on 2026-08-24.
+ * The mix reconciles to the patient directory instead, so a reader can click through and arrive at
+ * the same number.
  *
  * Feature lists are fetched per card with `planId.equals` rather than by reading one page of
  * `/api/plan-features` and grouping: eighteen features fit inside the default page of twenty today,

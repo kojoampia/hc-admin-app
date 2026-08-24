@@ -9,7 +9,6 @@ export interface IServicePlan {
   currency?: string | null;
   summary?: string | null;
   featured?: boolean | null;
-  subscriberCount?: number | null;
 }
 
 export type NewServicePlan = Omit<IServicePlan, 'id'> & { id: null };
@@ -21,9 +20,10 @@ export type NewServicePlan = Omit<IServicePlan, 'id'> & { id: null };
  * and dividing by the plans that happen to be on screen would print percentages that sum to 100
  * across a subset and mean nothing.
  *
- * Subscribers are counted from the patient directory, **not** from `IServicePlan.subscriberCount`.
- * That field is a denormalised counter nothing maintains — it reads 41/52/23 against a directory of
- * twelve patients — and nothing on this screen may read it.
+ * Subscribers are counted from the patient directory. `IServicePlan` carried a `subscriberCount`
+ * until 2026-08-24 — a denormalised counter nothing maintained, reading 41/52/23 against a directory
+ * of twelve patients — and it was deleted rather than left on the interface unread. **Do not add a
+ * subscriber field back to `IServicePlan`**: this row is where a subscriber count comes from.
  *
  * `share` is `null`, not `0`, when nobody holds any plan: a share of an empty directory is
  * undefined, and the board renders null as "—". Zero would be the console asserting that a plan

@@ -96,6 +96,28 @@ export class PatientService extends PatientsService {
   }
 
   /**
+   * The directory as a CSV file, over the filters currently applied.
+   *
+   * Fetched through `HttpClient` rather than pointed at by an anchor, and the reason is the one
+   * `CLAUDE.md` records for the SSE bridge: a plain `<a href>` cannot set an `Authorization`
+   * header, so the only way to make it work would be a token in the query string — which writes a
+   * live admin credential into every access log between here and the service. The response comes
+   * back as a blob and the caller saves it.
+   *
+   * `observe: 'response'` because the filename is in `Content-Disposition`, not in the body.
+   *
+   * Admin-only on the server. The button is hidden from operators, but that is only the courtesy:
+   * an operator calling this directly gets 403, which is where the rule actually lives.
+   */
+  exportCsv(req?: any): Observable<HttpResponse<Blob>> {
+    return this.http.get(`${this.resourceUrl}/export`, {
+      params: createRequestOption(req),
+      observe: 'response',
+      responseType: 'blob',
+    });
+  }
+
+  /**
    * Archive or restore, as a PATCH of the single field.
    *
    * Deliberately not a PUT of the whole record: the detail view holds whatever

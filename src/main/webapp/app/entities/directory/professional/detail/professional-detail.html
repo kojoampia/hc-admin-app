@@ -122,16 +122,93 @@
         <dd>{{ verification() ? ('hcAdminApp.VerificationStatus.' + verification() | translate) : '—' }}</dd>
       </dl>
       @if (canWrite()) {
-        <button
-          type="button"
-          class="btn btn-ghost btn-sm mt-12"
-          (click)="requestReverification()"
-          [disabled]="isSaving() || verification() === 'PENDING'"
-          data-cy="reverifyButton"
-        >
-          <fa-icon icon="sync" />
-          <span abfTranslate="hcAdminApp.directoryProfessional.detail.reverify">Send for re-verification</span>
-        </button>
+        <!--
+          Three decisions, not an editable field.
+
+          Each button records a row; the badge above is the server's projection of the newest one.
+          Nothing here PATCHes `verification` — that path was removed on 2026-08-24, because a badge
+          the client can set is not evidence that anybody verified anything.
+
+          Each is disabled at its own state rather than the group being disabled together, so the
+          buttons say what would change. Revoke is absent until there is something to revoke.
+        -->
+        <div class="btn-group mt-12">
+          <button
+            type="button"
+            class="btn btn-ghost btn-sm"
+            (click)="verify()"
+            [disabled]="isSaving() || verification() === 'VERIFIED'"
+            data-cy="verifyButton"
+          >
+            <fa-icon icon="check" />
+            <span abfTranslate="hcAdminApp.directoryProfessional.detail.verify">Mark verified</span>
+          </button>
+          <button
+            type="button"
+            class="btn btn-ghost btn-sm"
+            (click)="requestReverification()"
+            [disabled]="isSaving() || verification() === 'PENDING'"
+            data-cy="reverifyButton"
+          >
+            <fa-icon icon="sync" />
+            <span abfTranslate="hcAdminApp.directoryProfessional.detail.reverify">Send for re-verification</span>
+          </button>
+          @if (verification() === 'VERIFIED') {
+            <button type="button" class="btn btn-ghost btn-sm" (click)="revoke()" [disabled]="isSaving()" data-cy="revokeButton">
+              <fa-icon icon="ban" />
+              <span abfTranslate="hcAdminApp.directoryProfessional.detail.revoke">Revoke</span>
+            </button>
+          }
+        </div>
+      }
+    </section>
+
+    <!-- Verification history -->
+    <section class="card" data-cy="verificationHistory">
+      <h4>
+        <fa-icon icon="clock-rotate-left" />
+        <span abfTranslate="hcAdminApp.directoryProfessional.detail.verificationHistory">Verification history</span>
+      </h4>
+      <!--
+        The whole history, newest first, and not a pager.
+
+        A history is bounded by how many times one person has been verified — single figures — and
+        paging it would hide the oldest decision, which is usually the one being looked for. It is
+        also what makes the record answerable: the badge says the current state, and this says how it
+        got there, including anything that was revoked or expired along the way.
+      -->
+      @if (verifications().length > 0) {
+        <ul class="verif-list">
+          @for (entry of verifications(); track entry.id) {
+            <li>
+              <abf-status-pill [status]="entry.status" namespace="hcAdminApp.VerificationStatus" />
+              <div class="verif-when">
+                {{ entry.recordedAt ? (entry.recordedAt | formatMediumDatetime) : '—' }}
+                <span class="muted">· {{ entry.recordedBy ?? '—' }}</span>
+              </div>
+              @if (entry.method || entry.reference) {
+                <div class="sub">{{ entry.method ?? '' }}{{ entry.method && entry.reference ? ' · ' : '' }}{{ entry.reference ?? '' }}</div>
+              }
+              @if (entry.note) {
+                <div class="sub">{{ entry.note }}</div>
+              }
+              @if (entry.expiresOn) {
+                <div class="sub">
+                  <span abfTranslate="hcAdminApp.directoryProfessional.detail.expires">Expires</span>
+                  {{ entry.expiresOn | formatMediumDate }}
+                </div>
+              }
+            </li>
+          }
+        </ul>
+      } @else {
+        <!--
+          Never verified is a real state, not a failed request — every applicant mid-onboarding is
+          in it. Saying so is the difference between an empty panel and a broken one.
+        -->
+        <p class="muted" abfTranslate="hcAdminApp.directoryProfessional.detail.neverVerified">
+          No verification has been recorded for this professional.
+        </p>
       }
     </section>
 

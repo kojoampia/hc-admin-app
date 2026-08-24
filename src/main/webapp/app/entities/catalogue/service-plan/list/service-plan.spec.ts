@@ -186,8 +186,10 @@ describe('ServicePlan Management Component', () => {
   describe('the plan mix', () => {
     it('should take subscribers and share from the server, not from the plan rows', () => {
       TestBed.tick();
-      // subscriberCount is deliberately wrong here, exactly as it is in the seeded data: 41 against
-      // a directory of four. Nothing on this screen may read it.
+      // `subscriberCount` was deleted from the model on 2026-08-24, and this row still sends one —
+      // deliberately, and deliberately wrong: 41 against a directory of four. The field is gone from
+      // the interface, but a server or a stale document could still put it on the wire, and the
+      // assertion below is that the screen reads the mix regardless of what arrives beside it.
       expectListRequest().flush([{ id: 'pl1', name: 'Bridge Essential', monthlyPrice: 320, subscriberCount: 41 }]);
 
       httpMock

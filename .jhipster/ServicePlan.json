@@ -2,7 +2,9 @@
   "annotations": {
     "changelogDate": "20231211194918"
   },
-  "applications": ["hcAdmin"],
+  "applications": [
+    "hcAdmin"
+  ],
   "clientRootFolder": "catalogue",
   "fields": [
     {
@@ -12,49 +14,60 @@
     {
       "fieldName": "name",
       "fieldType": "String",
-      "fieldValidateRules": ["required", "maxlength"],
+      "fieldValidateRules": [
+        "required",
+        "maxlength"
+      ],
       "fieldValidateRulesMaxlength": "60"
     },
     {
       "fieldName": "tier",
       "fieldType": "PlanTier",
-      "fieldValidateRules": ["required"],
+      "fieldValidateRules": [
+        "required"
+      ],
       "fieldValues": "ESSENTIAL,PLUS,FAMILY"
     },
     {
       "fieldName": "tierLabel",
       "fieldType": "String",
-      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRules": [
+        "maxlength"
+      ],
       "fieldValidateRulesMaxlength": "40"
     },
     {
       "fieldName": "monthlyPrice",
       "fieldType": "BigDecimal",
-      "fieldValidateRules": ["required", "min"],
+      "fieldValidateRules": [
+        "required",
+        "min"
+      ],
       "fieldValidateRulesMin": "0"
     },
     {
       "fieldName": "currency",
       "fieldType": "String",
-      "fieldValidateRules": ["required", "maxlength"],
+      "fieldValidateRules": [
+        "required",
+        "maxlength"
+      ],
       "fieldValidateRulesMaxlength": "3"
     },
     {
       "fieldName": "summary",
       "fieldType": "String",
-      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRules": [
+        "maxlength"
+      ],
       "fieldValidateRulesMaxlength": "240"
     },
     {
       "fieldName": "featured",
       "fieldType": "Boolean",
-      "fieldValidateRules": ["required"]
-    },
-    {
-      "fieldName": "subscriberCount",
-      "fieldType": "Integer",
-      "fieldValidateRules": ["min"],
-      "fieldValidateRulesMin": "0"
+      "fieldValidateRules": [
+        "required"
+      ]
     }
   ],
   "name": "ServicePlan",

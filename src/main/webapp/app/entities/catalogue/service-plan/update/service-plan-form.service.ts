@@ -25,7 +25,6 @@ type ServicePlanFormGroupContent = {
   currency: FormControl<IServicePlan['currency']>;
   summary: FormControl<IServicePlan['summary']>;
   featured: FormControl<IServicePlan['featured']>;
-  subscriberCount: FormControl<IServicePlan['subscriberCount']>;
 };
 
 export type ServicePlanFormGroup = FormGroup<ServicePlanFormGroupContent>;
@@ -66,9 +65,6 @@ export class ServicePlanFormService {
       }),
       featured: new FormControl(servicePlanRawValue.featured, {
         validators: [Validators.required],
-      }),
-      subscriberCount: new FormControl(servicePlanRawValue.subscriberCount, {
-        validators: [Validators.min(0)],
       }),
     });
   }

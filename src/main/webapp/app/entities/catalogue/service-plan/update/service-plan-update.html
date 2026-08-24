@@ -142,33 +142,6 @@
             </div>
           }
         </div>
-
-        @let subscriberCountRef = editForm.get('subscriberCount')!;
-        <div class="mb-3">
-          <label class="form-label" for="field_subscriberCount" abfTranslate="hcAdminApp.catalogueServicePlan.subscriberCount"
-            >Subscriber Count</label
-          >
-          <input
-            type="number"
-            class="form-control"
-            name="subscriberCount"
-            id="field_subscriberCount"
-            data-cy="subscriberCount"
-            formControlName="subscriberCount"
-          />
-          @if (subscriberCountRef.invalid && (subscriberCountRef.dirty || subscriberCountRef.touched)) {
-            <div>
-              @if (subscriberCountRef.errors?.min) {
-                <small class="form-text text-danger" abfTranslate="entity.validation.min" [translateValues]="{ min: '0' }"
-                  >This field should be at least 0.</small
-                >
-              }
-              <small class="form-text text-danger" [hidden]="!subscriberCountRef.errors?.number" abfTranslate="entity.validation.number"
-                >This field should be a number.</small
-              >
-            </div>
-          }
-        </div>
       </div>
     </div>
 

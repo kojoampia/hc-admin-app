@@ -377,4 +377,164 @@ describe('Patient Management Component', () => {
       expect(comp.status()).toBeNull();
     });
   });
+
+  describe('export', () => {
+    let downloads: { name: string; revoked: boolean }[];
+
+    /**
+     * jsdom implements neither half of the save path — `URL.createObjectURL` is undefined there.
+     *
+     * Without these stubs `saveDownload` throws a TypeError inside the subscriber, and every test
+     * below still passes: they assert on the outgoing request, which has already happened by then.
+     * That is the shape of bug this repo keeps meeting — a green check that stopped covering the
+     * thing it names. Stubbing turns the save into something assertable instead.
+     */
+    beforeEach(() => {
+      downloads = [];
+      const urls = new Map<string, { name: string; revoked: boolean }>();
+      let next = 0;
+
+      (URL as any).createObjectURL = vitest.fn(() => {
+        const url = `blob:test/${next++}`;
+        urls.set(url, { name: '', revoked: false });
+        return url;
+      });
+      (URL as any).revokeObjectURL = vitest.fn((url: string) => {
+        const entry = urls.get(url);
+        if (entry) {
+          entry.revoked = true;
+        }
+      });
+      vitest.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (this: HTMLAnchorElement) {
+        const entry = urls.get(this.href)!;
+        entry.name = this.download;
+        downloads.push(entry);
+      });
+    });
+
+    afterEach(() => {
+      delete (URL as any).createObjectURL;
+      delete (URL as any).revokeObjectURL;
+    });
+
+    /**
+     * The saved file is named by the server, not by the client.
+     *
+     * `Content-Disposition` carries a dated filename; parsing it rather than composing one here
+     * keeps a single source for what the file is called, and the fallback covers a proxy that
+     * strips the header.
+     */
+    it('should save the file under the name the server gave it, and release the blob', async () => {
+      TestBed.tick();
+      expectListRequest();
+      flushTiles();
+
+      comp.exportCsv();
+      await vitest.runAllTimersAsync();
+
+      httpMock
+        .expectOne(r => r.url.endsWith('/api/patients/export'))
+        .flush(new Blob(['x'], { type: 'text/csv' }), {
+          headers: { 'Content-Disposition': 'attachment; filename="patients-2026-08-24.csv"' },
+        });
+      await vitest.runAllTimersAsync();
+
+      expect(downloads).toHaveLength(1);
+      expect(downloads[0].name).toBe('patients-2026-08-24.csv');
+      // Revoked, or the blob is pinned for the life of the document — and a directory export is
+      // not a small one.
+      expect(downloads[0].revoked).toBe(true);
+      expect(comp.isExporting()).toBe(false);
+    });
+
+    it('should fall back to a plain filename when the header is absent', async () => {
+      TestBed.tick();
+      expectListRequest();
+      flushTiles();
+
+      comp.exportCsv();
+      await vitest.runAllTimersAsync();
+
+      httpMock.expectOne(r => r.url.endsWith('/api/patients/export')).flush(new Blob(['x'], { type: 'text/csv' }));
+      await vitest.runAllTimersAsync();
+
+      expect(downloads[0].name).toBe('patients.csv');
+    });
+
+    /**
+     * The file has to hold the rows the screen is showing.
+     *
+     * This is the whole property of the action and the one that cannot be seen from inside the
+     * downloaded file, so it is asserted on the request rather than on what comes back: the same
+     * `status.equals` and `isArchived.notEquals` the list just sent, and nothing else.
+     */
+    it('should export over the filters currently applied', async () => {
+      TestBed.tick();
+      expectListRequest();
+      flushTiles();
+
+      comp.status.set('SUSPENDED');
+      comp.load();
+      TestBed.tick();
+      expectListRequest();
+
+      comp.exportCsv();
+      await vitest.runAllTimersAsync();
+
+      const req = httpMock.expectOne(r => r.url.endsWith('/api/patients/export'));
+      expect(req.request.params.get('status.equals')).toBe('SUSPENDED');
+      expect(req.request.params.get('isArchived.notEquals')).toBe('true');
+      req.flush(new Blob(['x'], { type: 'text/csv' }));
+    });
+
+    /**
+     * Page and size are stripped.
+     *
+     * Left on, this would download the twenty rows currently visible under the name "export" —
+     * which looks like it worked, and is the one failure a person checking the file cannot spot
+     * unless the directory happens to be longer than a page.
+     */
+    it('should not send page or size', async () => {
+      TestBed.tick();
+      expectListRequest();
+      flushTiles();
+
+      comp.exportCsv();
+      await vitest.runAllTimersAsync();
+
+      const req = httpMock.expectOne(r => r.url.endsWith('/api/patients/export'));
+      expect(req.request.params.get('page')).toBeNull();
+      expect(req.request.params.get('size')).toBeNull();
+      req.flush(new Blob(['x'], { type: 'text/csv' }));
+    });
+
+    it('should not start a second export while one is in flight', async () => {
+      TestBed.tick();
+      expectListRequest();
+      flushTiles();
+
+      comp.exportCsv();
+      comp.exportCsv();
+      await vitest.runAllTimersAsync();
+
+      const requests = httpMock.match(r => r.url.endsWith('/api/patients/export'));
+      expect(requests).toHaveLength(1);
+      requests[0].flush(new Blob(['x'], { type: 'text/csv' }));
+    });
+
+    /** A failed export has to release the button, or the screen needs a reload to try again. */
+    it('should clear the in-flight flag when the export fails', async () => {
+      TestBed.tick();
+      expectListRequest();
+      flushTiles();
+
+      comp.exportCsv();
+      await vitest.runAllTimersAsync();
+
+      httpMock.expectOne(r => r.url.endsWith('/api/patients/export')).flush(null, { status: 403, statusText: 'Forbidden' });
+      await vitest.runAllTimersAsync();
+
+      expect(comp.isExporting()).toBe(false);
+    });
+  });
 });
