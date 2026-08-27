@@ -84,7 +84,8 @@
         "catalog": "Catalog",
         "platformHealth": "Platform health",
         "wageRates": "Wage rates",
-        "organisation": "Organisation"
+        "organisation": "Organisation",
+        "deletionRequests": "Deletion requests"
       },
       "quickAdd": {
         "task": "Task",

@@ -1,0 +1,178 @@
+<div class="sec-head">
+  <div>
+    <h3 abfTranslate="deletionRequests.title">Deletion requests</h3>
+    <p abfTranslate="deletionRequests.subtitle">Patients who have asked for their record to be erased</p>
+  </div>
+  <button type="button" class="btn btn-outline-secondary btn-sm no-print" (click)="load()">
+    <fa-icon icon="sync" />
+    <span abfTranslate="deletionRequests.refresh">Refresh</span>
+  </button>
+</div>
+
+<div class="tools no-print">
+  <div class="chip-row" data-cy="queueFilter">
+    @for (status of queues; track status) {
+      <button type="button" class="chip" [class.on]="queue() === status" (click)="selectQueue(status)">
+        {{ 'deletionRequests.status.' + status | translate }}
+      </button>
+    }
+  </div>
+</div>
+
+@if (overdueCount() > 0 && queue() === 'PENDING') {
+  <!--
+    The number worth seeing without reading the table. Fourteen days is a published promise, and a
+    promise nobody counts down is one that gets kept late.
+  -->
+  <div class="alert alert-danger" role="alert">
+    {{ 'deletionRequests.overdueBanner' | translate: { count: overdueCount() } }}
+  </div>
+}
+
+@if (loadFailed()) {
+  <div class="alert alert-warning" role="alert">
+    <p abfTranslate="deletionRequests.error.load">The deletion queue could not be loaded from the patient service.</p>
+    <!--
+      Named explicitly because it is the cause in almost every case, and because a 404 from our own
+      gateway is indistinguishable at the browser from the patient service being down.
+    -->
+    <p class="small" abfTranslate="deletionRequests.error.loadHint">
+      Check that this gateway carries a /services/hcpatientservice route — see deploy/prod-server/compose.yml.
+    </p>
+  </div>
+} @else if (loading()) {
+  <p class="muted" abfTranslate="deletionRequests.loading">Loading…</p>
+} @else if (rows().length === 0) {
+  <p class="muted" abfTranslate="deletionRequests.empty">Nothing in this queue.</p>
+} @else {
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr>
+          <th abfTranslate="deletionRequests.column.patient">Patient</th>
+          <th abfTranslate="deletionRequests.column.requested">Requested</th>
+          <th abfTranslate="deletionRequests.column.due">Due by</th>
+          <th abfTranslate="deletionRequests.column.reason">Reason</th>
+          <th class="no-print"></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of rows(); track row.id) {
+          <tr [class.is-overdue]="isOverdue(row)" [class.is-due-soon]="isDueSoon(row)">
+            <td>
+              <div class="who">{{ row.requestedByEmail }}</div>
+              <div class="muted small">{{ row.patientId }}</div>
+            </td>
+            <td>{{ day(row.requestedAt) | formatMediumDate }}</td>
+            <td>
+              {{ day(row.dueAt) | formatMediumDate }}
+              @if (isOverdue(row)) {
+                <span class="pill pill--danger">{{ 'deletionRequests.overdue' | translate: { days: -daysUntilDue(row) } }}</span>
+              } @else if (isDueSoon(row)) {
+                <span class="pill pill--warn">{{ 'deletionRequests.dueIn' | translate: { days: daysUntilDue(row) } }}</span>
+              }
+            </td>
+            <td class="muted small">{{ row.reason || '—' }}</td>
+            <td class="no-print">
+              @if (row.status === 'PENDING') {
+                <button type="button" class="btn-quiet sm" (click)="startAction(row)" *abfHasAnyAuthority="adminOnly">
+                  <span abfTranslate="deletionRequests.decide">Decide</span>
+                </button>
+              } @else if (row.status === 'COMPLETED') {
+                <div class="muted small">
+                  {{ 'deletionRequests.completedBy' | translate: { who: row.completedByLogin } }}
+                  @if (erasedSummary(row); as summary) {
+                    <div class="counts">{{ summary }}</div>
+                  }
+                </div>
+              } @else if (row.status === 'REJECTED') {
+                <div class="muted small">{{ row.decisionReason }}</div>
+              }
+            </td>
+          </tr>
+
+          @if (acting() === row.id) {
+            <tr class="decide-row">
+              <td colspan="5">
+                <!--
+                  ROLE_ADMIN only, and the console's read-for-everyone / write-for-some shape applied
+                  where it matters most: a supervisor sees the queue and cannot act on it.
+                -->
+                <div class="decide" *abfHasAnyAuthority="adminOnly">
+                  <div class="decide__col">
+                    <h4 abfTranslate="deletionRequests.complete.title">Erase this record</h4>
+                    <p class="small" abfTranslate="deletionRequests.complete.body">
+                      This deletes the patient's profile and every clinical record and report file behind it. It cannot be undone.
+                    </p>
+                    <p class="small" abfTranslate="deletionRequests.complete.account">
+                      It does not close their sign-in account — do that separately in the patient gateway.
+                    </p>
+
+                    <!--
+                      Typing the id, not a red button in a modal. The id has to be read off the row
+                      being acted on, which is the one check that cannot be satisfied by clicking
+                      through a dialog you have stopped reading.
+                    -->
+                    <label class="form-label small" [attr.for]="'confirm-' + row.id">
+                      {{ 'deletionRequests.complete.confirmLabel' | translate: { patientId: row.patientId } }}
+                    </label>
+                    <input
+                      class="form-control form-control-sm"
+                      [id]="'confirm-' + row.id"
+                      [value]="confirmId()"
+                      (input)="confirmId.set($any($event.target).value)"
+                      autocomplete="off"
+                    />
+
+                    <button
+                      type="button"
+                      class="btn btn-danger btn-sm"
+                      [disabled]="busy() || !confirmMatches(row)"
+                      (click)="complete(row)"
+                      data-cy="completeDeletion"
+                    >
+                      <span abfTranslate="deletionRequests.complete.action">Erase the record</span>
+                    </button>
+                  </div>
+
+                  <div class="decide__col">
+                    <h4 abfTranslate="deletionRequests.reject.title">Refuse this request</h4>
+                    <p class="small" abfTranslate="deletionRequests.reject.body">
+                      A legal hold, an open investigation, or a request that is plainly about somebody else's account.
+                    </p>
+
+                    <label class="form-label small" [attr.for]="'reason-' + row.id" abfTranslate="deletionRequests.reject.reasonLabel">
+                      Why — the patient is owed this
+                    </label>
+                    <textarea
+                      class="form-control form-control-sm"
+                      rows="2"
+                      [id]="'reason-' + row.id"
+                      [value]="rejectReason()"
+                      (input)="rejectReason.set($any($event.target).value)"
+                    ></textarea>
+
+                    <button
+                      type="button"
+                      class="btn btn-outline-secondary btn-sm"
+                      [disabled]="busy() || !rejectReason().trim()"
+                      (click)="reject(row)"
+                    >
+                      <span abfTranslate="deletionRequests.reject.action">Refuse</span>
+                    </button>
+                  </div>
+                </div>
+
+                @if (actionError(); as err) {
+                  <div class="alert alert-danger" role="alert">{{ err | translate }}</div>
+                }
+
+                <button type="button" class="btn-quiet sm" (click)="abandon()" abfTranslate="deletionRequests.close">Close</button>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+}
