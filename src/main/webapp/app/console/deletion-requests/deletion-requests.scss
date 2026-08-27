@@ -1,0 +1,60 @@
+@import 'console-components';
+
+.tools {
+  margin: 0 0 16px;
+}
+
+/*
+ * The clock, made visible. A row's colour is the only thing on this screen that says "this promise
+ * is about to be broken" without being read.
+ */
+tr.is-overdue td {
+  background: rgba(197, 52, 52, 0.06);
+}
+
+tr.is-due-soon td {
+  background: rgba(197, 148, 55, 0.08);
+}
+
+.who {
+  font-weight: 600;
+}
+
+.counts {
+  font-variant-numeric: tabular-nums;
+  margin-top: 2px;
+}
+
+.decide-row td {
+  background: var(--abf-bg);
+}
+
+.decide {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 12px;
+
+  /* One column below the breakpoint: two irreversible choices side by side on a narrow screen is
+     how the wrong one gets clicked. */
+  @media (max-width: 820px) {
+    grid-template-columns: 1fr;
+  }
+
+  &__col {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
+
+    h4 {
+      font-size: 15px;
+      margin: 0;
+    }
+
+    input,
+    textarea {
+      max-width: 360px;
+    }
+  }
+}

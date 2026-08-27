@@ -62,6 +62,21 @@ export const SHELL_NAVIGATION: readonly ShellNavItem[] = [
   { route: 'account', label: 'global.menu.account.main', icon: 'user', group: 'global.menu.group.account' },
   { route: 'organisation-profile', label: 'global.menu.console.organisation', icon: 'building', group: 'global.menu.group.account' },
 
+  // Admin-only in the nav as well as in the screen. A supervisor may open it by URL and will see a
+  // read-only queue, which is correct — but a link inviting them to a screen whose only two actions
+  // they cannot take is an invitation to a dead end.
+  //
+  // Position matters: navbar groups CONSECUTIVE runs, so an administration entry placed anywhere
+  // but inside this block splits the group in two and `navbar.spec.ts` fails. It sits first here
+  // because it is the only administration screen concerning a person rather than the runtime.
+  {
+    route: 'deletion-requests',
+    label: 'global.menu.console.deletionRequests',
+    icon: 'trash-alt',
+    group: 'global.menu.group.administration',
+    authorities: [Authority.ADMIN],
+  },
+
   // JHipster's stock admin screens, adopted into the console rather than left
   // unreachable. They are the only entries that name an authority: the routes
   // themselves are already guarded by `data.authorities` in admin.routes.ts,

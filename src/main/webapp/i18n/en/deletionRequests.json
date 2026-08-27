@@ -1,0 +1,47 @@
+{
+  "deletionRequests": {
+    "pageTitle": "Deletion requests",
+    "title": "Deletion requests",
+    "subtitle": "Patients who have asked for their record to be erased",
+    "refresh": "Refresh",
+    "loading": "Loading…",
+    "empty": "Nothing in this queue.",
+    "decide": "Decide",
+    "close": "Close",
+    "overdueBanner": "{{count}} request(s) are past the 14 days the privacy policy promises.",
+    "overdue": "{{days}} day(s) overdue",
+    "dueIn": "due in {{days}} day(s)",
+    "completedBy": "Erased by {{who}}",
+    "status": {
+      "PENDING": "Pending",
+      "COMPLETED": "Completed",
+      "REJECTED": "Refused",
+      "CANCELLED": "Withdrawn"
+    },
+    "column": {
+      "patient": "Patient",
+      "requested": "Requested",
+      "due": "Due by",
+      "reason": "Reason"
+    },
+    "complete": {
+      "title": "Erase this record",
+      "body": "This deletes the patient's profile and every clinical record and report file behind it. It cannot be undone.",
+      "account": "It does not close their sign-in account — do that separately in the patient gateway.",
+      "confirmLabel": "Type the patient id {{patientId}} to confirm",
+      "action": "Erase the record"
+    },
+    "reject": {
+      "title": "Refuse this request",
+      "body": "A legal hold, an open investigation, or a request that is plainly about somebody else's account.",
+      "reasonLabel": "Why — the patient is owed this",
+      "action": "Refuse"
+    },
+    "error": {
+      "load": "The deletion queue could not be loaded from the patient service.",
+      "loadHint": "Check that this gateway carries a /services/hcpatientservice route — see deploy/prod-server/compose.yml.",
+      "complete": "The erasure did not complete. The request is still pending and can be retried.",
+      "reject": "The request could not be refused. Please try again."
+    }
+  }
+}

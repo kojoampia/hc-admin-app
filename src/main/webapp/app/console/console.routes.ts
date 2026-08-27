@@ -77,6 +77,18 @@ const routes: Routes = [
     canActivate: [UserRouteAccessService],
     loadComponent: () => import('./organisation/organisation-profile'),
   },
+  {
+    // No `authorities`, in line with every other console route: all three roles may READ the queue,
+    // and completing or refusing is gated per-control with `*abfHasAnyAuthority` — with the patient
+    // service enforcing ROLE_ADMIN independently, which is the boundary that actually holds.
+    //
+    // This screen reads and writes ANOTHER STACK's data (hc-patient). It needs a
+    // /services/hcpatientservice route on this gateway; see deletion-request.service.ts.
+    path: 'deletion-requests',
+    data: { pageTitle: 'deletionRequests.pageTitle', breadcrumb: 'global.menu.group.administration' },
+    canActivate: [UserRouteAccessService],
+    loadComponent: () => import('./deletion-requests/deletion-requests'),
+  },
 ];
 
 export default routes;
