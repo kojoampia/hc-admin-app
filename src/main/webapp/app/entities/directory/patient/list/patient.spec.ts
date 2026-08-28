@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { MockInstance, afterEach, beforeEach, describe, expect, it, vitest } from 'vitest';
 import { HttpTestingController, TestRequest, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed, inject } from '@angular/core/testing';
@@ -9,7 +10,6 @@ import {
   faEye,
   faList,
   faPencilAlt,
-  faPlus,
   faSort,
   faSortDown,
   faSortUp,
@@ -75,7 +75,7 @@ describe('Patient Management Component', () => {
     const library = TestBed.inject(FaIconLibrary);
     // The tile icons go in alongside the table's: an icon missing from the library throws at
     // render, so every test fails on the tiles rather than on what it asserts.
-    library.addIcons(faBoxArchive, faEye, faList, faPencilAlt, faPlus, faSort, faSortDown, faSortUp, faSync, faTimes, faUser, faUsers);
+    library.addIcons(faBoxArchive, faEye, faList, faPencilAlt, faSort, faSortDown, faSortUp, faSync, faTimes, faUser, faUsers);
     httpMock = TestBed.inject(HttpTestingController);
   });
 
@@ -536,5 +536,32 @@ describe('Patient Management Component', () => {
 
       expect(comp.isExporting()).toBe(false);
     });
+  });
+});
+
+/**
+ * The Create button this screen deliberately does not have.
+ *
+ * <p>A patient registers on hc-patient and arrives in this directory with an account already, so
+ * nothing the administrator can fill in here makes one. The button offered a patient it could not
+ * make — a record with no account behind it, which is counted as a patient everywhere and can never
+ * sign in.
+ *
+ * <p>Pinned rather than left to review, for the same reason the quick-add menu is: this is a
+ * generated screen and its siblings all carry the button, so putting it back is a paste that reads
+ * as consistency. The template is read rather than rendered because absence is what is being
+ * asserted, and a query that finds nothing passes just as well against a component that failed to
+ * render at all.
+ */
+describe('the patient list template', () => {
+  const template = readFileSync('src/main/webapp/app/entities/directory/patient/list/patient.html', 'utf8');
+
+  it.each(['entityCreateButton', 'jh-create-entity', '/patient/new'])('offers no %s', marker => {
+    expect(template).not.toContain(marker);
+  });
+
+  /** The absence is only safe while it is explained: an unexplained gap gets filled back in. */
+  it('says why, where the next person to edit it will look', () => {
+    expect(template).toContain('There is no Create button here');
   });
 });
