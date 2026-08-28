@@ -28,10 +28,14 @@ describe('quick-add menu', () => {
   });
 
   /**
-   * Creation moved off the global menu; it did not go away.
+   * Creation moved off the global menu; the directories did not.
    *
-   * <p>The three directories are still reachable from the sidebar and still carry their own Create
-   * buttons, which is the distinction this change turns on.
+   * <p>All three are still reachable from the sidebar, which is the distinction this change turns
+   * on: the menu stopped offering a shortcut, it did not hide a screen.
+   *
+   * <p>Professional and vendor still carry their own Create buttons. The patient list lost its on
+   * 2026-08-28 — a patient registers on hc-patient and arrives here with an account already, so
+   * nothing this console can fill in makes one. See the comment on that list template.
    */
   it.each(['patient', 'professional', 'vendor'])('keeps the %s directory in the navigation', route => {
     expect(SHELL_NAVIGATION.some(item => item.route === route)).toBe(true);

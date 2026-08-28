@@ -43,15 +43,19 @@
       <span abfTranslate="hcAdminApp.directoryPatient.home.exportLabel">Export</span>
     </button>
 
-    <a
-      class="btn btn-primary btn-sm jh-create-entity create-patient"
-      id="jh-create-entity"
-      data-cy="entityCreateButton"
-      [routerLink]="['/patient/new']"
-    >
-      <fa-icon icon="plus" />
-      <span abfTranslate="hcAdminApp.directoryPatient.home.createLabel">Create a new Patient</span>
-    </a>
+    <!--
+      There is no Create button here, and that is the point rather than an omission.
+
+      A patient registers on hc-patient and arrives in this directory already having an account.
+      Nothing the administrator can fill in from this screen produces one, so the button offered a
+      patient it could not make: a record with no account behind it, which reads as a patient
+      everywhere it is counted and can never sign in. Removed 2026-08-28.
+
+      The `new` route is still declared — the same component serves `:id/edit`, which an
+      administrator does use — so this is a screen that no longer advertises it, not a capability
+      taken off the server. Restoring the button would take one line, which is why the reason is
+      written down here.
+    -->
   </div>
 </div>
 

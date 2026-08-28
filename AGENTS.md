@@ -61,7 +61,7 @@ Each of these has actually been got wrong in this repository. They are first bec
 
 `app/console/` holds the hand-written screens (dashboard, duty-roster, message-desk, organisation, platform-health, task-board, wage-rates). `app/admin/` holds JHipster's admin screens. `app/entities/` holds the generated ones, grouped `catalogue` / `directory` / `operations` / `platform`.
 
-**`QUICK_ADD` is not the place to start an account.** Patient, professional and vendor came off the New menu deliberately — each has an intake behind it, and two end in an account on another stack. The three directories keep their own Create buttons; `shell-navigation.spec.ts` pins both halves.
+**`QUICK_ADD` is not the place to start an account.** Patient, professional and vendor came off the New menu deliberately — each has an intake behind it, and two end in an account on another stack. Professional and vendor keep their own Create buttons; `shell-navigation.spec.ts` pins both halves. The patient list lost its on 2026-08-28 — a patient registers on hc-patient and arrives here with an account already, so the button made a record no one could sign in as. `patient.spec.ts` reads the template and pins the absence.
 
 ## Commands
 
