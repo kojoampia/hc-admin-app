@@ -1,8 +1,10 @@
 # robotstxt.org/
+#
+# An admin console has no business in a search index, so this disallows everything rather than
+# naming a handful of API paths the way the generated file did. Two other layers say the same thing
+# — deploy/prod-server/hc-admin.conf answers /robots.txt itself so the answer survives the container
+# being down, and it sends X-Robots-Tag: noindex, nofollow — but this one is the only one that
+# travels with the application, and it is what answers anywhere those two are not in front of it.
 
 User-agent: *
-Disallow: /api/account
-Disallow: /api/logs/
-Disallow: /api/users/
-Disallow: /management/
-Disallow: /v3/api-docs/
+Disallow: /

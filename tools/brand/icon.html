@@ -1,0 +1,140 @@
+<!doctype html>
+<meta charset="utf-8" />
+<!--
+  The Abofonsa BridgeCare badge, redrawn as vector.
+
+  This is the SOURCE for every favicon, touch icon and manifest icon in the console.
+  content/images/hc-logo.png is a 240x240 raster of the same badge and cannot be it: three of the
+  four manifest sizes are larger than that, so they would be upscaled. The raster stays where it is
+  legible — the 40px sidebar mark and the 92px login mark — and nothing else reads from it.
+
+  Rendered onto an OPAQUE navy tile, not a transparent circle. iOS composites transparency to black
+  and Android masks a launcher icon to its own shape, so a badge with transparent corners loses them
+  and gains a black square. The navy is the same #0d3058 the manifest declares as theme_color, so
+  the tile edge is invisible against the browser chrome that draws it.
+
+  Colours are the two brand tokens from content/scss/_hc-tokens.scss and nothing else:
+  $abf-navy #0d3058, $abf-gold #c59437, $abf-cream #f7f4ee. Do not introduce a fourth.
+
+  Geometry note: the inner cream disc is centred ABOVE the badge centre (256,238 against 256,256).
+  That is what makes the navy ring a thin arc at the top and a wide banner at the bottom, which is
+  where the tagline sits. Moving the disc back to centre gives an even ring and no room for the
+  text.
+-->
+<style>
+  @font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 700;
+    /* Resolved relative to this file: app/tools/brand/ -> app/node_modules/. The console
+       self-hosts Inter (content/scss/vendor.scss), so rendering with anything else would put a
+       typeface in the icon that appears nowhere in the product. `npm install` is a prerequisite
+       of the generator for exactly this reason. */
+    src: url('../../node_modules/@fontsource/inter/files/inter-latin-700-normal.woff2') format('woff2');
+  }
+  html,
+  body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+  svg {
+    display: block;
+    width: 100vw;
+    height: 100vh;
+  }
+</style>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" preserveAspectRatio="xMidYMid meet">
+  <!-- Opaque tile. -->
+  <rect x="0" y="0" width="512" height="512" fill="#0d3058" />
+
+  <!-- Badge: cream field, gold ring, navy band, cream disc offset upward. -->
+  <circle cx="256" cy="256" r="238" fill="#f7f4ee" />
+  <circle cx="256" cy="256" r="228" fill="none" stroke="#c59437" stroke-width="13" />
+  <circle cx="256" cy="256" r="215" fill="#0d3058" />
+  <circle cx="256" cy="238" r="189" fill="#f7f4ee" />
+
+  <!-- Suspension bridge. -->
+  <g fill="none" stroke="#c59437" stroke-linecap="butt">
+    <!-- Main cables: two side spans and the sag between the towers. -->
+    <g stroke-width="7">
+      <path d="M100 246 Q152 242 176 104" />
+      <path d="M176 104 Q256 288 336 104" />
+      <path d="M336 104 Q360 242 412 246" />
+    </g>
+    <!-- Hangers. -->
+    <g stroke-width="3.4">
+      <path d="M132.97 226.79V246" />
+      <path d="M152.32 192.96V246" />
+      <path d="M165.28 153.84V246" />
+      <path d="M196 144.25V246" />
+      <path d="M216 173V246" />
+      <path d="M236 190.25V246" />
+      <path d="M256 196V246" />
+      <path d="M276 190.25V246" />
+      <path d="M296 173V246" />
+      <path d="M316 144.25V246" />
+      <path d="M346.72 153.84V246" />
+      <path d="M359.68 192.96V246" />
+      <path d="M379.03 226.79V246" />
+    </g>
+    <!-- Tower lattice: legs, rungs, X-bracing. -->
+    <g stroke-width="8">
+      <path d="M168 104V276" />
+      <path d="M184 104V276" />
+      <path d="M328 104V276" />
+      <path d="M344 104V276" />
+    </g>
+    <g stroke-width="4.5">
+      <path d="M162 108H190" />
+      <path d="M164 150H188" />
+      <path d="M164 190H188" />
+      <path d="M164 230H188" />
+      <path d="M162 270H190" />
+      <path d="M322 108H350" />
+      <path d="M324 150H348" />
+      <path d="M324 190H348" />
+      <path d="M324 230H348" />
+      <path d="M322 270H350" />
+    </g>
+    <g stroke-width="3">
+      <path d="M168 150L184 190M184 150L168 190" />
+      <path d="M168 190L184 230M184 190L168 230" />
+      <path d="M168 230L184 270M184 230L168 270" />
+      <path d="M328 150L344 190M344 150L328 190" />
+      <path d="M328 190L344 230M344 190L328 230" />
+      <path d="M328 230L344 270M344 230L328 270" />
+    </g>
+  </g>
+  <!-- Deck. Drawn after the lattice so the roadway reads as continuous across the towers. -->
+  <rect x="96" y="246" width="320" height="10" fill="#c59437" />
+
+  <!-- Star medallion. Cream fill, so it occludes whatever it overlaps. -->
+  <circle cx="256" cy="132" r="58" fill="#f7f4ee" stroke="#c59437" stroke-width="8" />
+  <path
+    fill="#0d3058"
+    d="M256 92L265 116.41L290.64 112L274 132L290.64 152L265 147.59L256 172L247 147.59L221.36 152L238 132L221.36 112L247 116.41Z"
+  />
+  <circle cx="256" cy="132" r="7.5" fill="#f7f4ee" />
+
+  <!-- Wordmark. -->
+  <g fill="#c59437" font-family="Inter" font-weight="700" text-anchor="middle">
+    <text x="256" y="348" font-size="66">Abofonsa</text>
+    <text x="256" y="400" font-size="50">BridgeCare</text>
+  </g>
+
+  <!-- Tagline, on the bottom arc of the navy band. The arc runs left-to-right through the bottom
+       (sweep-flag 0), which puts the glyph "up" vector toward the badge centre — i.e. upright.
+
+       The radius is the OUTER edge of the band, not its middle. Glyphs sit on the baseline and grow
+       toward the centre of the circle, so an arc drawn down the middle of the band puts the text
+       half in the band and half over the wordmark — which is exactly what the first attempt did.
+       At the bottom the band spans radius 171 to 215; a baseline at 207 leaves the cap heights
+       landing around 188, clear of both edges. -->
+  <path id="tagline" fill="none" d="M49 256A207 207 0 0 0 463 256" />
+  <text fill="#f7f4ee" font-family="Inter" font-weight="700" font-size="23" letter-spacing="2.6">
+    <textPath href="#tagline" startOffset="50%" text-anchor="middle">PROVIDING PEACE OF MIND ACROSS BORDERS</textPath>
+  </text>
+</svg>
