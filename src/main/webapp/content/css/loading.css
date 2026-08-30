@@ -117,7 +117,7 @@
   width: 120px;
   height: 60px;
   border-radius: 120px 120px 0 0;
-  background: #bbcedd;
+  background: #0d3058;
   -webkit-animation: lds-pacman-1 1s linear infinite;
   animation: lds-pacman-1 1s linear infinite;
   -webkit-transform-origin: 60px 60px;
@@ -127,14 +127,23 @@
   -webkit-animation: lds-pacman-2 1s linear infinite;
   animation: lds-pacman-2 1s linear infinite;
 }
+/* The three travelling marks. This box used to be 24x10 for a wide JHipster wordmark; the brand
+   mark is square, and `background-size: contain` in a 24x10 box would have fitted it to 10x10 and
+   pinned it to the left edge, so the box is squared rather than the image stretched.
+
+   logo-mark.svg is the text-free reduction of tools/brand/icon.html — see the note in that file for
+   why the icons and this do not share a source. This stylesheet is loaded by index.html directly
+   and runs before Angular boots, so nothing here is covered by a component test; it is checked by
+   loading the page with the network throttled. */
 .app-loading .lds-pacman > div:nth-child(1) div {
   position: absolute;
-  top: 97px;
+  top: 95px;
   left: -8px;
-  width: 24px;
-  height: 10px;
-  background-image: url('/content/images/logo-jhipster.png');
+  width: 14px;
+  height: 14px;
+  background-image: url('/content/images/logo-mark.svg');
   background-size: contain;
+  background-repeat: no-repeat;
   -webkit-animation: lds-pacman-3 1s linear infinite;
   animation: lds-pacman-3 1.5s linear infinite;
 }

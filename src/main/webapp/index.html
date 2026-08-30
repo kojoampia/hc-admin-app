@@ -3,13 +3,31 @@
   <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <title>hcAdmin</title>
-    <meta name="description" content="Description for hcAdmin" />
+    <!-- This title is asserted twice outside this repo and is not free to change on its own:
+         quality/startup.sh matches it to prove the served container is the admin console and not a
+         sibling site on the same nginx, and it is the only thing that tells them apart — every
+         candidate on that host is an Angular login page. It matches i18n/en/global.json's
+         `global.title`, which the router writes over it once Angular boots. -->
+    <title>Abofonsa BridgeCare · Admin console</title>
+    <meta
+      name="description"
+      content="Back-office console for Abofonsa BridgeCare: the patient, clinician and vendor directory, duty rosters, wage rates, service catalogue and platform health."
+    />
+    <!-- An admin console has no business in a search index. This is the third of three layers and
+         the only one that travels with the application: robots.txt states it, the production nginx
+         sends X-Robots-Tag, and this survives both being wrong or absent. -->
+    <meta name="robots" content="noindex, nofollow" />
     <meta name="google" content="notranslate" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-    <meta name="theme-color" content="#000000" />
+    <meta name="theme-color" content="#0d3058" />
     <base href="/" />
-    <link rel="icon" href="favicon.ico" />
+    <link rel="icon" href="favicon.ico" sizes="any" />
+    <!-- content/ is copied wholesale by angular.json's assets; root-level PNGs are NOT, so these
+         must point here or they 404 in a production build. favicon.ico is the one exception — the
+         assets list names it at the root explicitly. -->
+    <link rel="icon" type="image/png" sizes="32x32" href="content/images/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="content/images/favicon-16x16.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="content/images/apple-icon-180x180.png" />
     <link rel="manifest" href="manifest.webapp" />
     <link rel="stylesheet" href="content/css/loading.css" />
     <!-- jhipster-needle-add-resources-to-root - JHipster will add new resources here -->

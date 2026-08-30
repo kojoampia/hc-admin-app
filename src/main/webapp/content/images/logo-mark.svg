@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Abofonsa BridgeCare">
+  <!--
+    The small BridgeCare mark. Used at 14px by the pre-boot spinner in content/css/loading.css, and
+    nowhere else.
+
+    It is a DELIBERATE reduction of tools/brand/icon.html, not a copy of it. Three things are gone:
+
+      - the navy tile, so this can sit on the loading page's own background;
+      - the wordmark and the tagline, because at 14px they are a smear, and because keeping them
+        would mean embedding a base64 Inter into a file that loads on every cold start — an SVG in
+        an <img> or a CSS url() cannot reach an external font at all;
+      - the tower lattice and the hangers, which merge into a solid block below about 24px.
+
+    The cream disc is centred here rather than offset upward. The offset in icon.html exists only to
+    widen the bottom of the navy ring into a banner for the tagline; with no tagline it just makes
+    the ring look lopsided.
+
+    If icon.html's colours or proportions change, change them here too. Nothing enforces that — the
+    two files are checked by eye, which is the honest cost of not shipping a font in the spinner.
+  -->
+  <circle cx="256" cy="256" r="238" fill="#f7f4ee" />
+  <circle cx="256" cy="256" r="228" fill="none" stroke="#c59437" stroke-width="13" />
+  <circle cx="256" cy="256" r="215" fill="#0d3058" />
+  <circle cx="256" cy="256" r="189" fill="#f7f4ee" />
+
+  <g fill="none" stroke="#c59437" stroke-linecap="butt">
+    <g stroke-width="14">
+      <path d="M104 300 Q156 296 180 158" />
+      <path d="M180 158 Q256 342 332 158" />
+      <path d="M332 158 Q356 296 408 300" />
+    </g>
+    <g stroke-width="20">
+      <path d="M180 152V330" />
+      <path d="M332 152V330" />
+    </g>
+  </g>
+  <rect x="104" y="292" width="304" height="20" fill="#c59437" />
+
+  <circle cx="256" cy="186" r="60" fill="#f7f4ee" stroke="#c59437" stroke-width="10" />
+  <path
+    fill="#0d3058"
+    d="M256 144L265 168.41L290.64 164L274 184L290.64 204L265 199.59L256 224L247 199.59L221.36 204L238 184L221.36 164L247 168.41Z"
+  />
+</svg>
