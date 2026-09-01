@@ -404,12 +404,16 @@ relationship ManyToOne {
   Task{owner(licenceNumber)} to Professional
   Task{sourceMessage(subject)} to Message
   ProfessionalVerification{professional(licenceNumber) required} to Professional
+  // Unidirectional, unlike Professional{assignment}: RosterWeek carries no `assignments`.
+  // IRosterWeek has never had the field and the api dropped its @DBRef set on 2026-09-01 —
+  // the duty roster loads a week's cells with a paged `weekId.equals` query instead. Declaring
+  // the left side here again would put the collection back on both models.
+  ShiftAssignment{week(label) required} to RosterWeek
 }
 
 relationship OneToMany {
   Category{activity(name)} to ServiceActivity{category(name) required}
   ServicePlan{feature} to PlanFeature{plan(name) required}
-  RosterWeek{assignment} to ShiftAssignment{week(label) required}
   Professional{assignment} to ShiftAssignment{professional(licenceNumber) required}
   Patient{document} to Document{patient}
   Patient{careActivity} to CareActivity{patient required}
