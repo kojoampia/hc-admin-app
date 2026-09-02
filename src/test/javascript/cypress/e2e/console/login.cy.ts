@@ -29,7 +29,17 @@ import { quickAddSelector, sidebarSelector, topbarSelector } from '../../support
 const decodeAuthorities = (token: string): string[] => {
   const segment = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
   const payload = JSON.parse(atob(segment)) as { auth: string };
-  return payload.auth.split(',');
+  // Space, not comma. `AuthenticateController:86` builds the claim with `Collectors.joining(" ")`,
+  // and `SecurityJwtConfiguration:75` hands it to Spring's converter, which splits on whitespace —
+  // so a real token reads "ROLE_ADMIN ROLE_USER". Splitting on ',' returned that whole string as a
+  // single element, which fails an `include` assertion and, worse, satisfies every `not.include`
+  // one: the two negative assertions below passed vacuously for as long as this was wrong.
+  //
+  // It was wrong from the day this file was written and nothing caught it, because the mock this
+  // spec used to run against minted its own comma-joined claim. Pointing the spec at a real gateway
+  // is what exposed it — found on the quality stack 2026-09-02, not by a review of the change that
+  // fixed the base64url decoding one line above.
+  return payload.auth.split(' ');
 };
 
 describe('login', () => {
