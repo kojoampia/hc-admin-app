@@ -43,6 +43,12 @@ export const quickAddSelector = '#abf-quick-add';
  * authority than `ops` and are still *displayed* as the operations administrator. Assert authority
  * effects (a control that is not rendered, a route that redirects), not the role chip, unless the
  * chip is what you mean to pin.
+ *
+ * <p><b>This mirrors `ConsoleRoleKey` in `app/shared/auth/console-role.ts` and cannot import it.</b>
+ * The cypress `tsconfig.json` resets `baseUrl` to `./`, so the `app/…` path alias the application
+ * compiles against does not resolve from here — the duplication is forced, not lazy. Nothing links
+ * the two, so a key renamed or added there drifts this copy with no compile error anywhere; change
+ * both.
  */
 export type ConsoleRoleKey = 'ops' | 'sup' | 'desk';
 

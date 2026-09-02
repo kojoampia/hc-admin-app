@@ -1,4 +1,4 @@
-import { quickAddSelector, sidebarSelector } from '../../support/console';
+import { quickAddSelector, sidebarSelector, topbarSelector } from '../../support/console';
 
 /**
  * Sign-in, and what the console derives from the token it gets back.
@@ -9,8 +9,25 @@ import { quickAddSelector, sidebarSelector } from '../../support/console';
  * be intercepted because an in-browser mock resolved those calls inside Angular's HttpClient. That
  * mock was deleted on 2026-08-08 — the requests are ordinary network traffic now.)
  */
+/**
+ * The authorities a JWT carries, read out of its payload segment.
+ *
+ * <p><b>The two replacements are the whole point of this helper.</b> A JWT payload is
+ * base64<b>url</b>, which spells the last two alphabet entries `-` and `_` where standard base64
+ * spells them `+` and `/`, and `atob` throws `InvalidCharacterError` on either — naming neither
+ * JWTs nor encodings, so the failure reads as a broken sign-in. Whether either character appears at
+ * all depends on the byte alignment of a payload carrying per-run `iat`/`exp` values, so the
+ * unnormalised version threw on some runs and decoded on others. That is worse than ordinary flake
+ * here: `cypress.config.ts` sets `retries: 2`, and a retry re-runs `signInAs` and mints a *fresh*
+ * token that usually decodes, so the defect would have been absorbed as noise rather than reported.
+ *
+ * <p>Missing `=` padding is deliberately not restored. WHATWG forgiving-base64 accepts a segment
+ * without it, which is how JWTs are written, so padding logic here would be code no failure asks
+ * for.
+ */
 const decodeAuthorities = (token: string): string[] => {
-  const payload = JSON.parse(atob(token.split('.')[1])) as { auth: string };
+  const segment = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+  const payload = JSON.parse(atob(segment)) as { auth: string };
   return payload.auth.split(',');
 };
 
@@ -28,8 +45,13 @@ describe('login', () => {
     // This spec asserted the prefill until 2026-09-01, one persona rename behind the component.
     cy.get('[data-cy="username"]').should('have.value', '');
     cy.get('[data-cy="password"]').should('have.value', '');
-    // Both controls are `Validators.required`, so a disabled submit is what "empty" looks like from
-    // outside. Without it the two assertions above also pass on a form that has not rendered yet.
+    // The one line pinning `Validators.required` on both controls: `login.ts:40-41` is what makes
+    // an empty form invalid and `login.html:83` is what binds that to `[disabled]`. Drop either
+    // validator and only this assertion goes red — the two above still pass, because a form with no
+    // validators is a form whose controls are still empty.
+    // (This said the assertion stopped the two above passing "on a form that has not rendered yet",
+    // which is not how Cypress works: `cy.get()` retries until the element exists and fails the test
+    // if it never does, so `have.value ''` cannot pass against an unrendered form.)
     cy.get('[data-cy="submit"]').should('be.disabled');
 
     // The four figures in the brand panel are deliberately NOT asserted. They come from
@@ -43,9 +65,14 @@ describe('login', () => {
     cy.signInAs('ops');
 
     cy.get(sidebarSelector).should('be.visible');
-    // The role the console DERIVES from the token, not copy in the page: `roleByAuthorities()` sees
-    // ROLE_ADMIN and resolves `ops`, whose label the sidebar foot renders. Asserting the chip text
-    // "Operations" alone would also be satisfied by the nav group heading of the same name.
+    // The sidebar foot renders a role label at all, and it is the `ops` one. This does NOT pin what
+    // the console derives from ROLE_ADMIN specifically — `roleByAuthorities()` falls through to
+    // `ops` for any input at all (`console-role.ts:74`), which is exactly what the case below says
+    // about ROLE_OPERATOR. What it can still catch is the foot being dropped, the i18n key breaking,
+    // and the derivation being inverted so that an administrator resolves to one of the narrower
+    // roles. The ROLE_ADMIN-specific pin in this case is the quick-add on the next line.
+    // Asserting the chip text "Operations" alone would also be satisfied by the nav group heading of
+    // the same name, so the full label is the one to read.
     cy.get(sidebarSelector).contains('Operations administrator');
     cy.get(quickAddSelector).should('exist');
     cy.contains('Admin dashboard').should('be.visible');
@@ -53,6 +80,16 @@ describe('login', () => {
 
   it('should land the operator with no write chrome', () => {
     cy.signInAs('sup');
+
+    // The topbar first, and specifically the row the quick-add would be in. `#abf-quick-add` is
+    // `topbar.html:86-87`, behind `*abfHasAnyAuthority`, and that directive renders nothing until
+    // the account signal is populated — so a `should('not.exist')` on it is satisfied by the topbar
+    // not having rendered yet and passes for an administrator too. Same rule as
+    // `duty-roster.cy.ts:157-160`. The bell is the anchor because it sits in
+    // `.abf-topbar__actions` beside the quick-add and is behind no authority directive at all, so
+    // it renders for every role; the sidebar below is a different component (`navbar.html`) and
+    // cannot vouch for this one.
+    cy.get(topbarSelector).find('[data-cy="notificationsBell"]').should('be.visible');
 
     // The quick-add is gated on QUICK_ADD_AUTHORITIES = [ROLE_ADMIN], which `operator` does not
     // hold. This is the assertion that actually distinguishes the persona.
@@ -71,6 +108,10 @@ describe('login', () => {
   it('should land the plain user on the dashboard but out of the directories', () => {
     cy.signInAs('desk');
 
+    // The topbar anchor again, for the reason given in the case above: without it this case has no
+    // rendered-chrome assertion at all before its negative, and would stay green if the topbar
+    // stopped rendering for authenticated users entirely.
+    cy.get(topbarSelector).find('[data-cy="notificationsBell"]').should('be.visible');
     cy.get(quickAddSelector).should('not.exist');
     // ROLE_USER reaches nothing under `/api/**` and the console mirrors that: the entity routes
     // carry ENTITY_READ_AUTHORITIES = [ROLE_ADMIN, ROLE_OPERATOR], so UserRouteAccessService sends
