@@ -30,7 +30,11 @@ export const titleLoginSelector = '[data-cy="loginTitle"]';
 export const errorLoginSelector = '[data-cy="loginError"]';
 export const usernameLoginSelector = '[data-cy="username"]';
 export const passwordLoginSelector = '[data-cy="password"]';
-export const forgetYourPasswordSelector = '[data-cy="forgetYourPasswordSelector"]';
+// Generated as `[data-cy="forgetYourPasswordSelector"]` — the variable's own name, which matched
+// nothing because this build had no such link until 2026-09-02. Pointed at the real one rather than
+// deleted: the constant was already exported here, and a dead selector beside a live link is how the
+// next spec ends up inventing a third spelling.
+export const forgotPasswordSelector = '[data-cy="forgotPassword"]';
 export const submitLoginSelector = '[data-cy="submit"]';
 
 // Register
@@ -52,9 +56,29 @@ export const newPasswordSelector = '[data-cy="newPassword"]';
 export const confirmPasswordSelector = '[data-cy="confirmPassword"]';
 export const submitPasswordSelector = '[data-cy="submit"]';
 
-// Reset Password
+// Reset Password — request half (/account/reset/request)
 export const emailResetPasswordSelector = '[data-cy="emailResetPassword"]';
-export const submitInitResetPasswordSelector = '[data-cy="submit"]';
+export const resetRequestSuccessSelector = '[data-cy="resetRequestSuccess"]';
+
+// The submit button on **both** reset screens. Generated as `submitInitResetPasswordSelector`, for
+// the request half alone, and then imported by nothing: `password-reset.cy.ts` drove both screens
+// with `submitLoginSelector`, which names the sign-in screen's button and neither of these. Renamed
+// to cover both halves and actually used, for the reason `forgotPasswordSelector` above was pointed
+// at the real link rather than deleted — a dead selector beside a live one is how the next spec
+// invents a third spelling. Every submit button in this app carries `data-cy="submit"`, so all of
+// these per-screen constants are aliases of one attribute; what they buy is a spec that reads as
+// the screen it is driving.
+export const submitResetPasswordSelector = '[data-cy="submit"]';
+
+// Reset Password — finish half (/account/reset/finish?key=…), where every account-creation and
+// password-reset email lands. There is no self-registration on this stack, so this screen is the
+// only path from a new account to a working password.
+export const resetPasswordSelector = '[data-cy="resetPassword"]';
+export const confirmResetPasswordSelector = '[data-cy="confirmResetPassword"]';
+export const resetFinishKeyMissingSelector = '[data-cy="resetFinishKeyMissing"]';
+export const resetFinishMismatchSelector = '[data-cy="resetFinishMismatch"]';
+export const resetFinishErrorSelector = '[data-cy="resetFinishError"]';
+export const backToLoginSelector = '[data-cy="backToLogin"]';
 
 // Administration
 export const swaggerFrameSelector = 'iframe[data-cy="swagger-frame"]';

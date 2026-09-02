@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { beforeEach, describe, expect, it, vitest } from 'vitest';
 import { ElementRef, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
@@ -150,5 +151,60 @@ describe('Login', () => {
       expect(comp.authenticationError()).toEqual(true);
       expect(mockRouter.navigate).not.toHaveBeenCalled();
     });
+  });
+});
+
+/**
+ * The forgot-password link, read out of the template.
+ *
+ * <p>Read rather than rendered because `RouterLink` needs a real router and this file's TestBed
+ * deliberately stubs `ActivatedRoute` with `{}`; the same idiom as `patient.spec.ts`, which asserts
+ * the absence of a button the same way.
+ *
+ * <p>It matters more than a link usually does. Accounts on this stack are created by an
+ * administrator through `/api/admin/users` and there is no self-registration, so the reset mail is
+ * the only route to a working password — and a reset key lives 24 hours. Without this link, an
+ * administrator whose key has expired has no way to ask for another and no way to reach the console
+ * again. `login.password.forgot` had been in the catalogue since the beginning with nothing
+ * rendering it.
+ */
+describe('Login template', () => {
+  const template = readFileSync('src/main/webapp/app/login/login.html', 'utf8');
+  const component = readFileSync('src/main/webapp/app/login/login.ts', 'utf8');
+
+  /**
+   * A cheap tripwire for the one reintroduction that has actually happened. `login.ts` has the
+   * reasoning; the short version is that a second request from this screen 401s and
+   * `authExpiredInterceptor` bounces the caller to `/login`.
+   *
+   * <p><b>This is not the regression net, and it must not be mistaken for one</b> — it was, until
+   * a review pointed out that it is a string blacklist: reintroduce the call through `HttpClient`
+   * directly, or through any other service, and it stays green. The property that matters is "this
+   * screen makes exactly one backend request, and it is `api/account`", which needs a browser and a
+   * real interceptor chain to observe; `login.cy.ts`'s first case asserts it with `cy.intercept` and
+   * fails on any import path at all. What this one adds is speed and a name: it goes red in
+   * `npm test`, before anybody runs Cypress, and it says which service it was.
+   *
+   * <p>Read out of the source rather than through the TestBed, because the failure is a request
+   * being made at all — a spec that stubs the service to observe it would be satisfied by the very
+   * call that must not happen. The **import specifier** is asserted, not the class name: the class
+   * name appears in `login.ts`'s own explanation of why the call went, and a check a historical note
+   * cannot survive is a check that gets the note deleted instead.
+   */
+  it('injects nothing that would call an authenticated endpoint', () => {
+    expect(component).not.toContain("from 'app/console/shared/console-metrics.service'");
+    expect(template).not.toContain('auth-stats');
+  });
+
+  it('offers a way to ask for a password reset', () => {
+    expect(template).toContain('login.password.forgot');
+  });
+
+  it('points it at the route that exists, not at the one the emails use', () => {
+    // `/account/reset/finish` is where an emailed key lands and takes a `?key=`; the entry point
+    // from here is the request half. Pointing at `finish` would render "the reset key is missing"
+    // to somebody who had asked for the link in the first place.
+    expect(template).toContain('routerLink="/account/reset/request"');
+    expect(template).not.toContain('routerLink="/account/reset/finish"');
   });
 });

@@ -11,26 +11,11 @@
       side and professional side.
     </p>
 
-    @if (networkTotals(); as totals) {
-      <div class="auth-stats">
-        <div>
-          <b>{{ totals.patients }}</b
-          ><span abfTranslate="login.brand.patients">Patient accounts</span>
-        </div>
-        <div>
-          <b>{{ totals.professionals }}</b
-          ><span abfTranslate="login.brand.professionals">Professionals</span>
-        </div>
-        <div>
-          <b>{{ totals.vendors }}</b
-          ><span abfTranslate="login.brand.vendors">Vendors</span>
-        </div>
-        <div>
-          <b>{{ servicesLive() }}</b
-          ><span abfTranslate="login.brand.services">Services live</span>
-        </div>
-      </div>
-    }
+    <!--
+      Four network figures stood here and never once rendered. Do not put an authenticated call
+      behind this panel; `login.ts`'s class comment has the reasoning, and it is not "the figures
+      were unused".
+    -->
   </div>
 
   <div class="auth-panel">
@@ -85,6 +70,19 @@
       >
         Sign in
       </button>
+
+      <!--
+        The only entry point to POST /api/account/reset-password/init. Without it an administrator
+        whose 24-hour reset key has expired has nowhere to ask for another: accounts here are
+        created by an admin through /api/admin/users, and the mail that follows is the sole route to
+        a working password. `login.password.forgot` has been in the catalogue since the beginning
+        and had never been rendered.
+      -->
+      <p class="auth-links">
+        <a routerLink="/account/reset/request" data-cy="forgotPassword" abfTranslate="login.password.forgot"
+          >Did you forget your password?</a
+        >
+      </p>
     </form>
   </div>
 </div>
