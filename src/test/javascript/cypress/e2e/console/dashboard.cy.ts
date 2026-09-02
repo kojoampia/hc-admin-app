@@ -1,3 +1,41 @@
+/**
+ * Read the figures the screen is supposed to be showing, straight from the endpoint it reads.
+ *
+ * <p>The two cases below asserted the literals `116`, `24` and `80%` until 2026-09-02. Those came
+ * from the in-browser mock deleted on 2026-08-08 — this file was last touched the day before that —
+ * and against a real backend the seeded network holds 12 patients, so both cases failed. They were
+ * found on the quality stack rather than by CI, because Cypress runs in neither workflow.
+ *
+ * <p>**They are not fixed by substituting today's numbers.** A literal here is a copy of the seed
+ * fixture, and the fixture moves — it went from 215 records to 1189 to 1199 over three weeks, and
+ * nothing reports that a spec has drifted from it. Deriving the expectation from the endpoint is
+ * what makes these cases survive the next fixture change, and it is the same rule the api applies to
+ * `PaginationIT` (discover the paths, never enumerate them).
+ *
+ * <p>What is deliberately still asserted by hand is the *relationship* — `network` differing from
+ * `loaded` — because that is the claim the second case's title makes and no fixture can supply it.
+ */
+interface DashboardFigures {
+  network: { patients: number; professionals: number; vendors: number };
+  loaded: { patients: number; professionals: number; vendors: number };
+  unreadMessages: number;
+  roster: { coverPercent: number };
+}
+
+const metrics = (): Cypress.Chainable<DashboardFigures> =>
+  cy.window().then(win => {
+    const stored =
+      win.sessionStorage.getItem(Cypress.expose('jwtStorageName')) ?? win.localStorage.getItem(Cypress.expose('jwtStorageName'));
+    // `.request<T>()` rather than `.its('body')` — the latter is `Chainable<any>`, and an `any`
+    // here would silently un-type every assertion below, which is the opposite of the point.
+    return cy
+      .request<DashboardFigures>({
+        url: '/services/hcadminservice/api/dashboard/metrics',
+        headers: { Authorization: `Bearer ${JSON.parse(stored!) as string}` },
+      })
+      .then(response => response.body);
+  });
+
 describe('dashboard', () => {
   beforeEach(() => {
     cy.signInAs('ops');
@@ -6,13 +44,28 @@ describe('dashboard', () => {
 
   it('should greet with the live figures rather than fixed copy', () => {
     cy.get('.hero').should('contain.text', 'Good morning Efua');
-    cy.get('.hero').should('contain.text', '3 messages');
-    cy.get('.hero').should('contain.text', '80%');
+
+    // The hero interpolates `unreadMessages` and `roster.coverPercent` into one translated
+    // sentence, so read both from the endpoint and require the rendered copy to carry them. The
+    // old form asserted "3 messages" and "80%" — the second was the number the *mock* served, and
+    // the real roster covers 100%.
+    metrics().then(m => {
+      cy.get('.hero').should('contain.text', `${m.unreadMessages}`);
+      cy.get('.hero').should('contain.text', `${m.roster.coverPercent}%`);
+    });
   });
 
   it('should report network totals, not the size of the loaded extract', () => {
-    cy.get('.stat').eq(0).should('contain.text', '116');
-    cy.get('.stat').eq(1).should('contain.text', '24');
+    metrics().then(m => {
+      // The claim in the title: these tiles show the whole network, not how many rows the
+      // directories happen to hold. Assert the difference is real before asserting the values,
+      // because if the fixture ever made them equal both tiles would pass while showing the wrong
+      // figure — which is precisely the bug this case was written for.
+      expect(m.network.patients, 'the fixture still distinguishes network from loaded').to.be.greaterThan(m.loaded.patients);
+
+      cy.get('.stat').eq(0).should('contain.text', `${m.network.patients}`);
+      cy.get('.stat').eq(1).should('contain.text', `${m.network.professionals}`);
+    });
   });
 
   it('should give every KPI tile a sparkline', () => {
