@@ -23,29 +23,49 @@ import routes from './app.routes';
  *
  * <p>The second half is the trap the fix could have fallen into. A password reset must work for
  * somebody who is signed out — that is what a password reset is — so these routes must not sit under
- * `account`, which carries `UserRouteAccessService`. Every case below runs with an account service
+ * `account`, which carries `UserRouteAccessService`. Most cases below run with an account service
  * that reports nobody signed in, so a guard added to either route sends the navigation to `/login`
  * and the assertion goes red.
+ *
+ * <p>One case runs the other way round, and it pins a decision rather than a defect: see
+ * "a signed-in visitor".
  */
 describe('app.routes', () => {
-  /** Signed out, always: that is the state both reset screens exist to serve. */
+  /** Signed out, and the default: that is the state both reset screens exist to serve. */
   const signedOut = {
     identity: vitest.fn(() => of(null)),
     isAuthenticated: vitest.fn(() => false),
     hasAnyAuthority: vitest.fn(() => false),
   };
 
+  /**
+   * Signed in. `UserRouteAccessService` reads the account `identity()` emits, not
+   * `isAuthenticated()`, so a stub that only flips the latter passes every guard it should fail.
+   */
+  const signedIn = {
+    identity: vitest.fn(() => of({ login: 'admin', authorities: ['ROLE_ADMIN'] })),
+    isAuthenticated: vitest.fn(() => true),
+    hasAnyAuthority: vitest.fn(() => true),
+  };
+
   let router: Router;
 
-  beforeEach(() => {
+  const routerWith = (accountService: unknown): Router => {
+    // The reset is what lets a case re-configure: `TestBed.inject` below instantiates the testing
+    // module, and configuring an instantiated one throws.
+    TestBed.resetTestingModule();
     TestBed.configureTestingModule({
       providers: [
         provideRouter(routes, withComponentInputBinding()),
         provideLocationMocks(),
-        { provide: AccountService, useValue: signedOut },
+        { provide: AccountService, useValue: accountService },
       ],
     });
-    router = TestBed.inject(Router);
+    return TestBed.inject(Router);
+  };
+
+  beforeEach(() => {
+    router = routerWith(signedOut);
   });
 
   describe('the password-reset pages an emailed link lands on', () => {
@@ -87,6 +107,38 @@ describe('app.routes', () => {
         expect(route.canActivate).toBeUndefined();
         expect(route.children).toBeUndefined();
       }
+    });
+  });
+
+  describe('a signed-in visitor, which is a decision rather than an oversight', () => {
+    /**
+     * **Both reset screens stay reachable with a live session, and that is deliberate.**
+     *
+     * <p>It looks like an omission, because the routes carry no guard and everything else written
+     * about them addresses the signed-out case. But an administrator who is signed in on one tab and
+     * clicks an emailed key in another is redeeming it legitimately — that is exactly what an
+     * admin-forced reset produces — and `POST /api/account/reset-password/finish` is `permitAll`, so
+     * the server will honour it. A redirect to the dashboard here (the shape `login.ts` uses, and
+     * the only shape available, since a guard would fail the cases above) would make a key
+     * unredeemable for the one person most likely to be holding one, and the console has no other
+     * activation path.
+     *
+     * <p><b>What is accepted with it is cosmetic and is not free.</b> `main.html` renders the shell
+     * whenever `isAuthenticated()`, so these pages' `.auth` layout — full-bleed, `min-height: 100vh`,
+     * its own brand panel — lands inside `.abf-content`: duplicated branding and a scrolling panel.
+     * Ugly, briefly, on a path somebody takes once. Judged not worth teaching the shell about
+     * individual routes, which is a change with a much wider blast radius than the defect it fixes.
+     * If it is ever made to matter, the fix belongs in `main.html`'s chrome decision — route data,
+     * say — and not in a redirect out of these screens.
+     */
+    it('still resolves both reset routes', async () => {
+      router = routerWith(signedIn);
+
+      expect(await router.navigateByUrl('/account/reset/finish?key=cy1yCud5CkXb4PHsv78G')).toBe(true);
+      expect(router.url).toContain('/account/reset/finish');
+
+      expect(await router.navigateByUrl('/account/reset/request')).toBe(true);
+      expect(router.url).toBe('/account/reset/request');
     });
   });
 

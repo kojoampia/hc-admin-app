@@ -77,9 +77,8 @@
 }
 
 // `.auth-stats` stood here, styling the four network figures in the sign-in brand panel. Both went
-// on 2026-09-02 with the request that fed them, which could not succeed for any visitor to that
-// screen — see login.ts. Removed rather than kept "in case": a rule with no markup is indist-
-// inguishable from one whose markup regressed.
+// on 2026-09-02 with the request that fed them — see login.ts. Removed rather than kept "in case":
+// a rule with no markup is indistinguishable from one whose markup regressed.
 
 .auth-panel {
   background: var(--abf-cream);

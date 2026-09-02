@@ -12,10 +12,9 @@
     </p>
 
     <!--
-      Four network figures stood here and never once rendered: the endpoint behind them is gated on
-      ROLE_ADMIN/ROLE_OPERATOR, so a signed-out visitor always got 401 and a signed-in one was
-      already on their way to the dashboard. Worse, that 401 sent `authExpiredInterceptor` to
-      `/login`, which bounced anyone who clicked the reset link before it landed. See login.ts.
+      Four network figures stood here and never once rendered. Do not put an authenticated call
+      behind this panel; `login.ts`'s class comment has the reasoning, and it is not "the figures
+      were unused".
     -->
   </div>
 

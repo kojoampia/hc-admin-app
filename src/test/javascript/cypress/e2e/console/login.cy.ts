@@ -3,11 +3,12 @@ import { quickAddSelector, sidebarSelector, topbarSelector } from '../../support
 /**
  * Sign-in, and what the console derives from the token it gets back.
  *
- * <p>Note on cy.intercept: these specs do not use it. Every persona here is a real account on a
- * real gateway and the assertions are on what the application renders and stores, which is the only
- * evidence that the authority split reached the screen. (This note used to say `/api/**` could not
- * be intercepted because an in-browser mock resolved those calls inside Angular's HttpClient. That
- * mock was deleted on 2026-08-08 — the requests are ordinary network traffic now.)
+ * <p>Note on cy.intercept: the persona cases do not use it. Every persona here is a real account on
+ * a real gateway and the assertions are on what the application renders and stores, which is the
+ * only evidence that the authority split reached the screen. (This note used to say `/api/**` could
+ * not be intercepted *at all*, because an in-browser mock resolved those calls inside Angular's
+ * HttpClient. That mock was deleted on 2026-08-08 — the requests are ordinary network traffic now,
+ * which is what makes the first case below possible; it observes them and handles none.)
  */
 /**
  * The authorities a JWT carries, read out of its payload segment.
@@ -32,6 +33,63 @@ const decodeAuthorities = (token: string): string[] => {
 };
 
 describe('login', () => {
+  /**
+   * The invariant, rather than one spelling of the way it was broken.
+   *
+   * <p>The sign-in screen may call the backend exactly once, and that call must be `api/account`.
+   * `authExpiredInterceptor` sends any 401 whose URL does **not** contain `api/account` to `/login`,
+   * so a second request from this screen is not merely wasted: a visitor here is signed out by
+   * definition, anything authenticated 401s, and the bounce lands on whatever they navigated to in
+   * the meantime. That is how "Did you forget your password?" was unclickable — the click reached
+   * `/account/reset/request` and the late 401 dragged it straight back.
+   *
+   * <p><b>Why this case rather than the two nets that were here.</b> `login.spec.ts` asserted the
+   * absence of one import specifier, so reintroducing the call through `HttpClient` directly, or
+   * through any other service, kept it green. `password-reset.cy.ts`'s click case only sees the
+   * bounce if the click lands inside the few hundred milliseconds before the 401 arrives — and
+   * `cypress.config.ts` sets `retries: 2`, which absorbs exactly that. This one names the property
+   * instead of the symptom and cannot be satisfied by a different import path.
+   *
+   * <p><b>Recorded at request time, which is what removes the race.</b> The handler runs when the
+   * request is issued, not when it answers, and the offending call was issued in the same `ngOnInit`
+   * tick as the account call — it was only its *response* that was late. So once `@account` has
+   * been seen, any sibling from that tick is already in the list, and there is no interval to guess
+   * at. `middleware: true` makes these observers: nothing is stubbed, the requests reach the real
+   * gateway, and the screen behaves exactly as it does without the spy.
+   */
+  it('should ask the backend for one thing only, and that thing is api/account', () => {
+    const backendCalls: string[] = [];
+    // The three prefixes nginx forwards to the gateway in production and `proxy.config.mjs`
+    // forwards in development — i.e. everything that is not a static asset of this bundle. Matching
+    // on the prefixes rather than on `resourceType: 'xhr'` deliberately: ngx-translate fetches
+    // `i18n/en/*.json` over XHR too, and those are files in the image, not calls to a server.
+    for (const prefix of ['**/api/**', '**/services/**', '**/management/**']) {
+      cy.intercept({ url: prefix, middleware: true }, req => {
+        backendCalls.push(req.url);
+      });
+    }
+    cy.intercept('GET', '**/api/account').as('account');
+
+    cy.visit('/login');
+
+    // Anchor on the screen having rendered and on the one permitted call having completed. Without
+    // the first, `cy.wait` could be satisfied by a request from a page that never painted.
+    cy.get('[data-cy="submit"]').should('be.visible');
+    cy.wait('@account');
+
+    cy.then(() => {
+      // Non-vacuous: if the list is empty the assertion below is trivially true, and the most
+      // likely reason for an empty list is that the prefixes stopped matching rather than that the
+      // screen went quiet.
+      expect(backendCalls, 'the sign-in screen called the backend at least once').to.have.length.greaterThan(0);
+      // `.includes('api/account')` is the interceptor's own test, quoted rather than paraphrased:
+      // a URL this accepts is exactly a URL whose 401 does not bounce the caller.
+      backendCalls.forEach(url => {
+        expect(url, 'every call the sign-in screen makes is exempt from the 401 bounce').to.include('api/account');
+      });
+    });
+  });
+
   it('should show the brand panel and an empty sign-in form', () => {
     cy.visit('/login');
 
@@ -54,22 +112,12 @@ describe('login', () => {
     // if it never does, so `have.value ''` cannot pass against an unrendered form.)
     cy.get('[data-cy="submit"]').should('be.disabled');
 
-    // The four figures in the brand panel are gone, along with the request behind them, and this
-    // note is kept because it is what told us they could go. They came from
-    // GET /services/hcadminservice/api/dashboard/metrics, which the gateway gates on ROLE_ADMIN or
-    // ROLE_OPERATOR — so a signed-out visitor got 401 and a signed-in one was already being sent to
-    // the dashboard, and `@if (networkTotals())` rendered nothing for anybody. (An earlier version
-    // of this case asserted the literals 116 / 24 / 9, which only the mock ever served.)
-    //
-    // What made it worth removing rather than leaving inert: `authExpiredInterceptor` sends a 401
-    // whose URL is not `api/account` to `/login`, so that request bounced anyone who clicked the
-    // reset link before it landed. See `password-reset.cy.ts`, which is where it was caught, and
-    // `login.ts` for the reasoning.
+    // The four network figures are gone from the brand panel; see `login.ts`. (An earlier version
+    // of this case asserted the literals 116 / 24 / 9, which only the deleted mock ever served.)
     //
     // This line confirms the panel is absent at runtime and cannot, on its own, catch it coming
-    // back: it never rendered before the removal either, so it passes against both. The assertion
-    // that can fail is `login.spec.ts`'s, which reads the component for the service it must not
-    // inject — the request is the defect, not the markup.
+    // back: it never rendered before the removal either, so it passes against both. The request is
+    // the defect, not the markup, and the case at the top of this file is what asserts that.
     cy.get('.auth-stats').should('not.exist');
   });
 

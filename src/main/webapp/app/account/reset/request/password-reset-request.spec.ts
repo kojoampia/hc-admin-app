@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { beforeEach, describe, expect, it, vitest } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
@@ -82,5 +83,28 @@ describe('PasswordResetRequest', () => {
 
   it('offers a way back to the sign-in page', () => {
     expect(html()).toContain('data-cy="backToLogin"');
+  });
+
+  it('reports the length it really enforces, not a different number', () => {
+    // The bound and the copy that reports it live in different files and drifted:
+    // `Validators.maxLength(254)` against a `global.messages.validate.email.maxlength` reading "50".
+    // Nothing failed — a 60-character address was accepted in silence and a 300-character one was
+    // refused with a figure that was wrong the other way. This screen is the catalogue's only reader
+    // of the two length keys, which is what makes keeping them shared safe; if a second screen ever
+    // renders them against different bounds, no single string can be right and they must become
+    // screen-local. Same shape as `password-reset-finish.spec.ts`'s password case.
+    const en = JSON.parse(readFileSync('src/main/webapp/i18n/en/global.json', 'utf8')) as {
+      global: { messages: { validate: { email: { minlength: string; maxlength: string } } } };
+    };
+
+    expect(en.global.messages.validate.email.minlength).toContain('5');
+    expect(en.global.messages.validate.email.maxlength).toContain('254');
+
+    comp.requestForm.patchValue({ email: `${'a'.repeat(250)}@abofonsa.care` });
+    comp.requestForm.controls.email.markAsTouched();
+    fixture.detectChanges();
+
+    expect(comp.requestForm.controls.email.errors?.maxlength).toBeTruthy();
+    expect(html()).toContain('global.messages.validate.email.maxlength');
   });
 });

@@ -106,11 +106,6 @@
     },
     "messages": {
       "info": {
-        "authenticated": {
-          "prefix": "If you want to ",
-          "link": "sign in",
-          "suffix": ", you can try the default accounts:<br/>- Administrator (login=\"admin\" and password=\"admin\") <br/>- User (login=\"user\" and password=\"user\")."
-        },
         "register": {
           "noaccount": "You don't have an account yet?",
           "link": "Register a new account"
@@ -123,19 +118,19 @@
         "newpassword": {
           "required": "Your password is required.",
           "minlength": "Your password is required to be at least 4 characters.",
-          "maxlength": "Your password cannot be longer than 50 characters.",
+          "maxlength": "Your password cannot be longer than 100 characters.",
           "strength": "Password strength:"
         },
         "confirmpassword": {
           "required": "Your confirmation password is required.",
           "minlength": "Your confirmation password is required to be at least 4 characters.",
-          "maxlength": "Your confirmation password cannot be longer than 50 characters."
+          "maxlength": "Your confirmation password cannot be longer than 100 characters."
         },
         "email": {
           "required": "Your email is required.",
           "invalid": "Your email is invalid.",
           "minlength": "Your email is required to be at least 5 characters.",
-          "maxlength": "Your email cannot be longer than 50 characters."
+          "maxlength": "Your email cannot be longer than 254 characters."
         }
       }
     },

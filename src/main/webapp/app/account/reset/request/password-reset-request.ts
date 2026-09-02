@@ -38,9 +38,18 @@ export default class PasswordResetRequest implements AfterViewInit {
   readonly failed = signal(false);
   readonly submitting = signal(false);
 
-  // 5 and 254 mirror `global.messages.validate.email.{minlength,maxlength}`, which already carry the
-  // matching copy. The gateway does not constrain the address here at all — it looks it up and says
-  // nothing — so these are the client's own guard against an obvious typo, not a contract.
+  // 5 and 254 are `user-management-update.ts`'s bounds for the same field, which is where an
+  // administrator types the address these mails are sent to. The gateway does not constrain the
+  // address here at all — it looks it up and says nothing — so these are the client's own guard
+  // against an obvious typo, not a contract.
+  //
+  // `global.messages.validate.email.maxlength` said "50" against this 254 until the numbers were
+  // reconciled on 2026-09-02, so a 60-character address was accepted in silence and a 300-character
+  // one was refused with the wrong figure. The copy is shared and the bound is not, which is what
+  // makes that drift free: change either and **read the other**. This screen is the catalogue's only
+  // reader of the two length keys — the user-management form renders `required` and `invalid` only —
+  // so keeping them shared is safe exactly as long as that stays true.
+
   requestForm = new FormGroup({
     email: new FormControl('', {
       nonNullable: true,

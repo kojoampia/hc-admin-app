@@ -173,24 +173,23 @@ describe('Login template', () => {
   const component = readFileSync('src/main/webapp/app/login/login.ts', 'utf8');
 
   /**
-   * The sign-in screen makes exactly one request, and it is the one `authExpiredInterceptor`
-   * exempts.
+   * A cheap tripwire for the one reintroduction that has actually happened. `login.ts` has the
+   * reasoning; the short version is that a second request from this screen 401s and
+   * `authExpiredInterceptor` bounces the caller to `/login`.
    *
-   * <p>It made two. The second asked `ConsoleMetricsService` for the brand panel's network figures,
-   * over `/services/hcadminservice/api/dashboard/metrics` — gated on ROLE_ADMIN/ROLE_OPERATOR, so a
-   * visitor to this screen always got 401 and the figures never rendered for anybody. The
-   * interceptor sends a 401 outside `api/account` to `/login`, which was harmless while this screen
-   * was a dead end and stopped being harmless the moment it gained a link out: clicking "Did you
-   * forget your password?" before the 401 landed navigated to `/account/reset/request` and was
-   * pulled straight back. Found on the quality stack by `password-reset.cy.ts`.
+   * <p><b>This is not the regression net, and it must not be mistaken for one</b> — it was, until
+   * a review pointed out that it is a string blacklist: reintroduce the call through `HttpClient`
+   * directly, or through any other service, and it stays green. The property that matters is "this
+   * screen makes exactly one backend request, and it is `api/account`", which needs a browser and a
+   * real interceptor chain to observe; `login.cy.ts`'s first case asserts it with `cy.intercept` and
+   * fails on any import path at all. What this one adds is speed and a name: it goes red in
+   * `npm test`, before anybody runs Cypress, and it says which service it was.
    *
-   * <p>Read out of the source rather than asserted through the TestBed, because the failure is a
-   * request that is made at all — a spec that stubs the service to observe it would be satisfied by
-   * the very call that must not happen.
-   *
-   * <p>The **import specifier** is what is asserted, not the class name: the class name appears in
-   * `login.ts`'s own explanation of why the call went, and a check that a historical note cannot
-   * survive is a check that gets the note deleted instead.
+   * <p>Read out of the source rather than through the TestBed, because the failure is a request
+   * being made at all — a spec that stubs the service to observe it would be satisfied by the very
+   * call that must not happen. The **import specifier** is asserted, not the class name: the class
+   * name appears in `login.ts`'s own explanation of why the call went, and a check a historical note
+   * cannot survive is a check that gets the note deleted instead.
    */
   it('injects nothing that would call an authenticated endpoint', () => {
     expect(component).not.toContain("from 'app/console/shared/console-metrics.service'");

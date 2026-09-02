@@ -68,10 +68,18 @@ export default class PasswordResetFinish implements AfterViewInit {
   readonly keyMissing = computed(() => !this.key());
 
   // 4 and 100 are `ManagedUserVM.PASSWORD_MIN_LENGTH` / `PASSWORD_MAX_LENGTH` on the gateway, which
-  // `AccountResource.finishPasswordReset` enforces before it even looks the key up. Below the
-  // minimum the server answers 400 exactly as it would for an expired key, so a password that is
-  // merely too short would be reported as "your link has expired" — which is why the check is here
-  // as well as there. (`global.messages.validate.newpassword.minlength` already says 4.)
+  // `AccountResource.finishPasswordReset` enforces before it even looks the key up. Outside that
+  // range the server answers 400 exactly as it would for an expired key, so a password that is
+  // merely too long or too short would be reported as "your link has expired" — which is why the
+  // check is here as well as there.
+  //
+  // **The copy that reports these is shared and has to be read whenever they change.**
+  // `global.messages.validate.newpassword.maxlength` said "50" against this 100 until 2026-09-02:
+  // an 80-character generated password was accepted in silence and a 120-character one was refused
+  // with a figure that was wrong in the other direction. Both keys now state the gateway's own
+  // numbers, and this screen is their only reader. `password-reset-finish.spec.ts` covers both
+  // bounds — the maximum was untested, so widening the validator to 1000 broke nothing and put the
+  // very misreport this comment exists to prevent back on the screen.
   resetForm = new FormGroup({
     newPassword: new FormControl('', {
       nonNullable: true,

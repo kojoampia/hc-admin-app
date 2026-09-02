@@ -63,6 +63,10 @@ const routes: Routes = [
      * component and no children only matches when it consumes the whole URL, so `account` never had
      * a claim on these two. `app.routes.spec.ts` navigates both, signed out, so the guard and the
      * ordering are asserted rather than reasoned about.
+     *
+     * <p><b>Reachable while signed in too, on purpose</b>, and the shell renders around it when it
+     * is — an administrator redeeming a forced reset from a live session is the ordinary case, not
+     * an abuse. `app.routes.spec.ts` § "a signed-in visitor" has the decision and what it costs.
      */
     path: 'account/reset/finish',
     loadComponent: () => import('./account/reset/finish/password-reset-finish'),

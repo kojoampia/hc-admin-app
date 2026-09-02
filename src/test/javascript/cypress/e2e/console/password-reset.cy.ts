@@ -8,7 +8,7 @@ import {
   resetFinishMismatchSelector,
   resetPasswordSelector,
   resetRequestSuccessSelector,
-  submitLoginSelector,
+  submitResetPasswordSelector,
 } from '../../support/commands';
 
 /**
@@ -99,7 +99,7 @@ describe('password reset', () => {
       cy.get(confirmResetPasswordSelector).type('Admin@0123', { log: false });
 
       cy.get(resetFinishMismatchSelector).should('be.visible');
-      cy.get(submitLoginSelector).should('be.disabled');
+      cy.get(submitResetPasswordSelector).should('be.disabled');
     });
 
     it('reports the gateway rejecting a key it has never seen', () => {
@@ -110,7 +110,7 @@ describe('password reset', () => {
 
       cy.get(resetPasswordSelector).type('Admin@01234', { log: false });
       cy.get(confirmResetPasswordSelector).type('Admin@01234', { log: false });
-      cy.get(submitLoginSelector).click();
+      cy.get(submitResetPasswordSelector).click();
 
       cy.get(resetFinishErrorSelector, { timeout: 20000 }).should('be.visible');
       cy.contains('only valid for 24 hours').should('be.visible');
@@ -125,13 +125,15 @@ describe('password reset', () => {
       // the beginning with nothing rendering it, so an administrator whose 24-hour key had expired
       // had nowhere to ask for another.
       //
-      // This case found a second defect on its first live run, and it is the reason it clicks rather
-      // than visiting the URL. The sign-in screen asked the dashboard-metrics endpoint for the brand
-      // panel's figures; the gateway gates that on ROLE_ADMIN/ROLE_OPERATOR, so it 401ed, and
-      // `authExpiredInterceptor` sends a 401 outside `api/account` to `/login`. Clicking within the
-      // few hundred milliseconds before it landed navigated to `/account/reset/request` and was
-      // dragged straight back. Nothing had noticed for as long as the sign-in screen was a dead end.
-      // The request is gone; see `login.ts`.
+      // **It clicks rather than visiting the URL**, and that is what found the sign-in screen's
+      // stray authenticated request on this case's first live run — the 401 bounced the click back
+      // to `/login`. See `login.ts` for what that was and why it went.
+      //
+      // Keep the click. But do not read this case as the net for that defect: it only sees the
+      // bounce if the click lands inside the few hundred milliseconds before the 401 arrives, and
+      // `retries: 2` above would absorb the miss as flake. `login.cy.ts`'s first case pins the
+      // property deterministically; this one is here to prove the link works, which is a different
+      // thing worth proving.
       cy.visit('/login');
 
       cy.get(forgotPasswordSelector).should('be.visible').click();
@@ -145,7 +147,7 @@ describe('password reset', () => {
 
       cy.get(emailResetPasswordSelector).type('not-an-address');
 
-      cy.get(submitLoginSelector).should('be.disabled');
+      cy.get(submitResetPasswordSelector).should('be.disabled');
     });
 
     it('accepts an address and reports that a mail is on its way', () => {
@@ -157,7 +159,7 @@ describe('password reset', () => {
       cy.visit('/account/reset/request');
 
       cy.get(emailResetPasswordSelector).type('nobody-cypress@abofonsa.invalid');
-      cy.get(submitLoginSelector).click();
+      cy.get(submitResetPasswordSelector).click();
 
       cy.get(resetRequestSuccessSelector, { timeout: 20000 }).should('be.visible');
       cy.contains('Check your email').should('be.visible');
