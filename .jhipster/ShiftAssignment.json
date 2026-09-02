@@ -35,9 +35,8 @@
     {
       "otherEntityField": "label",
       "otherEntityName": "rosterWeek",
-      "otherEntityRelationshipName": "assignment",
       "relationshipName": "week",
-      "relationshipSide": "right",
+      "relationshipSide": "left",
       "relationshipType": "many-to-one",
       "relationshipValidateRules": "required"
     },

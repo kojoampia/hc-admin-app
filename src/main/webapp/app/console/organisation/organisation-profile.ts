@@ -29,10 +29,13 @@ export type OrganisationTab = 'about' | 'address' | 'team' | 'security' | 'audit
 /**
  * The organisation profile: five tabs over one Organisation record.
  *
- * The Security tab hosts the role switcher. Switching re-authenticates
- * through the normal login path, which re-issues the token and re-renders
- * every `*abfHasAnyAuthority` control on the next tick — the same code path a
- * real sign-in takes, not a local flag that only this screen respects.
+ * The Security tab is read-only: the signed-in account, the role
+ * `roleByAuthorities()` derives from its token, and the authority list
+ * verbatim. It hosted a role switcher against the in-browser mock, and this
+ * comment described it for long enough to outlive it — `organisation.cy.ts`
+ * was still clicking "Supervisor (read only)" on this tab in 2026-09, a
+ * control the template has not rendered since. Changing role means signing in
+ * as another account; nothing on this screen re-issues a token.
  */
 /**
  * Ghana Post GPS, as the api spells it: two letters, three digits, four digits.

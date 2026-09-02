@@ -1,5 +1,3 @@
-import { quickAddSelector, sidebarSelector } from '../../support/console';
-
 describe('organisation profile', () => {
   beforeEach(() => {
     cy.signInAs('ops');
@@ -35,17 +33,34 @@ describe('organisation profile', () => {
     cy.contains('rotated API credential').should('be.visible');
   });
 
-  it('should re-render authority-gated controls when the role is switched', () => {
-    cy.get(quickAddSelector).should('exist');
-
+  it('should show the signed-in account and its real authorities on the Security tab', () => {
     cy.contains('[role="tab"]', 'Security').click();
-    cy.contains('.opt', 'Supervisor (read only)').click();
 
-    cy.get(sidebarSelector).contains('Supervisor');
-    cy.get(quickAddSelector).should('not.exist');
-
-    // And the change survives a reload, because the token really was reissued.
-    cy.visit('/duty-roster');
-    cy.get('.cell:not([disabled])').should('have.length', 0);
+    // The tab is a read-only `<dl>` over the account the token describes: login, derived role label,
+    // and the authority list verbatim. `ops` is the harness administrator, so ROLE_ADMIN is what the
+    // gateway seeded it with — and the label beside it is what `roleByAuthorities()` made of that.
+    cy.contains('dd', 'ROLE_ADMIN').should('be.visible');
+    cy.contains('dd', 'Operations administrator').should('be.visible');
   });
+
+  // Removed 2026-09-02: "should re-render authority-gated controls when the role is switched". It
+  // clicked `.opt` "Supervisor (read only)" on the Security tab and then expected the sidebar to
+  // read "Supervisor" and the quick-add to disappear. **Neither half can happen.**
+  //
+  // The switcher itself is gone: `organisation-profile.html`'s `@case ('security')` renders a
+  // read-only `<dl>` and nothing clickable, `.opt` appears nowhere in that template, and the option
+  // label lives on only as `global.role.sup.label` in i18n. The class comment on
+  // `organisation-profile.ts` still advertised the switcher, which is what kept this case looking
+  // reasonable; it has been corrected in the same change.
+  //
+  // And "Supervisor" could not have been reached even with a switcher: no gateway mints
+  // ROLE_SUPERVISOR. `AuthoritiesMigration` seeds exactly ROLE_USER / ROLE_ADMIN / ROLE_OPERATOR,
+  // `hc-admin-gw-data.json` names no other, and `UserService.updateUser` maps each requested
+  // authority through `authorityRepository::findById` — a name with no stored document is silently
+  // dropped rather than rejected, so asking for ROLE_SUPERVISOR would return a token without it and
+  // the sidebar would still read "Operations administrator" (`login.cy.ts` case 3 records why).
+  //
+  // What the case was worth asserting — write chrome hidden from a read-only account, and every
+  // roster cell disabled — is asserted properly in `duty-roster.cy.ts:153-166`, by signing in as
+  // `sup` for real rather than by switching role in-app. It is not re-created here.
 });
