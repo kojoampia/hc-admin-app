@@ -1,5 +1,6 @@
 {
   "reset": {
+    "backToLogin": "Back to sign in",
     "request": {
       "title": "Reset your password",
       "form": {
@@ -7,7 +8,8 @@
       },
       "messages": {
         "info": "Enter the email address you used to register",
-        "success": "Check your email for details on how to reset your password."
+        "success": "Check your email for details on how to reset your password.",
+        "error": "<strong>The reset email could not be sent.</strong> Please try again later."
       }
     },
     "finish": {

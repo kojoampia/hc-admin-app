@@ -20,11 +20,40 @@ describe('global stylesheet', () => {
   const globalScss = read('global.scss');
   const consoleAdmin = read('_console-admin.scss');
   const consoleComponents = read('_console-components.scss');
+  const authPage = read('_auth-page.scss');
 
   /** The premise the rest of this file rests on. */
   it('reaches _console-admin and not _console-components', () => {
     expect(globalScss).toContain("@import 'console-admin'");
     expect(globalScss).not.toContain("@import 'console-components'");
+  });
+
+  /**
+   * `_auth-page.scss` is the third file and follows the same rule as `_console-components.scss`: it
+   * is imported per component, by `login.scss` and by the two password-reset screens. It holds the
+   * full-bleed two-panel layout those three share, which was `login.scss`'s alone until the reset
+   * screens were built on 2026-09-02.
+   *
+   * <p>Going global would be the more obvious mistake here rather than the less: `.field` and
+   * `.auth-card` are generic enough to collide with a console screen, and `.auth`'s `min-height:
+   * 100vh` inside the shell would push every page to full height.
+   */
+  it('imports _auth-page per component and not globally', () => {
+    expect(globalScss).not.toContain("@import 'auth-page'");
+
+    for (const stylesheet of [
+      'src/main/webapp/app/login/login.scss',
+      'src/main/webapp/app/account/reset/request/password-reset-request.scss',
+      'src/main/webapp/app/account/reset/finish/password-reset-finish.scss',
+    ]) {
+      expect(readFileSync(stylesheet, 'utf8')).toContain("@import 'auth-page'");
+    }
+
+    // And the layout lives there rather than in either console file, so a restyle of one auth page
+    // is a restyle of all three.
+    expect(authPage).toContain('.auth-card');
+    expect(consoleAdmin).not.toContain('.auth-card');
+    expect(consoleComponents).not.toContain('.auth-card');
   });
 
   /**

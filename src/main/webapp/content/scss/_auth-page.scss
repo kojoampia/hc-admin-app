@@ -1,0 +1,218 @@
+// ============================================================
+// The signed-out pages: sign in, and the two halves of a password reset.
+//
+// These rules were `login.scss`'s until 2026-09-02, when /account/reset/request
+// and /account/reset/finish were built. Angular scopes a component's styles, so
+// a second full-bleed auth page could not reach `.auth`, `.auth-card` or
+// `.field` from there — the choice was to copy them or to lift them here, and a
+// copy of a two-panel layout drifts the moment one page is restyled.
+//
+// It is imported PER COMPONENT, exactly like `_console-components.scss`, and
+// deliberately NOT from `global.scss`: see `global-styles.spec.ts` for the rule
+// and for the defect that produced it. Every component that uses these classes
+// is hand-written and declares its own `styleUrl`, so the per-component import
+// is always there to do the work.
+//
+// Every brand colour reaches this file as a var(--abf-*) custom property
+// published by global.scss from _hc-tokens.scss.
+// ============================================================
+@import 'hc-tokens';
+
+/* The auth pages are full-bleed: two panels, no console chrome. */
+.auth {
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  min-height: 100vh;
+}
+
+.auth-brand {
+  background: var(--abf-navy);
+  color: #fff;
+  padding: clamp(34px, 5vw, 66px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  h1 {
+    font-size: clamp(28px, 3.6vw, 44px);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    margin: 0 0 14px;
+
+    span {
+      display: block;
+    }
+
+    .accent {
+      color: var(--abf-gold-300);
+    }
+  }
+
+  p {
+    color: #c3d2e4;
+    font-size: 15px;
+    max-width: 46ch;
+    margin: 0;
+    line-height: 1.6;
+  }
+}
+
+.auth-logo {
+  width: 92px;
+  height: 92px;
+  background: #fff;
+  border-radius: 50%;
+  padding: 5px;
+  margin-bottom: 26px;
+}
+
+.auth-tag {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--abf-gold-300);
+  margin-bottom: 14px;
+}
+
+// `.auth-stats` stood here, styling the four network figures in the sign-in brand panel. Both went
+// on 2026-09-02 with the request that fed them, which could not succeed for any visitor to that
+// screen — see login.ts. Removed rather than kept "in case": a rule with no markup is indist-
+// inguishable from one whose markup regressed.
+
+.auth-panel {
+  background: var(--abf-cream);
+  padding: clamp(28px, 4vw, 56px);
+  display: grid;
+  place-items: center;
+}
+
+.auth-card {
+  background: #fff;
+  border: 1px solid var(--abf-line);
+  border-radius: var(--abf-r-lg);
+  box-shadow: var(--abf-sh);
+  padding: clamp(24px, 3vw, 36px);
+  width: 100%;
+  max-width: 420px;
+
+  h2 {
+    margin: 0 0 4px;
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+
+  .muted {
+    color: var(--abf-grey);
+    font-size: 13.5px;
+    margin: 0 0 22px;
+  }
+}
+
+.field {
+  margin-bottom: 15px;
+
+  label {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.055em;
+    text-transform: uppercase;
+    color: var(--abf-grey);
+    margin-bottom: 6px;
+  }
+
+  input[type='email'],
+  input[type='password'],
+  select {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1.5px solid var(--abf-line);
+    border-radius: var(--abf-r-sm);
+    background: #fff;
+    font-size: 15px;
+    color: var(--abf-ink);
+    transition:
+      border-color 0.16s,
+      box-shadow 0.16s;
+
+    &:focus {
+      outline: none;
+      border-color: var(--abf-navy);
+      box-shadow: 0 0 0 3.5px rgba(13, 48, 88, 0.1);
+    }
+  }
+
+  &.checkbox label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: 13.5px;
+    color: var(--abf-ink);
+    font-weight: 600;
+  }
+}
+
+/* Per-field validation, shown once the control has been touched. */
+.field-error {
+  display: block;
+  margin-top: 6px;
+  font-size: 12.5px;
+  color: var(--abf-danger);
+}
+
+.btn-block {
+  width: 100%;
+  margin-top: 8px;
+}
+
+/*
+ * The link out of a form: "forgot your password?" on sign in, "back to sign in"
+ * on both reset pages. Navy on white rather than the gold accent — gold on
+ * white is 2.74:1 and fails AA, and this is body-sized text.
+ */
+.auth-links {
+  margin: 16px 0 0;
+  text-align: center;
+  font-size: 13.5px;
+
+  a {
+    color: var(--abf-navy);
+    font-weight: 600;
+    text-decoration: none;
+
+    &:hover,
+    &:focus-visible {
+      text-decoration: underline;
+    }
+  }
+}
+
+@media (max-width: 880px) {
+  .auth {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+  }
+
+  .auth-brand {
+    padding: 34px 26px 30px;
+
+    p {
+      display: none;
+    }
+  }
+
+  .auth-logo {
+    width: 70px;
+    height: 70px;
+    margin-bottom: 18px;
+  }
+
+  .auth-panel {
+    padding: 28px 22px 46px;
+  }
+}

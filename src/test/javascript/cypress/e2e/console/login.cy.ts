@@ -54,11 +54,23 @@ describe('login', () => {
     // if it never does, so `have.value ''` cannot pass against an unrendered form.)
     cy.get('[data-cy="submit"]').should('be.disabled');
 
-    // The four figures in the brand panel are deliberately NOT asserted. They come from
+    // The four figures in the brand panel are gone, along with the request behind them, and this
+    // note is kept because it is what told us they could go. They came from
     // GET /services/hcadminservice/api/dashboard/metrics, which the gateway gates on ROLE_ADMIN or
-    // ROLE_OPERATOR — a signed-out visitor gets 401, `Login` swallows the error, and
-    // `@if (networkTotals())` renders nothing at all. The previous version of this case asserted
-    // the literals 116 / 24 / 9, which only the mock ever served.
+    // ROLE_OPERATOR — so a signed-out visitor got 401 and a signed-in one was already being sent to
+    // the dashboard, and `@if (networkTotals())` rendered nothing for anybody. (An earlier version
+    // of this case asserted the literals 116 / 24 / 9, which only the mock ever served.)
+    //
+    // What made it worth removing rather than leaving inert: `authExpiredInterceptor` sends a 401
+    // whose URL is not `api/account` to `/login`, so that request bounced anyone who clicked the
+    // reset link before it landed. See `password-reset.cy.ts`, which is where it was caught, and
+    // `login.ts` for the reasoning.
+    //
+    // This line confirms the panel is absent at runtime and cannot, on its own, catch it coming
+    // back: it never rendered before the removal either, so it passes against both. The assertion
+    // that can fail is `login.spec.ts`'s, which reads the component for the service it must not
+    // inject — the request is the defect, not the markup.
+    cy.get('.auth-stats').should('not.exist');
   });
 
   it('should land the administrator on the dashboard with the full chrome', () => {
