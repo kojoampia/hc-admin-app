@@ -23,7 +23,6 @@ describe('RosterWeek Form Service', () => {
             label: expect.any(Object),
             startDate: expect.any(Object),
             published: expect.any(Object),
-            publishedAt: expect.any(Object),
           }),
         );
       });
@@ -37,9 +36,35 @@ describe('RosterWeek Form Service', () => {
             label: expect.any(Object),
             startDate: expect.any(Object),
             published: expect.any(Object),
-            publishedAt: expect.any(Object),
           }),
         );
+      });
+    });
+
+    /**
+     * `publishedAt` is the server's, so the form must not offer a control for it.
+     *
+     * <p>Asserted with an explicit absence rather than by leaving it out of the
+     * `objectContaining` above — that matcher tolerates extra properties, so dropping the line
+     * there proves nothing at all. `RosterWeekLifecycleCallback` derives the field from
+     * `published`, `RosterWeekResource.stripServerOwnedFields` nulls whatever arrives, and the
+     * generator's control let an administrator set a value that was accepted and discarded.
+     */
+    describe('publishedAt is not a control', () => {
+      it.each([
+        ['a new roster week', undefined],
+        ['an existing roster week', sampleWithRequiredData],
+      ])('offers no publishedAt control for %s', (_label, input) => {
+        const formGroup = service.createRosterWeekFormGroup(input);
+
+        expect(formGroup.controls).not.toHaveProperty('publishedAt');
+      });
+
+      /** And nothing is read back out of it either, so no PUT can carry a value. */
+      it('reads no publishedAt back out of the form', () => {
+        const formGroup = service.createRosterWeekFormGroup(sampleWithRequiredData);
+
+        expect(service.getRosterWeek(formGroup)).not.toHaveProperty('publishedAt');
       });
     });
 

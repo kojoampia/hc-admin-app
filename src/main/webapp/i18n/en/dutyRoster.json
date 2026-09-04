@@ -21,6 +21,33 @@
       "fullyCovered": "Fully covered",
       "rosteredStaff": "Rostered staff",
       "shifts": "Shifts this week"
+    },
+    "plan": {
+      "open": "Plan a round",
+      "title": "Plan a round",
+      "close": "Close",
+      "hint": "hc-professional owns the roster of record. The planner chooses who — by area, role, availability, workload and how near they are — and files the round there.",
+      "day": "Day",
+      "role": "Role",
+      "shift": "Shift",
+      "area": "Area",
+      "chooseArea": "Choose an area…",
+      "name": "Round name",
+      "customers": "Customer ids",
+      "customersHint": "Patient ids on the patient stack, comma separated. Leave empty for ward cover or on-call time — a round with no visits is valid.",
+      "tooManyVisits": "{{ count }} visits will not fit a {{ shift }} round — visits are placed an hour apart and the shift runs out after {{ limit }}. Remove some, or plan a second round.",
+      "visitsOnAnOffRound": "An OFF round is a rest day and cannot carry visits. Choose a working shift, or clear the customer ids.",
+      "submit": "Plan and file",
+      "planned": "Filed with the roster service — {{ name }}",
+      "callFailed": "The planning request did not reach the admin service. Nothing was filed. Try again, and check the console is signed in.",
+      "rosterServiceDown": "The roster service could not be reached, so the round was not filed. It is not on any clinician's roster — this is an outage, not an empty week.",
+      "reason": {
+        "NO_TEAM_COVERS_THE_SPACE": "Not staffed: no team covers that area. Add the area to a team's coverage first.",
+        "NO_CANDIDATE_HOLDS_THE_ROLE": "Not staffed: nobody on the covering teams holds that role.",
+        "NO_CANDIDATE_IS_AVAILABLE": "Not staffed: everybody with that role is on leave, rostered off or already has a round that day.",
+        "ROSTER_SERVICE_UNREACHABLE": "Not filed: the roster service could not be reached. {{ name }} has not been given this round.",
+        "ROSTER_SERVICE_REFUSED_THE_ROUND": "Not filed: the roster service refused the round — a visit time outside the shift window, or a clash with a round it already holds."
+      }
     }
   }
 }

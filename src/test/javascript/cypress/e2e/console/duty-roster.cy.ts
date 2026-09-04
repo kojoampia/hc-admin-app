@@ -162,6 +162,9 @@ describe('duty roster', () => {
     cy.contains('button', 'Auto-fill gaps').should('not.exist');
     cy.contains('button', 'Reset week').should('not.exist');
     cy.contains('button', 'Publish').should('not.exist');
+    // Planning writes a round to another stack entirely, so it is the last control that should
+    // ever be reachable by a read-only account.
+    cy.get('[data-cy="openPlanner"]').should('not.exist');
     cy.get('.cell:not([disabled])').should('have.length', 0);
   });
 
@@ -318,7 +321,14 @@ describe('duty roster', () => {
         .then(workedBefore => {
           cy.contains('button', 'Publish').should('be.enabled').click();
           cy.contains('button', 'Publish', { timeout: 10000 }).should('be.disabled');
-          cy.adminApi('GET', `/roster-weeks/${weekBefore.id}`).its('body.published').should('eq', true);
+          cy.adminApi('GET', `/roster-weeks/${weekBefore.id}`).then(response => {
+            expect(response.body.published).to.eq(true);
+            // The publication time is the SERVER's, since 2026-09-04 (decision 8). The console no
+            // longer sends one, so a stamped value here is the api's own — and its absence would
+            // mean the derivation never ran, which nothing else on this screen would show.
+            expect(response.body.publishedAt, 'publishedAt is stamped server-side').to.be.a('string');
+            expect(new Date(response.body.publishedAt).getTime()).to.be.greaterThan(Date.now() - 5 * 60 * 1000);
+          });
 
           // Publishing alters no assignment. Counted before the click, or this compares the grid
           // with a tile computed from the same signals and would agree however both had moved.

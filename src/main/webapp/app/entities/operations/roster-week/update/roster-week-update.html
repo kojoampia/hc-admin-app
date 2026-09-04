@@ -72,20 +72,24 @@
           }
         </div>
 
-        <div class="mb-3">
-          <label class="form-label" for="field_publishedAt" abfTranslate="hcAdminApp.operationsRosterWeek.publishedAt">Published At</label>
-          <div class="d-flex">
-            <input
-              id="field_publishedAt"
-              data-cy="publishedAt"
-              type="datetime-local"
-              class="form-control"
-              name="publishedAt"
-              formControlName="publishedAt"
-              placeholder="YYYY-MM-DD HH:mm"
-            />
-          </div>
-        </div>
+        <!--
+          publishedAt is NOT on this form, deliberately, and this comment is here because every
+          sibling generated screen carries a field for every property — so pasting it back reads as
+          consistency rather than as a change.
+
+          The server owns it. RosterWeekLifecycleCallback stamps it from `published` above (decision
+          8 of duty-roster-resolution.md § 9.1) and RosterWeekResource.stripServerOwnedFields nulls
+          whatever arrives on POST and PUT. With the field rendered, an administrator set a
+          publication date, got a 200, and the value was discarded — a client/server disagreement of
+          exactly the kind decision 8 was taken to end.
+
+          Its two siblings, Message.readAt and Task.closedAt, are simply absent from their DTOs, so
+          nothing on the wire can carry them. RosterWeek is serialised as the domain entity with no
+          DTO at all, so the field cannot leave the entity — which means it has to leave the form
+          instead. roster-week-update.spec.ts asserts it is not rendered.
+
+          To publish a week, tick `published`. The stamp follows.
+        -->
       </div>
     </div>
 
