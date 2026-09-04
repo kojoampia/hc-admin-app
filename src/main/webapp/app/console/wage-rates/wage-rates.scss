@@ -49,10 +49,23 @@
   }
 }
 
+// This is a `<td>` (`wage-rates.html:103`), so it must not be `display: flex`.
+//
+// A flex container is no longer a table cell: `vertical-align` stops applying to it and `.tbl td`'s
+// `border-bottom` is drawn along the bottom of the button box rather than along the row. On rows
+// whose height is set by the buttons the two edges coincide and nothing shows; on the five taller
+// `Off` rows — taller because of the `.pill--inert` note beside the amount — the rule stops short and
+// the row reads with a white notch cut out of its underline.
+//
+// `nowrap` plus `text-align: right` does the same job while leaving the cell a cell. The gap between
+// the buttons becomes a margin on the second one, since there is no flex `gap` here to give it.
 .actions {
-  display: flex;
-  gap: 8px;
-  justify-content: flex-end;
+  white-space: nowrap;
+  text-align: right;
+
+  .btn + .btn {
+    margin-left: 8px;
+  }
 }
 
 .form-row > td,
