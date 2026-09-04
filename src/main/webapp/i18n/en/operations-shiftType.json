@@ -5,7 +5,8 @@
       "DAY": "Day",
       "EVENING": "Evening",
       "NIGHT": "Night",
-      "OFF": "Off"
+      "OFF": "Off",
+      "FLEXIBLE": "Flexible"
     }
   }
 }

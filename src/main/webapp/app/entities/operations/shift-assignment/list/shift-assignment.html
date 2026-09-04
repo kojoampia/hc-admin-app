@@ -85,7 +85,11 @@
               <td>{{ shiftAssignment.dayIndex }}</td>
               <td>{{ shiftAssignment.shiftDate | formatMediumDate }}</td>
               <td [abfTranslate]="'hcAdminApp.ShiftType.' + (shiftAssignment.shift ?? 'null')">
-                {{ { null: '', DAY: 'DAY', EVENING: 'EVENING', NIGHT: 'NIGHT', OFF: 'OFF' }[shiftAssignment.shift ?? 'null'] }}
+                {{
+                  { null: '', DAY: 'DAY', EVENING: 'EVENING', NIGHT: 'NIGHT', OFF: 'OFF', FLEXIBLE: 'FLEXIBLE' }[
+                    shiftAssignment.shift ?? 'null'
+                  ]
+                }}
               </td>
               <td>
                 @if (shiftAssignment.week) {

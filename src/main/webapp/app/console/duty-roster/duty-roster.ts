@@ -17,10 +17,23 @@ import HasAnyAuthorityDirective from 'app/shared/auth/has-any-authority.directiv
 import { ConsoleAuthority } from 'app/shared/auth/console-role';
 import { AccountService } from 'app/core/auth/account.service';
 
-/** unassigned -> DAY -> EVENING -> NIGHT -> OFF -> unassigned. */
-export const SHIFT_CYCLE: (ShiftKind | null)[] = [null, 'DAY', 'EVENING', 'NIGHT', 'OFF'];
+/**
+ * unassigned -> DAY -> EVENING -> NIGHT -> FLEXIBLE -> OFF -> unassigned.
+ *
+ * <p><b>`FLEXIBLE` sits before `OFF`, not after it</b>, and the position is the whole of the thought.
+ * The three cell states this grid has to keep distinct are *no row*, *rostered rest* and *worked*;
+ * `FLEXIBLE` is a worked state, so it belongs with the other worked ones, and `OFF` has to stay the
+ * last stop before the wrap because it is the wrap past `OFF` that **deletes** the assignment. Put
+ * `FLEXIBLE` at the end and cycling past a rest day produces a shift instead of clearing the cell,
+ * which is a different grid.
+ *
+ * <p>This is deliberately not the declared order of `ShiftType`, which is
+ * `DAY, EVENING, NIGHT, OFF, FLEXIBLE` on both sides of the estate. That order is for display and
+ * sorting; this one is an affordance, and it has a rule the enum does not.
+ */
+export const SHIFT_CYCLE: (ShiftKind | null)[] = [null, 'DAY', 'EVENING', 'NIGHT', 'FLEXIBLE', 'OFF'];
 
-export type ShiftKind = 'DAY' | 'EVENING' | 'NIGHT' | 'OFF';
+export type ShiftKind = 'DAY' | 'EVENING' | 'NIGHT' | 'OFF' | 'FLEXIBLE';
 
 /** The next shift in the cycle. Exported so the spec can exercise it alone. */
 export const nextShift = (current: ShiftKind | null): ShiftKind | null => {

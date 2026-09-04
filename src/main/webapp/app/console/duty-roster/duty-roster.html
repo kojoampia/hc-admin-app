@@ -1,7 +1,7 @@
 <div class="sec-head">
   <div>
     <h3>{{ 'dutyRoster.title' | translate: { week: week()?.label ?? '' } }}</h3>
-    <p abfTranslate="dutyRoster.subtitle">Click any cell to cycle the shift: unassigned → day → evening → night → off</p>
+    <p abfTranslate="dutyRoster.subtitle">Click any cell to cycle the shift: unassigned → day → evening → night → flexible → off</p>
   </div>
   <div class="head-tools no-print" *abfHasAnyAuthority="adminOnly">
     <button type="button" class="btn btn-ghost btn-sm" [disabled]="isSaving() || !week()" (click)="autoFill()">
@@ -133,6 +133,7 @@
   <span class="li"><span class="sw sw--day"></span>{{ 'console.shiftHours.DAY' | translate }}</span>
   <span class="li"><span class="sw sw--evening"></span>{{ 'console.shiftHours.EVENING' | translate }}</span>
   <span class="li"><span class="sw sw--night"></span>{{ 'console.shiftHours.NIGHT' | translate }}</span>
+  <span class="li"><span class="sw sw--flexible"></span>{{ 'console.shiftHours.FLEXIBLE' | translate }}</span>
   <span class="li"><span class="sw sw--off"></span>{{ 'console.shiftHours.OFF' | translate }}</span>
   <span class="li"><span class="sw sw--unassigned"></span>{{ 'dutyRoster.unassigned' | translate }}</span>
 </div>

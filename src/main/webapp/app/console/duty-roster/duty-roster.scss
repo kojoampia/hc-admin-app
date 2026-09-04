@@ -189,8 +189,19 @@
     border-color: var(--abf-navy-900);
   }
 
+  /* Flexible is a worked shift, so it takes a navy rather than the neutral —
+     the colour says "worked", and the `F` in the cell says which. It is close
+     to `--day` on purpose and it is legible anyway: every cell carries its
+     letter code, so hue is the second channel here and not the only one, and
+     making the fifth value shout would give it more weight on the grid than
+     the three it sits beside. */
+  &--flexible {
+    background: var(--abf-navy-700);
+    border-color: var(--abf-navy-700);
+  }
+
   /* Off is planned but not worked, so it reads as a neutral rather than a
-     fourth shift colour. */
+     fifth shift colour. */
   &--off {
     background: #b6ada0;
     border-color: #b6ada0;
@@ -227,6 +238,9 @@
   }
   .sw--night {
     background: var(--abf-navy-900);
+  }
+  .sw--flexible {
+    background: var(--abf-navy-700);
   }
   .sw--off {
     background: #b6ada0;

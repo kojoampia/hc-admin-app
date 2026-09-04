@@ -2,7 +2,7 @@
   "dutyRoster": {
     "pageTitle": "Duty roster",
     "title": "Duty roster · {{ week }}",
-    "subtitle": "Click any cell to cycle the shift: unassigned → day → evening → night → off",
+    "subtitle": "Click any cell to cycle the shift: unassigned → day → evening → night → flexible → off",
     "tableCaption": "Duty roster grid: professionals down the side, days of the week across the top",
     "autoFill": "Auto-fill gaps",
     "resetWeek": "Reset week",

@@ -6,4 +6,6 @@ export enum ShiftType {
   NIGHT = 'NIGHT',
 
   OFF = 'OFF',
+
+  FLEXIBLE = 'FLEXIBLE',
 }

@@ -5,7 +5,7 @@ import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideRouter } from '@angular/router';
 import { provideTranslateService } from '@ngx-translate/core';
 
-import DutyRoster from './duty-roster';
+import DutyRoster, { SHIFT_CYCLE, nextShift } from './duty-roster';
 
 /**
  * The grid's arithmetic, which the dashboard now has to match.
@@ -72,6 +72,46 @@ describe('duty roster figures', () => {
 
     expect(component.coverPercent()).toBe(0);
     expect(component.unassignedSlots()).toBe(0);
+  });
+
+  /**
+   * `FLEXIBLE` is a worked shift, and the three cell states do not move because of it.
+   *
+   * <p>The states this grid has to keep apart are *no row*, *rostered rest* and *worked*. Adding a
+   * fifth enum value adds a worked one, so `unassignedSlots` stays a subtraction from capacity and
+   * `OFF` stays the only planned value that is not a shift. The row below is deliberately the same
+   * shape as the cover fixture with one `DAY` swapped for a `FLEXIBLE`: every figure has to be
+   * unchanged, which is a stronger statement than any of them being right.
+   */
+  it('counts a flexible block as worked, leaving the three cell states where they were', () => {
+    component.rows.set([
+      row('p1', ['FLEXIBLE', 'DAY', 'OFF', 'NIGHT', 'EVENING', null, null]),
+      row('p2', ['NIGHT', 'NIGHT', 'DAY', 'DAY', null, null, null]),
+    ]);
+
+    expect(component.filledSlots()).toBe(9);
+    expect(component.unassignedSlots()).toBe(5);
+    expect(component.coverPercent()).toBe(64);
+    // Still eight, and still because of the OFF rather than because of the FLEXIBLE.
+    expect(component.workedShifts()).toBe(8);
+    expect(component.onDutyPerDay()[0]).toBe(2);
+  });
+
+  /**
+   * The cycle, and specifically where `FLEXIBLE` sits in it.
+   *
+   * <p>`OFF` has to remain the last stop before the wrap, because it is the wrap **past `OFF`** that
+   * deletes the assignment — unassigned is the absence of a row, not a row with a null shift. Append
+   * `FLEXIBLE` at the end instead and cycling past a rest day produces a shift rather than clearing
+   * the cell, which is a different grid and would not fail any of the arithmetic above.
+   */
+  it('cycles unassigned -> day -> evening -> night -> flexible -> off -> unassigned', () => {
+    expect(SHIFT_CYCLE).toEqual([null, 'DAY', 'EVENING', 'NIGHT', 'FLEXIBLE', 'OFF']);
+
+    expect(nextShift(null)).toBe('DAY');
+    expect(nextShift('NIGHT')).toBe('FLEXIBLE');
+    expect(nextShift('FLEXIBLE')).toBe('OFF');
+    expect(nextShift('OFF')).toBeNull();
   });
 
   function row(id: string, shifts: (string | null)[]): any {

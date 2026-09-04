@@ -28,7 +28,9 @@
           <dt><span abfTranslate="hcAdminApp.operationsShiftAssignment.shift">Shift</span></dt>
           <dd>
             <span [abfTranslate]="'hcAdminApp.ShiftType.' + (shiftAssignmentRef.shift ?? 'null')">{{
-              { null: '', DAY: 'DAY', EVENING: 'EVENING', NIGHT: 'NIGHT', OFF: 'OFF' }[shiftAssignmentRef.shift ?? 'null']
+              { null: '', DAY: 'DAY', EVENING: 'EVENING', NIGHT: 'NIGHT', OFF: 'OFF', FLEXIBLE: 'FLEXIBLE' }[
+                shiftAssignmentRef.shift ?? 'null'
+              ]
             }}</span>
           </dd>
           <dt><span abfTranslate="hcAdminApp.operationsShiftAssignment.week">Week</span></dt>

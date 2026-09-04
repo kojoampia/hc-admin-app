@@ -48,18 +48,21 @@
       "DAY": "Day shift",
       "EVENING": "Evening shift",
       "NIGHT": "Night shift",
+      "FLEXIBLE": "Flexible block",
       "OFF": "Off"
     },
     "shiftCode": {
       "DAY": "D",
       "EVENING": "E",
       "NIGHT": "N",
+      "FLEXIBLE": "F",
       "OFF": "O"
     },
     "shiftHours": {
       "DAY": "Day 07–15",
       "EVENING": "Evening 15–23",
       "NIGHT": "Night 23–07",
+      "FLEXIBLE": "Flexible 2–4 h",
       "OFF": "Off"
     },
     "filter": {

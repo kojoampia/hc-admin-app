@@ -1,7 +1,7 @@
 <div class="sec-head">
   <div>
     <h3 abfTranslate="wageRates.title">Wage remuneration</h3>
-    <p abfTranslate="wageRates.subtitle">What one shift pays, by professional type</p>
+    <p abfTranslate="wageRates.subtitle">What one shift pays, by professional type and shift</p>
   </div>
   <div class="sec-head-actions">
     <button type="button" class="btn btn-info" (click)="load()" [disabled]="isLoading()" data-cy="wageRatesRefresh">
@@ -25,15 +25,15 @@
   <div class="alert alert-danger" role="alert" data-cy="wageRatesError">{{ message }}</div>
 }
 
-@if (savedRole(); as role) {
+@if (savedCell(); as cell) {
   <div class="alert alert-success" role="status" data-cy="wageRatesSaved">
-    {{ 'wageRates.saved' | translate: { role: roleLabelKey(role) | translate } }}
+    {{ 'wageRates.saved' | translate: { role: roleLabelKey(cell.role) | translate, shift: shiftLabelKey(cell.shiftType) | translate } }}
   </div>
 }
 
 @if (!anyPriced() && !isLoading()) {
   <div class="alert alert-warning" data-cy="wageRatesEmpty" abfTranslate="wageRates.noneConfigured">
-    No wage rates are configured yet. Until a role is priced, shifts worked by it are counted but valued at nothing.
+    No wage rates are configured yet. Until a role is priced for a shift, shifts of that kind are counted but valued at nothing.
   </div>
 }
 
@@ -43,6 +43,7 @@
       <thead>
         <tr>
           <th scope="col" abfTranslate="wageRates.column.role">Professional type</th>
+          <th scope="col" abfTranslate="wageRates.column.shift">Shift</th>
           <th scope="col" class="right" abfTranslate="wageRates.column.perShift">Per shift</th>
           <th scope="col" abfTranslate="wageRates.column.inForceSince">In force since</th>
           <th scope="col" abfTranslate="wageRates.column.lastChanged">Last changed</th>
@@ -50,12 +51,29 @@
         </tr>
       </thead>
       <tbody>
-        @for (row of rows(); track row.role) {
-          <tr [attr.data-cy]="'wageRateRow-' + row.role">
-            <th scope="row">{{ roleLabelKey(row.role) | translate }}</th>
+        @for (row of rows(); track row.key) {
+          <tr [attr.data-cy]="'wageRateRow-' + row.key" [class.role-start]="row.startsRole">
+            <!--
+              The role is named once per block rather than on all five rows. Repeating it reads as
+              five separate roles that happen to share a name, which is the reading the grid is
+              trying to avoid.
+            -->
+            <th scope="row">
+              @if (row.startsRole) {
+                {{ roleLabelKey(row.role) | translate }}
+              }
+            </th>
+            <td class="shift">
+              {{ shiftLabelKey(row.shiftType) | translate }}
+              @if (isNeverPaid(row.shiftType)) {
+                <span class="pill pill--inert" abfTranslate="wageRates.offNotPaid">
+                  An off day is a rostered rest day and is never paid, so a rate here is recorded and not applied.
+                </span>
+              }
+            </td>
 
             @if (row.current; as rate) {
-              <td class="right amount" [attr.data-cy]="'wageRateAmount-' + row.role">
+              <td class="right amount" [attr.data-cy]="'wageRateAmount-' + row.key">
                 <span class="num">{{ rate.amount }}</span>
                 <span class="cur">{{ rate.currency }}</span>
               </td>
@@ -72,10 +90,12 @@
               </td>
             } @else {
               <!--
-                Deliberately not rendered as 0. A role nobody has priced and a role priced at nothing
-                are different facts, and the wage bill reads identically for both.
+                Deliberately not rendered as 0. A cell nobody has priced and one priced at nothing
+                are different facts, and the wage bill reads identically for both. There is no
+                fallback to the role's other shift types either, so an empty cell here really is an
+                unpriced shift rather than one inheriting a neighbour's rate.
               -->
-              <td class="right unpriced" [attr.data-cy]="'wageRateAmount-' + row.role" abfTranslate="wageRates.notSet">Not set</td>
+              <td class="right unpriced" [attr.data-cy]="'wageRateAmount-' + row.key" abfTranslate="wageRates.notSet">Not set</td>
               <td class="muted">&mdash;</td>
               <td class="muted">&mdash;</td>
             }
@@ -84,18 +104,18 @@
               <button
                 type="button"
                 class="btn btn-sm btn-secondary"
-                (click)="toggleHistory(row.role)"
-                [attr.data-cy]="'wageRateHistoryToggle-' + row.role"
+                (click)="toggleHistory(row)"
+                [attr.data-cy]="'wageRateHistoryToggle-' + row.key"
               >
-                <fa-icon [icon]="expandedRole() === row.role ? 'chevron-up' : 'chevron-down'" />
+                <fa-icon [icon]="expandedCell() === row.key ? 'chevron-up' : 'chevron-down'" />
                 <span abfTranslate="wageRates.history.toggle">History</span>
               </button>
               <button
                 *abfHasAnyAuthority="[ConsoleAuthority.ADMIN]"
                 type="button"
                 class="btn btn-sm btn-primary"
-                (click)="startReprice(row.role)"
-                [attr.data-cy]="'wageRateReprice-' + row.role"
+                (click)="startReprice(row)"
+                [attr.data-cy]="'wageRateReprice-' + row.key"
               >
                 <fa-icon icon="pen" />
                 <span abfTranslate="wageRates.reprice">Set new rate</span>
@@ -103,21 +123,26 @@
             </td>
           </tr>
 
-          @if (editingRole() === row.role) {
+          @if (editingCell() === row.key) {
             <tr class="form-row">
-              <td colspan="5">
-                <form [formGroup]="form" (ngSubmit)="save()" [attr.data-cy]="'wageRateForm-' + row.role">
-                  <h4>{{ 'wageRates.form.title' | translate: { role: roleLabelKey(row.role) | translate } }}</h4>
+              <td colspan="6">
+                <form [formGroup]="form" (ngSubmit)="save()" [attr.data-cy]="'wageRateForm-' + row.key">
+                  <h4>
+                    {{
+                      'wageRates.form.title'
+                        | translate: { role: roleLabelKey(row.role) | translate, shift: shiftLabelKey(row.shiftType) | translate }
+                    }}
+                  </h4>
 
                   <div class="fields">
                     <div class="field">
-                      <label class="form-label" [attr.for]="'amount-' + row.role" abfTranslate="wageRates.form.amount"
+                      <label class="form-label" [attr.for]="'amount-' + row.key" abfTranslate="wageRates.form.amount"
                         >Amount per shift</label
                       >
                       <input
                         type="number"
                         class="form-control"
-                        [id]="'amount-' + row.role"
+                        [id]="'amount-' + row.key"
                         formControlName="amount"
                         min="0"
                         step="1"
@@ -131,13 +156,13 @@
                     </div>
 
                     <div class="field">
-                      <label class="form-label" [attr.for]="'validFrom-' + row.role" abfTranslate="wageRates.form.validFrom">
+                      <label class="form-label" [attr.for]="'validFrom-' + row.key" abfTranslate="wageRates.form.validFrom">
                         In force from
                       </label>
                       <input
                         type="date"
                         class="form-control"
-                        [id]="'validFrom-' + row.role"
+                        [id]="'validFrom-' + row.key"
                         formControlName="validFrom"
                         data-cy="wageRateValidFromInput"
                       />
@@ -147,11 +172,11 @@
                     </div>
 
                     <div class="field field--wide">
-                      <label class="form-label" [attr.for]="'note-' + row.role" abfTranslate="wageRates.form.note">Reason</label>
+                      <label class="form-label" [attr.for]="'note-' + row.key" abfTranslate="wageRates.form.note">Reason</label>
                       <input
                         type="text"
                         class="form-control"
-                        [id]="'note-' + row.role"
+                        [id]="'note-' + row.key"
                         formControlName="note"
                         maxlength="200"
                         data-cy="wageRateNoteInput"
@@ -173,13 +198,13 @@
             </tr>
           }
 
-          @if (expandedRole() === row.role) {
+          @if (expandedCell() === row.key) {
             <tr class="history-row">
-              <td colspan="5">
+              <td colspan="6">
                 @if (row.history.length === 0) {
-                  <p class="muted" abfTranslate="wageRates.history.none">No rates have been recorded for this role.</p>
+                  <p class="muted" abfTranslate="wageRates.history.none">No rates have been recorded for this role and shift.</p>
                 } @else {
-                  <table class="table table-sm history" [attr.data-cy]="'wageRateHistory-' + row.role">
+                  <table class="table table-sm history" [attr.data-cy]="'wageRateHistory-' + row.key">
                     <thead>
                       <tr>
                         <th scope="col" class="right" abfTranslate="wageRates.column.perShift">Per shift</th>
