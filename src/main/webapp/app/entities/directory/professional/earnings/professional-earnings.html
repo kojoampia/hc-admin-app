@@ -88,10 +88,17 @@
             Stated only when it happens, and stated plainly. These shifts are in the count above and
             contribute nothing to the total, so without this the two figures disagree for no visible
             reason.
+
+            The wording says "no rate set", not "before a rate was set", and the difference is not
+            style. Since 2026-09-04 a rate is keyed on (role, shiftType), so a second thing
+            increments this count: a role priced for days and not for nights makes every night
+            unpriced however old the day rate is. The old wording named only the date, which sends
+            an administrator to look at validFrom when the answer is an empty cell in the pricing
+            grid.
           -->
           <div class="tot tot--warn" data-cy="earningsUnpriced">
             <b>{{ data.unpricedShifts }}</b>
-            <span abfTranslate="professionalEarnings.total.unpriced">Worked before a rate was set</span>
+            <span abfTranslate="professionalEarnings.total.unpriced">Worked with no rate set</span>
           </div>
         }
       </div>
