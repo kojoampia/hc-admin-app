@@ -1,9 +1,6 @@
 import { Injectable } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 
-import dayjs from 'dayjs/esm';
-
-import { DATE_TIME_FORMAT } from 'app/config/input.constants';
 import { IRosterWeek, NewRosterWeek } from '../roster-week.model';
 
 /**
@@ -18,30 +15,48 @@ type PartialWithRequiredKeyOf<T extends { id: unknown }> = Partial<Omit<T, 'id'>
 type RosterWeekFormGroupInput = IRosterWeek | PartialWithRequiredKeyOf<NewRosterWeek>;
 
 /**
- * Type that converts some properties for forms.
+ * Type that drops the properties this form does not speak about.
+ *
+ * `publishedAt` is the server's — see the form group below — so it is neither a control here nor a
+ * value this service reads back out. It stays on `IRosterWeek` because the detail and list screens
+ * display it; it is only the *form* that has no opinion about it.
  */
-type FormValueOf<T extends IRosterWeek | NewRosterWeek> = Omit<T, 'publishedAt'> & {
-  publishedAt?: string | null;
-};
+type FormValueOf<T extends IRosterWeek | NewRosterWeek> = Omit<T, 'publishedAt'>;
 
 type RosterWeekFormRawValue = FormValueOf<IRosterWeek>;
 
 type NewRosterWeekFormRawValue = FormValueOf<NewRosterWeek>;
 
-type RosterWeekFormDefaults = Pick<NewRosterWeek, 'id' | 'published' | 'publishedAt'>;
+type RosterWeekFormDefaults = Pick<NewRosterWeek, 'id' | 'published'>;
 
 type RosterWeekFormGroupContent = {
   id: FormControl<RosterWeekFormRawValue['id'] | NewRosterWeek['id']>;
   label: FormControl<RosterWeekFormRawValue['label']>;
   startDate: FormControl<RosterWeekFormRawValue['startDate']>;
   published: FormControl<RosterWeekFormRawValue['published']>;
-  publishedAt: FormControl<RosterWeekFormRawValue['publishedAt']>;
 };
 
 export type RosterWeekFormGroup = FormGroup<RosterWeekFormGroupContent>;
 
 @Injectable({ providedIn: 'root' })
 export class RosterWeekFormService {
+  /**
+   * Four controls, and `publishedAt` is deliberately not the fifth.
+   *
+   * The generator gave it one, defaulted to `dayjs()` on create, and rendered a `datetime-local`
+   * beside it. The server owns the field: `RosterWeekLifecycleCallback` derives it from `published`
+   * (decision 8 of `duty-roster-resolution.md` § 9.1) and `RosterWeekResource.stripServerOwnedFields`
+   * nulls whatever arrives on POST and PUT. So an administrator could set a publication date, get a
+   * 200 back, and have the value silently discarded — the client/server disagreement decision 8
+   * exists to end, surviving on one screen.
+   *
+   * Its siblings `Message.readAt` and `Task.closedAt` are absent from their DTOs, so nothing on the
+   * wire can carry them. `RosterWeek` has no DTO — it is serialised as the domain entity — so the
+   * field cannot leave the wire, and taking it off the form is the only place the disagreement can
+   * be removed.
+   *
+   * Ticking `published` is how a week is published; the stamp follows from that.
+   */
   createRosterWeekFormGroup(rosterWeek?: RosterWeekFormGroupInput): RosterWeekFormGroup {
     const rosterWeekRawValue = this.convertRosterWeekToRosterWeekRawValue({
       ...this.getFormDefaults(),
@@ -65,7 +80,6 @@ export class RosterWeekFormService {
       published: new FormControl(rosterWeekRawValue.published, {
         validators: [Validators.required],
       }),
-      publishedAt: new FormControl(rosterWeekRawValue.publishedAt),
     });
   }
 
@@ -82,12 +96,9 @@ export class RosterWeekFormService {
   }
 
   private getFormDefaults(): RosterWeekFormDefaults {
-    const currentTime = dayjs();
-
     return {
       id: null,
       published: false,
-      publishedAt: currentTime,
     };
   }
 
@@ -96,16 +107,17 @@ export class RosterWeekFormService {
   ): IRosterWeek | NewRosterWeek {
     return {
       ...rawRosterWeek,
-      publishedAt: dayjs(rawRosterWeek.publishedAt, DATE_TIME_FORMAT),
     };
   }
 
   private convertRosterWeekToRosterWeekRawValue(
     rosterWeek: IRosterWeek | (Partial<NewRosterWeek> & RosterWeekFormDefaults),
   ): RosterWeekFormRawValue | PartialWithRequiredKeyOf<NewRosterWeekFormRawValue> {
+    // publishedAt is dropped rather than passed through: it is not a control, so `reset` would
+    // ignore it anyway, and carrying it here would suggest the form has an opinion about it.
+    const { publishedAt: _discarded, ...withoutPublishedAt } = rosterWeek;
     return {
-      ...rosterWeek,
-      publishedAt: rosterWeek.publishedAt ? rosterWeek.publishedAt.format(DATE_TIME_FORMAT) : undefined,
+      ...withoutPublishedAt,
     };
   }
 }
