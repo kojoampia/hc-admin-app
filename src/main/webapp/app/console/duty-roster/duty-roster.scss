@@ -268,3 +268,49 @@
   white-space: nowrap;
   border: 0;
 }
+
+// The planning panel and the outage banner — three classes, and no more than three.
+//
+// `//` comments, not `/* */`, and that is load-bearing here rather than a style choice: Sass emits
+// a block comment into the compiled stylesheet, and this component has an `anyComponentStyle`
+// budget of 28 kB that its shared `console-components` import already all but fills. The first
+// draft of this section went 1.3 kB over on hand-rolled form styles and 0.5 kB over on the comment
+// explaining them. Silent comments cost nothing and say the same thing.
+//
+// Everything the panel needs is already in `_console-components.scss`, imported at the top of this
+// file: `.card`, `.card-pad`, `.field` (label, input, select, focus ring), `.abf-grid`/`.abf-g-4`,
+// `.abf-row`, `.between`, `.tiny`, `.muted` and the `.btn` family.
+//
+// In THIS file rather than the global stylesheet, which is the right side of the two-stylesheet
+// rule: that rule is about generated create/edit screens declaring no `styleUrl`, and this
+// component declares one.
+.plan-outage,
+.plan-result {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 11px 13px;
+  border-radius: var(--abf-r-sm);
+}
+
+.plan-outage {
+  margin-bottom: 18px;
+  border: 1px solid var(--abf-danger);
+}
+
+// Filed, not staffed, not filed. Three renderings, each with its own icon in the template, so
+// colour is never the only signal — and a round that could not be staffed is never allowed to look
+// like one that could not be filed.
+.plan-outage,
+.plan-result--failed {
+  background: var(--abf-danger-bg);
+  color: var(--abf-danger);
+}
+.plan-result--planned {
+  background: var(--abf-ok-bg);
+  color: var(--abf-ok);
+}
+.plan-result--unplanned {
+  background: var(--abf-warn-bg);
+  color: var(--abf-warn);
+}

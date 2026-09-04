@@ -1,10 +1,13 @@
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { TranslatePipe } from '@ngx-translate/core';
 import dayjs from 'dayjs/esm';
 import { forkJoin, map, of, switchMap } from 'rxjs';
+
+import { GeographicSpaceRef, PlanReport, PlanRole, PlanShift, RosterPlanService } from './roster-plan.service';
 
 import { IProfessional } from 'app/entities/directory/professional/professional.model';
 import { ProfessionalService } from 'app/entities/directory/professional/service/professional.service';
@@ -41,6 +44,28 @@ export const nextShift = (current: ShiftKind | null): ShiftKind | null => {
   return SHIFT_CYCLE[(index + 1) % SHIFT_CYCLE.length];
 };
 
+/**
+ * Where a visit is placed inside its shift, one hour per call.
+ *
+ * <p><b>Not a formatting nicety: hc-professional refuses both mistakes this avoids.</b> It resolves
+ * every visit time against the shift's own window and rejects one outside it, and it rejects two
+ * visits on the same round that overlap. So a fixed 09:00 would 400 for every evening and night
+ * round, and a fixed hour for all of them would 400 for the second visit on any round — both
+ * arriving back here as "the roster service refused the round", which reads as a server problem.
+ *
+ * <p>The starts are the estate's shift windows (DAY 07–15, EVENING 15–23, NIGHT 23–07, FLEXIBLE the
+ * whole day), one hour in so a round has room to grow either way. Only the first few hours of a
+ * shift are used; a round longer than that is planned here and its times edited on the professional
+ * portal, which is where a clinician's real day is arranged.
+ */
+export function visitWindow(shift: PlanShift, index: number): { startTime: string; endTime: string } {
+  const firstHour: Record<PlanShift, number> = { DAY: 8, EVENING: 16, NIGHT: 23, OFF: 8, FLEXIBLE: 10 };
+  const start = (firstHour[shift] + index) % 24;
+  const end = (start + 1) % 24;
+  const hh = (hour: number): string => `${String(hour).padStart(2, '0')}:00`;
+  return { startTime: hh(start), endTime: hh(end) };
+}
+
 export interface RosterCell {
   readonly dayIndex: number;
   readonly shift: ShiftKind | null;
@@ -69,20 +94,46 @@ const DAYS_IN_WEEK = 7;
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './duty-roster.html',
   styleUrl: './duty-roster.scss',
-  imports: [RouterLink, FontAwesomeModule, TranslateDirective, TranslatePipe, HasAnyAuthorityDirective],
+  imports: [RouterLink, FormsModule, FontAwesomeModule, TranslateDirective, TranslatePipe, HasAnyAuthorityDirective],
 })
 export default class DutyRoster implements OnInit {
   readonly adminOnly = [ConsoleAuthority.ADMIN];
   readonly dayIndexes = Array.from({ length: DAYS_IN_WEEK }, (_, index) => index);
 
+  /** Plannable shifts. `OFF` is absent: hc-professional refuses visits on a rest day. */
+  readonly planShifts: PlanShift[] = ['DAY', 'EVENING', 'NIGHT', 'FLEXIBLE'];
+  readonly planRoles: PlanRole[] = ['DOCTOR', 'NURSE', 'PARAMEDIC', 'THERAPIST', 'CAREGIVER'];
+
   readonly week = signal<IRosterWeek | null>(null);
   readonly rows = signal<RosterRow[]>([]);
   readonly isSaving = signal(false);
+
+  // --- the planning panel ---------------------------------------------------------------------
+  readonly planOpen = signal(false);
+  readonly planning = signal(false);
+  readonly spaces = signal<GeographicSpaceRef[]>([]);
+  readonly report = signal<PlanReport | null>(null);
+  /**
+   * The call itself failed — not a round within it.
+   *
+   * <p>Separate from {@link PlanReport.rosterServiceReachable}, which is the api telling us it
+   * could not reach hc-professional. This one is "the api did not answer at all", and the two are
+   * different outages a reader would go and look at different things about.
+   */
+  readonly planCallFailed = signal(false);
+
+  planDayIndex = 0;
+  planRole: PlanRole = 'NURSE';
+  planShift: PlanShift = 'DAY';
+  planSpaceId = '';
+  planName = '';
+  planCustomerIds = '';
 
   private readonly rosterWeekService = inject(RosterWeekService);
   private readonly shiftService = inject(ShiftAssignmentService);
   private readonly professionalService = inject(ProfessionalService);
   private readonly accountService = inject(AccountService);
+  private readonly rosterPlanService = inject(RosterPlanService);
 
   /**
    * Cycling a cell writes a ShiftAssignment, so it is a mutating control and
@@ -278,20 +329,111 @@ export default class DutyRoster implements OnInit {
     });
   }
 
-  /** Publishing stamps the week; it does not alter a single assignment. */
+  /**
+   * Publishing stamps the week; it does not alter a single assignment.
+   *
+   * <p><b>It no longer sends `publishedAt`, as of 2026-09-04.</b> That field is server-derived from
+   * `published` now (decision 8), joining `Message.readAt` and `Task.closedAt`, and the api
+   * discards whatever arrives on the wire. Sending it was harmless only for as long as the server
+   * believed it: a browser with a wrong clock dated the publication wrongly, and nothing anywhere
+   * disagreed. Do not put it back — the api would ignore it, so the two would silently differ.
+   */
   publish(): void {
     const week = this.week();
     if (!week) {
       return;
     }
     this.isSaving.set(true);
-    this.rosterWeekService.partialUpdate({ id: week.id, published: true, publishedAt: dayjs() }).subscribe({
+    this.rosterWeekService.partialUpdate({ id: week.id, published: true }).subscribe({
       next: updated => {
         this.week.set(updated);
         this.isSaving.set(false);
       },
       error: () => this.isSaving.set(false),
     });
+  }
+
+  // --- planning ---------------------------------------------------------------------------------
+
+  /**
+   * Open the panel, and load the areas a round can be planned in.
+   *
+   * <p>Loaded on open rather than with the grid: the grid is what every visitor to this screen came
+   * for, and the space list is only wanted by the one person about to plan a round.
+   */
+  openPlanner(): void {
+    this.planOpen.set(true);
+    if (this.spaces().length === 0) {
+      this.rosterPlanService.spaces().subscribe({
+        next: spaces => this.spaces.set(spaces),
+        // An empty list leaves the picker empty and the Plan button disabled, which is a visible
+        // and honest state; it is not worth its own error banner beside the outage one.
+        error: () => this.spaces.set([]),
+      });
+    }
+  }
+
+  closePlanner(): void {
+    this.planOpen.set(false);
+  }
+
+  /** The date the panel is planning for: the chosen day of the week on screen. */
+  planDate(): dayjs.Dayjs | null {
+    const start = this.week()?.startDate;
+    return start ? start.add(this.planDayIndex, 'day') : null;
+  }
+
+  canPlan(): boolean {
+    return !this.planning() && this.planSpaceId !== '' && this.planName.trim() !== '' && this.planDate() !== null;
+  }
+
+  /**
+   * Staff one round and file it with the roster of record.
+   *
+   * <p><b>Customer ids are typed in, and that is a known limitation rather than a design.</b> A
+   * visit's `customerId` is a `patientservice` `Profile.patientId`, and this service holds no
+   * mapping from its own `Patient` documents to that id — see backlog item 22. Offering a picker
+   * over hc-admin's patients would send a plausible id that means nobody, which is worse than
+   * asking. A round with no visits is valid: ward cover and on-call time are real shifts.
+   */
+  planRound(): void {
+    const date = this.planDate();
+    if (!date || !this.canPlan()) {
+      return;
+    }
+    this.planning.set(true);
+    this.report.set(null);
+    this.planCallFailed.set(false);
+
+    const visits = this.planCustomerIds
+      .split(',')
+      .map(id => id.trim())
+      .filter(id => id !== '')
+      .map((customerId, index) => ({ customerId, ...visitWindow(this.planShift, index) }));
+
+    this.rosterPlanService
+      .plan({
+        date: date.format('YYYY-MM-DD'),
+        rounds: [
+          {
+            role: this.planRole,
+            shift: this.planShift,
+            geographicSpaceId: this.planSpaceId,
+            name: this.planName.trim(),
+            visits,
+          },
+        ],
+      })
+      .subscribe({
+        next: report => {
+          this.report.set(report);
+          this.planning.set(false);
+        },
+        error: () => {
+          this.planCallFailed.set(true);
+          this.planning.set(false);
+        },
+      });
   }
 
   private applyCell(row: RosterRow, dayIndex: number, shift: ShiftKind | null, assignmentId: string | null): void {

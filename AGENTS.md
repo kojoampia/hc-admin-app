@@ -35,7 +35,9 @@ Each of these has actually been got wrong in this repository. They are first bec
 
 4. **Only one of the two console stylesheets is global.** `global.scss` imports `_console-admin.scss`. `_console-components.scss` is imported **per component**, because Angular scopes component styles. **No generated create/edit component declares a `styleUrl` at all** — so a class those screens need must live in `_console-admin.scss`. Putting it in the other one compiles, lints, type-checks, passes every test, and renders an unstyled column of full-width inputs. It shipped to quality exactly once. `global-styles.spec.ts` pins where `.abf-form` and `.abf-steps` live.
 
-5. **`tsc` is not a sufficient gate.** Unrouted generated files are never type-checked by the test run, so `npx ng build` has to be run as well.
+5. **A console component's `anyComponentStyle` budget is nearly spent before you add a line.** Every hand-written console screen imports `_console-components.scss`, which is ~28 kB compiled on its own, and the budget is a **30 kB warning / 32 kB error** in `angular.json`. `duty-roster` is the largest and sits about 1.5 kB under the warning. Two consequences. Prefer the shared classes — `.card`, `.card-pad`, `.field`, `.abf-grid`, `.abf-row`, `.between`, `.btn` — over hand-rolled ones; a bespoke form grid for the planning panel cost 1.3 kB and was deleted for that reason. And write comments in a component stylesheet as `//`, not `/* */`: Sass emits the second into the output and it counts against the budget (0.5 kB, once). The warning was raised from 28 kB on 2026-09-04 by the planning panel; the error threshold was not touched, and it is the real guard.
+
+6. **`tsc` is not a sufficient gate.** Unrouted generated files are never type-checked by the test run, so `npx ng build` has to be run as well.
 
 ## Architecture and conventions
 

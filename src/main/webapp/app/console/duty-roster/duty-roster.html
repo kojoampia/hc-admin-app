@@ -4,6 +4,10 @@
     <p abfTranslate="dutyRoster.subtitle">Click any cell to cycle the shift: unassigned → day → evening → night → flexible → off</p>
   </div>
   <div class="head-tools no-print" *abfHasAnyAuthority="adminOnly">
+    <button type="button" class="btn btn-ghost btn-sm" data-cy="openPlanner" [disabled]="!week()" (click)="openPlanner()">
+      <fa-icon icon="calendar-alt" />
+      <span abfTranslate="dutyRoster.plan.open">Plan a round</span>
+    </button>
     <button type="button" class="btn btn-ghost btn-sm" [disabled]="isSaving() || !week()" (click)="autoFill()">
       <fa-icon icon="wrench" />
       <span abfTranslate="dutyRoster.autoFill">Auto-fill gaps</span>
@@ -18,6 +22,38 @@
     </button>
   </div>
 </div>
+
+<!--
+  THE OUTAGE STATE. Standing panel, not a toast.
+
+  Planning writes to hc-professional, which owns the roster of record, so it can fail in a way a
+  local save never could — and an empty roster grid and an unreachable roster service must not look
+  alike (decision 10). A toast is gone by the time somebody asks why nothing is on the roster; this
+  stays until the next attempt succeeds.
+
+  Two different outages, deliberately distinguished. `planCallFailed` is "this console could not
+  reach its own api"; `rosterServiceReachable: false` is "the api answered, and could not reach
+  hc-professional". They send a reader to different places.
+-->
+@if (planCallFailed()) {
+  <div class="plan-outage" role="alert" data-cy="planCallFailed">
+    <fa-icon icon="triangle-exclamation" />
+    <span abfTranslate="dutyRoster.plan.callFailed"
+      >The planning request did not reach the admin service. Nothing was filed. Try again, and check the console is signed in.</span
+    >
+  </div>
+}
+@if (report(); as result) {
+  @if (!result.rosterServiceReachable) {
+    <div class="plan-outage" role="alert" data-cy="rosterServiceOutage">
+      <fa-icon icon="triangle-exclamation" />
+      <span abfTranslate="dutyRoster.plan.rosterServiceDown"
+        >The roster service could not be reached, so the round was not filed. It is not on any clinician's roster — this is an outage, not
+        an empty week.</span
+      >
+    </div>
+  }
+}
 
 <div class="abf-grid abf-g-4 mb-18">
   <div class="stat">
@@ -45,6 +81,98 @@
     <span abfTranslate="dutyRoster.stat.shifts">Shifts this week</span>
   </div>
 </div>
+
+@if (planOpen()) {
+  <div class="card card-pad mb-18 no-print" data-cy="plannerPanel">
+    <div class="abf-row between">
+      <h4 abfTranslate="dutyRoster.plan.title">Plan a round</h4>
+      <button type="button" class="btn btn-ghost btn-sm" (click)="closePlanner()" abfTranslate="dutyRoster.plan.close">Close</button>
+    </div>
+    <p class="tiny muted" abfTranslate="dutyRoster.plan.hint">
+      hc-professional owns the roster of record. The planner chooses who — by area, role, availability, workload and how near they are — and
+      files the round there.
+    </p>
+    <div class="abf-grid abf-g-4">
+      <div class="field">
+        <label for="planDay" abfTranslate="dutyRoster.plan.day">Day</label>
+        <select id="planDay" [(ngModel)]="planDayIndex" name="planDay" data-cy="planDay">
+          @for (day of dayLabels(); track $index) {
+            <option [ngValue]="$index">{{ day.format('ddd DD MMM') }}</option>
+          }
+        </select>
+      </div>
+      <div class="field">
+        <label for="planRole" abfTranslate="dutyRoster.plan.role">Role</label>
+        <select id="planRole" [(ngModel)]="planRole" name="planRole" data-cy="planRole">
+          @for (role of planRoles; track role) {
+            <option [ngValue]="role">{{ 'console.professionalRole.' + role | translate }}</option>
+          }
+        </select>
+      </div>
+      <div class="field">
+        <label for="planShift" abfTranslate="dutyRoster.plan.shift">Shift</label>
+        <select id="planShift" [(ngModel)]="planShift" name="planShift" data-cy="planShift">
+          @for (shift of planShifts; track shift) {
+            <option [ngValue]="shift">{{ 'console.shift.' + shift | translate }}</option>
+          }
+        </select>
+      </div>
+      <div class="field">
+        <label for="planSpace" abfTranslate="dutyRoster.plan.area">Area</label>
+        <select id="planSpace" [(ngModel)]="planSpaceId" name="planSpace" data-cy="planSpace">
+          <option value="">{{ 'dutyRoster.plan.chooseArea' | translate }}</option>
+          @for (space of spaces(); track space.id) {
+            <option [value]="space.id">{{ space.name }}</option>
+          }
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label for="planName" abfTranslate="dutyRoster.plan.name">Round name</label>
+      <input id="planName" type="text" [(ngModel)]="planName" name="planName" data-cy="planName" maxlength="120" />
+    </div>
+    <div class="field">
+      <label for="planCustomers" abfTranslate="dutyRoster.plan.customers">Customer ids</label>
+      <input id="planCustomers" type="text" [(ngModel)]="planCustomerIds" name="planCustomers" data-cy="planCustomers" />
+      <!-- Typed, not picked, and the reason is in planRound()'s comment: a visit's customerId is a
+           patientservice patientId and this service holds no mapping to it. A picker over hc-admin's
+           own patients would send a plausible id that means nobody. Backlog item 22. -->
+      <small class="tiny muted" abfTranslate="dutyRoster.plan.customersHint">
+        Patient ids on the patient stack, comma separated. Leave empty for ward cover or on-call time — a round with no visits is valid.
+      </small>
+    </div>
+    <div class="abf-row between">
+      <span></span>
+      <button type="button" class="btn btn-primary btn-sm" [disabled]="!canPlan()" (click)="planRound()" data-cy="planSubmit">
+        <fa-icon icon="save" />
+        <span abfTranslate="dutyRoster.plan.submit">Plan and file</span>
+      </button>
+    </div>
+
+    @if (report(); as result) {
+      <div class="abf-row wrap gap-8 mt-16" data-cy="planResults">
+        @for (round of result.rounds; track round.index) {
+          <div [class]="'plan-result plan-result--' + round.outcome.toLowerCase()">
+            @switch (round.outcome) {
+              @case ('PLANNED') {
+                <fa-icon icon="check" />
+                <span>{{ 'dutyRoster.plan.planned' | translate: { name: round.professionalName } }}</span>
+              }
+              @case ('UNPLANNED') {
+                <fa-icon icon="triangle-exclamation" />
+                <span>{{ 'dutyRoster.plan.reason.' + round.reason | translate }}</span>
+              }
+              @case ('FAILED') {
+                <fa-icon icon="triangle-exclamation" />
+                <span>{{ 'dutyRoster.plan.reason.' + round.reason | translate: { name: round.professionalName } }}</span>
+              }
+            }
+          </div>
+        }
+      </div>
+    }
+  </div>
+}
 
 <div class="card roster-card">
   <div class="tbl-wrap">
