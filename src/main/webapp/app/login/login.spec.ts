@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { beforeEach, describe, expect, it, vitest } from 'vitest';
 import { ElementRef, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ActivatedRoute, Navigation, Router } from '@angular/router';
+import { ActivatedRoute, Navigation, Router, provideRouter } from '@angular/router';
 
 import { provideTranslateService } from '@ngx-translate/core';
 import { of, throwError } from 'rxjs';
@@ -150,6 +150,91 @@ describe('Login', () => {
       // THEN
       expect(comp.authenticationError()).toEqual(true);
       expect(mockRouter.navigate).not.toHaveBeenCalled();
+    });
+  });
+});
+
+/**
+ * The sign-in field, **rendered**.
+ *
+ * <p>Every case above calls `comp.login()` on a patched `FormGroup` and never puts the template on
+ * the page, so the input's own attributes were unasserted for as long as the screen has existed —
+ * which is how it shipped as `type="email"` while the two logins that matter most are not emails.
+ * `admin` is what `AdminBootstrapInitializer` creates for production's first administrator and what
+ * the dev and quality seeds create; the gateway's `LOGIN_REGEX` admits a bare login by a dedicated
+ * alternative, and `DomainUserDetailsService` branches on `login.contains("@")` and accepts either.
+ *
+ * <p><b>The field was never blocking submission and that is worth recording, because the obvious
+ * mechanism is the wrong one.</b> `ReactiveFormsModule` exports `ɵNgNoValidate`, whose host binding
+ * puts `novalidate` on any `<form>` carrying neither `ngNoForm` nor `ngNativeValidate` — so native
+ * constraint validation was already off and the browser would not have refused `admin`. The type is
+ * wrong for what it tells the person reading the label, the keyboard a phone offers and what an
+ * autofill agent believes the field holds; it is not wrong because it broke sign-in. A fix argued
+ * from "it blocks submission" would be reverted the first time someone checked.
+ *
+ * <p>This TestBed is its own rather than reusing the one above: rendering needs `provideRouter` for
+ * the forgot-password `RouterLink`, and an `identity()` that returns something, which the stub above
+ * deliberately does not have.
+ */
+describe('Login form', () => {
+  let fixture: ComponentFixture<Login>;
+  let loginService: LoginService;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideTranslateService(),
+        // `dashboard` is declared, not an empty route table: a successful sign-in navigates there,
+        // and an unmatched URL rejects out of band as an unhandled error that no assertion sees.
+        provideRouter([{ path: 'dashboard', children: [] }]),
+        {
+          provide: AccountService,
+          useValue: {
+            identity: vitest.fn(() => of(null)),
+            isAuthenticated: vitest.fn(() => false),
+          },
+        },
+        {
+          provide: LoginService,
+          useValue: { login: vitest.fn(() => of({})) },
+        },
+      ],
+    });
+
+    fixture = TestBed.createComponent(Login);
+    loginService = TestBed.inject(LoginService);
+    fixture.detectChanges();
+  });
+
+  it('does not declare the login field as an email address', () => {
+    const username = fixture.nativeElement.querySelector('input#username');
+
+    expect(username).toBeTruthy();
+    // Asserted as "not email" as well as "is text", because the failure is the constraint, not the
+    // particular replacement — `search` or `username` would be fine and `email` is what is not.
+    expect(username.getAttribute('type')).not.toBe('email');
+    expect(username.getAttribute('type')).toBe('text');
+    // The autocomplete hint is the half that was right and has to stay: it is what makes a password
+    // manager offer the saved credential for this site.
+    expect(username.getAttribute('autocomplete')).toBe('username');
+  });
+
+  it('signs in with a bare login typed into the form', () => {
+    const username = fixture.nativeElement.querySelector('input#username');
+    const password = fixture.nativeElement.querySelector('input#password');
+
+    username.value = 'admin';
+    username.dispatchEvent(new Event('input'));
+    password.value = 'Admin@01234';
+    password.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+
+    fixture.nativeElement.querySelector('form').dispatchEvent(new Event('submit'));
+
+    expect(loginService.login).toHaveBeenCalledWith({
+      username: 'admin',
+      password: 'Admin@01234',
+      rememberMe: false,
     });
   });
 });

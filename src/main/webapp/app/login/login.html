@@ -30,15 +30,25 @@
       }
 
       <div class="field">
-        <label for="username" abfTranslate="login.form.workEmail">Work email</label>
+        <label for="username" abfTranslate="login.form.username">Username or work email</label>
+        <!--
+          type="text", not type="email": a login here is not required to be an email address and the
+          two most important ones are not. The gateway's Constants.LOGIN_REGEX carries a second
+          alternative specifically to admit a bare login, `login` and `email` are separate fields on
+          User/AdminUserDTO, DomainUserDetailsService branches on login.contains("@") and accepts
+          either, and AdminBootstrapInitializer defaults production's first administrator to `admin`
+          — as the dev and quality seeds do. The console already models this on the screen that
+          creates accounts (admin/user-management/update: text for login, email for email); this was
+          the one screen that disagreed. Changed 2026-09-04.
+        -->
         <input
           id="username"
           data-cy="username"
           #username
-          type="email"
+          type="text"
           formControlName="username"
           autocomplete="username"
-          [attr.placeholder]="'login.form.workEmail.placeholder' | translate"
+          [attr.placeholder]="'login.form.username.placeholder' | translate"
         />
       </div>
 

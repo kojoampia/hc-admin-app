@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vitest } from 'vitest';
-import { TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideRouter } from '@angular/router';
@@ -111,16 +111,20 @@ describe('WageRates', () => {
     }).compileComponents();
   });
 
-  function build(): WageRatesUnderTest {
+  function buildFixture(): ComponentFixture<WageRates> {
     // The icon library is empty in a TestBed, and a missing icon throws during change detection
     // rather than degrading — so every icon the template renders has to be registered here.
     TestBed.inject(FaIconLibrary).addIcons(faChevronDown, faChevronUp, faPen, faSave, faSync);
 
     const fixture = TestBed.createComponent(WageRates);
     fixture.detectChanges();
+    return fixture;
+  }
+
+  function build(): WageRatesUnderTest {
     // Cast once, here: the screen's state is `protected`, which is the right visibility for the
     // template and leaves the spec reaching past it.
-    return fixture.componentInstance as unknown as WageRatesUnderTest;
+    return buildFixture().componentInstance as unknown as WageRatesUnderTest;
   }
 
   it('lists every role by every shift type, priced or not', () => {
@@ -169,6 +173,26 @@ describe('WageRates', () => {
     expect(cell(component, ProfessionalRole.CAREGIVER, ShiftType.DAY).current).toBeNull();
     // The role is priced, this shift type is not. The 550 next door must not leak into it.
     expect(cell(component, ProfessionalRole.DOCTOR, ShiftType.EVENING).current).toBeNull();
+  });
+
+  /**
+   * <b>And it has to reach the screen as a distinct rendering, not as a zero.</b> The case above
+   * pins the model and stops one column short of the thing a reader actually sees: `null` reaching
+   * a currency pipe renders as blank or as `0`, and "nobody has priced this cell" then reads as
+   * "this cell pays nothing" — which is a real and different state, `OFF` being priced at 0
+   * throughout the seed. The template's `@else` branch at `wage-rates.html:98` was rendered by every
+   * case in this file and read by none of them.
+   */
+  it('renders an unpriced cell as the not-set label rather than as a zero', () => {
+    const fixture = buildFixture();
+
+    const unpriced = fixture.nativeElement.querySelector(`[data-cy="wageRateAmount-${ProfessionalRole.DOCTOR}/${ShiftType.EVENING}"]`);
+
+    expect(unpriced).toBeTruthy();
+    expect(unpriced.textContent.trim()).toBe('wageRates.notSet');
+    expect(unpriced.textContent).not.toContain('0');
+    // The class is what the stylesheet greys it with; without it the label reads as a value.
+    expect(unpriced.classList).toContain('unpriced');
   });
 
   /**
