@@ -140,6 +140,21 @@
       <small class="tiny muted" abfTranslate="dutyRoster.plan.customersHint">
         Patient ids on the patient stack, comma separated. Leave empty for ward cover or on-call time — a round with no visits is valid.
       </small>
+      <!-- Refused here rather than by hc-professional. Visits are placed an hour apart from one hour
+           into the shift, so past the cap a visit falls outside the shift window and the far service
+           400s — which arrives as "the roster service refused the round" and points the reader at
+           another stack for something they typed in this box. See tooManyVisits(). -->
+      @if (tooManyVisits(); as tooMany) {
+        <small class="tiny text-danger" data-cy="planVisitsTooMany">
+          @if (planShift === 'OFF') {
+            <span abfTranslate="dutyRoster.plan.visitsOnAnOffRound"
+              >An OFF round is a rest day and cannot carry visits. Choose a working shift, or clear the customer ids.</span
+            >
+          } @else {
+            {{ 'dutyRoster.plan.tooManyVisits' | translate: { count: tooMany, limit: visitLimit(), shift: planShift } }}
+          }
+        </small>
+      }
     </div>
     <div class="abf-row between">
       <span></span>

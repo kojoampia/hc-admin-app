@@ -35,6 +35,8 @@
       "name": "Round name",
       "customers": "Customer ids",
       "customersHint": "Patient ids on the patient stack, comma separated. Leave empty for ward cover or on-call time — a round with no visits is valid.",
+      "tooManyVisits": "{{ count }} visits will not fit a {{ shift }} round — visits are placed an hour apart and the shift runs out after {{ limit }}. Remove some, or plan a second round.",
+      "visitsOnAnOffRound": "An OFF round is a rest day and cannot carry visits. Choose a working shift, or clear the customer ids.",
       "submit": "Plan and file",
       "planned": "Filed with the roster service — {{ name }}",
       "callFailed": "The planning request did not reach the admin service. Nothing was filed. Try again, and check the console is signed in.",

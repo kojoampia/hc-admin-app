@@ -66,6 +66,42 @@ export function visitWindow(shift: PlanShift, index: number): { startTime: strin
   return { startTime: hh(start), endTime: hh(end) };
 }
 
+/**
+ * How many visits {@link visitWindow} can place before it runs out of shift.
+ *
+ * <p><b>Without this the eighth visit on a `DAY` round is refused by hc-professional and the user is
+ * told the roster service refused their round</b> — which points at the far stack for something they
+ * typed here. `visitWindow` walks an hour per visit from one hour into the shift, so the hours run
+ * out; it is arithmetic, not an outage, and it is knowable before the request is made.
+ *
+ * <p>Derived from the same windows `DutyRosterService.resolve` checks against, whose bounds are
+ * inclusive at both ends:
+ *
+ * <ul>
+ *   <li>`DAY` 07:00–15:00, first visit 08:00 — the seventh runs 14:00–15:00 and the eighth would
+ *       end at 16:00.
+ *   <li>`EVENING` 15:00–23:00, first visit 16:00 — the seventh ends at 23:00.
+ *   <li>`NIGHT` spans midnight and closes at 07:00, first visit 23:00 — the eighth ends at 07:00.
+ *   <li>`FLEXIBLE` is the whole day, so the limit is the wrap: the fourteenth would end at 00:00 the
+ *       day it started, which is not after its own start.
+ *   <li>`OFF` is <b>0</b> and that is not a rounding of the others. hc-professional refuses an `OFF`
+ *       round carrying any visits at all — a rostered rest day with a round on it is two
+ *       contradictory statements and only the author knows which was meant.
+ * </ul>
+ *
+ * <p><b>MIRROR LIST.</b> If the shift windows move over there, these move with them. The failure if
+ * they drift apart is the one this exists to prevent, one round later.
+ */
+export const MAX_VISITS_PER_ROUND: Record<PlanShift, number> = { DAY: 7, EVENING: 7, NIGHT: 8, OFF: 0, FLEXIBLE: 13 };
+
+/** The customer ids as the request will read them: trimmed, blanks dropped. */
+export function parseCustomerIds(raw: string): string[] {
+  return raw
+    .split(',')
+    .map(id => id.trim())
+    .filter(id => id !== '');
+}
+
 export interface RosterCell {
   readonly dayIndex: number;
   readonly shift: ShiftKind | null;
@@ -384,7 +420,41 @@ export default class DutyRoster implements OnInit {
   }
 
   canPlan(): boolean {
-    return !this.planning() && this.planSpaceId !== '' && this.planName.trim() !== '' && this.planDate() !== null;
+    return (
+      !this.planning() &&
+      this.planSpaceId !== '' &&
+      this.planName.trim() !== '' &&
+      this.planDate() !== null &&
+      this.tooManyVisits() === null
+    );
+  }
+
+  /** How many visits the typed ids will become. */
+  visitCount(): number {
+    return parseCustomerIds(this.planCustomerIds).length;
+  }
+
+  /** The cap for the shift currently chosen, so the template can name it. */
+  visitLimit(): number {
+    return MAX_VISITS_PER_ROUND[this.planShift];
+  }
+
+  /**
+   * The count that will not fit, or null.
+   *
+   * <p><b>Checked here so the user is told about their own input rather than about another stack.</b>
+   * `visitWindow` places one visit per hour from one hour into the shift, so an eighth visit on a
+   * `DAY` round starts at 15:00 and ends outside the 07:00–15:00 window hc-professional validates
+   * against. That comes back as `ROSTER_SERVICE_REFUSED_THE_ROUND`, which reads as the roster
+   * service having a problem — and the administrator has no way to connect it to the number of ids
+   * they typed. It is arithmetic, and it is knowable before the request leaves.
+   *
+   * <p>`OFF` returns a count for any visit at all, because hc-professional refuses an `OFF` round
+   * that carries one. Same message, and it is the honest one: a rest day has no round on it.
+   */
+  tooManyVisits(): number | null {
+    const count = this.visitCount();
+    return count > this.visitLimit() ? count : null;
   }
 
   /**
@@ -405,11 +475,10 @@ export default class DutyRoster implements OnInit {
     this.report.set(null);
     this.planCallFailed.set(false);
 
-    const visits = this.planCustomerIds
-      .split(',')
-      .map(id => id.trim())
-      .filter(id => id !== '')
-      .map((customerId, index) => ({ customerId, ...visitWindow(this.planShift, index) }));
+    const visits = parseCustomerIds(this.planCustomerIds).map((customerId, index) => ({
+      customerId,
+      ...visitWindow(this.planShift, index),
+    }));
 
     this.rosterPlanService
       .plan({

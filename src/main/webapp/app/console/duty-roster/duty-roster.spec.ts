@@ -9,7 +9,7 @@ import { readFileSync } from 'node:fs';
 
 import dayjs from 'dayjs/esm';
 
-import DutyRoster, { SHIFT_CYCLE, nextShift, visitWindow } from './duty-roster';
+import DutyRoster, { MAX_VISITS_PER_ROUND, SHIFT_CYCLE, nextShift, visitWindow } from './duty-roster';
 
 /**
  * The grid's arithmetic, which the dashboard now has to match.
@@ -210,6 +210,61 @@ describe('duty roster planning', () => {
     expect(visitWindow('FLEXIBLE', 0)).toEqual({ startTime: '10:00', endTime: '11:00' });
     // Second visit on a day round starts where the first ended, so they cannot overlap.
     expect(visitWindow('DAY', 1)).toEqual({ startTime: '09:00', endTime: '10:00' });
+  });
+
+  /**
+   * The last visit that fits, and the first that does not.
+   *
+   * <p>`visitWindow` walks an hour per visit and nothing stopped it walking out of the shift, so an
+   * eighth visit on a `DAY` round ran 15:00–16:00 and hc-professional refused the whole round. The
+   * user was then told `ROSTER_SERVICE_REFUSED_THE_ROUND` — the far stack named for something they
+   * typed in this box, with no way to connect the two.
+   *
+   * <p>Asserted against the window bounds rather than against the constant, so the cap and the
+   * arithmetic cannot drift apart quietly. Both ends are inclusive in
+   * `DutyRosterService.resolve`, which is why the last visit may end exactly on the boundary.
+   */
+  it('caps visits at the last one that fits inside the shift', () => {
+    expect(visitWindow('DAY', MAX_VISITS_PER_ROUND.DAY - 1)).toEqual({ startTime: '14:00', endTime: '15:00' });
+    expect(visitWindow('EVENING', MAX_VISITS_PER_ROUND.EVENING - 1)).toEqual({ startTime: '22:00', endTime: '23:00' });
+    expect(visitWindow('NIGHT', MAX_VISITS_PER_ROUND.NIGHT - 1)).toEqual({ startTime: '06:00', endTime: '07:00' });
+    expect(visitWindow('FLEXIBLE', MAX_VISITS_PER_ROUND.FLEXIBLE - 1)).toEqual({ startTime: '22:00', endTime: '23:00' });
+
+    // And one past the cap leaves the window, which is what the far service refuses.
+    expect(visitWindow('DAY', MAX_VISITS_PER_ROUND.DAY)).toEqual({ startTime: '15:00', endTime: '16:00' });
+    expect(visitWindow('NIGHT', MAX_VISITS_PER_ROUND.NIGHT)).toEqual({ startTime: '07:00', endTime: '08:00' });
+  });
+
+  /** An OFF round carrying any visit at all is refused over there, so the cap is zero rather than small. */
+  it('allows no visits on an OFF round', () => {
+    expect(MAX_VISITS_PER_ROUND.OFF).toBe(0);
+  });
+
+  /**
+   * The count is refused here, so the message names the input rather than the far service.
+   *
+   * <p>`canPlan()` is what the Plan button is disabled on, so this is the half a user meets.
+   */
+  it('refuses to plan more visits than the shift can hold', () => {
+    component.week.set({ id: 'week-1', label: 'W', startDate: dayjs('2026-08-10') });
+    component.planSpaceId = 'space-osu';
+    component.planName = 'Morning round';
+    component.planShift = 'DAY';
+
+    component.planCustomerIds = Array.from({ length: MAX_VISITS_PER_ROUND.DAY }, (_, i) => `patient-${i}`).join(',');
+    expect(component.tooManyVisits()).toBeNull();
+    expect(component.canPlan()).toBe(true);
+
+    component.planCustomerIds += ',patient-one-too-many';
+    expect(component.visitCount()).toBe(MAX_VISITS_PER_ROUND.DAY + 1);
+    expect(component.tooManyVisits()).toBe(MAX_VISITS_PER_ROUND.DAY + 1);
+    expect(component.canPlan()).toBe(false);
+  });
+
+  /** Blank entries are dropped before counting, so trailing commas do not cost a visit. */
+  it('counts only the ids that will become visits', () => {
+    component.planCustomerIds = ' patient-a , , patient-b,  ,';
+    expect(component.visitCount()).toBe(2);
   });
 
   /** The panel will not submit an unnamed or unplaced round; the api would refuse it anyway. */
