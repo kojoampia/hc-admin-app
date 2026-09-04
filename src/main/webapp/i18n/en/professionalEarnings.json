@@ -8,7 +8,7 @@
     "total": {
       "shifts": "Shifts completed",
       "accrued": "Value accrued",
-      "unpriced": "Worked before a rate was set"
+      "unpriced": "Worked with no rate set"
     },
     "chart": {
       "title": "Value accrued",

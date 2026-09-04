@@ -7,6 +7,7 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { TranslatePipe } from '@ngx-translate/core';
 
 import { ProfessionalRole } from 'app/entities/enumerations/professional-role.model';
+import { ShiftType } from 'app/entities/enumerations/shift-type.model';
 import { IWageRate, NewWageRate } from 'app/entities/operations/wage-rate/wage-rate.model';
 import { WageRateService } from 'app/entities/operations/wage-rate/service/wage-rate.service';
 import HasAnyAuthorityDirective from 'app/shared/auth/has-any-authority.directive';
@@ -23,25 +24,59 @@ const ROLE_ORDER: readonly ProfessionalRole[] = [
   ProfessionalRole.DOCTOR,
 ];
 
-interface RoleRow {
+/**
+ * The shift types priced, in the enum's declared order.
+ *
+ * <p>All five, including `OFF`. It is never paid — the api drops an off day before resolving any
+ * rate — and it is offered here because the pricing grid is asked for once and in full, and a column
+ * quietly missing from the screen is a question nobody gets asked. The screen says so where the cell
+ * is, rather than leaving somebody to wonder whether the rate they set is being applied.
+ *
+ * <p>Not `SHIFT_CYCLE`'s order: that one puts `FLEXIBLE` before `OFF` because cycling past `OFF`
+ * clears a roster cell, which is a rule this screen does not have.
+ */
+const SHIFT_ORDER: readonly ShiftType[] = [ShiftType.DAY, ShiftType.EVENING, ShiftType.NIGHT, ShiftType.OFF, ShiftType.FLEXIBLE];
+
+/** One cell of the pricing grid: a role, a shift type, and what that combination pays. */
+interface RateRow {
   readonly role: ProfessionalRole;
-  /** The rate in force today, or null when the role has never been priced. */
+  readonly shiftType: ShiftType;
+  /** `role/shiftType` — the identity of a cell wherever one has to be named. */
+  readonly key: string;
+  /** The rate in force today, or null when this cell has never been priced. */
   readonly current: IWageRate | null;
   readonly history: readonly IWageRate[];
+  /** True on the first row of a role's block, which is where the role is named. */
+  readonly startsRole: boolean;
 }
 
+/** The identity of a grid cell. Built in one place so the map keys and the template agree. */
+const cellKey = (role: ProfessionalRole, shiftType: ShiftType): string => `${role}/${shiftType}`;
+
 /**
- * Professional wage remuneration: what one shift pays, per role.
+ * Professional wage remuneration: what one shift pays, per role and per shift type.
  *
  * **Changing a price adds a row; it does not edit one.** Each rate carries a `validFrom`, and a
  * shift is valued at whichever rate was in force on the day it was worked. That is the whole reason
- * the screen is shaped this way — the obvious design, one editable number per role, silently
+ * the screen is shaped this way — the obvious design, one editable number per cell, silently
  * restates every historical total the moment a rate moves, so last month's wage bill reads
  * differently than it did last month and the money has usually already been paid.
  *
  * So the form is "set a new rate from a date", not "edit the rate", and the superseded rows stay
  * visible underneath as history. There is a separate correction path for a figure typed wrongly,
  * which does rewrite the record and says so.
+ *
+ * **The second dimension arrived on 2026-09-04**, when the estate settled on one five-value
+ * `ShiftType` and `WageRate` gained a `shiftType`. A night is not paid what a day is, and the server
+ * matches the combination exactly — no fallback from an unpriced cell to the role's other rates — so
+ * every cell is its own price with its own history.
+ *
+ * **It stays a table rather than becoming a five-by-five matrix of numbers**, one row per cell with
+ * the role named once per block. A matrix would fit on the screen and would have to drop three of
+ * the four columns to do it: *in force since*, *last changed* and the per-cell history are the
+ * effective-dating model made visible, and a screen that shows only today's number is the very
+ * design the model exists to prevent. The grid is what is being *asked for*; the table is how it is
+ * read back.
  */
 @Component({
   selector: 'abf-wage-rates',
@@ -65,24 +100,29 @@ export default class WageRates implements OnInit {
   protected readonly isLoading = signal(false);
   protected readonly isSaving = signal(false);
   protected readonly errorMessage = signal<string | null>(null);
-  protected readonly savedRole = signal<ProfessionalRole | null>(null);
+  protected readonly savedCell = signal<RateRow | null>(null);
 
-  /** Which role's history is expanded. Only one at a time — the table is the primary reading. */
-  protected readonly expandedRole = signal<ProfessionalRole | null>(null);
-  /** Which role is being repriced. Null means the form is closed. */
-  protected readonly editingRole = signal<ProfessionalRole | null>(null);
+  /** Which cell's history is expanded. Only one at a time — the table is the primary reading. */
+  protected readonly expandedCell = signal<string | null>(null);
+  /** Which cell is being repriced. Null means the form is closed. */
+  protected readonly editingCell = signal<string | null>(null);
 
-  protected readonly rows = computed<readonly RoleRow[]>(() => {
+  protected readonly rows = computed<readonly RateRow[]>(() => {
     const current = this.current();
     const histories = this.histories();
-    return ROLE_ORDER.map(role => ({
-      role,
-      current: current.find(rate => rate.role === role) ?? null,
-      history: histories[role] ?? [],
-    }));
+    return ROLE_ORDER.flatMap(role =>
+      SHIFT_ORDER.map((shiftType, index) => ({
+        role,
+        shiftType,
+        key: cellKey(role, shiftType),
+        current: current.find(rate => rate.role === role && rate.shiftType === shiftType) ?? null,
+        history: histories[cellKey(role, shiftType)] ?? [],
+        startsRole: index === 0,
+      })),
+    );
   });
 
-  /** True once at least one role carries a superseded rate — the history column is dead weight otherwise. */
+  /** True once at least one cell is priced — the empty-state warning is wrong otherwise. */
   protected readonly anyPriced = computed(() => this.rows().some(row => row.current !== null));
 
   protected readonly form = new FormGroup({
@@ -92,7 +132,8 @@ export default class WageRates implements OnInit {
   });
 
   private readonly current = signal<readonly IWageRate[]>([]);
-  private readonly histories = signal<Readonly<Partial<Record<ProfessionalRole, readonly IWageRate[]>>>>({});
+  /** Keyed by `cellKey`, so a role's day and night histories cannot overwrite one another. */
+  private readonly histories = signal<Readonly<Record<string, readonly IWageRate[] | undefined>>>({});
 
   private readonly wageRateService = inject(WageRateService);
 
@@ -115,26 +156,27 @@ export default class WageRates implements OnInit {
     });
   }
 
-  toggleHistory(role: ProfessionalRole): void {
-    if (this.expandedRole() === role) {
-      this.expandedRole.set(null);
+  toggleHistory(row: RateRow): void {
+    if (this.expandedCell() === row.key) {
+      this.expandedCell.set(null);
       return;
     }
-    this.expandedRole.set(role);
-    // Fetched on expand rather than up front: five extra requests on load, to fill a panel most
-    // visits never open.
-    if (this.histories()[role] === undefined) {
-      this.wageRateService.history(role).subscribe({
-        next: rates => this.histories.update(all => ({ ...all, [role]: rates })),
+    this.expandedCell.set(row.key);
+    // Fetched on expand rather than up front: twenty-five extra requests on load, to fill a panel
+    // most visits never open. That was five before the shift dimension, which is the difference
+    // between "wasteful" and "a page that visibly stalls" — so the laziness matters more than it did.
+    if (this.histories()[row.key] === undefined) {
+      this.wageRateService.history(row.role, row.shiftType).subscribe({
+        next: rates => this.histories.update(all => ({ ...all, [row.key]: rates })),
         error: (response: HttpErrorResponse) => this.errorMessage.set(describeError(response)),
       });
     }
   }
 
-  startReprice(role: ProfessionalRole): void {
-    const current = this.rows().find(row => row.role === role)?.current ?? null;
-    this.editingRole.set(role);
-    this.savedRole.set(null);
+  startReprice(row: RateRow): void {
+    const current = row.current;
+    this.editingCell.set(row.key);
+    this.savedCell.set(null);
     this.errorMessage.set(null);
     this.form.reset({
       // Prefilled with today's figure so a small adjustment is a small edit, and with tomorrow's
@@ -147,22 +189,24 @@ export default class WageRates implements OnInit {
   }
 
   cancelReprice(): void {
-    this.editingRole.set(null);
+    this.editingCell.set(null);
     this.form.reset();
   }
 
   save(): void {
-    const role = this.editingRole();
-    if (role === null || this.form.invalid) {
+    const key = this.editingCell();
+    const row = this.rows().find(candidate => candidate.key === key) ?? null;
+    if (row === null || this.form.invalid) {
       this.form.markAllAsTouched();
       return;
     }
     const value = this.form.getRawValue();
-    const existing = this.rows().find(row => row.role === role)?.current ?? null;
+    const existing = row.current;
 
     const rate: NewWageRate = {
       id: null,
-      role,
+      role: row.role,
+      shiftType: row.shiftType,
       amount: value.amount,
       // Carried forward from the rate it supersedes so a reprice never silently changes currency;
       // GHS only when the role is being priced for the first time.
@@ -176,14 +220,14 @@ export default class WageRates implements OnInit {
     this.wageRateService.create(rate).subscribe({
       next: () => {
         this.isSaving.set(false);
-        this.editingRole.set(null);
-        this.savedRole.set(role);
+        this.editingCell.set(null);
+        this.savedCell.set(row);
         // The new row may be future-dated, in which case `current` is unchanged and only the
         // history moves — so both are refetched rather than patched in locally.
-        this.histories.update(all => ({ ...all, [role]: undefined }));
-        if (this.expandedRole() === role) {
-          this.wageRateService.history(role).subscribe({
-            next: rates => this.histories.update(all => ({ ...all, [role]: rates })),
+        this.histories.update(all => ({ ...all, [row.key]: undefined }));
+        if (this.expandedCell() === row.key) {
+          this.wageRateService.history(row.role, row.shiftType).subscribe({
+            next: rates => this.histories.update(all => ({ ...all, [row.key]: rates })),
           });
         }
         this.load();
@@ -202,6 +246,21 @@ export default class WageRates implements OnInit {
 
   protected roleLabelKey(role: ProfessionalRole): string {
     return `hcAdminApp.ProfessionalRole.${role}`;
+  }
+
+  protected shiftLabelKey(shiftType: ShiftType): string {
+    return `hcAdminApp.ShiftType.${shiftType}`;
+  }
+
+  /**
+   * True for the one cell that can be priced and is never paid.
+   *
+   * <p>The api drops an off day before resolving any rate, so a rate recorded here is inert. The
+   * cell is offered anyway because the pricing grid is asked for once and in full — and the screen
+   * says which cell that is, because "I set a rate and nothing changed" is otherwise a support call.
+   */
+  protected isNeverPaid(shiftType: ShiftType): boolean {
+    return shiftType === ShiftType.OFF;
   }
 }
 

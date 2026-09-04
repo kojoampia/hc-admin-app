@@ -9,6 +9,7 @@ import { ADMIN_SERVICE } from 'app/config/microservice.constants';
 import { ApplicationConfigService } from 'app/core/config/application-config.service';
 import { createRequestOption } from 'app/core/request/request-util';
 import { ProfessionalRole } from 'app/entities/enumerations/professional-role.model';
+import { ShiftType } from 'app/entities/enumerations/shift-type.model';
 
 import { IWageRate, NewWageRate } from '../wage-rate.model';
 
@@ -26,20 +27,35 @@ export class WageRateService {
   protected readonly resourceUrl = this.applicationConfigService.getEndpointFor('api/wage-rates', ADMIN_SERVICE);
 
   /**
-   * The rate in force for each role, one row apiece.
+   * The rate in force for each (role, shift type) cell, one row apiece.
    *
-   * Not a page: the result is bounded by the size of the role enum, and the configuration screen
-   * wants all of it at once. A role nobody has priced is simply absent, which the screen has to
-   * render as "not set" rather than as zero — a rate of zero is a real, if unlikely, decision.
+   * Not a page: the result is bounded by two enums — five roles by five shift types — and the
+   * configuration screen wants all of it at once. A cell nobody has priced is simply absent, which
+   * the screen has to render as "not set" rather than as zero: a rate of zero is a real, if
+   * unlikely, decision, and the two must not look alike.
+   *
+   * This returned one row per role until 2026-09-04. The response shape is unchanged — a flat list
+   * of rates, each naming its own role and shift type — so it is the *grouping* that moved, not the
+   * wire format, and a caller that indexed it by role alone now silently keeps whichever shift type
+   * came last.
    */
   current(asOf?: dayjs.Dayjs): Observable<IWageRate[]> {
     const params: Record<string, string> = asOf ? { asOf: asOf.format(DATE_FORMAT) } : {};
     return this.http.get<RestWageRate[]>(`${this.resourceUrl}/current`, { params }).pipe(map(rates => rates.map(convertFromServer)));
   }
 
-  /** Every rate ever set for a role, newest effective date first. */
-  history(role: ProfessionalRole): Observable<IWageRate[]> {
-    return this.http.get<RestWageRate[]>(`${this.resourceUrl}/history/${role}`).pipe(map(rates => rates.map(convertFromServer)));
+  /**
+   * Every rate ever set for one cell, newest effective date first.
+   *
+   * Narrowed by `shiftType` because that is what a history panel under a grid cell means. Omitting
+   * it is a supported call on the server — the whole role, across every shift type — and this screen
+   * has no use for it: a list mixing the day and night histories of one role reads as a single
+   * sequence of price changes and is not one.
+   */
+  history(role: ProfessionalRole, shiftType: ShiftType): Observable<IWageRate[]> {
+    return this.http
+      .get<RestWageRate[]>(`${this.resourceUrl}/history/${role}`, { params: { shiftType } })
+      .pipe(map(rates => rates.map(convertFromServer)));
   }
 
   /**
