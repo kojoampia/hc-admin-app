@@ -60,14 +60,14 @@ enum IdType { GHANA_CARD, PASSPORT, VOTER_ID, DRIVERS_LICENCE }
 
 enum AccountStatus { ACTIVE, PENDING, SUSPENDED, ON_LEAVE, UNDER_REVIEW }
 enum VerificationStatus { VERIFIED, PENDING, REJECTED, REVOKED, EXPIRED }
-enum ProfessionalRole { CAREGIVER, PARAMEDIC, NURSE, DOCTOR }
+enum ProfessionalRole { CAREGIVER, PARAMEDIC, THERAPIST, NURSE, DOCTOR }
 
 enum MessageChannel { PATIENT_APP, PROFESSIONAL_APP, VENDOR_PORTAL, EMAIL }
 enum MessageStatus { NEW, READ, REPLIED }
 enum Priority { HIGH, NORMAL, LOW }
 
 enum TaskState { TODO, DOING, DONE }
-enum ShiftType { DAY, EVENING, NIGHT, OFF }
+enum ShiftType { DAY, EVENING, NIGHT, OFF, FLEXIBLE }
 
 enum PlanTier { ESSENTIAL, PLUS, FAMILY }
 enum ServiceHealth { HEALTHY, DEGRADED, DOWN }
