@@ -168,7 +168,7 @@ jobs:
         run: npm ci
         working-directory: app
 
-      - uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-buildx-action@v4
 
       # Built, never pulled: the point is to exercise THIS commit's console. `load: true` puts it in
       # the local daemon for compose to run; nothing is pushed from here.
