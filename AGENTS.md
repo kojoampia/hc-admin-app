@@ -71,16 +71,31 @@ Each of these has actually been got wrong in this repository. They are first bec
 ## Commands
 
 ```bash
-npm start                 # ng serve --hmr on :4200, proxying to the gateway on :5504
+npm start                 # ng serve --hmr on :9000, proxying to the gateway on :5504
 npm test                  # ng test → Vitest with coverage; `pretest` runs lint first
 npm run lint / lint:fix
-npm run cypress           # interactive; e2e:cypress / e2e:headless for CI
+npm run cypress           # interactive; e2e:headless for a headless run
 npm run webapp:prod       # production build → target/classes/static/
 npm run prettier:format   # ts, html, scss, json, yml, md
 npx ng build              # run this too — see point 5 above
 ```
 
-The Cypress specs under `src/test/javascript/cypress/e2e/console/` are real and run against a live stack.
+`:9000`, not 4200. `angular.json` sets the port and `cypress.config.ts`'s `baseUrl` matches it. The
+4200 in older notes is `deploy/dev/startup.sh`, which passes `--port 4200` explicitly — so the specs
+need `--config baseUrl=http://localhost:4200` against that one and nothing against `npm start`.
+
+**The Cypress specs under `src/test/javascript/cypress/e2e/console/` run in CI** since 2026-09-05
+(`.github/workflows/e2e.yml`), against a real gateway, admin service and Mongo from
+`deploy/e2e/compose.yml`, with the console served from the image that would ship. Before that they
+had never run at all: three scripts the e2e chain referenced were undefined and `npm run e2e:headless`
+died in its pre-hook, which is how a JWT claim split on the wrong separator and a dashboard asserting
+a deleted mock's numbers both reached `main` in one week.
+
+Two things to know before adding one. **Every spec must declare `// e2e-fixture: read-only` or
+`// e2e-fixture: mutating`** on a line of its own; the config refuses to run if any does not, and only
+the read-only set is in the gate. And **a literal in a spec is a copy of a fixture** — derive the
+expectation from the endpoint the screen reads, as `dashboard.cy.ts` and `administration.cy.ts` do.
+`src/test/javascript/cypress/e2e/README.md` has both rules in full.
 
 ## Writing tests
 

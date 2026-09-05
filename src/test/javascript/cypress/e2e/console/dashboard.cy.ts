@@ -1,3 +1,6 @@
+// e2e-fixture: read-only
+// Reads the screen and the endpoint behind it; every click navigates.
+
 /**
  * Read the figures the screen is supposed to be showing, straight from the endpoint it reads.
  *

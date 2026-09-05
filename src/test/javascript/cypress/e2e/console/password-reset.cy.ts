@@ -1,3 +1,7 @@
+// e2e-fixture: read-only
+// The one submit here uses an address no account holds, so the gateway
+// mints no key and replaces nobody's — the case says so where it is written.
+
 import {
   backToLoginSelector,
   confirmResetPasswordSelector,

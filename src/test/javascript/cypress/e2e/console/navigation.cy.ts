@@ -1,3 +1,6 @@
+// e2e-fixture: read-only
+// Follows links.
+
 import { breadcrumbSelector, pageTitleSelector, sidebarNavSelector } from '../../support/console';
 
 /** The eleven sidebar destinations, with the crumb and title each must show. */
@@ -9,7 +12,12 @@ const ROUTES: { route: string; title: string; breadcrumb: string }[] = [
   { route: 'patient', title: 'Patients', breadcrumb: 'Directory' },
   { route: 'professional', title: 'Professionals', breadcrumb: 'Directory' },
   { route: 'vendor', title: 'Vendors', breadcrumb: 'Directory' },
-  { route: 'service-plan', title: 'Service Plans', breadcrumb: 'Catalogue' },
+  // 'Service plans', sentence case, as every other title in this list is and as
+  // `i18n/en/catalogueServicePlan.json` says. This read `Service Plans` until 2026-09-05 and was the
+  // only assertion in the file that had never been true — the screen has always rendered the i18n
+  // string. It is the smallest possible instance of what item 15 is about: an expectation nothing
+  // could compare against the thing it describes.
+  { route: 'service-plan', title: 'Service plans', breadcrumb: 'Catalogue' },
   { route: 'category', title: 'Categories', breadcrumb: 'Catalogue' },
   { route: 'platform-health', title: 'Platform health', breadcrumb: 'Catalogue' },
   { route: 'organisation-profile', title: 'Organisation profile', breadcrumb: 'Account' },

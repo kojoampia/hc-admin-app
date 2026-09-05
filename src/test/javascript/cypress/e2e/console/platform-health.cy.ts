@@ -1,3 +1,6 @@
+// e2e-fixture: read-only
+// Reads the seeded service catalogue. It does not probe.
+
 describe('platform health', () => {
   beforeEach(() => {
     cy.signInAs('ops');

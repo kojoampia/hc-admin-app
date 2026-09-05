@@ -22,19 +22,22 @@
 # `tsc -p tsconfig.spec.json` is NOT redundant with either. tsconfig.app.json only type-checks what
 # is reachable from main.ts, so the specs and anything reached only from them would go unchecked.
 #
-# --- E2E is not run here, and could not be ---------------------------------------------------------
+# --- E2E is not run here, and that is now a division of labour rather than a gap -------------------
 #
-# src/test/javascript/cypress/ holds ten real specs and cypress IS a dependency, unlike in
-# hc-admin-dashboard. They still cannot run: `pree2e:headless` invokes `npm run ci:server:await`, and
-# `ci:server:await`, `app:start` and `ci:e2e:server:start` are all referenced by the e2e scripts and
-# none of them are defined in package.json. So `npm run e2e:headless` fails at its pre-hook before
-# cypress starts.
+# It runs in e2e.yml, since 2026-09-05: the Cypress specs against a real gateway, admin service and
+# Mongo from deploy/e2e/compose.yml, with the console served by the image that would ship.
 #
-# Wiring those three scripts is no longer the whole job. That estimate assumed the mock — with
-# /api/** answered inside the browser, e2e here needed no backend and would have been cheap. #11
-# removed the mock, so these specs now need a running gateway, a running admin service and a Mongo
-# behind both, seeded under the `test` profile. That is the same cost the other repos carry, not a
-# bargain. Until someone takes it on, do not add a cypress step expecting it to work.
+# This paragraph said the opposite for as long as this file existed, and the reason is worth keeping.
+# `pree2e:headless` invoked `npm run ci:server:await`, and that script — along with `app:start` and
+# `ci:e2e:server:start`, both referenced by the e2e scripts — was defined nowhere, so
+# `npm run e2e:headless` died in its pre-hook before cypress started. Ten real specs sat in the
+# repository and had never run. Two defects reached main because of it in one week, both found by
+# hand on the quality stack (backlog item 15). **A note inside a file that does not run is not a
+# place work gets picked up from** — that gap sat here, documented, for a month.
+#
+# The two workflows stay separate on purpose. This one is minutes and needs nothing but a runner;
+# that one builds an image and stands up three containers. Folding them together would make every
+# lint failure wait on a stack, and every stack failure look like a lint gate.
 name: CI
 
 on:

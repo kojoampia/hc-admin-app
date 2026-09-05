@@ -1,3 +1,6 @@
+// e2e-fixture: read-only
+// Switches tabs.
+
 describe('organisation profile', () => {
   beforeEach(() => {
     cy.signInAs('ops');
