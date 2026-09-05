@@ -4,7 +4,7 @@
 // the seeded columns hold exactly 5/4/4 cards, and Cypress runs specs alphabetically, so a single
 // pass over both files is red on a pristine stack and reads as a broken task board.
 //
-// ⚠ THIS FILE IS CURRENTLY RED, AND NOT BECAUSE OF THE ABOVE — backlog item 32. Its first run against
+// ⚠ THIS FILE IS CURRENTLY RED, AND NOT BECAUSE OF THE ABOVE — backlog item 34(b). Its first run against
 // a real backend, on 2026-09-05, failed six of nine cases on figures transcribed from a smaller
 // fixture: 12 rows where the desk shows a page of 20 (43 messages are seeded), 4 high-priority where
 // there are 14, 2 low where there are 12, one search hit where there are 5, three unread where there

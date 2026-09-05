@@ -62,7 +62,7 @@ describe('responsive', () => {
     });
 
     /**
-     * SKIPPED, AND IT IS THE CONSOLE THAT IS WRONG, NOT THIS CASE — backlog item 32.
+     * SKIPPED, AND IT IS THE CONSOLE THAT IS WRONG, NOT THIS CASE — backlog item 34(a).
      *
      * <p>Its first ever run, on 2026-09-05, failed: at 400x860 the dashboard's `documentElement`
      * measures `scrollWidth` 475 against `clientWidth` 391, so the page really does scroll sideways

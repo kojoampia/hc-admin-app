@@ -2,7 +2,7 @@
 // Moves a card to Done and creates a task. Nothing is restored, and the created task is counted by
 // this file's own first case on any later run.
 //
-// ⚠ THIS FILE IS CURRENTLY RED, AND NOT BECAUSE OF THE ABOVE — backlog item 32. Its first run against
+// ⚠ THIS FILE IS CURRENTLY RED, AND NOT BECAUSE OF THE ABOVE — backlog item 34(b). Its first run against
 // a real backend, on 2026-09-05, failed two of seven cases: the columns hold 5/4/25 rather than the
 // 5/4/4 asserted below (34 tasks are seeded), and moving a card leaves the first column at 2 rather
 // than 4. The literals are a copy of a fixture that moved and nothing could see it, which is item
