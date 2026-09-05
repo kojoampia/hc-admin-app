@@ -179,50 +179,129 @@ describe('administration', () => {
      * <p>The restore also carries an assertion, so it is not merely tidying: it proves the control
      * works in both directions, which the one-way version did not.
      *
-     * <p>The level is READ rather than assumed to be INFO. `logs.html` marks the active level by
-     * giving that one button a coloured class and every other `btn-light`, so the button that is not
-     * `btn-light` is the current level whatever it happens to be — an assumed INFO would restore the
-     * wrong value on a stack whose logging had been tuned, and would look correct.
+     * <p><b>Retries are what made the first version of this unsound, and the whole shape below is
+     * the answer to them.</b> `cypress.config.ts` sets `retries: 2`. The level used to be captured
+     * from the screen inside the case, so an attempt that failed anywhere AFTER the ERROR click —
+     * the navigate-away-and-back being the likeliest — left the gateway at ERROR and left nothing
+     * to put it back. The next attempt then captured `ERROR` as the level "before", passed the
+     * regex guard, clicked ERROR on a row that was already ERROR, asserted that the `btn-danger`
+     * button said ERROR (true before the click as well as after), "restored" ERROR, and **reported
+     * green having proved nothing** — while the gateway stayed raised, on quality, with nothing
+     * pointing at this spec.
+     *
+     * <p>Three things close that, and each is load-bearing:
+     *
+     * <ul>
+     *   <li>the level is captured <b>once</b>, memoised across attempts, so a retry restores the
+     *       value the run started at rather than the wreckage of the previous attempt;
+     *   <li>it is read from <b>`/management/loggers`</b> rather than from the table. The screen's
+     *       rendering is what the case is testing, and a capture that goes through the thing under
+     *       test cannot witness it; `effectiveLevel` is the gateway's own answer;
+     *   <li>the case <b>asserts the level is not already ERROR</b> before clicking ERROR. That is
+     *       the assertion the vacuous pass could not survive: it turns a dirty stack into a red run
+     *       that names the reason, instead of a green one that measured nothing.
+     * </ul>
+     *
+     * <p>And the restore is an `afterEach` rather than the tail of the case, because a case only
+     * restores if it reaches its own last line. Cypress runs `afterEach` after every attempt,
+     * including failed ones, so the gateway is put back whether this passes, fails or is retried —
+     * which is what the `read-only` marker at the top of the file actually promises.
+     *
+     * <p>The level is READ rather than assumed to be INFO for the reason it always was: an assumed
+     * INFO would restore the wrong value on a stack whose logging had been tuned, and would look
+     * correct doing it.
      */
-    it('should change a logger level and keep it', () => {
-      cy.openConsoleRoute('admin/logs');
+    describe('the logger level control', () => {
+      /**
+       * The level this gateway was at when the run began — captured on the first attempt only.
+       *
+       * <p>Module scope rather than an alias precisely because aliases are cleared between attempts,
+       * which is how the vacuous pass above was possible.
+       */
+      let originalLevel: string | undefined;
 
-      // Derived, not transcribed: this said `There are 10 loggers`, which was the mock's number.
-      // A real gateway reports over a thousand and the figure moves with every dependency bump.
-      management<LoggersPayload>('/management/loggers').then(({ loggers }) => {
-        cy.contains(`There are ${Object.keys(loggers).length} loggers`).should('be.visible');
+      /** The gateway's own answer for `LOGGER`, not the table's rendering of it. */
+      const effectiveLevel = (): Cypress.Chainable<string> =>
+        management<LoggersPayload>('/management/loggers').then(({ loggers }) => loggers[LOGGER].effectiveLevel);
+
+      afterEach(() => {
+        if (originalLevel === undefined) {
+          return;
+        }
+        // Straight at the actuator, not through the screen: a failed attempt can leave the browser
+        // anywhere, and a restore that needs a particular page rendered is a restore that does not
+        // happen exactly when it is needed.
+        cy.window({ log: false }).then(win => {
+          const key = Cypress.expose('jwtStorageName');
+          const raw = win.sessionStorage.getItem(key) ?? win.localStorage.getItem(key);
+          cy.request({
+            method: 'POST',
+            url: `/management/loggers/${LOGGER}`,
+            body: { configuredLevel: originalLevel },
+            headers: { Authorization: `Bearer ${JSON.parse(raw!) as string}` },
+          });
+        });
       });
 
-      // Filter first. The unfiltered table is ~1300 rows of six buttons each, and every `cy.contains`
-      // below would walk all of it; this also makes the row match unambiguous.
-      cy.get('#logs-filter').type(LOGGER);
+      it('should change a logger level and keep it', () => {
+        cy.openConsoleRoute('admin/logs');
 
-      loggerRow(LOGGER)
-        .find('button:not(.btn-light)')
-        .invoke('text')
-        .then(text => text.trim())
-        .as('levelBefore');
+        // Derived, not transcribed: this said `There are 10 loggers`, which was the mock's number.
+        // A real gateway reports over a thousand and the figure moves with every dependency bump.
+        //
+        // Bracketed rather than compared for equality, and that is not slack. A JVM registers a
+        // logger name the first time something asks for one, so the count only ever grows within a
+        // process — and this asserted the screen's figure against a SECOND fetch made after it, so
+        // any class loaded in between (an actuator endpoint the screen itself hit, a lazy Spring
+        // bean) put the two one apart and failed a case about nothing. Fetching either side of the
+        // screen turns that race into the assertion: the screen's number is a real reading taken
+        // somewhere between them.
+        management<LoggersPayload>('/management/loggers').then(({ loggers }) => {
+          const before = Object.keys(loggers).length;
+          cy.contains('p', /^There are \d+ loggers/).then($p => {
+            const shown = Number(/There are (\d+) loggers/.exec($p.text())![1]);
+            management<LoggersPayload>('/management/loggers').then(after => {
+              const now = Object.keys(after.loggers).length;
+              expect(shown, `the screen's logger count is a real reading (${before}..${now})`).to.be.within(before, now);
+            });
+          });
+        });
 
-      loggerRow(LOGGER).contains('button', 'ERROR').click();
-      loggerRow(LOGGER).find('button.btn-danger').should('contain.text', 'ERROR');
+        effectiveLevel().then(level => {
+          originalLevel ??= level;
 
-      // Still set after leaving and coming back in-app.
-      cy.openConsoleRoute('dashboard');
-      cy.openConsoleRoute('admin/logs');
-      cy.get('#logs-filter').type(LOGGER);
-      loggerRow(LOGGER).find('button.btn-danger').should('contain.text', 'ERROR');
+          // The guard that the vacuous pass could not have survived. It also covers the ordinary
+          // case of a stack somebody has genuinely left at ERROR: this case cannot demonstrate that
+          // a click raised a level that was already raised, and says so rather than claiming it.
+          expect(level, `${LOGGER} is not already at ERROR, so raising it to ERROR proves something`).to.not.equal('ERROR');
+          expect(level, 'a level was captured before the change').to.match(/^(TRACE|DEBUG|INFO|WARN|ERROR|OFF)$/);
 
-      cy.get('@levelBefore').then(levelBefore => {
-        const level = String(levelBefore);
-        // Guards the restore itself: if the row rendered with every button `btn-light` the capture
-        // above would be an empty string, `contains('button', '')` would match the first button in
-        // the row, and this case would silently set TRACE on the gateway and pass.
-        expect(level, 'a level was captured before the change').to.match(/^(TRACE|DEBUG|INFO|WARN|ERROR|OFF)$/);
-        loggerRow(LOGGER).contains('button', level).click();
-        // `contain.text`, not `have.text`: the template puts the label on its own line inside the
-        // button, so the node's text carries surrounding whitespace. No level name is a substring of
-        // another, so this is exact enough to mean what it says.
-        loggerRow(LOGGER).find('button:not(.btn-light)').should('contain.text', level);
+          // Filter first. The unfiltered table is ~1300 rows of six buttons each, and every
+          // `cy.contains` below would walk all of it; this also makes the row match unambiguous.
+          cy.get('#logs-filter').type(LOGGER);
+          // The screen agrees with the actuator before anything is clicked. Without this the case
+          // would prove the gateway changed and not that the table ever showed the old value.
+          loggerRow(LOGGER).find('button:not(.btn-light)').should('contain.text', level);
+
+          loggerRow(LOGGER).contains('button', 'ERROR').click();
+          loggerRow(LOGGER).find('button.btn-danger').should('contain.text', 'ERROR');
+
+          // Still set after leaving and coming back in-app.
+          cy.openConsoleRoute('dashboard');
+          cy.openConsoleRoute('admin/logs');
+          cy.get('#logs-filter').type(LOGGER);
+          loggerRow(LOGGER).find('button.btn-danger').should('contain.text', 'ERROR');
+
+          // Put it back through the screen, which is what proves the control works in both
+          // directions. The `afterEach` above is the safety net, not this.
+          loggerRow(LOGGER).contains('button', level).click();
+          // `contain.text`, not `have.text`: the template puts the label on its own line inside the
+          // button, so the node's text carries surrounding whitespace. No level name is a substring
+          // of another, so this is exact enough to mean what it says.
+          loggerRow(LOGGER).find('button:not(.btn-light)').should('contain.text', level);
+          // And the gateway agrees, which the table alone cannot say.
+          effectiveLevel().should('equal', level);
+        });
       });
     });
 
