@@ -1,0 +1,272 @@
+# The end-to-end gate: the console's Cypress specs, against a real gateway, a real admin service and
+# a real Mongo, with the console served from the image that would ship.
+#
+# --- Why this exists ------------------------------------------------------------------------------
+#
+# It did not, until 2026-09-05, and ci.yml's header said so at length: three scripts the e2e chain
+# referenced — app:start, ci:server:await, ci:e2e:server:start — were defined nowhere, so
+# `npm run e2e:headless` died in its pre-hook before cypress started. Eleven real specs sat in the
+# repository and nothing had ever run them.
+#
+# Two defects shipped to main because of it, in the same week, and both were found by hand on the
+# quality stack: login.cy.ts split the `auth` claim on ',' where the gateway joins with a space (one
+# assertion failed and TWO `not.include` assertions passed vacuously), and dashboard.cy.ts asserted
+# 116 / 24 / 80%, numbers from an in-browser mock that had been deleted a month earlier. Neither is
+# reachable by lint, by Vitest or by a build. Both fail here.
+#
+# --- What backs the specs, and why it is not `ng serve` -------------------------------------------
+#
+# deploy/e2e/compose.yml, from the private hc-admin-ci repository: mongo, the published
+# hc-admin-gateway and hc-admin-service images, and THIS commit's console built with
+# docker/app.Dockerfile and served by nginx from docker/web-nginx.conf.
+#
+# The console could have been served by `ng serve` for a fraction of the cost. It is not, because
+# `ng serve` proxies through app/proxy.config.mjs — a different file from the one that ships,
+# maintained by hand beside it — and **the two have already drifted.** Count them: web-nginx.conf
+# proxies /api/, /services/, /management/ and /v3/api-docs; proxy.config.mjs proxies the first three
+# and not the fourth. So the swagger surface behaves one way in the image and another under the dev
+# server TODAY, and neither file mentions the other's list. That is the argument, and it is a
+# measurement rather than a hypothetical: a path added to one and not the other is the usual cause
+# of "works under npm start, 404s in production", which web-nginx.conf says in as many words.
+#
+# Under the dev server that drift cannot be observed at all; here an unproxied prefix falls into the
+# SPA fallback and answers 200 with index.html, which is one of the five defect classes that have
+# reached production in this stack.
+#
+# What this still does NOT cover, so a green run is not read as more than it is: the production CSP
+# and HSTS live in the HOST nginx one hop further out, and the wrong-image class cannot exist here
+# because the image is built from the checkout. Both remain quality/startup.sh --verify's job.
+#
+# --- The backend is `latest`, so this job is not hermetic -----------------------------------------
+#
+# api and gateway are pulled by tag, defaulting to latest — the same choice quality/compose.yml
+# makes, and for the same reason: the console is graded against a backend that exists rather than one
+# invented for the test. A push to either sibling can therefore turn this red with nothing in this
+# repository having moved. Read a sudden failure as possibly-theirs, and pin api-tag / gateway-tag on
+# a dispatch to reproduce a run.
+#
+# For the same reason **this job should not be added to the required-status-check list** (backlog
+# item 16) until it has a track record: a required check that a sibling repo can break blocks every
+# merge here for a reason no reviewer of this PR can see.
+#
+# --- What it runs, and what it deliberately does not ----------------------------------------------
+#
+# The `read-only` spec set: nine of the twelve specs, the ones that leave the backend as they found
+# it. cypress.config.ts partitions on a marker each spec declares for itself and refuses to run at
+# all if any spec has not declared one — see the note above MARKER there for why that is not a list
+# in one place.
+#
+# COUNT THAT FROM THE MARKERS, NEVER FROM HERE. This header said "seven of the eleven" from the day
+# it was written and both figures were wrong — there were eight and eleven — in a change whose entire
+# subject is numbers nobody could compare against the thing they describe. The figures above are
+# accurate on 2026-09-05 and are a convenience, not a source:
+#
+#   grep -rlE --include='*.cy.ts' '^// e2e-fixture: read-only[[:space:]]*$' src/test/javascript/cypress/e2e | wc -l
+#
+# The three `mutating` specs are opt-in, through the spec-set input below, and they run one spec per
+# stack: message-desk.cy.ts raises a Task from a thread and task-board.cy.ts asserts the seeded
+# columns hold exactly 5/4/4 cards, so a single pass over the folder is red on a pristine stack and
+# reads as a broken task board. Recreating the stack between them is what makes them meaningful, and
+# it is only affordable because nothing here is shared: deploy/e2e/compose.yml has no volume.
+#
+# **That path is known red today and the input exists anyway.** Run one spec per stack on 2026-09-05:
+# duty-roster passed, message-desk failed six of nine and task-board two of seven, all on figures
+# copied from a fixture that has since grown — backlog item 34(b), and each file says so at the top. The
+# dispatch is here because a set nothing can even attempt is how these specs got into this state; a
+# red run somebody can see is the opposite problem.
+#
+# --- The token ------------------------------------------------------------------------------------
+#
+# HC_ADMIN_CI_TOKEN, the same secret release.yml uses, for the same reason: hc-admin-ci is private
+# and a workflow's default GITHUB_TOKEN reaches only the repository it runs in. The `|| github.token`
+# fallback is deliberately NOT a working configuration — it exists so a missing secret fails on a
+# checkout step that names the repository it could not read, rather than further down on a compose
+# file that mysteriously does not exist. When the token lapses, this gate and Release fail together.
+# deploy/TODO.md §4 is where that blast radius is recorded for the person minting the token.
+#
+# **A pull request from a FORK cannot run this job**, and that is worth knowing before it matters.
+# GitHub withholds repository secrets from `pull_request` runs on forks, so `secrets.HC_ADMIN_CI_TOKEN`
+# is empty, the fallback takes `github.token`, and the second checkout fails on a private repository
+# it cannot read. Today that costs nothing — every contributor to this repository pushes branches to
+# it — but it becomes a hard merge blocker the day this joins item 16's required-status-check list,
+# because a required check that cannot start is a required check that never passes. If forks ever
+# need to be supported, the answer is a `pull_request_target` job or a public compose fixture, not a
+# loosened secret.
+name: E2E
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      spec-set:
+        description: Which spec set to run
+        type: choice
+        options: [read-only, mutating]
+        default: read-only
+      api-tag:
+        description: hc-admin-service image tag
+        default: latest
+      gateway-tag:
+        description: hc-admin-gateway image tag
+        default: latest
+
+concurrency:
+  # Separate from ci.yml's group on purpose: cancelling the fast gate and the slow one together is
+  # right, but they must not cancel each other.
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  APP_IMAGE: hc-admin-app:e2e
+  API_TAG: ${{ inputs.api-tag || 'latest' }}
+  GATEWAY_TAG: ${{ inputs.gateway-tag || 'latest' }}
+  COMPOSE: deploycfg/e2e/compose.yml
+
+jobs:
+  e2e:
+    name: Cypress against a real stack
+    runs-on: ubuntu-latest
+    # Generous: two JVMs, a Mongo and an image build. A run that genuinely hangs should still be
+    # cheaper than one that is killed while the stack was merely slow to seed 1200 records.
+    timeout-minutes: 45
+    steps:
+      # Into a subdirectory, as release.yml does: app.Dockerfile ends in `COPY . .`, so a second
+      # checkout at the workspace root would land inside the build context.
+      - name: Check out the console
+        uses: actions/checkout@v7
+        with:
+          path: app
+          persist-credentials: false
+
+      - name: Check out the deployment repo (for e2e/compose.yml and docker/)
+        uses: actions/checkout@v7
+        with:
+          repository: ${{ vars.DEPLOY_REPO || format('{0}/hc-admin-ci', github.repository_owner) }}
+          # See the header: not a fallback, a legible failure.
+          token: ${{ secrets.HC_ADMIN_CI_TOKEN || github.token }}
+          path: deploycfg
+          persist-credentials: false
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      # The Cypress binary is not in the npm cache — it lands in ~/.cache/Cypress — and it is ~200 MB.
+      # Keyed on the resolved version so a bump misses the cache rather than running the old binary.
+      - name: Cache the Cypress binary
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/Cypress
+          key: cypress-${{ runner.os }}-${{ hashFiles('app/package-lock.json') }}
+
+      - name: Install
+        run: npm ci
+        working-directory: app
+
+      - uses: docker/setup-buildx-action@v3
+
+      # Built, never pulled: the point is to exercise THIS commit's console. `load: true` puts it in
+      # the local daemon for compose to run; nothing is pushed from here.
+      #
+      # cache-from names release.yml's scope, so a PR build reuses the layers the last release
+      # populated on main. Nothing is written back — a PR's cache would evict main's for no gain.
+      - name: Build the console image
+        uses: docker/build-push-action@v7
+        with:
+          context: app
+          file: deploycfg/docker/app.Dockerfile
+          build-contexts: |
+            deploycfg=deploycfg/docker
+          load: true
+          push: false
+          tags: ${{ env.APP_IMAGE }}
+          cache-from: type=gha,scope=app
+
+      - name: Start the stack
+        run: docker compose -f "$COMPOSE" up -d --wait --wait-timeout 420
+
+      # HEALTHY IS NOT SEEDED, and neither `--wait` nor `ci:server:await` can tell the difference.
+      # DevelopmentDataInitializer is an ApplicationRunner, so Boot has started the web server and is
+      # answering /management/health with 200 while it is still writing 1217 records. A spec that
+      # reads a count mid-seed gets a short one — 6 audit rows for organisation.cy.ts's 7, 11 services
+      # for platform-health.cy.ts's 13 — which reads as a broken screen and which `retries: 2` would
+      # usually absorb on the second attempt. See the script for what it waits on and why it is not a
+      # per-collection log line.
+      - name: Wait for the seed to finish
+        run: deploycfg/e2e/await-seed.sh 300
+
+      # `npm run e2e:headless` verbatim, pre-hook and all: `ci:server:await` waits for the console and
+      # for the gateway behind it on the same origin, which is the whole stack in one check. The
+      # console is on :9000 whether a container or `ng serve` is serving it, so this command is the
+      # same one a person runs locally.
+      - name: Run the read-only spec set
+        if: inputs.spec-set != 'mutating'
+        run: npm run e2e:headless
+        working-directory: app
+
+      # One spec per stack. The list comes from the markers rather than from a list kept here; an
+      # empty list is a failure, because "no specs matched" and "every spec passed" are the same
+      # green otherwise.
+      #
+      # THIS SELECTION HAS TO AGREE WITH cypress.config.ts, AND IT DID NOT AGREE TWICE.
+      #
+      #   * `--include='*.cy.ts'`. `specFiles()` over there takes only files ending `.cy.ts`; this
+      #     took anything under the folder, and `e2e/README.md` documents the markers by printing
+      #     them — on lines of their own, inside a fenced block. So the loop picked the README up as
+      #     a fourth "spec" and handed it to `cypress run --spec`. It matches no spec, which Cypress
+      #     reports as a failure, on the file least likely to be suspected.
+      #   * `[[:space:]]*$`. The MARKER regex ends `\s*$` and this ended `$`, so a marker with one
+      #     trailing space is a valid `mutating` declaration to the config and invisible here. That
+      #     spec then silently does not run, and the zero-specs guard below does not fire either
+      #     because the others still match.
+      #
+      # Two places have to agree about one string and there is no third; when in doubt, read
+      # `specFiles` and `MARKER` and copy them.
+      - name: Run the mutating spec set, one stack per spec
+        if: inputs.spec-set == 'mutating'
+        working-directory: app
+        run: |
+          set -euo pipefail
+          mapfile -t specs < <(grep -rlE --include='*.cy.ts' '^// e2e-fixture: mutating[[:space:]]*$' src/test/javascript/cypress/e2e | sort)
+          if [ ${#specs[@]} -eq 0 ]; then
+            echo "::error::no spec declares '// e2e-fixture: mutating' — the marker or the tree has moved"
+            exit 1
+          fi
+          for spec in "${specs[@]}"; do
+            echo "::group::$spec"
+            npm run ci:server:await
+            COMPOSE="../$COMPOSE" ../deploycfg/e2e/await-seed.sh 300
+            ABF_E2E_SPECS=mutating npx cypress run --e2e --browser chrome --spec "$spec"
+            echo "::endgroup::"
+            # A fresh database for the next one. `down -v` is safe precisely because this stack has
+            # no volume worth keeping — see the compose file's header.
+            #
+            # Every recreation runs the seed race again, which is why the wait above is inside the
+            # loop rather than beside the read-only run: this path meets it once per spec.
+            docker compose -f "../$COMPOSE" down -v
+            docker compose -f "../$COMPOSE" up -d --wait --wait-timeout 420
+          done
+
+      # Both applications' logs, on failure only. A spec that fails on a 500 says nothing about which
+      # of the two produced it, and this is the only place those logs exist.
+      - name: Dump the stack's logs
+        if: failure()
+        run: docker compose -f "$COMPOSE" logs --no-color --tail 400
+
+      - name: Upload Cypress screenshots
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypress-screenshots
+          path: app/target/cypress/screenshots/
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: Tear the stack down
+        if: always()
+        run: docker compose -f "$COMPOSE" down -v

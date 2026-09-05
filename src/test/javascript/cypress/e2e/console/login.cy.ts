@@ -1,3 +1,6 @@
+// e2e-fixture: read-only
+// Signs in. A sign-in mints a token and writes nothing this stack reads back.
+
 import { quickAddSelector, sidebarSelector, topbarSelector } from '../../support/console';
 
 /**

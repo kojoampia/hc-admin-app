@@ -1,6 +1,17 @@
+// e2e-fixture: read-only
+// Follows links.
+
 import { breadcrumbSelector, pageTitleSelector, sidebarNavSelector } from '../../support/console';
 
-/** The eleven sidebar destinations, with the crumb and title each must show. */
+/**
+ * The sidebar destinations this file follows, with the crumb and title each must show.
+ *
+ * <p>**Counted nowhere, deliberately.** This said "the eleven sidebar destinations" above a
+ * fifteen-element array, under a case whose name said fifteen — three numbers, two of them wrong,
+ * in six lines, and none of them checkable by anything. `shell-navigation.ts` declares more routes
+ * than this (23 at the last count), so the list below is a subset by design and a count here would
+ * be a third figure to keep in step with two others. `ROUTES.length` is the only honest spelling.
+ */
 const ROUTES: { route: string; title: string; breadcrumb: string }[] = [
   { route: 'dashboard', title: 'Admin dashboard', breadcrumb: 'Operations' },
   { route: 'message-desk', title: 'Message desk', breadcrumb: 'Operations' },
@@ -9,7 +20,12 @@ const ROUTES: { route: string; title: string; breadcrumb: string }[] = [
   { route: 'patient', title: 'Patients', breadcrumb: 'Directory' },
   { route: 'professional', title: 'Professionals', breadcrumb: 'Directory' },
   { route: 'vendor', title: 'Vendors', breadcrumb: 'Directory' },
-  { route: 'service-plan', title: 'Service Plans', breadcrumb: 'Catalogue' },
+  // 'Service plans', sentence case, as every other title in this list is and as
+  // `i18n/en/catalogueServicePlan.json` says. This read `Service Plans` until 2026-09-05 and was the
+  // only assertion in the file that had never been true — the screen has always rendered the i18n
+  // string. It is the smallest possible instance of what item 15 is about: an expectation nothing
+  // could compare against the thing it describes.
+  { route: 'service-plan', title: 'Service plans', breadcrumb: 'Catalogue' },
   { route: 'category', title: 'Categories', breadcrumb: 'Catalogue' },
   { route: 'platform-health', title: 'Platform health', breadcrumb: 'Catalogue' },
   { route: 'organisation-profile', title: 'Organisation profile', breadcrumb: 'Account' },
@@ -40,11 +56,13 @@ describe('navigation', () => {
     cy.signInAs('ops');
   });
 
-  it('should offer every one of the fifteen destinations in the sidebar', () => {
+  it('should offer every destination this file follows in the sidebar', () => {
     cy.get(sidebarNavSelector)
       .find('a[href^="/"]')
       .then($links => {
         const hrefs = [...$links].map(link => link.getAttribute('href'));
+        // Inclusion, not equality: `shell-navigation.ts` carries destinations this list does not,
+        // so an exact match would fail on a sidebar that is entirely correct.
         ROUTES.forEach(({ route }) => expect(hrefs).to.include(`/${route}`));
       });
   });

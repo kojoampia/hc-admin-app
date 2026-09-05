@@ -1,3 +1,19 @@
+// e2e-fixture: mutating
+// Marks threads read, sends a reply, marks the whole desk read, and raises a Task from a thread.
+// Nothing is restored. The task is the one with reach beyond this file: `task-board.cy.ts` asserts
+// the seeded columns hold exactly 5/4/4 cards, and Cypress runs specs alphabetically, so a single
+// pass over both files is red on a pristine stack and reads as a broken task board.
+//
+// ⚠ THIS FILE IS CURRENTLY RED, AND NOT BECAUSE OF THE ABOVE — backlog item 34(b). Its first run against
+// a real backend, on 2026-09-05, failed six of nine cases on figures transcribed from a smaller
+// fixture: 12 rows where the desk shows a page of 20 (43 messages are seeded), 4 high-priority where
+// there are 14, 2 low where there are 12, one search hit where there are 5, three unread where there
+// are 2 — and a reply that leaves the thread open rather than returning to the desk. Same shape as
+// `dashboard.cy.ts`'s `116` — a copy of a fixture that moved, which nothing could compare against the
+// fixture because nothing ran it. Fixing it means deriving these from the endpoint, which is a piece
+// of work rather than a correction, and it is filed rather than done here so that wiring the suite
+// into CI did not turn into rewriting it.
+
 describe('message desk', () => {
   beforeEach(() => {
     cy.signInAs('ops');

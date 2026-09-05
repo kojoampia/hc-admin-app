@@ -1,3 +1,9 @@
+// e2e-fixture: mutating
+// The `write actions` block cycles a cell, deletes and re-creates assignments and publishes the
+// week. It reconciles all of that in `afterEach` and is the one file here that does — but the
+// reconcile cannot give an assignment its seeded id back (see the note on that block), so a stack
+// this has run against carries duplicate rows until it is rebuilt.
+
 /**
  * The duty-roster grid, against the seeded quality stack.
  *
