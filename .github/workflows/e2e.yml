@@ -5,7 +5,7 @@
 #
 # It did not, until 2026-09-05, and ci.yml's header said so at length: three scripts the e2e chain
 # referenced — app:start, ci:server:await, ci:e2e:server:start — were defined nowhere, so
-# `npm run e2e:headless` died in its pre-hook before cypress started. Ten real specs sat in the
+# `npm run e2e:headless` died in its pre-hook before cypress started. Eleven real specs sat in the
 # repository and nothing had ever run them.
 #
 # Two defects shipped to main because of it, in the same week, and both were found by hand on the
@@ -21,12 +21,17 @@
 # docker/app.Dockerfile and served by nginx from docker/web-nginx.conf.
 #
 # The console could have been served by `ng serve` for a fraction of the cost. It is not, because
-# `ng serve` proxies /api, /management and /services through app/proxy.config.mjs — a different file
-# from the one that ships, maintained by hand beside it, and web-nginx.conf says in as many words
-# that a path added to one and not the other is the usual cause of "works under npm start, 404s in
-# production". Under the dev server that drift cannot be observed; here an unproxied prefix falls
-# into the SPA fallback and answers 200 with index.html, which is one of the five defect classes
-# that have reached production in this stack.
+# `ng serve` proxies through app/proxy.config.mjs — a different file from the one that ships,
+# maintained by hand beside it — and **the two have already drifted.** Count them: web-nginx.conf
+# proxies /api/, /services/, /management/ and /v3/api-docs; proxy.config.mjs proxies the first three
+# and not the fourth. So the swagger surface behaves one way in the image and another under the dev
+# server TODAY, and neither file mentions the other's list. That is the argument, and it is a
+# measurement rather than a hypothetical: a path added to one and not the other is the usual cause
+# of "works under npm start, 404s in production", which web-nginx.conf says in as many words.
+#
+# Under the dev server that drift cannot be observed at all; here an unproxied prefix falls into the
+# SPA fallback and answers 200 with index.html, which is one of the five defect classes that have
+# reached production in this stack.
 #
 # What this still does NOT cover, so a green run is not read as more than it is: the production CSP
 # and HSTS live in the HOST nginx one hop further out, and the wrong-image class cannot exist here
@@ -46,10 +51,17 @@
 #
 # --- What it runs, and what it deliberately does not ----------------------------------------------
 #
-# The `read-only` spec set: seven of the eleven specs, the ones that leave the backend as they found
+# The `read-only` spec set: nine of the twelve specs, the ones that leave the backend as they found
 # it. cypress.config.ts partitions on a marker each spec declares for itself and refuses to run at
 # all if any spec has not declared one — see the note above MARKER there for why that is not a list
 # in one place.
+#
+# COUNT THAT FROM THE MARKERS, NEVER FROM HERE. This header said "seven of the eleven" from the day
+# it was written and both figures were wrong — there were eight and eleven — in a change whose entire
+# subject is numbers nobody could compare against the thing they describe. The figures above are
+# accurate on 2026-09-05 and are a convenience, not a source:
+#
+#   grep -rlE --include='*.cy.ts' '^// e2e-fixture: read-only[[:space:]]*$' src/test/javascript/cypress/e2e | wc -l
 #
 # The three `mutating` specs are opt-in, through the spec-set input below, and they run one spec per
 # stack: message-desk.cy.ts raises a Task from a thread and task-board.cy.ts asserts the seeded
@@ -59,7 +71,7 @@
 #
 # **That path is known red today and the input exists anyway.** Run one spec per stack on 2026-09-05:
 # duty-roster passed, message-desk failed six of nine and task-board two of seven, all on figures
-# copied from a fixture that has since grown — backlog item 32, and each file says so at the top. The
+# copied from a fixture that has since grown — backlog item 34(b), and each file says so at the top. The
 # dispatch is here because a set nothing can even attempt is how these specs got into this state; a
 # red run somebody can see is the opposite problem.
 #
@@ -70,6 +82,16 @@
 # fallback is deliberately NOT a working configuration — it exists so a missing secret fails on a
 # checkout step that names the repository it could not read, rather than further down on a compose
 # file that mysteriously does not exist. When the token lapses, this gate and Release fail together.
+# deploy/TODO.md §4 is where that blast radius is recorded for the person minting the token.
+#
+# **A pull request from a FORK cannot run this job**, and that is worth knowing before it matters.
+# GitHub withholds repository secrets from `pull_request` runs on forks, so `secrets.HC_ADMIN_CI_TOKEN`
+# is empty, the fallback takes `github.token`, and the second checkout fails on a private repository
+# it cannot read. Today that costs nothing — every contributor to this repository pushes branches to
+# it — but it becomes a hard merge blocker the day this joins item 16's required-status-check list,
+# because a required check that cannot start is a required check that never passes. If forks ever
+# need to be supported, the answer is a `pull_request_target` job or a public compose fixture, not a
+# loosened secret.
 name: E2E
 
 on:
@@ -168,6 +190,16 @@ jobs:
       - name: Start the stack
         run: docker compose -f "$COMPOSE" up -d --wait --wait-timeout 420
 
+      # HEALTHY IS NOT SEEDED, and neither `--wait` nor `ci:server:await` can tell the difference.
+      # DevelopmentDataInitializer is an ApplicationRunner, so Boot has started the web server and is
+      # answering /management/health with 200 while it is still writing 1217 records. A spec that
+      # reads a count mid-seed gets a short one — 6 audit rows for organisation.cy.ts's 7, 11 services
+      # for platform-health.cy.ts's 13 — which reads as a broken screen and which `retries: 2` would
+      # usually absorb on the second attempt. See the script for what it waits on and why it is not a
+      # per-collection log line.
+      - name: Wait for the seed to finish
+        run: deploycfg/e2e/await-seed.sh 300
+
       # `npm run e2e:headless` verbatim, pre-hook and all: `ci:server:await` waits for the console and
       # for the gateway behind it on the same origin, which is the whole stack in one check. The
       # console is on :9000 whether a container or `ng serve` is serving it, so this command is the
@@ -180,12 +212,27 @@ jobs:
       # One spec per stack. The list comes from the markers rather than from a list kept here; an
       # empty list is a failure, because "no specs matched" and "every spec passed" are the same
       # green otherwise.
+      #
+      # THIS SELECTION HAS TO AGREE WITH cypress.config.ts, AND IT DID NOT AGREE TWICE.
+      #
+      #   * `--include='*.cy.ts'`. `specFiles()` over there takes only files ending `.cy.ts`; this
+      #     took anything under the folder, and `e2e/README.md` documents the markers by printing
+      #     them — on lines of their own, inside a fenced block. So the loop picked the README up as
+      #     a fourth "spec" and handed it to `cypress run --spec`. It matches no spec, which Cypress
+      #     reports as a failure, on the file least likely to be suspected.
+      #   * `[[:space:]]*$`. The MARKER regex ends `\s*$` and this ended `$`, so a marker with one
+      #     trailing space is a valid `mutating` declaration to the config and invisible here. That
+      #     spec then silently does not run, and the zero-specs guard below does not fire either
+      #     because the others still match.
+      #
+      # Two places have to agree about one string and there is no third; when in doubt, read
+      # `specFiles` and `MARKER` and copy them.
       - name: Run the mutating spec set, one stack per spec
         if: inputs.spec-set == 'mutating'
         working-directory: app
         run: |
           set -euo pipefail
-          mapfile -t specs < <(grep -rl '^// e2e-fixture: mutating$' src/test/javascript/cypress/e2e | sort)
+          mapfile -t specs < <(grep -rlE --include='*.cy.ts' '^// e2e-fixture: mutating[[:space:]]*$' src/test/javascript/cypress/e2e | sort)
           if [ ${#specs[@]} -eq 0 ]; then
             echo "::error::no spec declares '// e2e-fixture: mutating' — the marker or the tree has moved"
             exit 1
@@ -193,10 +240,14 @@ jobs:
           for spec in "${specs[@]}"; do
             echo "::group::$spec"
             npm run ci:server:await
+            COMPOSE="../$COMPOSE" ../deploycfg/e2e/await-seed.sh 300
             ABF_E2E_SPECS=mutating npx cypress run --e2e --browser chrome --spec "$spec"
             echo "::endgroup::"
             # A fresh database for the next one. `down -v` is safe precisely because this stack has
             # no volume worth keeping — see the compose file's header.
+            #
+            # Every recreation runs the seed race again, which is why the wait above is inside the
+            # loop rather than beside the read-only run: this path meets it once per spec.
             docker compose -f "../$COMPOSE" down -v
             docker compose -f "../$COMPOSE" up -d --wait --wait-timeout 420
           done

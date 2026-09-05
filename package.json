@@ -26,7 +26,7 @@
     "e2e:devserver": "ng e2e --configuration run",
     "pree2e:headless": "npm run ci:server:await",
     "e2e:headless": "npm run e2e:cypress --",
-    "e2e:headless:mutating": "npm run ci:server:await && ABF_E2E_SPECS=mutating npm run e2e:cypress --",
+    "e2e:headless:mutating": "npm run ci:server:await && ABF_E2E_SPECS=mutating cypress run --e2e --browser chrome --spec",
     "lint": "eslint .",
     "lint:fix": "npm run lint -- --fix",
     "prepare": "husky",

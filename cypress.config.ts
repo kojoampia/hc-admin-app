@@ -89,6 +89,21 @@ console.log(
     `ABF_E2E_SPECS=mutating selects the writing ones — throwaway stacks only.`,
 );
 
+// A `mutating` run must name ONE spec, and this file cannot enforce it — which is worth recording,
+// because enforcing it here is the obvious idea and it does not work.
+//
+// The paragraph above SpecSet says a single pass over the writing specs is red by construction.
+// `--spec` looks like the thing to count, and it is not visible from here: Cypress resolves it in
+// the parent process and the config file is evaluated in a child that receives neither
+// `config.spec` nor a `--spec` in its `process.argv` — `specPattern` below arrives exactly as this
+// file computed it, whether or not the caller passed `--spec`. A guard written here therefore fires
+// on the correct invocation as well as the incorrect one, which is worse than no guard. Measured on
+// Cypress 15.18.1, 2026-09-05.
+//
+// So the rule lives where the argument is: `package.json`'s `e2e:headless:mutating` ends in
+// `--spec`, and npm appends the caller's argument to it, so omitting it is a Cypress usage error.
+// `e2e/README.md` carries the invocation.
+
 export default defineConfig({
   video: false,
   fixturesFolder: 'src/test/javascript/cypress/fixtures',

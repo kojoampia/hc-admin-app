@@ -1,7 +1,10 @@
 # End-to-end specs
 
 `console/` holds the specs for this build. They sign in through the real form and drive the real
-screens against a real gateway.
+screens against a real gateway — except `edge.cy.ts`, which renders nothing and reads response
+headers instead: the shipped nginx's `Cache-Control` rules and the `X-Total-Count`/`Link` pair that
+has to survive the gateway and nginx before `shared/pagination/` can draw a pager. Neither is a
+property of the console, so neither is reachable from a unit test, a production build or `ng serve`.
 
 **They run in CI since 2026-09-05** — `.github/workflows/e2e.yml`, on every push to `main` and every
 pull request onto it. Before that they had never run anywhere: `pree2e:headless` invoked
@@ -15,6 +18,7 @@ defined nowhere, so `npm run e2e:headless` died in its pre-hook. Backlog item 15
 DOCKER_BUILDKIT=1 docker build -f docker/app.Dockerfile --build-context deploycfg=./docker \
   -t hc-admin-app:e2e ../app
 APP_IMAGE=hc-admin-app:e2e docker compose -f e2e/compose.yml up -d --wait
+./e2e/await-seed.sh   # healthy is not seeded — the api seeds AFTER the port opens
 
 # 2. the specs
 npm run e2e:headless          # the read-only set
@@ -46,10 +50,24 @@ naming the file. Deliberately not a list in one place: a list is an enumeration 
 remember to extend, and the api's `PaginationIT` is this estate's worked example of one silently
 ceasing to cover things.
 
-| Set         | Specs                                                                                                   | Where it may run                      |
-| ----------- | ------------------------------------------------------------------------------------------------------- | ------------------------------------- |
-| `read-only` | administration, dashboard, login, navigation, organisation, password-reset, platform-health, responsive | anywhere, including the quality stack |
-| `mutating`  | duty-roster, message-desk, task-board                                                                   | a throwaway stack only                |
+| Set         | Specs                                                                                                         | Where it may run                      |
+| ----------- | ------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
+| `read-only` | administration, dashboard, edge, login, navigation, organisation, password-reset, platform-health, responsive | anywhere, including the quality stack |
+| `mutating`  | duty-roster, message-desk, task-board                                                                         | a throwaway stack only                |
+
+That table is a convenience and the markers are the source — it is worth saying because `e2e.yml`'s
+header carried "seven of the eleven" from the day it was written, against eight and eleven, in a
+change whose subject is figures nobody could compare against reality. Re-derive it:
+
+```bash
+grep -rlE --include='*.cy.ts' '^// e2e-fixture: read-only[[:space:]]*$' src/test/javascript/cypress/e2e
+```
+
+`--include='*.cy.ts'` is not tidiness. This file documents the markers by printing them, on lines of
+their own, so a grep over the folder that does not restrict the extension **matches this README** —
+which is exactly what `e2e.yml`'s mutating loop did until 2026-09-05, handing `README.md` to
+`cypress run --spec` as a fourth spec. `cypress.config.ts`'s `specFiles()` has always filtered on
+the extension; the loop had to be told.
 
 `read-only` is the default, so the safe thing happens when nobody chose; `ABF_E2E_SPECS=mutating`
 selects the other, and `npm run e2e:headless:mutating` is the shorthand. Both print which set they
@@ -61,6 +79,32 @@ single pass over both is red on a pristine stack and reads as a broken task boar
 spec per stack, recreating the stack between them, which is affordable only because
 `deploy/e2e/compose.yml` has no volume. Only `duty-roster.cy.ts` restores what it writes, and even
 that cannot give an assignment back its seeded id.
+
+So `e2e:headless:mutating` **takes exactly one spec and refuses without one.** It did not until
+2026-09-05: it ran all three in a single pass, the thing the paragraph above says cannot work, and
+reported a red that reads as a broken task board. The script now ends in `--spec` and npm appends
+your argument to it, so omitting it is a Cypress usage error
+(`option '-s, --spec <spec>' argument missing`). There is no shorthand for "all of them", because
+there is no such run:
+
+```bash
+npm run e2e:headless:mutating -- src/test/javascript/cypress/e2e/console/duty-roster.cy.ts
+# then, from the hc-admin-ci checkout, before the next one:
+APP_IMAGE=hc-admin-app:e2e docker compose -f e2e/compose.yml down -v
+APP_IMAGE=hc-admin-app:e2e docker compose -f e2e/compose.yml up -d --wait && ./e2e/await-seed.sh
+```
+
+**Measure a mutating spec with `--config retries=0`.** `cypress.config.ts` sets `retries: 2`, and a
+case that fails _after_ its own write is retried against the state it left — so the message you read
+is the last attempt's, about an assertion that passed the first time. That is where backlog item
+34(b)'s `3 unread | 2` came from: `message-desk.cy.ts:59` asserts 3 unread and passes, opens `m1`,
+marks it read, and then fails on a "Back to the desk" link the thread screen does not render.
+
+Enforcing the one-spec rule in `cypress.config.ts` was tried first and does not work, which is worth
+recording so it is not tried again: `--spec` is resolved in the parent process and the config file is
+evaluated in a child that receives neither `config.spec` nor a `--spec` in `process.argv`, so
+`specPattern` arrives exactly as the config computed it whether or not `--spec` was passed. A guard
+there fires on the correct invocation too. Measured on Cypress 15.18.1.
 
 `administration.cy.ts` is in `read-only` by a hair: one case changes a logger level on the gateway,
 and it puts the level back through the same screen. Without that it would belong in the other set,
