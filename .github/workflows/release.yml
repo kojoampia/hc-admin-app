@@ -164,7 +164,7 @@ jobs:
       # The file check keeps the useful half — a scan that ran and found something still uploads
       # even if a later step fails — while a scan that never ran stays quiet.
       - name: Upload the scan to the Security tab
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         if: always() && hashFiles('trivy-results.sarif') != ''
         with:
           sarif_file: trivy-results.sarif
