@@ -1,5 +1,14 @@
 // e2e-fixture: read-only
 // Switches tabs.
+//
+// Two row counts below are seed literals — 4 teams, 7 audit rows — and they are kept rather than
+// derived, which is worth one line each because the folder's rule is the opposite. Both tabs render
+// the WHOLE of a small collection with no pager and no cap, so deriving the expectation would mean
+// asking the same endpoint the tab asks and asserting the tab agrees with it: true of a correct tab,
+// and equally true of one that renders nothing when the query returns nothing. A literal is what
+// makes "the table is populated" a claim. They are accurate as of 2026-09-05 and are expected to go
+// red if the fixture changes — which is a deliberate coupling, not the `116` failure, where the
+// number came from a mock deleted a month earlier and no change to the fixture could have fixed it.
 
 describe('organisation profile', () => {
   beforeEach(() => {

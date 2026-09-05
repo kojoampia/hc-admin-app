@@ -1,5 +1,14 @@
 // e2e-fixture: read-only
 // Reads the seeded service catalogue. It does not probe.
+//
+// 13, 12/13 and 1 are seed literals, kept rather than derived, and this is the one screen in the
+// folder where that is not even a trade. The screen IS the `platformServices` collection rendered —
+// 13 documents, 12 `HEALTHY` and one `DEGRADED`, accurate as of 2026-09-05 — so deriving the numbers
+// from that collection would assert the screen agrees with the thing it is a rendering of, which is
+// true of a correct screen and equally true of an empty one. What the literals pin is that the
+// catalogue reached the browser at all, and that the degraded service is stated in TEXT rather than
+// by colour alone. Expect them to go red when the fixture changes; that is the coupling working, not
+// the `116` failure, where a number from a deleted mock guarded nothing.
 
 describe('platform health', () => {
   beforeEach(() => {

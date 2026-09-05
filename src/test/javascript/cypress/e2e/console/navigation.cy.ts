@@ -3,7 +3,15 @@
 
 import { breadcrumbSelector, pageTitleSelector, sidebarNavSelector } from '../../support/console';
 
-/** The eleven sidebar destinations, with the crumb and title each must show. */
+/**
+ * The sidebar destinations this file follows, with the crumb and title each must show.
+ *
+ * <p>**Counted nowhere, deliberately.** This said "the eleven sidebar destinations" above a
+ * fifteen-element array, under a case whose name said fifteen — three numbers, two of them wrong,
+ * in six lines, and none of them checkable by anything. `shell-navigation.ts` declares more routes
+ * than this (23 at the last count), so the list below is a subset by design and a count here would
+ * be a third figure to keep in step with two others. `ROUTES.length` is the only honest spelling.
+ */
 const ROUTES: { route: string; title: string; breadcrumb: string }[] = [
   { route: 'dashboard', title: 'Admin dashboard', breadcrumb: 'Operations' },
   { route: 'message-desk', title: 'Message desk', breadcrumb: 'Operations' },
@@ -48,11 +56,13 @@ describe('navigation', () => {
     cy.signInAs('ops');
   });
 
-  it('should offer every one of the fifteen destinations in the sidebar', () => {
+  it('should offer every destination this file follows in the sidebar', () => {
     cy.get(sidebarNavSelector)
       .find('a[href^="/"]')
       .then($links => {
         const hrefs = [...$links].map(link => link.getAttribute('href'));
+        // Inclusion, not equality: `shell-navigation.ts` carries destinations this list does not,
+        // so an exact match would fail on a sidebar that is entirely correct.
         ROUTES.forEach(({ route }) => expect(hrefs).to.include(`/${route}`));
       });
   });
