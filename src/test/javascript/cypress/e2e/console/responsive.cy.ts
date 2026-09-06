@@ -62,24 +62,31 @@ describe('responsive', () => {
     });
 
     /**
-     * SKIPPED, AND IT IS THE CONSOLE THAT IS WRONG, NOT THIS CASE — backlog item 34(a).
+     * FIXED AND UN-SKIPPED 2026-09-06 — backlog item 34(a).
      *
      * <p>Its first ever run, on 2026-09-05, failed: at 400x860 the dashboard's `documentElement`
-     * measures `scrollWidth` 475 against `clientWidth` 391, so the page really does scroll sideways
-     * on a phone. The source is the `.abf-grid.abf-g-2` pair of cards. That grid DOES collapse to one
-     * column at this width (`_console-components.scss`, `max-width: 820px`) and the box is 354 wide —
-     * what overflows is a grid ITEM, whose min-content is 457 because an `.lrow` inside it will not
-     * wrap. `min-width: 0` on the children is the usual answer and is not the answer here: it lets
-     * the column shrink and moves the same 455 pixels inside the card.
+     * measured `scrollWidth` 475 against `clientWidth` 391, so the page really did scroll sideways
+     * on a phone. It was `it.skip` for one day, reported as pending on every run, because the cause
+     * was a layout decision rather than a bad expectation — and an assertion relaxed to pass against
+     * the defect it was written to catch is exactly what `dashboard.cy.ts`'s `116` was.
      *
-     * <p>So the fix is a change to how a dashboard list row lays out at narrow widths, which is a
-     * design decision with a look to review, and not part of wiring this suite into CI. It is filed
-     * rather than absorbed, and this case is skipped rather than weakened — an assertion relaxed to
-     * pass against the defect it was written to catch is exactly what `dashboard.cy.ts`'s `116` was.
-     * Cypress reports it as pending in every run, which is the point of skipping it here rather than
-     * deleting it.
+     * <p><b>What was 457 wide.</b> Not a width anywhere — a line of text refusing to wrap. The
+     * `.abf-grid.abf-g-2` DOES collapse to one column at this width and its box is 354, but `1fr` is
+     * `minmax(auto, 1fr)` and `auto` as a track minimum is the ITEM's min-content. The "Latest at
+     * the desk" item measured 457, its `.card` 457, its widest `.lrow` 455. `.lrow .grow` already
+     * had `min-width: 0` and its `.tl`/`.st` already had `.trunc` — `overflow: hidden` plus
+     * `white-space: nowrap` — which zeroes the automatic minimum size and NOT the min-content. A
+     * nowrap text run's min-content is the whole untruncated subject line, so the row truncated
+     * correctly at every width it was given while telling the track it needed 455.
+     *
+     * <p>The fix is one declaration, `.abf-grid > * { min-width: 0 }` in `_console-components.scss`,
+     * with the reasoning beside it. Nothing about the row changed; the track stopped asking.
+     *
+     * <p>Kept as a whole-document assertion rather than a measurement of the grid: what a phone user
+     * experiences is the page sliding, and any future element can cause it. The `+ 1` absorbs
+     * sub-pixel rounding, not a defect — the measured gap was 84px.
      */
-    it.skip('should not scroll the page body sideways', () => {
+    it('should not scroll the page body sideways', () => {
       cy.document().then(document => {
         expect(document.documentElement.scrollWidth).to.be.at.most(document.documentElement.clientWidth + 1);
       });
