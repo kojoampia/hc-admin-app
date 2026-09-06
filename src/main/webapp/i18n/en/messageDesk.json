@@ -18,7 +18,6 @@
     },
     "thread": {
       "pageTitle": "Message",
-      "back": "Back to the desk",
       "notFound": "That message no longer exists.",
       "replyLabel": "Reply as Abofonsa BridgeCare",
       "replyPlaceholder": "Type your reply…",
