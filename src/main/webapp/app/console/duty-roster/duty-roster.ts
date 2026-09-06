@@ -214,6 +214,25 @@ export default class DutyRoster implements OnInit {
     ),
   );
 
+  /**
+   * The api never dialled hc-professional, because this deployment is not configured to.
+   *
+   * <p>The third of three distinct failures, and it is on the round rather than on the report
+   * because it is the one the api learned nothing about the far service from. `planCallFailed` is
+   * "this console could not reach its own api"; `rosterServiceReachable: false` is "the api dialled
+   * hc-professional and got nothing"; this one is "nothing was dialled" — an environment variable in
+   * this stack's compose file, not an outage. They send a reader to three different places, and
+   * showing an outage panel for this one sent them to the wrong stack (backlog item 24).
+   *
+   * <p>Derived rather than a fourth field on the report: the reason is already on the wire, and a
+   * boolean beside `rosterServiceReachable` would be a second flag whose relationship to the first
+   * somebody has to remember.
+   */
+  // eslint-disable-next-line @typescript-eslint/member-ordering
+  readonly rosterServiceNotConfigured = computed(
+    () => this.report()?.rounds.some(round => round.reason === 'ROSTER_SERVICE_NOT_CONFIGURED') ?? false,
+  );
+
   // eslint-disable-next-line @typescript-eslint/member-ordering
   readonly dayLabels = computed(() => {
     const start = this.week()?.startDate;
