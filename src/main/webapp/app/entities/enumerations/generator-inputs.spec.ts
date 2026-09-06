@@ -36,6 +36,24 @@ import { describe, expect, it } from 'vitest';
  * an entity's field list is complete. The field-level guard is `api/`'s `JdlEntityFieldsTest`,
  * where a domain class exists to reflect on; `WageRate` has no `.jhipster` file and no JDL entity
  * on this side at all.
+ *
+ * <p><b>There is no field-level guard here, and as of 2026-09-06 that is a decision rather than an
+ * omission</b> (backlog item 21). The Java side reflects on a domain class to know what a field list
+ * should contain; the nearest thing here is the generated `I<Entity>` interface in each
+ * `*.model.ts`, and the sweep was written and measured before being left out: **11 of the 23
+ * `.jhipster` entities disagree with their model**. Most of that is the parser owing a rule rather
+ * than a defect — JHipster omits the inverse side of a one-to-many from the interface, so
+ * `Address.profile`, `Category.activity` and seven more read as missing — but not all of it is.
+ * `Message` carries six fields its input does not declare, and `Patient`, `Professional` and
+ * `Vendor` each carry an `isArchived`; those are the `WageRate` shape exactly, and regenerating
+ * those entities would drop them.
+ *
+ * <p>It was left out because turning it on means answering "are the `.jhipster` files stale, or is
+ * the model hand-extended on purpose?" for eleven entities first, and a guard that lands red is a
+ * guard that gets skipped — which is the failure this file was written against. **What is true and
+ * cheap to say instead: these inputs are held to their enum values and to nothing else.** A field
+ * added to a screen's model without its input is uncovered on this side; `api/`'s model is where
+ * that class of drift is caught today.
  */
 describe('generator inputs', () => {
   const ENUMS = 'src/main/webapp/app/entities/enumerations';
