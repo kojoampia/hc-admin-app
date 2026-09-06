@@ -40,12 +40,21 @@ export interface PlanRequest {
  */
 export type PlanOutcome = 'PLANNED' | 'UNPLANNED' | 'FAILED';
 
+/**
+ * Why a round was not planned.
+ *
+ * <p>`ROSTER_SERVICE_NOT_CONFIGURED` is the api saying it never dialled hc-professional: the client
+ * is switched off in this deployment, or the request reached it with no token to relay. It is not an
+ * outage and must not be shown as one — the thing to go and look at is this stack's own compose
+ * file, not the estate. See the third standing panel in `duty-roster.html`.
+ */
 export type PlanReason =
   | 'NO_TEAM_COVERS_THE_SPACE'
   | 'NO_CANDIDATE_HOLDS_THE_ROLE'
   | 'NO_CANDIDATE_IS_AVAILABLE'
   | 'ROSTER_SERVICE_UNREACHABLE'
-  | 'ROSTER_SERVICE_REFUSED_THE_ROUND';
+  | 'ROSTER_SERVICE_REFUSED_THE_ROUND'
+  | 'ROSTER_SERVICE_NOT_CONFIGURED';
 
 export interface PlanRoundOutcome {
   readonly index: number;
@@ -58,7 +67,14 @@ export interface PlanRoundOutcome {
 
 export interface PlanReport {
   readonly date: string;
-  /** False when the roster service could not be written to. The screen's outage state. */
+  /**
+   * False when the api dialled the roster service and got nothing back. The screen's outage state.
+   *
+   * <p><b>It is an observation, so a run that dialled nothing leaves it true.</b> A deployment with
+   * the client switched off reports every round as `ROSTER_SERVICE_NOT_CONFIGURED` with this flag
+   * still true — nothing was learned about hc-professional, and claiming an outage on that evidence
+   * is what sent readers to the wrong stack. Read the round's reason for that case, not this flag.
+   */
   readonly rosterServiceReachable: boolean;
   readonly rounds: PlanRoundOutcome[];
 }

@@ -41,12 +41,14 @@
       "planned": "Filed with the roster service — {{ name }}",
       "callFailed": "The planning request did not reach the admin service. Nothing was filed. Try again, and check the console is signed in.",
       "rosterServiceDown": "The roster service could not be reached, so the round was not filed. It is not on any clinician's roster — this is an outage, not an empty week.",
+      "rosterServiceNotConfigured": "Nothing was filed, and nothing was contacted: this deployment is not configured to reach the roster service. Check this stack's own settings — the roster service itself has not been asked anything and may be perfectly well.",
       "reason": {
         "NO_TEAM_COVERS_THE_SPACE": "Not staffed: no team covers that area. Add the area to a team's coverage first.",
         "NO_CANDIDATE_HOLDS_THE_ROLE": "Not staffed: nobody on the covering teams holds that role.",
         "NO_CANDIDATE_IS_AVAILABLE": "Not staffed: everybody with that role is on leave, rostered off or already has a round that day.",
         "ROSTER_SERVICE_UNREACHABLE": "Not filed: the roster service could not be reached. {{ name }} has not been given this round.",
-        "ROSTER_SERVICE_REFUSED_THE_ROUND": "Not filed: the roster service refused the round — a visit time outside the shift window, or a clash with a round it already holds."
+        "ROSTER_SERVICE_REFUSED_THE_ROUND": "Not filed: the roster service refused the round — a visit time outside the shift window, or a clash with a round it already holds.",
+        "ROSTER_SERVICE_NOT_CONFIGURED": "Not filed: this deployment cannot reach the roster service, so nothing was contacted. {{ name }} has not been given this round, and nothing is known to be wrong with the roster service itself."
       }
     }
   }

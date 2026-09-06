@@ -31,9 +31,13 @@
   alike (decision 10). A toast is gone by the time somebody asks why nothing is on the roster; this
   stays until the next attempt succeeds.
 
-  Two different outages, deliberately distinguished. `planCallFailed` is "this console could not
+  Three different failures, deliberately distinguished. `planCallFailed` is "this console could not
   reach its own api"; `rosterServiceReachable: false` is "the api answered, and could not reach
-  hc-professional". They send a reader to different places.
+  hc-professional"; `rosterServiceNotConfigured()` is "the api answered, and never dialled anybody".
+  They send a reader to three different places, and the third one is NOT the estate — it is this
+  stack's own compose file. It had no panel of its own until 2026-09-06 and arrived in the outage
+  one, which is backlog item 24: an outage panel is a designed, plausible screen, so a
+  misconfiguration wearing it is indistinguishable from the feature working badly.
 -->
 @if (planCallFailed()) {
   <div class="plan-outage" role="alert" data-cy="planCallFailed">
@@ -53,6 +57,15 @@
       >
     </div>
   }
+}
+@if (rosterServiceNotConfigured()) {
+  <div class="plan-outage" role="alert" data-cy="rosterServiceNotConfigured">
+    <fa-icon icon="triangle-exclamation" />
+    <span abfTranslate="dutyRoster.plan.rosterServiceNotConfigured"
+      >Nothing was filed, and nothing was contacted: this deployment is not configured to reach the roster service. Check this stack's own
+      settings — the roster service itself has not been asked anything and may be perfectly well.</span
+    >
+  </div>
 }
 
 <div class="abf-grid abf-g-4 mb-18">

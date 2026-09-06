@@ -177,8 +177,70 @@ describe('duty roster planning', () => {
     expect(template).toContain('data-cy="rosterServiceOutage"');
     expect(template).toContain('data-cy="planCallFailed"');
     expect(template).toContain('!result.rosterServiceReachable');
-    // role="alert" on both: an outage has to reach a screen reader, not only a sighted reader.
-    expect(template.match(/role="alert"/g) ?? []).toHaveLength(2);
+    // role="alert" on all three: a failure has to reach a screen reader, not only a sighted reader.
+    expect(template.match(/role="alert"/g) ?? []).toHaveLength(3);
+  });
+
+  /**
+   * And a deployment that never dialled gets its own panel, not the outage one.
+   *
+   * <p>Backlog item 24. The outage panel says the roster service could not be reached, which sends a
+   * reader to another stack or to the network for what is a missing environment variable in this
+   * one — and it is a designed, plausible screen, so it looks like the feature working badly rather
+   * than like a wrong reading. Asserted on the template and on the panel being driven by the round's
+   * reason rather than by `rosterServiceReachable`, because putting it back on that flag is exactly
+   * how this would be reintroduced.
+   */
+  it('renders a third panel for a deployment that dialled nothing, driven by the reason', () => {
+    expect(template).toContain('data-cy="rosterServiceNotConfigured"');
+    expect(template).toContain('rosterServiceNotConfigured()');
+    expect(template).toContain('dutyRoster.plan.rosterServiceNotConfigured');
+
+    component.report.set({
+      date: '2026-09-06',
+      rosterServiceReachable: true,
+      rounds: [{ index: 0, outcome: 'FAILED', reason: 'ROSTER_SERVICE_NOT_CONFIGURED' }],
+    });
+    expect(component.rosterServiceNotConfigured()).toBe(true);
+
+    // The genuine outage must not raise it, or the two panels show together and say opposite things.
+    component.report.set({
+      date: '2026-09-06',
+      rosterServiceReachable: false,
+      rounds: [{ index: 0, outcome: 'FAILED', reason: 'ROSTER_SERVICE_UNREACHABLE' }],
+    });
+    expect(component.rosterServiceNotConfigured()).toBe(false);
+
+    component.report.set(null);
+    expect(component.rosterServiceNotConfigured()).toBe(false);
+  });
+
+  /**
+   * Every reason the api can send has a sentence, and the list is read rather than typed here.
+   *
+   * <p>A reason with no key renders its own key on the screen — `dutyRoster.plan.reason.
+   * ROSTER_SERVICE_NOT_CONFIGURED` in the middle of a panel — which is a defect nothing else in this
+   * repository would catch: the template interpolates the value, so it compiles, type-checks and
+   * renders. The union in `roster-plan.service.ts` is the wire contract's copy on this side, so it
+   * is what the catalogue is swept against; enumerating the reasons in this file instead would mean
+   * a fourth list to keep in step, and a test whose coverage has to be extended by hand stops
+   * covering things.
+   */
+  it('has a message for every reason the api can send', () => {
+    const source = readFileSync('src/main/webapp/app/console/duty-roster/roster-plan.service.ts', 'utf8');
+    const union = /export type PlanReason =([\s\S]*?);/.exec(source)?.[1] ?? '';
+    const reasons = [...union.matchAll(/'([A-Z_]+)'/g)].map(match => match[1]);
+    const messages = JSON.parse(readFileSync('src/main/webapp/i18n/en/dutyRoster.json', 'utf8')).dutyRoster.plan.reason;
+
+    // The union parsed at all — an empty list would make every assertion below vacuous.
+    expect(reasons.length).toBeGreaterThanOrEqual(5);
+    expect(reasons).toContain('ROSTER_SERVICE_NOT_CONFIGURED');
+    for (const reason of reasons) {
+      expect(messages[reason], `no dutyRoster.plan.reason.${reason} for a reason the api can send`).toBeTruthy();
+    }
+    // And nothing in the catalogue that no reason can produce, which is how a renamed value leaves
+    // its old sentence behind and reads as covered.
+    expect(Object.keys(messages).sort()).toEqual([...reasons].sort());
   });
 
   /** Filed, not staffed and not filed are three renderings, and colour is never the only signal. */
