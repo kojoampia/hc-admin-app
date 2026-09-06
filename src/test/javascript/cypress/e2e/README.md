@@ -97,8 +97,15 @@ APP_IMAGE=hc-admin-app:e2e docker compose -f e2e/compose.yml up -d --wait && ./e
 **Measure a mutating spec with `--config retries=0`.** `cypress.config.ts` sets `retries: 2`, and a
 case that fails _after_ its own write is retried against the state it left — so the message you read
 is the last attempt's, about an assertion that passed the first time. That is where backlog item
-34(b)'s `3 unread | 2` came from: `message-desk.cy.ts:59` asserts 3 unread and passes, opens `m1`,
-marks it read, and then fails on a "Back to the desk" link the thread screen does not render.
+34(b)'s `3 unread | 2` came from: the case asserted 3 unread and passed, opened `m1`, marked it read,
+and then failed on a "Back to the desk" link the thread screen does not render — and the log named
+the count rather than the link.
+
+Both mutating specs were rewritten on 2026-09-06 (item 34(b)) to derive every figure from the
+endpoint the screen reads, which incidentally makes them retry-safe: a derivation taken after the
+previous attempt's write describes the state the attempt actually starts from, where a literal
+describes the state the fixture had at `up`. They pass under `retries: 2` and under `retries=0`, and
+the difference between those two runs is no longer information.
 
 Enforcing the one-spec rule in `cypress.config.ts` was tried first and does not work, which is worth
 recording so it is not tried again: `--spec` is resolved in the parent process and the config file is
@@ -124,7 +131,16 @@ The reason for the entity suites has expired and the suites are worth reconsider
 issues HTTP from the Cypress process rather than the browser, which the mock could never answer —
 every such call came back as `Cannot POST /api/authenticate` in HTML. Against a real gateway that
 is an ordinary API call. What stands in the way now is only that those requests must be
-authenticated and must carry the `services/hcadminservice/` prefix the generator omits.
+authenticated and must carry the `services/hcadminservice/` prefix the generator omits —
+`cy.adminApi` in `support/console.ts` already does both.
+
+**Restoring them was considered on 2026-09-06 and deferred, not declined — backlog item 39.** They
+are 4757 lines across 23 files and every one of them writes, so they are all `mutating`, and the
+`mutating` dispatch runs ONE SPEC PER STACK: twenty-three recreations at roughly a minute each of
+`down -v`, `up --wait` and `await-seed`, before a single assertion runs. That is a scheduling
+decision as much as a code one — a second workflow, or a shared stack with per-suite cleanup that
+the generated `afterEach` does not currently provide — and it is not a finding of the gate's first
+run, which is what item 34 is.
 
 `account/` and `administration/` fail for a reason that has not expired: this console replaces
 JHipster's top navbar with a sidebar, so `cy.clickOnLoginItem()` and friends have nothing to click,

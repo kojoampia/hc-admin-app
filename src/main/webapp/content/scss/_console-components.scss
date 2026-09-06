@@ -226,6 +226,40 @@
   display: grid;
   gap: 16px;
 }
+
+/**
+ * A TRACK MAY BE NARROWER THAN ITS CONTENTS. Without this line the dashboard scrolled sideways on a
+ * phone — backlog item 34(a), fixed 2026-09-06 and pinned by `responsive.cy.ts`'s
+ * `should not scroll the page body sideways`.
+ *
+ * `1fr` is `minmax(auto, 1fr)`, and `auto` as a track MINIMUM is the item's min-content. So a
+ * one-column `.abf-g-2` at 400px sized its single track to the widest thing inside it rather than
+ * to the 354px it had, and the page grew to 475 against a 391 viewport.
+ *
+ * WHAT WAS ACTUALLY 457 WIDE was not a fixed width anywhere — it was a line of text refusing to
+ * wrap. Measured on a real stack: the "Latest at the desk" grid item's min-content is 457, its
+ * `.card` 457 and its widest `.lrow` 455, of which the `.grow` column alone accounts for 229 and the
+ * avatar, pill, chevron, gaps and padding for the rest. `.lrow .grow` already carries `min-width: 0`
+ * and its `.tl`/`.st` children already carry `.trunc`, which is `overflow: hidden` plus
+ * `white-space: nowrap` — and THAT IS THE TRAP. `overflow: hidden` zeroes an element's automatic
+ * minimum size; it does not zero its MIN-CONTENT, and a nowrap text run's min-content is the whole
+ * untruncated string. So the row truncated correctly at every width it was given and simultaneously
+ * demanded 455px from anything that asked it how small it could be.
+ *
+ * That is why `min-width: 0` on `.grow` was already present and had never helped: it is a floor on
+ * the item, and the leak was in the intrinsic size travelling UP to the track. This line puts the
+ * floor where the sizing decision is made. Measured after: track 354, card 354, row 352,
+ * `documentElement.scrollWidth` 390 against `clientWidth` 390.
+ *
+ * It is deliberately on every `.abf-grid` and not on the dashboard alone. The shape is a property of
+ * `1fr` rather than of that screen, `.abf-g-2` and `.abf-g-4` collapse to one column on the same
+ * phone, and the directories reuse both. `minmax(0, 1fr)` on each `.abf-g-*` would say the same
+ * thing five times and miss `.abf-g-auto`.
+ */
+.abf-grid > * {
+  min-width: 0;
+}
+
 .abf-g-2 {
   grid-template-columns: repeat(2, 1fr);
 }

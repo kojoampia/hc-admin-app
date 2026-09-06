@@ -41,27 +41,29 @@ const ADMIN_API = '/services/hcadminservice/api';
 /**
  * The `Cache-Control` directives on a URL, lower-cased and split.
  *
- * <p><b>This image sends `Cache-Control` TWICE on every static asset, and that is a real finding
- * this spec made on its first run.</b> Each static `location` in `web-nginx.conf` carries both
- * `expires 1y;` and `add_header Cache-Control "…"`, and nginx emits a field line for each — so a
- * hashed bundle really arrives as:
+ * <p><b>This image sent `Cache-Control` TWICE on every static asset until 2026-09-06, and that is a
+ * real finding this spec made on its first run.</b> Each static `location` in `web-nginx.conf`
+ * carried both `expires 1y;` and `add_header Cache-Control "…"`, and nginx emits a field line for
+ * each — so a hashed bundle really arrived as:
  *
  * <pre>
  *   Cache-Control: max-age=31536000
  *   Cache-Control: public, max-age=31536000, immutable
  * </pre>
  *
- * <p>It is not currently a bug: RFC 9111 has a recipient combine repeated field lines with commas,
- * the two `max-age` values agree, and `immutable` is present either way. It is a **latent** one,
- * because the two are maintained separately and nothing makes them agree — change `expires` without
- * changing `add_header` and the response carries two different `max-age` values, at which point the
- * behaviour is whichever the intermediary picked. Filed as backlog item 34(d) rather than fixed
- * here: dropping `expires` also drops the `Expires` header, which is a change to what the image
- * serves and wants its own decision.
+ * <p>It was never a bug on the wire: RFC 9111 has a recipient combine repeated field lines with
+ * commas, the two `max-age` values agreed, and `immutable` was present either way. It was a
+ * **latent** one, because the two are maintained separately and nothing made them agree — change
+ * `expires` without changing `add_header` and the response carries two different `max-age` values,
+ * at which point the behaviour is whichever the intermediary picked. Backlog item 34(d) closed it by
+ * dropping `expires` and keeping `add_header`, which also drops the `Expires` header; the reasoning
+ * and what would reverse it are written into `web-nginx.conf` beside the rules.
  *
- * <p>So these cases assert **directives**, not the whole string. An equality assertion here would
- * have to encode the duplication, which would then pass only while the duplication existed — a test
- * pinned to the defect it found.
+ * <p><b>The assertions below did not change, and that is the point of how they were written.</b>
+ * They assert **directives**, not the whole string, so they passed against the duplication and pass
+ * against the single header — and the `max-age` agreement check below still fires if the copies ever
+ * come back and disagree. An equality assertion would have had to encode the duplication, and would
+ * then have gone red on the commit that removed it: a test pinned to the defect it found.
  */
 const cacheDirectives = (url: string): Cypress.Chainable<string[]> =>
   cy.request<unknown>({ url }).then(response => {

@@ -69,13 +69,28 @@
 # reads as a broken task board. Recreating the stack between them is what makes them meaningful, and
 # it is only affordable because nothing here is shared: deploy/e2e/compose.yml has no volume.
 #
-# **That path is known red today and the input exists anyway.** Run one spec per stack on 2026-09-05:
-# duty-roster passed, message-desk failed six of nine and task-board two of seven, all on figures
-# copied from a fixture that has since grown — backlog item 34(b), and each file says so at the top. The
-# dispatch is here because a set nothing can even attempt is how these specs got into this state; a
-# red run somebody can see is the opposite problem.
+# **That path was known red for one day and is green as of 2026-09-06.** Run one spec per stack on
+# 2026-09-05, duty-roster passed, message-desk failed six of nine and task-board two of seven, all on
+# figures copied from a fixture that had since grown. Backlog item 34(b) rewrote both to derive every
+# figure from the endpoint the screen reads; measured on this stack, 9/9, 7/7 and 8/8, under
+# `retries: 2` and under `--config retries=0` alike. The dispatch was here while it was red on
+# purpose — a set nothing can even attempt is how these specs got into this state, and a red run
+# somebody can see is the opposite problem.
 #
 # --- The token ------------------------------------------------------------------------------------
+#
+# THIS WORKFLOW CANNOT PASS ON THE PULL REQUEST THAT INTRODUCES IT, OR ON ANY PR THAT ADDS TO
+# deploy/e2e/ AND CHANGES THIS FILE TOGETHER. The checkout below takes hc-admin-ci at its DEFAULT
+# BRANCH — there is no `ref:` and there deliberately is not one, because pinning it would make every
+# run here depend on a revision nobody updates. So `deploy/e2e/compose.yml` has to be on that
+# repository's `main` before this job can find it. Its own first run, on 2026-09-05, failed with
+#
+#     open /home/runner/work/hc-admin-app/hc-admin-app/deploycfg/e2e/compose.yml: no such file or directory
+#
+# and merging the hc-admin-ci pull request first cleared it. Nothing is broken when that happens and
+# nothing here can detect it: a checkout of a real repository at a real branch succeeds, and the file
+# is simply not in it yet. **Land the deployment change first, then this one** — the ordering is one
+# way round and there is no version of it that is not.
 #
 # HC_ADMIN_CI_TOKEN, the same secret release.yml uses, for the same reason: hc-admin-ci is private
 # and a workflow's default GITHUB_TOKEN reaches only the repository it runs in. The `|| github.token`
