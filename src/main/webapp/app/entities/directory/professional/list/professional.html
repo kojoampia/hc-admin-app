@@ -75,6 +75,13 @@
   There is deliberately no "create the record" action here. Nothing an administrator could type would
   be a licence hc-admin has verified, and completing these properly is a read hc-professional does not
   yet expose (backlog items 35 and 36).
+
+  It carries no `no-print`, and that is a decision rather than an omission: the topbar's print button
+  is expected to produce the directory as a document, and "these accounts registered and have no
+  record here" is part of that directory rather than chrome. The `head-tools` and `tools` blocks
+  around it are hidden because they are controls — filter chips and a pager say nothing on paper.
+  Note what a printed copy therefore is: the first few rows plus "and N more", the same truncation
+  that is on screen, which is why the count beside the heading is the whole figure.
 -->
 @if (showAwaiting()) {
   <div class="card awaiting-record" data-cy="awaitingRecord">
@@ -108,6 +115,11 @@
             }
             <div class="sub">
               {{ 'hcAdminApp.directoryProfessional.awaiting.noRecord' | translate }}
+              <!-- Only when the far side reported one. A clinician whose only event is a
+                   registration.created has no onboarding state, and since 2026-09-07 the api
+                   leaves the field absent rather than filling it with the event type — which had
+                   been rendering here as "· registration.created", a wire identifier where a
+                   status goes, on the newest row on the panel. See directory-link.model.ts. -->
               @if (link.state) {
                 · {{ link.state }}
               }

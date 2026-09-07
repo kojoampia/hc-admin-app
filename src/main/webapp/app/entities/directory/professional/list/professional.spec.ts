@@ -442,6 +442,42 @@ describe('Professional Management Component', () => {
     });
 
     /**
+     * A clinician who has just registered has no onboarding state, and the row must not invent one.
+     *
+     * The case backlog item 46 was reported for. `registration.created` carries no `state` field;
+     * the api filled it with the event type until 2026-09-07, so this row rendered
+     * "no record in this directory · registration.created" — a wire identifier where a status goes.
+     * The suffix is now simply absent, which the template already handled and nothing exercised.
+     */
+    it('renders no onboarding state for a link that reports none', () => {
+      initAndFlushTable();
+      flushAwaiting([{ id: 'dl-3', source: 'HC_PROFESSIONAL', email: 'a.owusu@abofonsa.care', login: 'aowusu' }], '1');
+
+      const row = comp.awaiting()[0];
+      expect(row.state ?? null).toBeNull();
+      fixture.detectChanges();
+      const rendered = fixture.nativeElement.querySelector('[data-cy="awaitingRow"]').textContent;
+      expect(rendered).toContain('a.owusu@abofonsa.care');
+      expect(rendered).not.toContain('registration.created');
+      expect(rendered).not.toContain('·');
+    });
+
+    /**
+     * A single-word login is one letter, and that is the answer rather than a shortfall.
+     *
+     * `kquartey` cannot be split into a forename and a surname by anything this console knows, so
+     * the chip is `K`. Pinned because `awaitingInitials` reads as though it should produce two and
+     * "fixing" it would mean taking the second character of one word — `Kq`, a monogram of one name
+     * pretending to be a monogram of two, which is the guessing this panel exists to refuse.
+     */
+    it('makes a one-letter monogram from a login that is one word', () => {
+      initAndFlushTable();
+      flushAwaiting([{ id: 'dl-4', source: 'HC_PROFESSIONAL', login: 'kquartey' }], '1');
+
+      expect(comp.awaitingInitials(comp.awaiting()[0])).toBe('K');
+    });
+
+    /**
      * "And N more" is a real number.
      *
      * The panel asks for five rows; counting what arrived would report five however many clinicians

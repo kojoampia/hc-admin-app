@@ -37,6 +37,14 @@ export interface IDirectoryLink {
    * The last lifecycle state the far side reported — an event type for hc-patient, the
    * `onboarding.state` payload field for hc-professional.
    *
+   * **Null for a clinician who has only registered, and that is the common case.** This comment
+   * described the professional half as always being the `onboarding.state` payload field, which was
+   * untrue for exactly the case item 46 was reported for: `registration.created` carries no `state`,
+   * and the api filled the gap with the event type, so a newly registered clinician's row read
+   * "no record in this directory · registration.created" — a wire identifier printed as a status.
+   * The api stopped falling back on 2026-09-07 (`SiblingEventParser.parseProfessionalEvent`), so the
+   * honest answer is now an absent field and the template's `@if (link.state)` is what renders it.
+   *
    * Rendered on the professional directory's awaiting-a-record panel and nowhere else: for a
    * clinician with no record here it is the only thing this console can say about how far they have
    * got (`DOCUMENTS_SUBMITTED`, `APPLICATION_SUBMITTED`), and it is the far side's own word rather

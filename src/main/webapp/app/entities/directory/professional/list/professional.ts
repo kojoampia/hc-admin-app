@@ -226,10 +226,17 @@ export class Professional implements OnInit {
   /**
    * Initials for an awaiting row — from the mailbox, never from an id.
    *
-   * `k.quartey@abofonsa.care` gives `KQ`, a login gives its first letters, and a link carrying
-   * neither gives an em dash. Deliberately identical in shape to the patient list's, because these
-   * two chips sit two clicks apart and the rule they share is that a monogram is a monogram or it is
-   * nothing.
+   * `k.quartey@abofonsa.care` gives `KQ` and a link carrying neither address nor login gives an em
+   * dash. Deliberately identical in shape to the patient list's, because these two chips sit two
+   * clicks apart and the rule they share is that a monogram is a monogram or it is nothing.
+   *
+   * **A login yields one letter per word it can be split on, which for most logins is one letter.**
+   * This javadoc promised "its first letters" until 2026-09-07 and the code has never done that:
+   * `kquartey` is one word, so the chip reads `K`. That is the right answer rather than a shortfall
+   * — the second character of `kquartey` is `q`, and `Kq` would be a monogram of one name pretending
+   * to be a monogram of two. Splitting a login into a forename and a surname is not something this
+   * console can do, and guessing is the failure mode this whole chip was rewritten to stop making.
+   * The rule is stated as what it is so the next reader does not "fix" it.
    */
   awaitingInitials(link: IDirectoryLink): string {
     const identity = this.awaitingName(link);
