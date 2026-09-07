@@ -148,9 +148,27 @@
                 <div class="dir-who">
                   <span class="dir-av" aria-hidden="true">{{ initials(patient) }}</span>
                   <div>
-                    <a class="dir-name" [routerLink]="['/patient', patient.id, 'view']">{{ displayName(patient) }}</a>
-                    @if (patient.profile?.idNumber) {
-                      <div class="sub">{{ patient.profile?.idNumber }}</div>
+                    @if (isUnidentified(patient)) {
+                      <a
+                        class="dir-name dir-name-unidentified"
+                        [routerLink]="['/patient', patient.id, 'view']"
+                        abfTranslate="hcAdminApp.directoryPatient.unidentified"
+                        >Identity not on file</a
+                      >
+                      <div class="sub" abfTranslate="hcAdminApp.directoryPatient.unidentifiedHint">
+                        Registered on the patient app; no name has been recorded here yet.
+                      </div>
+                    } @else {
+                      <a class="dir-name" [routerLink]="['/patient', patient.id, 'view']">{{ displayName(patient) }}</a>
+                      @if (patient.profile?.idNumber) {
+                        <div class="sub">{{ patient.profile?.idNumber }}</div>
+                      } @else if (!patient.profile) {
+                        <!-- The name above is the address off the sibling-stack link, not a profile.
+                             Saying so keeps an operator from reading it as a record that has one. -->
+                        <div class="sub" abfTranslate="hcAdminApp.directoryPatient.identityFromLink">
+                          From the patient app account — no profile recorded here
+                        </div>
+                      }
                     }
                   </div>
                 </div>

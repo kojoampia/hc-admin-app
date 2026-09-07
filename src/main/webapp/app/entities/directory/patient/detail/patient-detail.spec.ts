@@ -83,12 +83,39 @@ describe('Patient Management Detail Component', () => {
       expect(comp.fullName()).toBe('Kojo Ampia-Addison');
     });
 
-    // The generated screen showed the id and nothing else, which is what made the record
-    // unreadable. A record with no profile still has to render something.
-    it('should fall back to the id when there is no profile', () => {
-      fixture.componentRef.setInput('patient', { id: 'a1' });
-      expect(comp.initials()).toBe('A1');
+    /**
+     * Backlog item 45, and the reversal of what this case used to assert.
+     *
+     * It read "should fall back to the id when there is no profile" and expected `A1` — the id's
+     * first two characters. On a real record that id is a 24-character Mongo ObjectId, so the chip
+     * said `68` above a heading reading `68b4f2a19c3d5e7f81a02c44`, and an operator reported it
+     * from production as a corrupted record. A patient learned from a sibling domain event has no
+     * profile and can never be given one from the wire, so this is not a rare state — it is every
+     * patient who registers.
+     */
+    it('should never build initials or a heading out of the record id', () => {
+      fixture.componentRef.setInput('patient', { id: '68b4f2a19c3d5e7f81a02c44' });
+
+      expect(comp.initials()).not.toBe('68');
+      expect(comp.initials()).toBe('—');
       expect(comp.fullName()).toBeNull();
+      expect(comp.headingName()).toBeNull();
+    });
+
+    it('should head the record with the linked address when there is no profile', () => {
+      fixture.componentRef.setInput('patient', { id: '68b4f2a19c3d5e7f81a02c44' });
+      comp.linkIdentity.set('ama.mensah@example.com');
+
+      expect(comp.headingName()).toBe('ama.mensah@example.com');
+      expect(comp.initials()).toBe('AM');
+    });
+
+    it('should prefer a real name over the linked address', () => {
+      fixture.componentRef.setInput('patient', { id: 'a1', profile: { firstName: 'Kojo', lastName: 'Ampia-Addison' } });
+      comp.linkIdentity.set('ama.mensah@example.com');
+
+      expect(comp.headingName()).toBe('Kojo Ampia-Addison');
+      expect(comp.initials()).toBe('KA');
     });
 
     it('should include a middle name in the full name but not the initials', () => {

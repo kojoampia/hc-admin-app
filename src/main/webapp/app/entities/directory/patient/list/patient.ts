@@ -13,6 +13,8 @@ import { StatusPill } from 'app/console/shared/status-pill/status-pill';
 import { DEFAULT_SORT_DATA, SORT } from 'app/config/navigation.constants';
 import { ITEMS_PER_PAGE, PAGE_HEADER, TOTAL_COUNT_RESPONSE_HEADER } from 'app/config/pagination.constants';
 import { AccountStatus } from 'app/entities/enumerations/account-status.model';
+import { IDirectoryLink, resolveLinkIdentity } from 'app/entities/directory/directory-link/directory-link.model';
+import { DirectoryLinkService } from 'app/entities/directory/directory-link/service/directory-link.service';
 import { ProfessionalService } from 'app/entities/directory/professional/service/professional.service';
 import { Alert } from 'app/shared/alert/alert';
 import { AlertError } from 'app/shared/alert/alert-error';
@@ -99,6 +101,20 @@ export class Patient implements OnInit {
   // its request lands. Saying so keeps the fallback below honest instead of looking redundant.
   readonly leadNames = signal<Record<string, string | undefined>>({});
 
+  /**
+   * Patient id → the sibling-stack link that names them, for the rows that have no profile.
+   *
+   * A patient learned from a domain event has no `Profile` and can never be given one — the streams
+   * carry no name, date of birth, phone number or document number, and hc-patient's publisher
+   * refuses at runtime to put them on the wire, while hc-admin's `Profile` requires all four. So for
+   * those rows this map is the only identity there is, and it is read from `/api/directory-links`
+   * one request per page.
+   *
+   * Not cleared between pages, like {@link leadNames}: a link is immutable identity, so turning back
+   * to a page already resolved costs nothing.
+   */
+  readonly links = signal<Record<string, IDirectoryLink | undefined>>({});
+
   /** True while an export is in flight, so the button cannot be pressed twice into two downloads. */
   readonly isExporting = signal(false);
 
@@ -109,6 +125,7 @@ export class Patient implements OnInit {
   protected readonly activatedRoute = inject(ActivatedRoute);
   protected readonly sortService = inject(SortService);
   private readonly professionalService = inject(ProfessionalService);
+  private readonly directoryLinkService = inject(DirectoryLinkService);
 
   // eslint-disable-next-line @typescript-eslint/member-ordering
   readonly hasFilter = computed(() => this.status() !== null);
@@ -126,27 +143,75 @@ export class Patient implements OnInit {
       // untracked, because loadLeadNames reads the map it eventually writes. Tracked, this effect
       // would depend on its own output and re-run each time a name landed — it converges, since
       // the second pass finds nothing left to fetch, but only by accident of the dedup.
-      untracked(() => this.loadLeadNames(rows));
+      untracked(() => {
+        this.loadLeadNames(rows);
+        this.loadLinks(rows);
+      });
     });
   }
 
   trackId = (item: IPatient): string => this.patientService.getPatientIdentifier(item);
 
-  /** The patient's name, which lives on the linked profile. Falls back to the id. */
-  displayName(patient: IPatient): string {
+  /**
+   * The patient's name, which lives on the linked profile.
+   *
+   * When there is no profile the row falls back to the address on the patient's
+   * {@link DirectoryLinkService} link, and when there is no link either it says so — see
+   * {@link isUnidentified}. **It never falls back to `patient.id`**, which is what it did until
+   * backlog item 45: a row read `68b4f2a19c3d5e7f81a02c44` under a chip saying `68`, which is not
+   * "identity not known" but a corrupted record, and an operator raised a ticket about it from
+   * production.
+   */
+  displayName(patient: IPatient): string | null {
     const name = [patient.profile?.firstName, patient.profile?.lastName].filter(Boolean).join(' ');
-    return name.length > 0 ? name : patient.id;
+    if (name.length > 0) {
+      return name;
+    }
+    return resolveLinkIdentity(this.links()[patient.id]);
+  }
+
+  /**
+   * True when nothing this console can reach names this person.
+   *
+   * The row then says so in words rather than printing an identifier — the template renders the
+   * `unidentified` label and a note giving the reason, so an incomplete record reads as incomplete
+   * instead of as broken.
+   *
+   * It is deliberately also true while the link request is in flight. The alternative is to show
+   * the ObjectId for the moment before the links land, which is the exact rendering this change
+   * removes, briefly.
+   */
+  isUnidentified(patient: IPatient): boolean {
+    return this.displayName(patient) === null;
   }
 
   initials(patient: IPatient): string {
     const parts = [patient.profile?.firstName, patient.profile?.lastName].filter(Boolean) as string[];
-    if (parts.length === 0) {
-      return patient.id.slice(0, 2).toUpperCase();
+    if (parts.length > 0) {
+      return parts
+        .map(part => part.charAt(0))
+        .join('')
+        .toUpperCase();
     }
-    return parts
-      .map(part => part.charAt(0))
-      .join('')
-      .toUpperCase();
+
+    // From the address, so a learned patient's chip is the first letters of their mailbox rather
+    // than two hex characters of a Mongo id. `ama.mensah@example.com` gives `AM`, and a mailbox
+    // with no separator in it gives its first letter alone.
+    const identity = this.displayName(patient);
+    if (identity) {
+      const mailbox = identity.split('@')[0];
+      const letters = mailbox
+        .split(/[^\p{L}\p{N}]+/u)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map(part => part.charAt(0));
+      if (letters.length > 0) {
+        return letters.join('').toUpperCase();
+      }
+    }
+
+    // Nobody is named, so the chip says nothing rather than inventing something from the id.
+    return '—';
   }
 
   /**
@@ -382,6 +447,45 @@ export class Patient implements OnInit {
         error: () => undefined,
       });
     }
+  }
+
+  /**
+   * Resolve the sibling-stack links for the rows on this page that have no name.
+   *
+   * **Only the nameless rows, and only the ones not already resolved.** A directory of ordinary
+   * patients — every one of them with a profile — sends no request at all, which is the common case
+   * and has to stay free. A page of learned patients sends exactly one.
+   *
+   * The map records an unresolved id as `undefined` rather than leaving the key absent, so a
+   * patient with no link is asked about once and not on every page turn. That distinction is real:
+   * a `Patient` can have neither a profile nor a link — a row created by hand before the console
+   * dropped its New button, or one whose link was lost — and it is a permanent state, not a pending
+   * one.
+   */
+  private loadLinks(patients: IPatient[]): void {
+    const known = this.links();
+    const wanted = patients
+      .filter(patient => ![patient.profile?.firstName, patient.profile?.lastName].some(Boolean))
+      .map(patient => patient.id)
+      .filter(id => !(id in known));
+
+    if (wanted.length === 0) {
+      return;
+    }
+
+    this.directoryLinkService.findByLocalIds(wanted).subscribe({
+      next: found =>
+        this.links.update(current => {
+          const next = { ...current };
+          for (const id of wanted) {
+            next[id] = found.get(id);
+          }
+          return next;
+        }),
+      // The rows keep saying "identity not on file", which is true of what this console can see.
+      // A failed lookup must not be recorded as "asked and there is none", or a retry never happens.
+      error: () => undefined,
+    });
   }
 
   /**

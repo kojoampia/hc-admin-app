@@ -7,6 +7,8 @@ import { TranslatePipe } from '@ngx-translate/core';
 import dayjs from 'dayjs/esm';
 
 import { StatusPill } from 'app/console/shared/status-pill/status-pill';
+import { resolveLinkIdentity } from 'app/entities/directory/directory-link/directory-link.model';
+import { DirectoryLinkService } from 'app/entities/directory/directory-link/service/directory-link.service';
 import { ProfessionalService } from 'app/entities/directory/professional/service/professional.service';
 import { Alert } from 'app/shared/alert/alert';
 import { AlertError } from 'app/shared/alert/alert-error';
@@ -56,6 +58,7 @@ export class PatientDetail {
 
   protected readonly patientService = inject(PatientService);
   private readonly professionalService = inject(ProfessionalService);
+  private readonly directoryLinkService = inject(DirectoryLinkService);
 
   constructor() {
     effect(() => {
@@ -74,20 +77,61 @@ export class PatientDetail {
         error: () => this.clinicalLeadName.set(null),
       });
     });
+
+    effect(() => {
+      const patient = this.patient();
+      this.linkIdentity.set(null);
+      // Only when there is no name to show. A patient with a profile needs no link read at all,
+      // which is every record in the directory that was not learned from an event.
+      if (!patient || [patient.profile?.firstName, patient.profile?.lastName].some(Boolean)) {
+        return;
+      }
+      this.directoryLinkService.findByLocalIds([patient.id]).subscribe({
+        next: links => this.linkIdentity.set(resolveLinkIdentity(links.get(patient.id))),
+        // The heading says "Identity not on file", which is true of what this console can see.
+        error: () => this.linkIdentity.set(null),
+      });
+    });
   }
 
-  /** Initials for the monogram, from whatever name the profile actually has. */
+  /**
+   * The address on this patient's sibling-stack link, when they have one and no profile.
+   *
+   * Same reasoning as the directory list, one screen along: a patient learned from a domain event
+   * has no `Profile` and can never be given one from the wire, so this is the only identity there
+   * is. One request, because a record screen is one record — the list's batched read exists because
+   * it resolves a whole page.
+   */
+  // eslint-disable-next-line @typescript-eslint/member-ordering
+  readonly linkIdentity = signal<string | null>(null);
+
+  /** Initials for the monogram, from whatever name is known — never from the id. */
   // eslint-disable-next-line @typescript-eslint/member-ordering
   readonly initials = computed(() => {
     const profile = this.patient()?.profile;
     const parts = [profile?.firstName, profile?.lastName].filter(Boolean) as string[];
-    if (parts.length === 0) {
-      return (this.patient()?.id ?? '?').slice(0, 2).toUpperCase();
+    if (parts.length > 0) {
+      return parts
+        .map(part => part.charAt(0))
+        .join('')
+        .toUpperCase();
     }
-    return parts
-      .map(part => part.charAt(0))
-      .join('')
-      .toUpperCase();
+
+    // The mailbox's first letters, matching the list's chip. Until backlog item 45 this was
+    // `id.slice(0, 2)` — two hex characters of a Mongo ObjectId, which reads as a corrupted record.
+    const identity = this.linkIdentity();
+    if (identity) {
+      const letters = identity
+        .split('@')[0]
+        .split(/[^\p{L}\p{N}]+/u)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map(part => part.charAt(0));
+      if (letters.length > 0) {
+        return letters.join('').toUpperCase();
+      }
+    }
+    return '—';
   });
 
   // eslint-disable-next-line @typescript-eslint/member-ordering
@@ -96,6 +140,16 @@ export class PatientDetail {
     const name = [profile?.firstName, profile?.middleName, profile?.lastName].filter(Boolean).join(' ');
     return name || null;
   });
+
+  /**
+   * What the heading shows: the name, else the linked address, else null.
+   *
+   * Null is rendered as "Identity not on file" by the template rather than as the record id. The
+   * id has not gone away — it is still on the line below, labelled `Account`, which is where an
+   * identifier belongs and where it was already shown.
+   */
+  // eslint-disable-next-line @typescript-eslint/member-ordering
+  readonly headingName = computed(() => this.fullName() ?? this.linkIdentity());
 
   /**
    * The date of birth as a dayjs, because the one on the payload is a string.
