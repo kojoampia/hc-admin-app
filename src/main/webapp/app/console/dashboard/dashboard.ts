@@ -340,15 +340,42 @@ export default class Dashboard implements OnInit {
     return fallback;
   }
 
-  /** Initials for the monogram avatar, from whatever name we actually have. */
+  /**
+   * Initials for the monogram avatar, from whatever name we actually have — and an em dash when we
+   * have none.
+   *
+   * `initials('')` returned `''` until 2026-09-07, which is not a neutral outcome on this card: an
+   * empty avatar beside an empty title is a row an administrator cannot see is a row. It is
+   * reachable, and by the first screen they look at — `DirectoryProjectionService` opens a patient
+   * learned from a sibling event as `PENDING` unless the stream says the account is activated, and
+   * `PENDING` is exactly what this card queries. Such a patient has no `Profile` and can never be
+   * given one from the wire, so `name` is the join of two absent fields.
+   */
   // eslint-disable-next-line @typescript-eslint/member-ordering
   initials(name: string): string {
-    return name
+    const letters = name
       .split(/\s+/)
       .filter(Boolean)
       .map(part => part.charAt(0))
       .slice(0, 2)
       .join('')
       .toUpperCase();
+    return letters.length > 0 ? letters : '—';
+  }
+
+  /**
+   * True for an approval row nothing here can name, so the card says so instead of drawing a gap.
+   *
+   * **Deliberately not resolved from the `DirectoryLink` the way the patient directory does it.**
+   * That would put a second, differently-shaped identity lookup on the dashboard — for one of three
+   * kinds of row, at most five rows, on the screen with the most requests on it already — to show an
+   * address in a card whose job is to say *what is waiting*, not who. The row links straight through
+   * to the record, which does resolve the link and does show the address. What this card owes the
+   * reader is that the row is legible and clickable, which is what item 45 asks for: an honestly
+   * incomplete record rather than a corrupted-looking one.
+   */
+  // eslint-disable-next-line @typescript-eslint/member-ordering
+  isUnnamed(row: { name: string }): boolean {
+    return row.name.trim().length === 0;
   }
 }

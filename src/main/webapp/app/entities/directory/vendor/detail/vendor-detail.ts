@@ -81,11 +81,12 @@ export class VendorDetail {
     return this.accountService.hasAnyAuthority(ConsoleAuthority.ADMIN);
   });
 
+  /** The monogram, and an em dash when the record has no name — never the record id (item 45). */
   // eslint-disable-next-line @typescript-eslint/member-ordering
   readonly initials = computed(() => {
     const name = this.vendor()?.name;
     if (!name) {
-      return (this.vendor()?.id ?? '?').slice(0, 2).toUpperCase();
+      return '—';
     }
     return name
       .split(/\s+/)

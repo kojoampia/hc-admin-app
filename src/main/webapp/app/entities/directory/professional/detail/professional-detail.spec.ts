@@ -135,10 +135,20 @@ describe('Professional Management Detail Component', () => {
       expect(comp.initials()).toBe('AB');
     });
 
-    it('should fall back to the id when there is no profile', () => {
-      fixture.componentRef.setInput('professional', { id: 'p1' });
+    /**
+     * Backlog item 45, one directory along, and the reversal of what this case used to assert.
+     *
+     * It read "should fall back to the id when there is no profile" and expected `P1` — which is
+     * only readable because this fixture's id is two characters. A real `Professional` id is a
+     * 24-character Mongo ObjectId, so the chip said `68`, which is the rendering an operator
+     * reported from production on the patient screen. `Professional.profile` is an optional `@DBRef`
+     * and nothing requires it, so the state is reachable here too.
+     */
+    it('should never build initials out of the record id', () => {
+      fixture.componentRef.setInput('professional', { id: '68b4f2a19c3d5e7f81a02c44' });
       expect(comp.fullName()).toBeNull();
-      expect(comp.initials()).toBe('P1');
+      expect(comp.initials()).not.toBe('68');
+      expect(comp.initials()).toBe('—');
     });
   });
 

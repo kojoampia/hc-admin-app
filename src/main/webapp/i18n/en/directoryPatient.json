@@ -23,8 +23,10 @@
         }
       },
       "unidentified": "Identity not on file",
-      "unidentifiedHint": "Registered on the patient app; no name has been recorded here yet.",
-      "identityFromLink": "From the patient app account — no profile recorded here",
+      "unidentifiedHintLinked": "Registered on the patient app; the linked account carries no name.",
+      "unidentifiedHintUnknown": "No name has been recorded here for this patient.",
+      "identityFromLinkPatientApp": "From the patient app account — no profile recorded here",
+      "identityFromLinkOther": "From a linked account on another stack — no profile recorded here",
       "created": "A new Patient is created with identifier {{ param }}",
       "updated": "A Patient is updated with identifier {{ param }}",
       "deleted": "A Patient is deleted with identifier {{ param }}",

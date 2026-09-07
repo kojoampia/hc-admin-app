@@ -142,10 +142,22 @@ export class Professional implements OnInit {
     return professional.licenceNumber ?? professional.id;
   }
 
+  /**
+   * Initials from the profile, and an em dash when there is none — **never from the id**.
+   *
+   * This returned `professional.id.slice(0, 2).toUpperCase()` until 2026-09-07: two hex characters
+   * of a Mongo ObjectId in the avatar chip, which is the exact rendering backlog item 45 removed
+   * from the patient directory and which survived one directory along. `displayName` is shielded by
+   * `licenceNumber ?? id` and the licence number is required, so the name cell was safe; `profile`
+   * is an optional `@DBRef` and nothing requires it, so the chip was not.
+   *
+   * An em dash rather than initials off the licence number: `MDC/RN/23-4471` yields no letters a
+   * person would recognise, and a chip is a monogram or it is nothing.
+   */
   initials(professional: IProfessional): string {
     const parts = [professional.profile?.firstName, professional.profile?.lastName].filter(Boolean) as string[];
     if (parts.length === 0) {
-      return professional.id.slice(0, 2).toUpperCase();
+      return '—';
     }
     return parts
       .map(part => part.charAt(0))

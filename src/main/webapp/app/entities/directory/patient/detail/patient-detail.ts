@@ -47,14 +47,27 @@ export class PatientDetail {
   readonly isSaving = signal(false);
 
   /**
-   * The clinical lead's name, which the patient payload does not carry.
+   * The clinical lead's name, which the patient payload does not carry — <b>keyed by the lead it
+   * belongs to</b>.
    *
    * `GET /api/patients/{id}` nests the profile, the address, the angel, the plan and the hub — but
    * `clinicalLead` arrives as a Professional without its own profile, so it has a licence number and
    * a speciality and no name. The record fetches the one professional to fill that in. It is a
    * second request on a detail screen rather than a wider payload for every row of the list.
+   *
+   * The id travels with the value for the reason {@link archivedOverride} carries one: this
+   * component instance survives `/patient/A/view` → `/patient/B/view`, because the two routes share
+   * a `routeConfig` and Angular reuses the component rather than recreating it. So A's response can
+   * land after B's record has, and an unkeyed signal would then print A's clinician on B's card.
+   * See {@link clinicalLeadName}, which is what the template reads.
    */
-  readonly clinicalLeadName = signal<string | null>(null);
+  readonly resolvedLeadName = signal<{ leadId: string; name: string | null } | null>(null);
+
+  /** The lead name, but only when it is a name for the lead currently on screen. */
+  readonly clinicalLeadName = computed(() => {
+    const resolved = this.resolvedLeadName();
+    return resolved && resolved.leadId === this.patient()?.clinicalLead?.id ? resolved.name : null;
+  });
 
   protected readonly patientService = inject(PatientService);
   private readonly professionalService = inject(ProfessionalService);
@@ -63,7 +76,7 @@ export class PatientDetail {
   constructor() {
     effect(() => {
       const leadId = this.patient()?.clinicalLead?.id;
-      this.clinicalLeadName.set(null);
+      this.resolvedLeadName.set(null);
       if (!leadId) {
         return;
       }
@@ -71,39 +84,55 @@ export class PatientDetail {
         next: professional => {
           const profile = professional.profile;
           const name = [profile?.firstName, profile?.lastName].filter(Boolean).join(' ');
-          this.clinicalLeadName.set(name || null);
+          this.resolvedLeadName.set({ leadId, name: name || null });
         },
         // The rest of the record is intact; the card falls back to the licence number.
-        error: () => this.clinicalLeadName.set(null),
+        error: () => this.resolvedLeadName.set(null),
       });
     });
 
     effect(() => {
       const patient = this.patient();
-      this.linkIdentity.set(null);
+      this.resolvedLinkIdentity.set(null);
       // Only when there is no name to show. A patient with a profile needs no link read at all,
       // which is every record in the directory that was not learned from an event.
       if (!patient || [patient.profile?.firstName, patient.profile?.lastName].some(Boolean)) {
         return;
       }
       this.directoryLinkService.findByLocalIds([patient.id]).subscribe({
-        next: links => this.linkIdentity.set(resolveLinkIdentity(links.get(patient.id))),
+        next: links => this.resolvedLinkIdentity.set({ id: patient.id, identity: resolveLinkIdentity(links.get(patient.id)) }),
         // The heading says "Identity not on file", which is true of what this console can see.
-        error: () => this.linkIdentity.set(null),
+        error: () => this.resolvedLinkIdentity.set(null),
       });
     });
   }
 
   /**
-   * The address on this patient's sibling-stack link, when they have one and no profile.
+   * The address on this patient's sibling-stack link, when they have one and no profile —
+   * <b>keyed by the patient it belongs to</b>.
    *
    * Same reasoning as the directory list, one screen along: a patient learned from a domain event
    * has no `Profile` and can never be given one from the wire, so this is the only identity there
    * is. One request, because a record screen is one record — the list's batched read exists because
    * it resolves a whole page.
+   *
+   * **The id is stored with the value and it is not decoration.** Navigating `/patient/A/view` →
+   * `/patient/B/view` reuses this component instance — same `routeConfig` — so both effects re-run
+   * against B while A's request may still be in flight. Writing the identity unkeyed meant that if
+   * A's response landed second, **B's heading showed A's email address**: one patient's contact
+   * address printed on another patient's record, on the screen whose entire purpose is naming the
+   * right person. It is the same failure {@link archivedOverride} was already shaped to avoid, and
+   * the fix is the same shape — see {@link linkIdentity}.
    */
   // eslint-disable-next-line @typescript-eslint/member-ordering
-  readonly linkIdentity = signal<string | null>(null);
+  readonly resolvedLinkIdentity = signal<{ id: string; identity: string | null } | null>(null);
+
+  /** The linked identity, but only when it is an identity for the record currently on screen. */
+  // eslint-disable-next-line @typescript-eslint/member-ordering
+  readonly linkIdentity = computed(() => {
+    const resolved = this.resolvedLinkIdentity();
+    return resolved && resolved.id === this.patient()?.id ? resolved.identity : null;
+  });
 
   /** Initials for the monogram, from whatever name is known — never from the id. */
   // eslint-disable-next-line @typescript-eslint/member-ordering

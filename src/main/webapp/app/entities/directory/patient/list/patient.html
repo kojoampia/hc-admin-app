@@ -155,19 +155,19 @@
                         abfTranslate="hcAdminApp.directoryPatient.unidentified"
                         >Identity not on file</a
                       >
-                      <div class="sub" abfTranslate="hcAdminApp.directoryPatient.unidentifiedHint">
-                        Registered on the patient app; no name has been recorded here yet.
-                      </div>
+                      <!-- Two hints, chosen by what the console can see rather than by what it can
+                           guess: a link that names nobody is a fact, "registered on the patient app"
+                           for a row with no link at all was an inference and was wrong. -->
+                      <div class="sub">{{ unidentifiedHintKey(patient) | translate }}</div>
                     } @else {
                       <a class="dir-name" [routerLink]="['/patient', patient.id, 'view']">{{ displayName(patient) }}</a>
                       @if (patient.profile?.idNumber) {
                         <div class="sub">{{ patient.profile?.idNumber }}</div>
                       } @else if (!patient.profile) {
                         <!-- The name above is the address off the sibling-stack link, not a profile.
-                             Saying so keeps an operator from reading it as a record that has one. -->
-                        <div class="sub" abfTranslate="hcAdminApp.directoryPatient.identityFromLink">
-                          From the patient app account — no profile recorded here
-                        </div>
+                             Saying so keeps an operator from reading it as a record that has one, and
+                             the wording follows the link's own source rather than assuming hc-patient. -->
+                        <div class="sub">{{ identityFromLinkKey(patient) | translate }}</div>
                       }
                     }
                   </div>

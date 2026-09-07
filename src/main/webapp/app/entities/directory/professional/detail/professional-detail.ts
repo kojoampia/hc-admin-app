@@ -152,12 +152,13 @@ export class ProfessionalDetail {
     return name || null;
   });
 
+  /** The monogram, and an em dash when no profile names them — never the record id (item 45). */
   // eslint-disable-next-line @typescript-eslint/member-ordering
   readonly initials = computed(() => {
     const profile = this.professional()?.profile;
     const parts = [profile?.firstName, profile?.lastName].filter(Boolean) as string[];
     if (parts.length === 0) {
-      return (this.professional()?.id ?? '?').slice(0, 2).toUpperCase();
+      return '—';
     }
     return parts
       .map(part => part.charAt(0))

@@ -165,7 +165,13 @@
         <a class="lrow" [routerLink]="row.route">
           <span class="mono-av">{{ initials(row.name) }}</span>
           <span class="grow">
-            <span class="tl trunc">{{ row.name }}</span>
+            @if (isUnnamed(row)) {
+              <!-- A record learned from a sibling event has no profile and can never be given one
+                   from the wire, so both name fields are absent. Saying so beats an empty row. -->
+              <span class="tl trunc" abfTranslate="dashboard.approvals.unidentified">Identity not on file</span>
+            } @else {
+              <span class="tl trunc">{{ row.name }}</span>
+            }
             <span class="st trunc">{{ row.detail | translate }}</span>
           </span>
           <abf-status-pill status="PENDING" />

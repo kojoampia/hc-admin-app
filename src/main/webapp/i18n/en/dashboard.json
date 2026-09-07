@@ -58,6 +58,7 @@
       "patient": "Patient registration",
       "professional": "Professional application",
       "vendor": "Vendor onboarding",
+      "unidentified": "Identity not on file",
       "empty": "Nothing waiting for approval",
       "more": "and {{count}} more waiting",
       "patients": "Patients",

@@ -127,6 +127,15 @@ export class Patient implements OnInit {
   private readonly professionalService = inject(ProfessionalService);
   private readonly directoryLinkService = inject(DirectoryLinkService);
 
+  /**
+   * The ids {@link loadLinks} has asked about and not yet heard back on.
+   *
+   * Deliberately not a signal and deliberately not part of {@link links}: nothing renders it, and an
+   * id put into `links` before its answer arrives would read as "asked, and there is none", which is
+   * the one state this screen must not claim without evidence.
+   */
+  private readonly linksInFlight = new Set<string>();
+
   // eslint-disable-next-line @typescript-eslint/member-ordering
   readonly hasFilter = computed(() => this.status() !== null);
 
@@ -183,6 +192,46 @@ export class Patient implements OnInit {
    */
   isUnidentified(patient: IPatient): boolean {
     return this.displayName(patient) === null;
+  }
+
+  /**
+   * Which explanation goes under "Identity not on file" — and it says only what is known.
+   *
+   * Until 2026-09-07 there was one hint and it read *"Registered on the patient app; no name has
+   * been recorded here yet"* for **every** unidentified row. That is a guess, and `loadLinks`'s own
+   * javadoc names the case it is wrong for: a patient with neither profile nor link. For those rows
+   * the hint sent an operator looking for an account on hc-patient that never existed — a worse
+   * outcome than the blank it replaced, because it is confidently wrong.
+   *
+   * So there are two, and the difference is what this console can actually see:
+   *
+   * - `Linked` — a link resolved and it names nobody. Then "registered on the patient app" is a fact
+   *   off the link, not an inference, and worth saying.
+   * - `Unknown` — everything else, which is one honest sentence covering three states that are
+   *   indistinguishable from a screen: the lookup found no link (permanent), the lookup has not come
+   *   back yet, or it failed. None of them licenses a claim about where the record came from.
+   */
+  unidentifiedHintKey(patient: IPatient): string {
+    const known = patient.id in this.links();
+    return known && this.links()[patient.id]
+      ? 'hcAdminApp.directoryPatient.unidentifiedHintLinked'
+      : 'hcAdminApp.directoryPatient.unidentifiedHintUnknown';
+  }
+
+  /**
+   * The sub-label under a name that came off a link rather than a profile, by the link's own source.
+   *
+   * The single label said "From the patient app account" for every such row, while
+   * `resolveLinkIdentity`'s login fallback is documented as being for a **professional**-sourced
+   * link — so the spec asserted a branch the screen's wording denied. Unreachable today, because no
+   * hc-professional link carries a `localId`, but a label that contradicts a covered branch is a
+   * label that will be wrong the moment the branch is reached. It reads the source instead of
+   * assuming one.
+   */
+  identityFromLinkKey(patient: IPatient): string {
+    return this.links()[patient.id]?.source === 'HC_PATIENT'
+      ? 'hcAdminApp.directoryPatient.identityFromLinkPatientApp'
+      : 'hcAdminApp.directoryPatient.identityFromLinkOther';
   }
 
   initials(patient: IPatient): string {
@@ -276,6 +325,13 @@ export class Patient implements OnInit {
   }
 
   refresh(): void {
+    // The links go too, and they are the reason this is not just `load()` twice over.
+    // `loadLinks` records "asked, and there is none" as a present `undefined` so it does not ask
+    // again on every page turn — which is right for paging and wrong for Refresh, because the thing
+    // an administrator presses Refresh *after* is `POST /api/directory-links/reconcile`, and that is
+    // precisely the operation that turns "there is none" into "there is one". Without this the row
+    // went on saying "Identity not on file" until the component was destroyed and recreated.
+    this.links.set({});
     this.load();
     this.loadTiles();
   }
@@ -460,31 +516,50 @@ export class Patient implements OnInit {
    * patient with no link is asked about once and not on every page turn. That distinction is real:
    * a `Patient` can have neither a profile nor a link — a row created by hand before the console
    * dropped its New button, or one whose link was lost — and it is a permanent state, not a pending
-   * one.
+   * one. {@link refresh} clears the map, because a reconciliation can change that answer.
+   *
+   * Ids already in flight are excluded as well as ids already answered. The map cannot record them
+   * — an unanswered id has no value to put in it, and writing `undefined` early would fix the row as
+   * "there is none" before anybody had asked — so the set is kept beside it. Without that, two
+   * responses landing close together (a sort and a page turn, or Refresh pressed twice) send the
+   * same ids twice; harmless, and one more request per burst on a screen whose whole design point is
+   * one request per page.
    */
   private loadLinks(patients: IPatient[]): void {
     const known = this.links();
     const wanted = patients
       .filter(patient => ![patient.profile?.firstName, patient.profile?.lastName].some(Boolean))
       .map(patient => patient.id)
-      .filter(id => !(id in known));
+      .filter(id => !(id in known) && !this.linksInFlight.has(id));
 
     if (wanted.length === 0) {
       return;
     }
 
+    for (const id of wanted) {
+      this.linksInFlight.add(id);
+    }
+    const settle = (): void => {
+      for (const id of wanted) {
+        this.linksInFlight.delete(id);
+      }
+    };
+
     this.directoryLinkService.findByLocalIds(wanted).subscribe({
-      next: found =>
+      next: found => {
+        settle();
         this.links.update(current => {
           const next = { ...current };
           for (const id of wanted) {
             next[id] = found.get(id);
           }
           return next;
-        }),
+        });
+      },
       // The rows keep saying "identity not on file", which is true of what this console can see.
-      // A failed lookup must not be recorded as "asked and there is none", or a retry never happens.
-      error: () => undefined,
+      // A failed lookup must not be recorded as "asked and there is none", or a retry never happens
+      // — which is also why the in-flight set is cleared here rather than only on success.
+      error: () => settle(),
     });
   }
 

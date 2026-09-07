@@ -354,5 +354,25 @@ describe('Professional Management Component', () => {
       expect(comp.displayName({ id: 'p1', licenceNumber: 'MDC/RN/23-4471' })).toBe('MDC/RN/23-4471');
       expect(comp.displayName({ id: 'p1' })).toBe('p1');
     });
+
+    /**
+     * Backlog item 45's rendering, which survived one directory along until 2026-09-07.
+     *
+     * `displayName` is shielded by `licenceNumber ?? id` and the licence number is required, so the
+     * name cell was never the problem. `Professional.profile` is an optional `@DBRef` and nothing
+     * requires it, so the **chip** rendered `professional.id.slice(0, 2)` — two hex characters of a
+     * Mongo ObjectId, the exact thing the patient screen had it removed for.
+     *
+     * Asserted as an absence first, so any future fallback that reaches for the id fails here too.
+     */
+    it('never renders two hex characters of the record id as the initials chip', () => {
+      const learned = { id: '68b4f2a19c3d5e7f81a02c44', licenceNumber: 'MDC/RN/23-4471' } as never;
+
+      expect(comp.initials(learned)).not.toBe('68');
+      expect(comp.initials(learned)).toBe('—');
+      // And the name cell keeps the licence number, which is a readable identifier in a licence
+      // directory — this case is about the chip and must not be read as removing that.
+      expect(comp.displayName(learned)).toBe('MDC/RN/23-4471');
+    });
   });
 });
