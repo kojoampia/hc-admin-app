@@ -68,11 +68,27 @@
       "hub": "Hub",
       "awaiting": {
         "title": "Registered, no record here yet",
-        "subtitle": "These accounts exist on the professional app. This console cannot create a record for them — a registration carries no role and no licence number.",
+        "subtitle": "These accounts exist on the professional app. This console cannot create a record for them — no event carries a role or a licence number. What is shown is the account and, once it arrives, its profile status.",
         "count": "{{ count }} waiting",
         "unidentified": "Identity not on file",
         "noRecord": "Known from a registration on the professional app; no record in this directory",
-        "more": "and {{ count }} more"
+        "more": "and {{ count }} more",
+        "column": {
+          "login": "Login",
+          "activated": "Activated",
+          "verified": "Verified",
+          "complete": "Profile complete",
+          "created": "Created",
+          "modified": "Modified",
+          "lastModifiedBy": "Last changed by"
+        },
+        "yes": "Yes",
+        "no": "No",
+        "unknown": "Not reported",
+        "dateSource": {
+          "profile": "from the profile",
+          "account": "from the account"
+        }
       },
       "archivedNotice": "This record is archived and does not appear in the directory.",
       "isArchived": "Archived",

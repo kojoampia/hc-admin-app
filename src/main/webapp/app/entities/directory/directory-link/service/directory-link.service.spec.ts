@@ -3,7 +3,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 
-import { resolveLinkIdentity } from '../directory-link.model';
+import { hasProfileStatus, resolveClinicianLogin, resolveLinkIdentity } from '../directory-link.model';
 import { DirectoryLinkService } from './directory-link.service';
 
 describe('DirectoryLinkService', () => {
@@ -170,5 +170,68 @@ describe('resolveLinkIdentity', () => {
     expect(resolveLinkIdentity({ id: 'l' })).toBeNull();
     expect(resolveLinkIdentity(null)).toBeNull();
     expect(resolveLinkIdentity(undefined)).toBeNull();
+  });
+});
+
+/**
+ * The clinician's name, which is a different rule from the patient's and is meant to be.
+ *
+ * Backlog item 47 names `login` as what the console shows for a clinician and says of `email` that
+ * it is "for correlation, not for display"; item 43 had already taken the same value out of every log
+ * line. The patient directory shows the address on purpose, and `DirectoryLinkResource`'s javadoc
+ * argues why — so the two functions exist side by side rather than one being a refinement of the
+ * other, and the pair of suites below is what stops either drifting onto the other's rule.
+ */
+describe('resolveClinicianLogin', () => {
+  it('shows the login', () => {
+    expect(resolveClinicianLogin({ id: 'l', login: 'kquartey' })).toBe('kquartey');
+  });
+
+  /**
+   * The case that tells a preference from a rule.
+   *
+   * A row carrying both would be satisfied by either function, so only a row with an address and no
+   * login can show that the address is refused rather than merely ranked second.
+   */
+  it('never falls back to the address, even when there is nothing else', () => {
+    expect(resolveClinicianLogin({ id: 'l', email: 'k.quartey@abofonsa.care' })).toBeNull();
+    expect(resolveClinicianLogin({ id: 'l', login: 'kquartey', email: 'k.quartey@abofonsa.care' })).toBe('kquartey');
+  });
+
+  /** And not the correlation key either, which for a clinician is an accountId — a UUID. */
+  it('never returns the correlation key', () => {
+    expect(resolveClinicianLogin({ id: 'l', externalKey: '9f1c3e77-52aa-4a0b-9a5c-6b3f1d7e0a11' })).toBeNull();
+  });
+
+  it('treats blank and missing alike, so a whitespace login is not a name', () => {
+    expect(resolveClinicianLogin({ id: 'l', login: '   ' })).toBeNull();
+    expect(resolveClinicianLogin({ id: 'l' })).toBeNull();
+    expect(resolveClinicianLogin(null)).toBeNull();
+    expect(resolveClinicianLogin(undefined)).toBeNull();
+  });
+});
+
+/**
+ * Whether phase 2 has arrived, which every "unknown" on the clinician row branches on.
+ *
+ * It reads `profileEventAt` rather than `profileComplete` or `profileId`, and that is the whole
+ * content of the function: either of those can legitimately be absent from a `ProfileStatus` that did
+ * arrive, so reading their absence as "no profile status" would report a clinician's profile as
+ * unreported on the strength of one missing field.
+ */
+describe('hasProfileStatus', () => {
+  it('is true once a profile event has been applied', () => {
+    expect(hasProfileStatus({ id: 'l', profileEventAt: '2026-09-02T14:47:05Z' })).toBe(true);
+  });
+
+  it('is true for a status that arrived carrying nothing but the identifiers', () => {
+    expect(hasProfileStatus({ id: 'l', profileEventAt: '2026-09-02T14:47:05Z', profileComplete: null, profileId: null })).toBe(true);
+  });
+
+  it('is false when no profile event has been applied, whatever else the link carries', () => {
+    expect(hasProfileStatus({ id: 'l', login: 'kquartey', activated: true })).toBe(false);
+    expect(hasProfileStatus({ id: 'l' })).toBe(false);
+    expect(hasProfileStatus(null)).toBe(false);
+    expect(hasProfileStatus(undefined)).toBe(false);
   });
 });

@@ -2,12 +2,15 @@
 @import 'directory-list';
 
 /*
- * The awaiting-a-record panel — clinicians this console knows about and holds no record for.
+ * The awaiting-a-record table — clinicians this console knows about and holds no record for.
  *
- * Deliberately not a table. These are not directory rows and must not read as though a column were
- * simply empty: a table of dashes under Role, Licence and Hub is exactly the "record entered badly"
- * reading that backlog item 45 was raised about, one screen along. A short list, in the quieter
- * grey, above the directory it is not part of.
+ * IT IS A TABLE, AND THIS FILE SAID IT DELIBERATELY WAS NOT UNTIL 2026-09-07. Item 46's reasoning was
+ * that a row of dashes under Role, Licence and Hub reads as a record entered badly — item 45's
+ * finding — and it was right about those columns. Item 47's contract gives these subjects columns of
+ * their own that need no Professional document, so the objection does not carry over: nothing in
+ * login / activated / verified / complete / created / modified / last-changed-by is empty because a
+ * record is missing. It is still visually a panel above the directory rather than part of it, in the
+ * quieter grey, which is what the border and the tint below are for.
  */
 .awaiting-record {
   padding: 16px 18px;
@@ -36,26 +39,58 @@
   margin-top: 2px;
 }
 
-.awaiting-list {
-  list-style: none;
+.awaiting-table {
   margin: 0;
-  padding: 0;
-  display: grid;
-  gap: 10px;
+  font-size: 13px;
 }
 
-.awaiting-list li {
+.awaiting-table th {
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--abf-grey);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.awaiting-table td {
+  vertical-align: middle;
+}
+
+/* The name cell keeps the chip-beside-name shape the directory row has, so the two read as one page. */
+.awaiting-table .dir-cell {
   display: flex;
   align-items: center;
 }
 
 /*
- * `.dir-name` underlines on hover, because in the table it is a link to the record. Here there is no
- * record and the element is a `div` rather than an `a` — a hover underline on it would advertise a
- * destination that does not exist, which on this panel is the one promise it must not make.
+ * `.dir-name` underlines on hover, because in the directory table it is a link to the record. Here
+ * there is no record and the element is a `div` rather than an `a` — a hover underline on it would
+ * advertise a destination that does not exist, which on this table is the one promise it must not
+ * make.
  */
-.awaiting-list .dir-name:hover {
+.awaiting-table .dir-name:hover {
   text-decoration: none;
+}
+
+/*
+ * "Not reported", which is neither a yes nor a no.
+ *
+ * Deliberately NOT a pill. The two booleans render as pills — green for yes, amber for no — and
+ * giving unknown a pill of its own would put it in the same visual class as an answer, which is
+ * exactly the conflation the whole column exists to avoid. It is quiet, italic, and reads as an
+ * absence.
+ */
+.awaiting-table .unknown {
+  color: var(--abf-grey);
+  font-style: italic;
+}
+
+.awaiting-table .mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11.5px;
+  color: var(--abf-grey);
+  word-break: break-all;
 }
 
 /*
