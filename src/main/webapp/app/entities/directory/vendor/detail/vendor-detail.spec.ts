@@ -184,9 +184,17 @@ describe('Vendor Management Detail Component', () => {
       expect(comp.initials()).toBe('KM');
     });
 
-    it('should fall back to the id when unnamed', () => {
-      fixture.componentRef.setInput('vendor', { id: 'v1' });
-      expect(comp.initials()).toBe('V1');
+    /**
+     * Backlog item 45's rule applied here too, and reversed in place for the same reason.
+     *
+     * `Vendor.name` is required, so this is the least reachable of the four sites — but a rule with
+     * one unexplained exception is a rule the next reader copies the exception from, and the id here
+     * is a 24-character ObjectId in production exactly as it is everywhere else.
+     */
+    it('should never build initials out of the record id', () => {
+      fixture.componentRef.setInput('vendor', { id: '68b4f2a19c3d5e7f81a02c44' });
+      expect(comp.initials()).not.toBe('68');
+      expect(comp.initials()).toBe('—');
     });
   });
 });

@@ -40,6 +40,19 @@ interface KpiTile {
    * the number comes from the metrics payload.
    */
   readonly noteParams: Record<string, number>;
+  /**
+   * A second line under the note, for a figure the tile's own number deliberately does not include.
+   *
+   * There is exactly one today and it is why this exists: a clinician who has registered on
+   * hc-professional but has no record here is not in `network.professionals`, because that counts
+   * records — and the account-mix chart and the professionals sparkline are derived from the same
+   * count, so folding them in would move three figures at once and say so nowhere. The tile keeps
+   * its meaning and this says what else is known. Backlog item 46.
+   *
+   * Absent on a tile that has nothing extra to say, rather than rendered as a zero: "0 registered
+   * with no record" is a sentence about a problem nobody has.
+   */
+  readonly subNote?: { readonly key: string; readonly params: Record<string, number> };
   readonly route: string;
   readonly series: readonly number[];
 }
@@ -167,6 +180,12 @@ export default class Dashboard implements OnInit {
         direction: (data.deltas.professionals ?? 0) > 0 ? 'up' : 'flat',
         note: 'dashboard.kpi.professionalsNote',
         noteParams: { count: data.deltas.professionals ?? 0 },
+        // The number above counts records; this says how many clinicians are known and have none.
+        // Only when there are some — see `subNote`.
+        subNote:
+          data.professionalsAwaitingRecord > 0
+            ? { key: 'dashboard.kpi.professionalsAwaitingNote', params: { count: data.professionalsAwaitingRecord } }
+            : undefined,
         route: '/professional',
         series: data.sparklines.professionals ?? [],
       },
@@ -340,15 +359,42 @@ export default class Dashboard implements OnInit {
     return fallback;
   }
 
-  /** Initials for the monogram avatar, from whatever name we actually have. */
+  /**
+   * Initials for the monogram avatar, from whatever name we actually have — and an em dash when we
+   * have none.
+   *
+   * `initials('')` returned `''` until 2026-09-07, which is not a neutral outcome on this card: an
+   * empty avatar beside an empty title is a row an administrator cannot see is a row. It is
+   * reachable, and by the first screen they look at — `DirectoryProjectionService` opens a patient
+   * learned from a sibling event as `PENDING` unless the stream says the account is activated, and
+   * `PENDING` is exactly what this card queries. Such a patient has no `Profile` and can never be
+   * given one from the wire, so `name` is the join of two absent fields.
+   */
   // eslint-disable-next-line @typescript-eslint/member-ordering
   initials(name: string): string {
-    return name
+    const letters = name
       .split(/\s+/)
       .filter(Boolean)
       .map(part => part.charAt(0))
       .slice(0, 2)
       .join('')
       .toUpperCase();
+    return letters.length > 0 ? letters : '—';
+  }
+
+  /**
+   * True for an approval row nothing here can name, so the card says so instead of drawing a gap.
+   *
+   * **Deliberately not resolved from the `DirectoryLink` the way the patient directory does it.**
+   * That would put a second, differently-shaped identity lookup on the dashboard — for one of three
+   * kinds of row, at most five rows, on the screen with the most requests on it already — to show an
+   * address in a card whose job is to say *what is waiting*, not who. The row links straight through
+   * to the record, which does resolve the link and does show the address. What this card owes the
+   * reader is that the row is legible and clickable, which is what item 45 asks for: an honestly
+   * incomplete record rather than a corrupted-looking one.
+   */
+  // eslint-disable-next-line @typescript-eslint/member-ordering
+  isUnnamed(row: { name: string }): boolean {
+    return row.name.trim().length === 0;
   }
 }

@@ -3,3 +3,14 @@
    scopes a component stylesheet, so an import here is the only way those classes reach this
    template; global.scss pulls in console-admin only. */
 @import 'console-components';
+
+/*
+ * A record nobody on this side can name — the same real state the directory list renders, and the
+ * same reasoning: italic grey says "this is a label, not somebody's name", where the record id it
+ * replaced said "this row is corrupted". Deliberately not the danger tone; an incomplete record is
+ * not an error.
+ */
+.record-head .who h3.unidentified {
+  font-style: italic;
+  color: var(--abf-grey);
+}

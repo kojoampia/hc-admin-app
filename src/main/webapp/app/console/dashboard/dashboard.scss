@@ -94,3 +94,16 @@ abf-sparkline {
     font-size: 13px;
   }
 }
+
+/*
+ * The second line under a KPI note — today only "N registered, no record here yet".
+ *
+ * In the warning tone rather than the tile's own delta tone, and deliberately not carrying the
+ * ▲/▼/● marker: it is not a movement in the number above it, it is a figure that number does not
+ * include. Making it look like a delta is exactly how a reader would come to add the two together.
+ */
+.stat .dl.sub-note {
+  color: var(--abf-warn);
+  font-weight: 600;
+  margin-top: 2px;
+}

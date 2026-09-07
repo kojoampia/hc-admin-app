@@ -46,4 +46,23 @@ describe('KPI notes', () => {
   it('does not describe message inflow as though it were the backlog', () => {
     expect(kpi.unreadMessagesNote).toContain('arrived');
   });
+
+  /**
+   * The professionals tile says what it does **not** include — backlog item 46.
+   *
+   * A clinician who has registered on hc-professional has no `Professional` here and is not in the
+   * number above, because that counts records; the account-mix chart and the sparkline are derived
+   * from the same count. The alternative to saying so was folding them in, which moves three figures
+   * at once and tells the reader none of it.
+   *
+   * Asserted on the wording rather than only on the placeholder: "no record here yet" is the whole
+   * of what makes this a second figure rather than a second delta, and a note that lost it would
+   * read as more professionals having arrived.
+   */
+  it('says the clinicians it knows about but has no record for are not in the count', () => {
+    expect(kpi.professionalsAwaitingNote).toContain('{{count}}');
+    expect(kpi.professionalsAwaitingNote).toContain('no record here yet');
+    // Not "verified", not "this week": it is a standing state, not a movement.
+    expect(kpi.professionalsAwaitingNote).not.toContain('this week');
+  });
 });

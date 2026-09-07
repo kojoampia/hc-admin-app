@@ -152,6 +152,22 @@
   }
 }
 
+/*
+ * A record nobody on this side can name, which is a real state rather than a broken row.
+ *
+ * A patient who registered on hc-patient reaches this directory through a domain event, and those
+ * events deliberately carry no name — so until an administrator completes the record there is
+ * nothing here to print. It reads in the quieter grey and in italics so it is visibly a *label*
+ * and not somebody called "Identity not on file", while staying a link to the record like every
+ * other name in this column. It is not the danger tone: an incomplete record is not an error, and
+ * colouring it red would have operators chasing rows that are behaving exactly as designed.
+ */
+.dir-name-unidentified {
+  font-weight: 600;
+  font-style: italic;
+  color: var(--abf-grey);
+}
+
 .dir-table .sub {
   font-size: 12px;
   color: var(--abf-grey);

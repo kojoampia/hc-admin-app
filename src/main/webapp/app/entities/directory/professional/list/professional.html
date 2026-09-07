@@ -62,6 +62,81 @@
   }
 </div>
 
+<!--
+  Clinicians this console knows about and holds no record for — backlog item 46.
+
+  These rows are not in the table below and cannot be: a registration on hc-professional arrives as a
+  DirectoryLink and produces no Professional, because `role` and `licenceNumber` are required here and
+  are on the wire in no event, in any version. So they are shown as what they are — an account that
+  exists on another stack — rather than fabricated into directory rows with an invented role and
+  licence number, which in the directory whose purpose is verifying licences would be the most
+  plausible possible wrong answer.
+
+  There is deliberately no "create the record" action here. Nothing an administrator could type would
+  be a licence hc-admin has verified, and completing these properly is a read hc-professional does not
+  yet expose (backlog items 35 and 36).
+
+  It carries no `no-print`, and that is a decision rather than an omission: the topbar's print button
+  is expected to produce the directory as a document, and "these accounts registered and have no
+  record here" is part of that directory rather than chrome. The `head-tools` and `tools` blocks
+  around it are hidden because they are controls — filter chips and a pager say nothing on paper.
+  Note what a printed copy therefore is: the first few rows plus "and N more", the same truncation
+  that is on screen, which is why the count beside the heading is the whole figure.
+-->
+@if (showAwaiting()) {
+  <div class="card awaiting-record" data-cy="awaitingRecord">
+    <div class="sec-head">
+      <div>
+        <h4 abfTranslate="hcAdminApp.directoryProfessional.awaiting.title">Registered, no record here yet</h4>
+        <p abfTranslate="hcAdminApp.directoryProfessional.awaiting.subtitle">
+          These accounts exist on the professional app. This console cannot create a record for them — a registration carries no role and no
+          licence number.
+        </p>
+      </div>
+      <span class="pill pill-warn" data-cy="awaitingCount">{{
+        'hcAdminApp.directoryProfessional.awaiting.count' | translate: { count: awaitingTotal() }
+      }}</span>
+    </div>
+
+    <ul class="awaiting-list">
+      @for (link of awaiting(); track link.id) {
+        <li data-cy="awaitingRow">
+          <span class="dir-av" aria-hidden="true">{{ awaitingInitials(link) }}</span>
+          <div>
+            @if (awaitingName(link); as name) {
+              <div class="dir-name">{{ name }}</div>
+            } @else {
+              <!-- An onboarding.state frame carries neither an address nor a login, so there is
+                   genuinely nothing to name this account by. It says so rather than printing the
+                   accountId, which is a UUID and reads as a corrupted record — item 45's finding. -->
+              <div class="dir-name dir-name-unidentified" abfTranslate="hcAdminApp.directoryProfessional.awaiting.unidentified">
+                Identity not on file
+              </div>
+            }
+            <div class="sub">
+              {{ 'hcAdminApp.directoryProfessional.awaiting.noRecord' | translate }}
+              <!-- Only when the far side reported one. A clinician whose only event is a
+                   registration.created has no onboarding state, and since 2026-09-07 the api
+                   leaves the field absent rather than filling it with the event type — which had
+                   been rendering here as "· registration.created", a wire identifier where a
+                   status goes, on the newest row on the panel. See directory-link.model.ts. -->
+              @if (link.state) {
+                · {{ link.state }}
+              }
+            </div>
+          </div>
+        </li>
+      }
+    </ul>
+
+    @if (awaitingOverflow() > 0) {
+      <p class="sub" data-cy="awaitingOverflow">
+        {{ 'hcAdminApp.directoryProfessional.awaiting.more' | translate: { count: awaitingOverflow() } }}
+      </p>
+    }
+  </div>
+}
+
 <div class="tools no-print">
   <div class="chip-row">
     @for (option of STATUSES; track option) {

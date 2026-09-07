@@ -1,0 +1,95 @@
+import { readFileSync, readdirSync } from 'node:fs';
+import { join } from 'node:path';
+
+import { describe, expect, it } from 'vitest';
+
+/**
+ * **No screen in this console names a record by a fragment of its id.**
+ *
+ * Backlog item 45 was a patient directory row reading `68b4f2a19c3d5e7f81a02c44` under an avatar
+ * chip reading `68`. It is not a hash and nothing was corrupt: `Patient.profile` was absent, every
+ * binding was `patient.profile?.…`, and the fallback was total. An operator reported it from
+ * production as a broken record, which is the correct reading of what was on the screen.
+ *
+ * The fix removed it from the patient list and the patient record — **and it was still in the
+ * professional list, the professional record and the vendor record**, which the review of that fix
+ * found. Two component-level absence assertions could not have caught that, because they assert
+ * about the two components they are in. This is the generalisation: one rule, over every screen that
+ * could carry the defect, so the next screen is covered on the commit that creates it rather than on
+ * the commit that notices.
+ *
+ * It is the same argument `PaginationIT` makes on the api and for the same reason —
+ * **a test whose coverage has to be extended by hand silently stops covering things** — and the same
+ * argument as `LogPseudonymTest`'s discovered file set. Do not replace the walk with a list.
+ *
+ * ## What it forbids, and what it deliberately does not
+ *
+ * Only an `id` cut into text. It says nothing about `displayName` falling back to a whole id — the
+ * professional list does, behind a required licence number, and a licence number is a readable
+ * identifier in a licence directory. The defect is specifically *taking a fragment of an opaque
+ * identifier and presenting it as somebody's initials*, which no amount of context makes legible.
+ */
+describe('directory records are never named by a fragment of their id', () => {
+  /** Every screen that draws a record header or a directory row, walked rather than listed. */
+  const ROOTS = ['src/main/webapp/app/entities/directory', 'src/main/webapp/app/console'];
+
+  /**
+   * `something.id` — or `id ?? '?'` — run through `.slice(...)`, which is the shape of all four
+   * sites this rule was written for. Anchored on the property rather than on a variable name, so
+   * renaming `professional` to `record` does not slip past it.
+   */
+  const ID_SLICE = /\bid\b[^;\n]{0,20}\)?\s*\.slice\s*\(/;
+
+  const walk = (dir: string, found: string[] = []): string[] => {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      const path = join(dir, entry.name);
+      if (entry.isDirectory()) {
+        walk(path, found);
+      } else if ((entry.name.endsWith('.ts') || entry.name.endsWith('.html')) && !entry.name.endsWith('.spec.ts')) {
+        found.push(path);
+      }
+    }
+    return found;
+  };
+
+  const sources = ROOTS.flatMap(root => walk(root));
+
+  /**
+   * The discovery can fail as quietly as the rule can. A moved folder or a tightened extension
+   * filter would leave this passing over nothing at all, so the walk is pinned against the files the
+   * rule exists for before anything is asserted about their contents.
+   */
+  it('finds the screens it is meant to be sweeping', () => {
+    expect(sources).toEqual(
+      expect.arrayContaining([
+        join('src/main/webapp/app/entities/directory/patient/list', 'patient.ts'),
+        join('src/main/webapp/app/entities/directory/patient/detail', 'patient-detail.ts'),
+        join('src/main/webapp/app/entities/directory/professional/list', 'professional.ts'),
+        join('src/main/webapp/app/entities/directory/professional/detail', 'professional-detail.ts'),
+        join('src/main/webapp/app/entities/directory/vendor/detail', 'vendor-detail.ts'),
+        join('src/main/webapp/app/console/dashboard', 'dashboard.ts'),
+      ]),
+    );
+  });
+
+  it('slices no record id into initials, anywhere', () => {
+    const offenders = sources
+      .map(path => ({ path, text: readFileSync(path, 'utf8') }))
+      .flatMap(({ path, text }) =>
+        text
+          .split('\n')
+          .map((line, index) => ({ path, line: line.trim(), number: index + 1 }))
+          // Comments are where this rule is explained, in five files. Reading them as violations
+          // would make the explanation the thing that fails.
+          .filter(({ line }) => !line.startsWith('*') && !line.startsWith('//') && !line.startsWith('<!--'))
+          .filter(({ line }) => ID_SLICE.test(line)),
+      )
+      .map(offender => `${offender.path}:${offender.number}  ${offender.line}`);
+
+    expect(
+      offenders,
+      'a record id sliced into text is backlog item 45: two hex characters of a Mongo ObjectId ' +
+        'presented as somebody\'s initials. Return "—" instead — a chip is a monogram or it is nothing.',
+    ).toEqual([]);
+  });
+});

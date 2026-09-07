@@ -83,12 +83,61 @@ describe('Patient Management Detail Component', () => {
       expect(comp.fullName()).toBe('Kojo Ampia-Addison');
     });
 
-    // The generated screen showed the id and nothing else, which is what made the record
-    // unreadable. A record with no profile still has to render something.
-    it('should fall back to the id when there is no profile', () => {
-      fixture.componentRef.setInput('patient', { id: 'a1' });
-      expect(comp.initials()).toBe('A1');
+    /**
+     * Backlog item 45, and the reversal of what this case used to assert.
+     *
+     * It read "should fall back to the id when there is no profile" and expected `A1` — the id's
+     * first two characters. On a real record that id is a 24-character Mongo ObjectId, so the chip
+     * said `68` above a heading reading `68b4f2a19c3d5e7f81a02c44`, and an operator reported it
+     * from production as a corrupted record. A patient learned from a sibling domain event has no
+     * profile and can never be given one from the wire, so this is not a rare state — it is every
+     * patient who registers.
+     */
+    it('should never build initials or a heading out of the record id', () => {
+      fixture.componentRef.setInput('patient', { id: '68b4f2a19c3d5e7f81a02c44' });
+
+      expect(comp.initials()).not.toBe('68');
+      expect(comp.initials()).toBe('—');
       expect(comp.fullName()).toBeNull();
+      expect(comp.headingName()).toBeNull();
+    });
+
+    it('should head the record with the linked address when there is no profile', () => {
+      fixture.componentRef.setInput('patient', { id: '68b4f2a19c3d5e7f81a02c44' });
+      comp.resolvedLinkIdentity.set({ id: '68b4f2a19c3d5e7f81a02c44', identity: 'ama.mensah@example.com' });
+
+      expect(comp.headingName()).toBe('ama.mensah@example.com');
+      expect(comp.initials()).toBe('AM');
+    });
+
+    it('should prefer a real name over the linked address', () => {
+      fixture.componentRef.setInput('patient', { id: 'a1', profile: { firstName: 'Kojo', lastName: 'Ampia-Addison' } });
+      comp.resolvedLinkIdentity.set({ id: 'a1', identity: 'ama.mensah@example.com' });
+
+      expect(comp.headingName()).toBe('Kojo Ampia-Addison');
+      expect(comp.initials()).toBe('KA');
+    });
+
+    /**
+     * **One patient's email address must not print on another patient's record.**
+     *
+     * `/patient/A/view` → `/patient/B/view` reuses this component instance, because the two routes
+     * share a `routeConfig` and Angular does not recreate it. So both effects re-run against B while
+     * A's `findByLocalIds` may still be in flight, and an unkeyed signal takes whichever response
+     * lands last. Until 2026-09-07 that was exactly the shape here, and the heading is the one place
+     * on the screen where showing the wrong person's contact address is not a cosmetic fault.
+     *
+     * The record already solved this fifty lines up — `archivedOverride` carries `{ id, isArchived }`
+     * so a stale override is ignored rather than claiming the new record's state — and this is that
+     * pattern applied to the other two resolved values.
+     */
+    it('should ignore a linked identity that belongs to a record no longer on screen', () => {
+      fixture.componentRef.setInput('patient', { id: 'patient-b' });
+      comp.resolvedLinkIdentity.set({ id: 'patient-a', identity: 'ama.mensah@example.com' });
+
+      expect(comp.linkIdentity()).toBeNull();
+      expect(comp.headingName()).toBeNull();
+      expect(comp.initials()).toBe('—');
     });
 
     it('should include a middle name in the full name but not the initials', () => {
@@ -151,6 +200,18 @@ describe('Patient Management Detail Component', () => {
 
       fixture.componentRef.setInput('patient', { id: 'a1', clinicalLead: { id: 'p1', licenceNumber: 'MDC/RN/23-4471' } });
       fixture.detectChanges();
+
+      expect(comp.clinicalLeadName()).toBeNull();
+    });
+
+    /**
+     * The same stale-response window as the linked identity above, and it was pre-existing rather
+     * than introduced by item 45 — fixed in the same pass because it is one bug in two places.
+     * A clinician's name attached to the wrong patient reads as a real assignment.
+     */
+    it('should ignore a resolved name that belongs to a lead no longer on screen', () => {
+      fixture.componentRef.setInput('patient', { id: 'a2', clinicalLead: { id: 'p2', licenceNumber: 'NMC/GH/19-8820' } });
+      comp.resolvedLeadName.set({ leadId: 'p1', name: 'Ama Boateng' });
 
       expect(comp.clinicalLeadName()).toBeNull();
     });

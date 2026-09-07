@@ -94,6 +94,44 @@ describe('dashboard approvals', () => {
   });
 
   /**
+   * **A patient learned from a sibling event reaches this card, and reached it as a blank row.**
+   *
+   * `DirectoryProjectionService` opens such a patient as `PENDING` unless the stream says the
+   * account is activated, and `PENDING` is exactly what this card queries. That patient has no
+   * `Profile` and can never be given one from the wire — the streams carry no name — so `name` is
+   * the join of two absent fields, `''`, and `initials('')` was `''` too: an empty avatar beside an
+   * empty title, on the first card an administrator looks at, linking somewhere.
+   *
+   * The row is not resolved against the `DirectoryLink` the way the patient directory resolves it,
+   * and that is argued in `isUnnamed`'s javadoc: this card says *what is waiting*, the record it
+   * links to says *who*. What item 45 asks for is that an incomplete record reads as incomplete
+   * rather than as corrupt, and a row that cannot be seen at all fails that harder than an ObjectId
+   * does.
+   */
+  it('marks a pending record that nothing here can name, rather than drawing an empty row', () => {
+    answer('patients', [{ id: '68b4f2a19c3d5e7f81a02c44' }], 1);
+    answer('professionals', [], 0);
+    answer('vendors', [], 0);
+
+    const [row] = component.approvals();
+    expect(component.isUnnamed(row)).toBe(true);
+    // Never the id, here either — the same rule as the directory it links to.
+    expect(component.initials(row.name)).not.toBe('68');
+    expect(component.initials(row.name)).toBe('—');
+    expect(row.route).toBe('/patient/68b4f2a19c3d5e7f81a02c44/view');
+  });
+
+  it('leaves a named record alone', () => {
+    answer('patients', [patient('p1')], 1);
+    answer('professionals', [], 0);
+    answer('vendors', [], 0);
+
+    const [row] = component.approvals();
+    expect(component.isUnnamed(row)).toBe(false);
+    expect(component.initials(row.name)).toBe('AB');
+  });
+
+  /**
    * A directory that fails must not leave the previous session's rows on the card.
    *
    * <p>The three are one `forkJoin`, so the first failure cancels its siblings — there is nothing

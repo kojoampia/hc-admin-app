@@ -13,7 +13,14 @@
   <header class="record-head card" data-cy="patientDetailsHeading">
     <span class="mono-av" aria-hidden="true">{{ initials() }}</span>
     <div class="who">
-      <h3>{{ fullName() ?? patientRef.id }}</h3>
+      @if (headingName(); as name) {
+        <h3>{{ name }}</h3>
+      } @else {
+        <!-- Not `patientRef.id`, which is a 24-character ObjectId and reads as a corrupted record
+             (backlog item 45). The id is on the `Account` line just below, which is where an
+             identifier belongs. -->
+        <h3 class="unidentified" abfTranslate="hcAdminApp.directoryPatient.unidentified">Identity not on file</h3>
+      }
       <p>
         @if (patientRef.profile?.idNumber) {
           <span>{{ 'hcAdminApp.IdType.' + (patientRef.profile?.idType ?? 'null') | translate }} {{ patientRef.profile?.idNumber }}</span>

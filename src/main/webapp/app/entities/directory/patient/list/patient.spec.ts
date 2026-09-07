@@ -103,6 +103,11 @@ describe('Patient Management Component', () => {
     for (const req of httpMock.match(r => r.url.includes('/api/professionals/'))) {
       req.flush({ id: 'unused' });
     }
+    // Any row without a name provokes one batched link read. Seeded rows carry no profile, so most
+    // tests in this file make it without being about it.
+    for (const req of httpMock.match(r => r.url.endsWith('/api/directory-links'))) {
+      req.flush([]);
+    }
   }
 
   afterEach(() => {
@@ -263,10 +268,215 @@ describe('Patient Management Component', () => {
       expect(comp.initials(patient)).toBe('EM');
     });
 
-    it('should fall back to the id rather than showing nothing', () => {
-      // The finding was that rows read "a1", "profile-a1", "angel-a1" with no name anywhere. A
-      // record with no profile still has to identify itself.
-      expect(comp.displayName({ id: 'a1' })).toBe('a1');
+    /**
+     * A patient learned from a sibling domain event, which is backlog item 45.
+     *
+     * The streams carry no name, date of birth, phone number or document number — hc-patient's
+     * publisher refuses them at runtime — and hc-admin's `Profile` requires all four, so such a
+     * patient has no profile and never can from the wire. The row used to fall back to
+     * `patient.id`: a 24-character Mongo ObjectId under a chip reading its first two hex
+     * characters, which an operator reported from production as a corrupted record.
+     */
+    describe('a patient with no profile', () => {
+      const learned = { id: '68b4f2a19c3d5e7f81a02c44' } as never;
+
+      it('never renders the ObjectId as a name, and never two hex characters as initials', () => {
+        // Asserted as an absence rather than against the replacement, because the defect is the id
+        // appearing at all — any future fallback that reintroduces it fails here too.
+        expect(comp.displayName(learned)).not.toBe('68b4f2a19c3d5e7f81a02c44');
+        expect(comp.initials(learned)).not.toBe('68');
+      });
+
+      it('reads as an honestly incomplete record while nothing names them', () => {
+        expect(comp.displayName(learned)).toBeNull();
+        expect(comp.isUnidentified(learned)).toBe(true);
+        expect(comp.initials(learned)).toBe('—');
+      });
+
+      it('shows the address from the directory link once it lands', () => {
+        comp.links.set({ '68b4f2a19c3d5e7f81a02c44': { id: 'link-1', email: 'Ama.Mensah@example.com' } });
+
+        expect(comp.displayName(learned)).toBe('Ama.Mensah@example.com');
+        expect(comp.isUnidentified(learned)).toBe(false);
+        // The mailbox's letters, not the id's.
+        expect(comp.initials(learned)).toBe('AM');
+      });
+
+      it('falls back to the login when the link carries no address', () => {
+        // A professional-sourced link keys on an opaque accountId, so there may be no email.
+        comp.links.set({ '68b4f2a19c3d5e7f81a02c44': { id: 'link-1', login: 'amensah' } });
+
+        expect(comp.displayName(learned)).toBe('amensah');
+        expect(comp.initials(learned)).toBe('A');
+      });
+
+      it('does not fall back to the correlation key, which for a clinician is a UUID', () => {
+        // externalKey equals email for a patient and adds nothing; for a professional it is the
+        // same unreadable-identifier-as-a-name defect one field along.
+        comp.links.set({
+          '68b4f2a19c3d5e7f81a02c44': { id: 'link-1', externalKey: '9f1c3e77-52aa-4a0b-9a5c-6b3f1d7e0a11' },
+        });
+
+        expect(comp.displayName(learned)).toBeNull();
+        expect(comp.isUnidentified(learned)).toBe(true);
+      });
+
+      /**
+       * **The hint under "Identity not on file" says what is known, not what is likely.**
+       *
+       * There was one hint until 2026-09-07 and it read "Registered on the patient app; no name has
+       * been recorded here yet" for every unidentified row — including the row `loadLinks`'s own
+       * javadoc describes as having neither profile nor link, "a permanent state, not a pending
+       * one". For those rows it sent an operator looking for an account on hc-patient that never
+       * existed, which is worse than the blank it replaced because it is confidently wrong.
+       */
+      describe('the hint under the label', () => {
+        it('claims a patient-app registration only when a link actually says so', () => {
+          comp.links.set({ '68b4f2a19c3d5e7f81a02c44': { id: 'link-1', source: 'HC_PATIENT' } });
+
+          expect(comp.isUnidentified(learned)).toBe(true);
+          expect(comp.unidentifiedHintKey(learned)).toBe('hcAdminApp.directoryPatient.unidentifiedHintLinked');
+        });
+
+        it('says only that no name is recorded when the lookup found no link', () => {
+          // Asked, and there is none — the key is present with an undefined value.
+          comp.links.set({ '68b4f2a19c3d5e7f81a02c44': undefined });
+
+          expect(comp.unidentifiedHintKey(learned)).toBe('hcAdminApp.directoryPatient.unidentifiedHintUnknown');
+        });
+
+        it('says the same while the lookup is still out, rather than guessing ahead of it', () => {
+          expect(comp.unidentifiedHintKey(learned)).toBe('hcAdminApp.directoryPatient.unidentifiedHintUnknown');
+        });
+      });
+
+      /**
+       * The sub-label under a name that came off a link follows the link's own source.
+       *
+       * `resolveLinkIdentity`'s login fallback is documented as being for a professional-sourced
+       * link, and the case above asserts it — while the single label said "From the patient app
+       * account" for every such row. Unreachable today, since no hc-professional link carries a
+       * `localId`, but a label contradicting a covered branch is a label that is wrong the moment
+       * the branch is reached.
+       */
+      describe('where a linked name came from', () => {
+        it('names the patient app for an hc-patient link', () => {
+          comp.links.set({ '68b4f2a19c3d5e7f81a02c44': { id: 'link-1', source: 'HC_PATIENT', email: 'ama@example.com' } });
+
+          expect(comp.identityFromLinkKey(learned)).toBe('hcAdminApp.directoryPatient.identityFromLinkPatientApp');
+        });
+
+        it('does not name the patient app for a link from anywhere else', () => {
+          comp.links.set({ '68b4f2a19c3d5e7f81a02c44': { id: 'link-1', source: 'HC_PROFESSIONAL', login: 'kquartey' } });
+
+          expect(comp.identityFromLinkKey(learned)).toBe('hcAdminApp.directoryPatient.identityFromLinkOther');
+        });
+      });
+    });
+  });
+
+  describe('resolving the links behind the nameless rows', () => {
+    it('asks once for the whole page rather than once per row, and only about the nameless', async () => {
+      TestBed.tick();
+      const req = expectListRequest();
+      req.flush([{ id: 'learned-1' }, { id: 'learned-2' }, { id: 'named-1', profile: { id: 'p', firstName: 'Efua', lastName: 'Mensah' } }]);
+      await vitest.runAllTimersAsync();
+
+      const linkReq = httpMock.expectOne(r => r.url.endsWith('/api/directory-links'));
+      expect(linkReq.request.params.getAll('localId.in')).toEqual(['learned-1', 'learned-2']);
+      // Explicit, because a list endpoint with no size returns 20 and would silently leave the
+      // 21st row of a page unresolved.
+      expect(linkReq.request.params.get('size')).toBe('2');
+
+      linkReq.flush([{ id: 'link-1', localId: 'learned-1', email: 'ama@example.com' }]);
+      await vitest.runAllTimersAsync();
+
+      expect(comp.displayName({ id: 'learned-1' })).toBe('ama@example.com');
+      // Asked about and not found: a real, permanent state, recorded so it is not asked again.
+      expect(comp.isUnidentified({ id: 'learned-2' })).toBe(true);
+      expect('learned-2' in comp.links()).toBe(true);
+    });
+
+    it('sends no request at all when every row on the page has a name', async () => {
+      TestBed.tick();
+      const req = expectListRequest();
+      req.flush([{ id: 'named-1', profile: { id: 'p', firstName: 'Efua', lastName: 'Mensah' } }]);
+      await vitest.runAllTimersAsync();
+
+      httpMock.expectNone(r => r.url.endsWith('/api/directory-links'));
+    });
+
+    it('leaves a failed lookup unrecorded, so it is retried rather than fixed as "there is none"', async () => {
+      TestBed.tick();
+      const req = expectListRequest();
+      req.flush([{ id: 'learned-1' }]);
+      await vitest.runAllTimersAsync();
+
+      httpMock.expectOne(r => r.url.endsWith('/api/directory-links')).error(new ProgressEvent('network'));
+      await vitest.runAllTimersAsync();
+
+      expect(comp.isUnidentified({ id: 'learned-1' })).toBe(true);
+      expect('learned-1' in comp.links()).toBe(false);
+    });
+
+    /**
+     * **Refresh has to forget "asked, and there is none", because that is what Refresh is for.**
+     *
+     * The map records an unresolved id as a present `undefined` so a page turn does not re-ask, and
+     * that is right for paging. It is wrong for the button, because the operation an administrator
+     * presses Refresh *after* is `POST /api/directory-links/reconcile` — the one operation that
+     * turns "there is none" into "there is one". Without this the row went on reading "Identity not
+     * on file" until the component was destroyed and recreated.
+     */
+    it('asks again after a refresh, so a reconciliation is visible without a reload', async () => {
+      TestBed.tick();
+      expectListRequest().flush([{ id: 'learned-1' }]);
+      await vitest.runAllTimersAsync();
+      httpMock.expectOne(r => r.url.endsWith('/api/directory-links')).flush([]);
+      await vitest.runAllTimersAsync();
+      expect('learned-1' in comp.links()).toBe(true);
+
+      comp.refresh();
+      await vitest.runAllTimersAsync();
+      expect(comp.links()).toEqual({});
+
+      expectListRequest().flush([{ id: 'learned-1' }]);
+      await vitest.runAllTimersAsync();
+
+      const again = httpMock.expectOne(r => r.url.endsWith('/api/directory-links'));
+      expect(again.request.params.getAll('localId.in')).toEqual(['learned-1']);
+      again.flush([{ id: 'link-1', localId: 'learned-1', email: 'ama@example.com' }]);
+      await vitest.runAllTimersAsync();
+
+      expect(comp.displayName({ id: 'learned-1' })).toBe('ama@example.com');
+    });
+
+    /**
+     * An id already asked about is not asked about again while the answer is still out.
+     *
+     * The map cannot record it — an unanswered id has no value to put in, and writing `undefined`
+     * early would fix the row as "there is none" before anybody had asked — so the guard is a set
+     * beside it. Two responses landing close together is ordinary: a sort and a page turn, or
+     * Refresh pressed twice.
+     */
+    it('does not send a second request for ids already in flight', async () => {
+      TestBed.tick();
+      expectListRequest().flush([{ id: 'learned-1' }]);
+      await vitest.runAllTimersAsync();
+
+      const first = httpMock.expectOne(r => r.url.endsWith('/api/directory-links'));
+
+      // A second page lands naming the same nameless row while the first answer is still out.
+      comp.load();
+      TestBed.tick();
+      expectListRequest().flush([{ id: 'learned-1' }]);
+      await vitest.runAllTimersAsync();
+
+      httpMock.expectNone(r => r.url.endsWith('/api/directory-links'));
+
+      first.flush([{ id: 'link-1', localId: 'learned-1', email: 'ama@example.com' }]);
+      await vitest.runAllTimersAsync();
+      expect(comp.displayName({ id: 'learned-1' })).toBe('ama@example.com');
     });
   });
 
@@ -564,4 +774,40 @@ describe('the patient list template', () => {
   it('says why, where the next person to edit it will look', () => {
     expect(template).toContain('There is no Create button here');
   });
+
+  /**
+   * Backlog item 45: the name cell must never bind the record id.
+   *
+   * Read off the template rather than rendered, because the component method is already covered
+   * and this is the other half — a future edit that puts `patient.id` back in the cell would leave
+   * `displayName` correct and the screen wrong.
+   */
+  it('binds no record id in the name cell', () => {
+    const nameCell = template.slice(template.indexOf('class="dir-who"'), template.indexOf('</td>', template.indexOf('class="dir-who"')));
+
+    expect(nameCell).toContain('displayName(patient)');
+    expect(nameCell).not.toContain('{{ patient.id }}');
+  });
+
+  it('renders the incomplete-record label instead, and says why underneath', () => {
+    expect(template).toContain('isUnidentified(patient)');
+    expect(template).toContain('hcAdminApp.directoryPatient.unidentified');
+    // The hint is chosen by the component rather than hard-coded, which is the fix for a single
+    // hint that claimed "registered on the patient app" for rows with no link at all.
+    expect(template).toContain('unidentifiedHintKey(patient)');
+    expect(template).toContain('identityFromLinkKey(patient)');
+  });
+
+  /**
+   * The old single hint must be gone from the template, not merely unreferenced.
+   *
+   * Asserted as an absence because the failure mode is a paste: both keys still exist as strings in
+   * a reviewer's memory, and either one back in the template is a claim the code cannot support.
+   */
+  it.each(['hcAdminApp.directoryPatient.unidentifiedHint"', 'hcAdminApp.directoryPatient.identityFromLink"'])(
+    'no longer states %s unconditionally',
+    key => {
+      expect(template).not.toContain(key);
+    },
+  );
 });

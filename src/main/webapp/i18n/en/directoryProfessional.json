@@ -66,6 +66,14 @@
       "assignment": "Assignment",
       "team": "Team",
       "hub": "Hub",
+      "awaiting": {
+        "title": "Registered, no record here yet",
+        "subtitle": "These accounts exist on the professional app. This console cannot create a record for them — a registration carries no role and no licence number.",
+        "count": "{{ count }} waiting",
+        "unidentified": "Identity not on file",
+        "noRecord": "Known from a registration on the professional app; no record in this directory",
+        "more": "and {{ count }} more"
+      },
       "archivedNotice": "This record is archived and does not appear in the directory.",
       "isArchived": "Archived",
       "step": {
