@@ -4,9 +4,21 @@ import { Injectable, inject } from '@angular/core';
 import { Observable, map, of } from 'rxjs';
 
 import { ADMIN_SERVICE } from 'app/config/microservice.constants';
+import { TOTAL_COUNT_RESPONSE_HEADER } from 'app/config/pagination.constants';
 import { ApplicationConfigService } from 'app/core/config/application-config.service';
 import { createRequestOption } from 'app/core/request/request-util';
-import { IDirectoryLink } from '../directory-link.model';
+import { DirectorySource, IDirectoryLink } from '../directory-link.model';
+
+/**
+ * One page of links, with how many there are in total.
+ *
+ * The two travel together deliberately: a screen that shows a handful of rows and a count taken from
+ * those rows reports its own page size as the size of the problem.
+ */
+export interface DirectoryLinkPage {
+  links: IDirectoryLink[];
+  total: number;
+}
 
 /**
  * Reads what this service has learned about sibling-stack accounts.
@@ -15,9 +27,12 @@ import { IDirectoryLink } from '../directory-link.model';
  * because the server offers none: a link is a fact about hc-patient's or hc-professional's account,
  * and the only write is the reconciliation an administrator triggers from elsewhere.
  *
- * It exists for one screen-level problem. A patient learned from a sibling domain event has no
- * `Profile` and can never be given one from the wire, so the directory row has no name on it. The
- * identity that does exist is here.
+ * It exists for two screen-level problems, and they are the same cause seen from either side of a
+ * missing record. A patient learned from a sibling domain event has no `Profile` and can never be
+ * given one from the wire, so the directory row has no name on it ({@link findUnlinked}'s sibling,
+ * `findByLocalIds`). A clinician learned from one has no record at all, so the directory has no row
+ * to render ({@link DirectoryLinkService.findUnlinked}). In both cases the only identity there is,
+ * is here.
  */
 @Injectable({ providedIn: 'root' })
 export class DirectoryLinkService {
@@ -60,6 +75,39 @@ export class DirectoryLinkService {
         }
         return byLocalId;
       }),
+    );
+  }
+
+  /**
+   * The accounts from one sibling stack that this service knows about and holds no record for.
+   *
+   * **This is the other half of the same problem and it is not the same question.** A patient
+   * learned from an event is a row with no name, which {@link findByLocalIds} names. A clinician
+   * learned from one is *no row at all*: both event types on `hc.professional.registration` are
+   * `LINK_ONLY`, because `Professional` requires a role and a licence number and neither is on the
+   * wire in any event, in any version. So `GET /api/professionals` cannot return them however it is
+   * filtered, and until backlog item 46 the console asked nothing else — a clinician who registered
+   * on production reached the service, was stored, and was invisible.
+   *
+   * The total comes back on `X-Total-Count` beside the page, because the screen shows a few rows and
+   * has to be able to say honestly how many there are: counting the rows it received would report the
+   * page size as the number of clinicians waiting.
+   *
+   * `size` is sent explicitly for the reason {@link findByLocalIds} gives — a list endpoint with no
+   * size returns 20 — and `sort` is the server's job: newest first is what an administrator watching
+   * for a registration wants, and sorting the received page would sort one page against the wrong
+   * whole.
+   */
+  findUnlinked(source: keyof typeof DirectorySource, size: number): Observable<DirectoryLinkPage> {
+    const options = createRequestOption({ source, unlinked: true, page: 0, size, sort: ['firstSeenAt,desc'] });
+    return this.http.get<IDirectoryLink[]>(this.resourceUrl, { params: options, observe: 'response' }).pipe(
+      map(response => ({
+        // A missing header is not zero. It would mean the pagination headers stopped surviving the
+        // gateway and nginx — `edge.cy.ts` asserts they do — and reporting that as "no clinicians are
+        // waiting" is the quiet wrong answer; the rows themselves are the floor.
+        total: Number(response.headers.get(TOTAL_COUNT_RESPONSE_HEADER) ?? response.body?.length ?? 0),
+        links: response.body ?? [],
+      })),
     );
   }
 }

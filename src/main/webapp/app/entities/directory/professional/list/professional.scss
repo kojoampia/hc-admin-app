@@ -2,6 +2,63 @@
 @import 'directory-list';
 
 /*
+ * The awaiting-a-record panel — clinicians this console knows about and holds no record for.
+ *
+ * Deliberately not a table. These are not directory rows and must not read as though a column were
+ * simply empty: a table of dashes under Role, Licence and Hub is exactly the "record entered badly"
+ * reading that backlog item 45 was raised about, one screen along. A short list, in the quieter
+ * grey, above the directory it is not part of.
+ */
+.awaiting-record {
+  padding: 16px 18px;
+  margin: 0 0 14px;
+}
+
+.awaiting-record .sec-head {
+  margin: 0 0 12px;
+}
+
+.awaiting-record h4 {
+  margin: 0;
+  font-size: 14.5px;
+  font-weight: 800;
+  letter-spacing: -0.014em;
+}
+
+/* Wrapped rather than run to the full width of a wide screen: this is a paragraph, not a caption. */
+.awaiting-record p {
+  max-width: 72ch;
+}
+
+.awaiting-record .sub {
+  font-size: 12px;
+  color: var(--abf-grey);
+  margin-top: 2px;
+}
+
+.awaiting-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.awaiting-list li {
+  display: flex;
+  align-items: center;
+}
+
+/*
+ * `.dir-name` underlines on hover, because in the table it is a link to the record. Here there is no
+ * record and the element is a `div` rather than an `a` — a hover underline on it would advertise a
+ * destination that does not exist, which on this panel is the one promise it must not make.
+ */
+.awaiting-list .dir-name:hover {
+  text-decoration: none;
+}
+
+/*
  * Role tile tints.
  *
  * Five roles, five tones from the shared palette. Colour is never the only signal — each tile

@@ -54,6 +54,15 @@
         <span aria-hidden="true">{{ tile.direction === 'up' ? '▲' : tile.direction === 'down' ? '▼' : '●' }}</span>
         {{ tile.note | translate: tile.noteParams }}
       </span>
+      <!--
+        A second line for a figure the number above deliberately does not include — today only the
+        clinicians who have registered on hc-professional and have no record here. Saying it here is
+        what stops somebody folding them into the count, which would move the account-mix chart and
+        the sparkline with it and say so nowhere. Backlog item 46.
+      -->
+      @if (tile.subNote; as subNote) {
+        <span class="dl sub-note" data-cy="kpiSubNote">{{ subNote.key | translate: subNote.params }}</span>
+      }
       <abf-sparkline [series]="tile.series" />
     </button>
   } @empty {

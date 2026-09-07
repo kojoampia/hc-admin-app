@@ -82,6 +82,69 @@ describe('DirectoryLinkService', () => {
   });
 });
 
+describe('findUnlinked', () => {
+  let service: DirectoryLinkService;
+  let httpMock: HttpTestingController;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()],
+    });
+    service = TestBed.inject(DirectoryLinkService);
+    httpMock = TestBed.inject(HttpTestingController);
+  });
+
+  afterEach(() => {
+    httpMock.verify();
+  });
+
+  it('asks for one source, unlinked only, newest first', () => {
+    service.findUnlinked('HC_PROFESSIONAL', 5).subscribe();
+
+    const req = httpMock.expectOne(r => r.url.includes('directory-links'));
+    expect(req.request.params.get('source')).toBe('HC_PROFESSIONAL');
+    // Without this the answer is every link, including hc-patient's care angels and erased
+    // subjects, which are unlinked too and are not clinicians.
+    expect(req.request.params.get('unlinked')).toBe('true');
+    // Explicit, for the same reason findByLocalIds sends one: no size means 20.
+    expect(req.request.params.get('size')).toBe('5');
+    expect(req.request.params.get('sort')).toBe('firstSeenAt,desc');
+    req.flush([]);
+  });
+
+  /**
+   * The total is the server's, not the page's.
+   *
+   * A panel that shows five rows and counts what it received reports its own page size as the number
+   * of clinicians waiting — a figure that stops moving at five however many register.
+   */
+  it('takes the total from X-Total-Count rather than from the rows it received', () => {
+    let page: { total: number; links: unknown[] } | undefined;
+    service.findUnlinked('HC_PROFESSIONAL', 2).subscribe(answer => (page = answer));
+
+    httpMock.expectOne(r => r.url.includes('directory-links')).flush([{ id: 'l1' }, { id: 'l2' }], { headers: { 'X-Total-Count': '17' } });
+
+    expect(page?.links).toHaveLength(2);
+    expect(page?.total).toBe(17);
+  });
+
+  /**
+   * A missing header falls back to the rows, not to zero.
+   *
+   * The header not arriving would mean pagination headers had stopped surviving the gateway and
+   * nginx — which has happened to this stack before — and reporting that as "nobody is waiting" is
+   * the quiet wrong answer. The rows in hand are a floor.
+   */
+  it('does not report zero when the count header is missing', () => {
+    let page: { total: number } | undefined;
+    service.findUnlinked('HC_PROFESSIONAL', 5).subscribe(answer => (page = answer));
+
+    httpMock.expectOne(r => r.url.includes('directory-links')).flush([{ id: 'l1' }]);
+
+    expect(page?.total).toBe(1);
+  });
+});
+
 describe('resolveLinkIdentity', () => {
   it('prefers the address, which is the handle the person themselves would give', () => {
     expect(resolveLinkIdentity({ id: 'l', email: 'ama@example.com', login: 'amensah' })).toBe('ama@example.com');

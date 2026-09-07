@@ -18,6 +18,7 @@
       "patientsNote": "+{{count}} this week",
       "professionals": "Professionals",
       "professionalsNote": "+{{count}} verified this week",
+      "professionalsAwaitingNote": "{{count}} registered, no record here yet",
       "unreadMessages": "Unread messages",
       "unreadMessagesNote": "{{count}} arrived this week",
       "openTasks": "Open tasks",

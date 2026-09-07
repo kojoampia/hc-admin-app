@@ -40,6 +40,19 @@ interface KpiTile {
    * the number comes from the metrics payload.
    */
   readonly noteParams: Record<string, number>;
+  /**
+   * A second line under the note, for a figure the tile's own number deliberately does not include.
+   *
+   * There is exactly one today and it is why this exists: a clinician who has registered on
+   * hc-professional but has no record here is not in `network.professionals`, because that counts
+   * records — and the account-mix chart and the professionals sparkline are derived from the same
+   * count, so folding them in would move three figures at once and say so nowhere. The tile keeps
+   * its meaning and this says what else is known. Backlog item 46.
+   *
+   * Absent on a tile that has nothing extra to say, rather than rendered as a zero: "0 registered
+   * with no record" is a sentence about a problem nobody has.
+   */
+  readonly subNote?: { readonly key: string; readonly params: Record<string, number> };
   readonly route: string;
   readonly series: readonly number[];
 }
@@ -167,6 +180,12 @@ export default class Dashboard implements OnInit {
         direction: (data.deltas.professionals ?? 0) > 0 ? 'up' : 'flat',
         note: 'dashboard.kpi.professionalsNote',
         noteParams: { count: data.deltas.professionals ?? 0 },
+        // The number above counts records; this says how many clinicians are known and have none.
+        // Only when there are some — see `subNote`.
+        subNote:
+          data.professionalsAwaitingRecord > 0
+            ? { key: 'dashboard.kpi.professionalsAwaitingNote', params: { count: data.professionalsAwaitingRecord } }
+            : undefined,
         route: '/professional',
         series: data.sparklines.professionals ?? [],
       },

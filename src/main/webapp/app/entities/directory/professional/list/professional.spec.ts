@@ -116,8 +116,21 @@ describe('Professional Management Component', () => {
     }
   }
 
+  /**
+   * Answer the awaiting-a-record request, which `ngOnInit` makes alongside the tiles.
+   *
+   * Same reasoning as {@link flushTiles}: an unanswered request fails `httpMock.verify()` in
+   * `afterEach`, so every test would report "open requests" instead of its own subject.
+   */
+  function flushAwaiting(links: unknown[] = [], total = '0'): void {
+    for (const req of httpMock.match(r => r.url.endsWith('/api/directory-links'))) {
+      req.flush(links, { headers: { 'X-Total-Count': total } });
+    }
+  }
+
   afterEach(() => {
     flushTiles();
+    flushAwaiting();
     TestBed.resetTestingModule();
     httpMock.verify();
   });
@@ -373,6 +386,132 @@ describe('Professional Management Component', () => {
       // And the name cell keeps the licence number, which is a readable identifier in a licence
       // directory — this case is about the chip and must not be read as removing that.
       expect(comp.displayName(learned)).toBe('MDC/RN/23-4471');
+    });
+  });
+
+  /**
+   * Backlog item 46: a clinician who registers on hc-professional reaches this service, is stored as
+   * a `DirectoryLink` with no local record, and appeared on this screen nowhere at all.
+   *
+   * The table cannot hold them — there is no `Professional` for `/api/professionals` to return — so
+   * this panel is where they are visible, and every case here is about it saying what is true rather
+   * than filling a row in.
+   */
+  describe('the clinicians this console knows about and has no record for', () => {
+    /** Reaches `ngOnInit`, answers the table and the tiles, and leaves the panel request open. */
+    function initAndFlushTable(): void {
+      TestBed.tick();
+      expectListRequest().flush([], { headers: { 'X-Total-Count': '0' } });
+      flushTiles();
+    }
+
+    it('asks the link endpoint for its own source, unlinked only', () => {
+      initAndFlushTable();
+
+      const req = httpMock.expectOne(r => r.url.endsWith('/api/directory-links'));
+      expect(req.request.params.get('source')).toBe('HC_PROFESSIONAL');
+      // Not asking this returns hc-patient's care angels and erased subjects too — links with no
+      // local record that are emphatically not clinicians.
+      expect(req.request.params.get('unlinked')).toBe('true');
+      req.flush([], { headers: { 'X-Total-Count': '0' } });
+    });
+
+    it('names a row from the address the registration carried', () => {
+      initAndFlushTable();
+      flushAwaiting([{ id: 'dl-1', source: 'HC_PROFESSIONAL', email: 'k.quartey@abofonsa.care', state: 'DOCUMENTS_SUBMITTED' }], '1');
+
+      expect(comp.awaiting()).toHaveLength(1);
+      expect(comp.awaitingName(comp.awaiting()[0])).toBe('k.quartey@abofonsa.care');
+      expect(comp.awaitingInitials(comp.awaiting()[0])).toBe('KQ');
+    });
+
+    /**
+     * The state an `onboarding.state` frame leaves: an accountId and nothing else.
+     *
+     * The key is a UUID, and printing it would be item 45's defect — an opaque identifier where a
+     * name goes — in a new panel on the day the panel was written.
+     */
+    it('says an unidentifiable row is unidentifiable rather than printing the accountId', () => {
+      initAndFlushTable();
+      flushAwaiting([{ id: 'dl-2', source: 'HC_PROFESSIONAL', externalKey: 'b7d21c04-9e63-4f18-8a77-2c5e9f04ab32' }], '1');
+
+      const row = comp.awaiting()[0];
+      expect(comp.awaitingName(row)).toBeNull();
+      expect(comp.awaitingInitials(row)).toBe('—');
+      expect(comp.awaitingInitials(row)).not.toBe('B7');
+    });
+
+    /**
+     * "And N more" is a real number.
+     *
+     * The panel asks for five rows; counting what arrived would report five however many clinicians
+     * are waiting, which is the truncated-list failure the approval card was fixed for.
+     */
+    it('reports the overflow from the server total, not from the rows it received', () => {
+      initAndFlushTable();
+      flushAwaiting([{ id: 'dl-1' }, { id: 'dl-2' }], '9');
+
+      expect(comp.awaitingTotal()).toBe(9);
+      expect(comp.awaitingOverflow()).toBe(7);
+    });
+
+    /**
+     * Hidden under a filter and under Show archived.
+     *
+     * These rows carry no role, no verification, no status and no archived flag — nothing an event
+     * publishes — so leaving the panel up beside a `role=DOCTOR` table would assert they are doctors.
+     * That is the fabrication this whole change refuses to make, and it would be made by omission.
+     */
+    it('does not claim a filtered directory contains them', () => {
+      initAndFlushTable();
+      flushAwaiting([{ id: 'dl-1', email: 'k.quartey@abofonsa.care' }], '1');
+      expect(comp.showAwaiting()).toBe(true);
+
+      comp.role.set('DOCTOR');
+      expect(comp.showAwaiting()).toBe(false);
+
+      comp.role.set(null);
+      comp.showArchived.set(true);
+      expect(comp.showAwaiting()).toBe(false);
+    });
+
+    /** A failed lookup empties the panel; it does not leave stale rows under a live heading. */
+    it('shows nothing when the lookup fails', () => {
+      initAndFlushTable();
+      flushAwaiting([{ id: 'dl-1', email: 'k.quartey@abofonsa.care' }], '1');
+      expect(comp.awaiting()).toHaveLength(1);
+
+      comp.refresh();
+      TestBed.tick();
+      expectListRequest();
+      flushTiles();
+      httpMock.expectOne(r => r.url.endsWith('/api/directory-links')).error(new ProgressEvent('network'));
+
+      expect(comp.awaiting()).toEqual([]);
+      expect(comp.awaitingTotal()).toBe(0);
+    });
+
+    /**
+     * Refresh re-reads it, and a page turn does not.
+     *
+     * This is the one list on the screen that changes without anybody here doing anything — somebody
+     * registers on another stack — so Refresh must ask again. Paging must not: it describes the whole
+     * directory, like the role tiles beside it.
+     */
+    it('is re-read on Refresh and left alone on a page turn', () => {
+      initAndFlushTable();
+      flushAwaiting();
+
+      comp.load();
+      TestBed.tick();
+      expectListRequest();
+      httpMock.expectNone(r => r.url.endsWith('/api/directory-links'));
+
+      comp.refresh();
+      TestBed.tick();
+      expectListRequest();
+      flushTiles();
+      httpMock.expectOne(r => r.url.endsWith('/api/directory-links')).flush([], { headers: { 'X-Total-Count': '0' } });
     });
   });
 });

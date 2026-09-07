@@ -8,7 +8,10 @@
  * exists. See `resolveLinkIdentity` below and `DirectoryLinkResource`'s javadoc on the api.
  *
  * Only the fields the console actually uses are modelled. The document carries more — the watermark,
- * the last event id and type, `firstSeenAt` — and none of it belongs on a directory row.
+ * the last event id and type, `firstSeenAt` — and none of it belongs on a directory row. (`state`
+ * joined the list on 2026-09-07 with the awaiting-a-record panel, which has nothing else to say about
+ * a clinician whose record does not exist; `firstSeenAt` is still only a sort key and is still not
+ * read here.)
  */
 export interface IDirectoryLink {
   id: string;
@@ -29,6 +32,19 @@ export interface IDirectoryLink {
 
   login?: string | null;
   email?: string | null;
+
+  /**
+   * The last lifecycle state the far side reported — an event type for hc-patient, the
+   * `onboarding.state` payload field for hc-professional.
+   *
+   * Rendered on the professional directory's awaiting-a-record panel and nowhere else: for a
+   * clinician with no record here it is the only thing this console can say about how far they have
+   * got (`DOCUMENTS_SUBMITTED`, `APPLICATION_SUBMITTED`), and it is the far side's own word rather
+   * than an inference. Shown verbatim and deliberately not translated — it is hc-professional's
+   * vocabulary, not this product's, and a lookup table here would silently print a raw key the day
+   * they add a state.
+   */
+  state?: string | null;
 
   /** What kind of account this is, and therefore whether a local record is kept for it. */
   subjectKind?: keyof typeof DirectorySubjectKind | null;

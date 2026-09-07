@@ -20,6 +20,14 @@ import { ADMIN_SERVICE } from 'app/config/microservice.constants';
  * a second data layer beside them.
  */
 
+/**
+ * Counts of **records in hc-admin**, which is a narrower claim than the labels suggest.
+ *
+ * `professionals` counts `Professional` documents. A clinician who has registered on
+ * hc-professional and has no record here is not in it — see
+ * `DashboardMetrics.professionalsAwaitingRecord`, which counts exactly those, and the api's
+ * `DashboardMetricsDTO` for why the two are kept apart rather than added together.
+ */
 export interface NetworkTotals {
   patients: number;
   professionals: number;
@@ -82,6 +90,20 @@ export interface DashboardMetrics {
   unreadMessages: number;
   openTasks: number;
   pendingApprovals: number;
+  /**
+   * Clinicians this service knows about and holds no `Professional` for.
+   *
+   * A registration on hc-professional arrives as a `DirectoryLink` with no local record — the topic
+   * carries no role and no licence number, and both are required here — so the professionals tile
+   * cannot move when somebody registers. It did not, and an administrator reported it from
+   * production (backlog item 46).
+   *
+   * **It is rendered beside that tile rather than added into it.** The tile counts records, and the
+   * account-mix chart and the professionals sparkline are both derived from the same number; folding
+   * links in would move all three without saying so. The professional directory lists these same
+   * accounts, so the figure is one click from the people it counts.
+   */
+  professionalsAwaitingRecord: number;
   roster: RosterSummary;
   degradedServices: DegradedService[];
   /** How many services the map covers, and how many are healthy. */

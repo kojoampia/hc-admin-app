@@ -12,6 +12,8 @@ import { Subscription, combineLatest, tap } from 'rxjs';
 import { StatusPill } from 'app/console/shared/status-pill/status-pill';
 import { DEFAULT_SORT_DATA, SORT } from 'app/config/navigation.constants';
 import { ITEMS_PER_PAGE, PAGE_HEADER, TOTAL_COUNT_RESPONSE_HEADER } from 'app/config/pagination.constants';
+import { IDirectoryLink, resolveLinkIdentity } from 'app/entities/directory/directory-link/directory-link.model';
+import { DirectoryLinkService } from 'app/entities/directory/directory-link/service/directory-link.service';
 import { AccountStatus } from 'app/entities/enumerations/account-status.model';
 import { ProfessionalRole } from 'app/entities/enumerations/professional-role.model';
 import { VerificationStatus } from 'app/entities/enumerations/verification-status.model';
@@ -42,12 +44,28 @@ interface RoleCount {
 }
 
 /**
+ * How many awaiting-a-record rows the panel lists before it stops and says how many are left.
+ *
+ * Five, matching the dashboard's approval card: this is a "something is waiting" panel above a
+ * directory, not a second directory. The count beside it is the server's total, so "and 12 more" is
+ * a real number rather than a count of what happened to arrive.
+ */
+const AWAITING_ROWS = 5;
+
+/**
  * The clinician directory.
  *
  * A role tile per `ProfessionalRole`, each carrying its headcount and how many of those are
  * currently active, over a table of clinicians. Both figures come from `X-Total-Count` on a
  * `size=1` query — the message desk's pattern — because counting the rows on screen would count a
  * page and report it as the directory.
+ *
+ * **And, since backlog item 46, the clinicians this console knows about and holds no record for.**
+ * They are not in the table and cannot be: a registration on hc-professional produces a
+ * `DirectoryLink` and no `Professional`, so no query against `/api/professionals` can return them.
+ * They are listed in their own panel above the directory, named from what the link carries, saying
+ * in as many words that no record exists here — never fabricated into rows with an invented role and
+ * licence number, which is what {@link awaitingName} and the panel's copy exist to make unnecessary.
  */
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -107,15 +125,43 @@ export class Professional implements OnInit {
   /** Headcount and active count per role, for the tiles. */
   readonly roleCounts = signal<Record<string, RoleCount>>({});
 
+  /**
+   * Clinicians this console knows about and holds no record for — the rows the table cannot have.
+   *
+   * A registration on hc-professional reaches this service as a `DirectoryLink` with no `localId`
+   * and produces no `Professional` at all: both event types on that topic are `LINK_ONLY`, because
+   * `role` and `licenceNumber` are required here and are on the wire in no event, in any version.
+   * So they are listed beside the directory rather than in it, from what the link carries and with
+   * nothing invented — backlog item 46, reported when a clinician registered on production and this
+   * screen showed nothing at all.
+   */
+  readonly awaiting = signal<IDirectoryLink[]>([]);
+  /** How many there are in total, which is not the number of rows above — see {@link AWAITING_ROWS}. */
+  readonly awaitingTotal = signal(0);
+
   readonly router = inject(Router);
   protected readonly professionalService = inject(ProfessionalService);
   // eslint-disable-next-line @typescript-eslint/member-ordering
   readonly isLoading = this.professionalService.professionalsResource.isLoading;
   protected readonly activatedRoute = inject(ActivatedRoute);
   protected readonly sortService = inject(SortService);
+  private readonly directoryLinkService = inject(DirectoryLinkService);
 
   // eslint-disable-next-line @typescript-eslint/member-ordering
   readonly hasFilter = computed(() => this.role() !== null || this.status() !== null || this.verification() !== null);
+
+  /**
+   * Whether the awaiting-a-record panel belongs on screen at all.
+   *
+   * **Hidden under a filter and under Show archived, deliberately.** Those rows have no role, no
+   * verification state, no account status and no archived flag — nothing an event carries — so a
+   * filtered directory cannot honestly claim they match. Leaving them up beside a `role=DOCTOR`
+   * table would say they are doctors, which is exactly the fabrication this whole item refuses to
+   * make. Anything waiting is still one click away: clearing the filter brings the panel back, and
+   * the empty count is not what hides it.
+   */
+  // eslint-disable-next-line @typescript-eslint/member-ordering
+  readonly showAwaiting = computed(() => !this.hasFilter() && !this.showArchived() && this.awaiting().length > 0);
 
   constructor() {
     effect(() => {
@@ -165,6 +211,45 @@ export class Professional implements OnInit {
       .toUpperCase();
   }
 
+  /**
+   * How an awaiting-a-record row is named, and `null` when nothing here can name it.
+   *
+   * The same rule the patient directory uses for a learned row (`resolveLinkIdentity`): the address
+   * the registration carried, then the login, and **never the `externalKey`** — for a clinician that
+   * key is an `accountId`, a UUID, which is the unreadable-identifier-as-a-name defect backlog item
+   * 45 removed one directory along. A row that cannot be named says so in words instead.
+   */
+  awaitingName(link: IDirectoryLink): string | null {
+    return resolveLinkIdentity(link);
+  }
+
+  /**
+   * Initials for an awaiting row — from the mailbox, never from an id.
+   *
+   * `k.quartey@abofonsa.care` gives `KQ`, a login gives its first letters, and a link carrying
+   * neither gives an em dash. Deliberately identical in shape to the patient list's, because these
+   * two chips sit two clicks apart and the rule they share is that a monogram is a monogram or it is
+   * nothing.
+   */
+  awaitingInitials(link: IDirectoryLink): string {
+    const identity = this.awaitingName(link);
+    if (!identity) {
+      return '—';
+    }
+    const letters = identity
+      .split('@')[0]
+      .split(/[^\p{L}\p{N}]+/u)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map(part => part.charAt(0));
+    return letters.length > 0 ? letters.join('').toUpperCase() : '—';
+  }
+
+  /** How many are waiting beyond the rows on screen; zero when the panel lists them all. */
+  awaitingOverflow(): number {
+    return Math.max(0, this.awaitingTotal() - this.awaiting().length);
+  }
+
   ngOnInit(): void {
     this.subscription = combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data])
       .pipe(
@@ -173,6 +258,7 @@ export class Professional implements OnInit {
       )
       .subscribe();
     this.loadTiles();
+    this.loadAwaiting();
   }
 
   /** The table only — see {@link loadTiles} for why the tiles are not reloaded on every page turn. */
@@ -183,6 +269,10 @@ export class Professional implements OnInit {
   refresh(): void {
     this.load();
     this.loadTiles();
+    // The awaiting panel too. It is the part of this screen that changes without anybody here doing
+    // anything — a registration on another stack — so Refresh not re-reading it would leave the one
+    // list on the page that goes stale by itself.
+    this.loadAwaiting();
   }
 
   navigateToWithComponentValues(event: SortState): void {
@@ -344,6 +434,30 @@ export class Professional implements OnInit {
           active: part.active ?? existing.active,
         },
       };
+    });
+  }
+
+  /**
+   * The clinicians this service knows about and has no record for.
+   *
+   * One request, on load and on Refresh — not on a page turn, like the role tiles and for the same
+   * reason: it describes the whole directory rather than the page.
+   *
+   * A failure empties the panel rather than leaving yesterday's rows under a heading that says they
+   * are current. That is the honest reading of a failed lookup here, and it differs from the patient
+   * list's — there a failed lookup must not overwrite a name the row already had, while here there
+   * is nothing to preserve.
+   */
+  private loadAwaiting(): void {
+    this.directoryLinkService.findUnlinked('HC_PROFESSIONAL', AWAITING_ROWS).subscribe({
+      next: page => {
+        this.awaiting.set(page.links);
+        this.awaitingTotal.set(page.total);
+      },
+      error: () => {
+        this.awaiting.set([]);
+        this.awaitingTotal.set(0);
+      },
     });
   }
 
