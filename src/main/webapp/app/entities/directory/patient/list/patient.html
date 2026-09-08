@@ -84,6 +84,159 @@
   }
 </div>
 
+<!--
+  PLAN CHOICES AWAITING A DECISION — backlog item 48.
+
+  A patient picks a membership tier in the patient portal, hc-patient writes a `Membership` with
+  status PENDING and publishes `PlanChosen` on `patient-events`, and until this panel existed the
+  request "waited until somebody happened to look". This is the looking.
+
+  WHY IT IS A ROW SET AND NOT A COLUMN. Item 48 asks for the decision rather than a reflex, and it
+  was made in `patient.ts` where the alternatives are set out in full: not a column on item 47's
+  seven-column table (that is the *professional* directory, a different source and a different
+  subject kind), not a column on the table below (a column is only visible on the page the patient
+  happens to be on, so an administrator would have to page the whole directory to learn there was
+  anything to act on — which is the defect this item was opened about), and not a dashboard card
+  (that one filters on AccountStatus, so a plan choice does not appear there for free and folding it
+  in would make one figure answer two questions).
+
+  WHAT IT DOES NOT CLAIM. The status is what hc-patient reported when the membership was CREATED —
+  their MembershipResource publishes on POST alone, so a decision taken on their side afterwards
+  says so on no topic. The wording is "reported", never "is". And the tier here is what somebody
+  ASKED for; the plan they hold is `Patient.plan` in the table below, an administrator's own field
+  that no event may write.
+
+  It carries no `no-print`: a printed directory should say what is outstanding on it, the same
+  argument the professional directory's awaiting table makes.
+-->
+@if (showPlanChoices()) {
+  <div class="card plan-choices" data-cy="planChoices">
+    <div class="sec-head">
+      <div>
+        <h4 abfTranslate="hcAdminApp.directoryPatient.planChoices.title">Plan choices awaiting a decision</h4>
+        <p abfTranslate="hcAdminApp.directoryPatient.planChoices.subtitle">
+          These patients chose a membership tier in the patient app. The status is what that app reported when the membership was created,
+          not a live one — it publishes nothing when a choice is decided elsewhere. Choosing is a request; the plan a patient holds here is
+          the one on their record.
+        </p>
+      </div>
+      <span class="pill pill-warn" data-cy="planChoiceCount">{{
+        'hcAdminApp.directoryPatient.planChoices.count' | translate: { count: planChoiceTotal() }
+      }}</span>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table plan-choices-table" data-cy="planChoicesTable">
+        <thead>
+          <tr>
+            <th scope="col" abfTranslate="hcAdminApp.directoryPatient.planChoices.column.patient">Patient</th>
+            <th scope="col" abfTranslate="hcAdminApp.directoryPatient.planChoices.column.chosen">Tier chosen</th>
+            <th scope="col" abfTranslate="hcAdminApp.directoryPatient.planChoices.column.price">Price here</th>
+            <!--
+              "Reported", not "Status". The value is a fact about the moment the membership was
+              created on hc-patient and does not move afterwards, so a bare "Status" heading over it
+              would be this screen asserting a live state it cannot see.
+            -->
+            <th scope="col" abfTranslate="hcAdminApp.directoryPatient.planChoices.column.reported">Reported</th>
+            <th scope="col"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (choice of planChoices(); track choice.id) {
+            <tr data-cy="planChoiceRow">
+              <!--
+                Named from the LINK, exactly as the directory below names a patient with no profile.
+                A row here can be either: `a13` in the `test` fixture is a learned patient with a
+                plan choice, which is the state that made item 45's whole rendering path unreachable
+                outside production. It never prints an id.
+
+                Deliberately not wrapped in `dir-who`, which is the directory row's avatar-beside-name
+                shape: there is no chip here, and reusing the class would put a second cell carrying
+                it above the table that `patient.spec.ts` reads for item 45's rule.
+              -->
+              <td>
+                @if (planChoiceName(choice); as name) {
+                  <div class="dir-name">{{ name }}</div>
+                } @else {
+                  <div class="dir-name dir-name-unidentified" abfTranslate="hcAdminApp.directoryPatient.unidentified">
+                    Identity not on file
+                  </div>
+                }
+              </td>
+              <td>
+                <!--
+                  hc-patient's own name for the tier, always. It is what makes an unresolvable code
+                  readable, and it is the name the patient was shown when they chose.
+                -->
+                <div>{{ choice.planName ?? choice.planCode }}</div>
+                <div class="sub mono">{{ choice.planCode }}</div>
+              </td>
+              <td>
+                @if (chosenPlan(choice); as plan) {
+                  @if (plan.monthlyPrice !== null && plan.monthlyPrice !== undefined) {
+                    <span>{{ plan.currency }} {{ plan.monthlyPrice | number: '1.0-2' }}</span>
+                  } @else {
+                    <!--
+                      Item 51's state, reached from here: a tier the catalogue sync created that
+                      nobody has priced. Not a zero — zero is a price, and a price of nothing reads
+                      as free rather than as unanswered.
+                    -->
+                    <span class="unknown" abfTranslate="hcAdminApp.directoryPatient.planChoices.noPrice">No price set here</span>
+                  }
+                } @else if (isUncataloguedPlan(choice)) {
+                  <!--
+                    A tier Abofonsa has published and this catalogue has not synced. Said in words
+                    and never papered over: NO ServicePlan is invented for it, because a fabricated
+                    plan is the fourth price list item 51 exists to have stopped. The api warns on
+                    the same condition as it stores the choice.
+                  -->
+                  <span class="unknown" abfTranslate="hcAdminApp.directoryPatient.planChoices.notInCatalogue">Not in this catalogue</span>
+                } @else {
+                  <!-- The catalogue has not answered yet, which is not the same as it holding no
+                       such tier — see `loadPlanCatalogue`. -->
+                  <span class="unknown" abfTranslate="hcAdminApp.directoryPatient.planChoices.checking">Checking the catalogue…</span>
+                }
+              </td>
+              <td>
+                @if (choice.planStatus) {
+                  <span class="pill pill-warn" data-cy="planChoiceStatus">{{ choice.planStatus }}</span>
+                } @else {
+                  <span class="unknown" abfTranslate="hcAdminApp.directoryPatient.planChoices.unknown">Not reported</span>
+                }
+              </td>
+              <td class="text-end">
+                <!--
+                  The decision is taken on the record, so the row goes there. There is no action
+                  button here, and that is item 54 rather than an omission: the outbound leg that
+                  tells hc-patient a choice was verified is not built, and a control that recorded
+                  nothing anywhere would be the worst kind of working screen.
+
+                  Only when the link names a local record, which every plan choice does — the event
+                  is UPDATE_ONLY, so hc-patient's membership is always for a patient this service
+                  already holds. The guard is here because a row with no destination must not render
+                  a link that goes nowhere.
+                -->
+                @if (choice.localId) {
+                  <a [routerLink]="['/patient', choice.localId, 'view']" class="btn btn-ghost btn-sm" data-cy="planChoiceViewButton">
+                    <fa-icon icon="eye" />
+                    <span class="d-none d-md-inline" abfTranslate="entity.action.view">View</span>
+                  </a>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    @if (planChoiceOverflow() > 0) {
+      <p class="sub" data-cy="planChoiceOverflow">
+        {{ 'hcAdminApp.directoryPatient.planChoices.more' | translate: { count: planChoiceOverflow() } }}
+      </p>
+    }
+  </div>
+}
+
 @if (hasFilter()) {
   <div class="tools no-print">
     <button type="button" class="btn-quiet sm" (click)="clearFilter()" abfTranslate="console.filter.clear" data-cy="clearFilter">
