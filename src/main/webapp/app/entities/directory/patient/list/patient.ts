@@ -222,11 +222,18 @@ export class Patient implements OnInit {
    * The sub-label under a name that came off a link rather than a profile, by the link's own source.
    *
    * The single label said "From the patient app account" for every such row, while
-   * `resolveLinkIdentity`'s login fallback is documented as being for a **professional**-sourced
+   * `resolveLinkIdentity`'s login fallback was documented as being for a **professional**-sourced
    * link — so the spec asserted a branch the screen's wording denied. Unreachable today, because no
    * hc-professional link carries a `localId`, but a label that contradicts a covered branch is a
    * label that will be wrong the moment the branch is reached. It reads the source instead of
    * assuming one.
+   *
+   * **That justification changed on 2026-09-07 and the rule did not.** The professional directory
+   * stopped calling `resolveLinkIdentity` when backlog item 47 named `login` as what a clinician's
+   * row shows and `email` as correlation-only, so the login fallback here is no longer *for* the
+   * other directory — it is this one's own last resort before "identity not on file". The branch is
+   * still reachable by an hc-professional link that acquires a `localId`, which nothing does today
+   * and item 35 would.
    */
   identityFromLinkKey(patient: IPatient): string {
     return this.links()[patient.id]?.source === 'HC_PATIENT'

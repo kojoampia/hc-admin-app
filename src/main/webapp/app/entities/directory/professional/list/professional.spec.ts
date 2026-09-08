@@ -21,6 +21,8 @@ import {
 import { provideTranslateService } from '@ngx-translate/core';
 import { Subject, of } from 'rxjs';
 
+import directoryProfessional from '../../../../../i18n/en/directoryProfessional.json';
+import verificationStatus from '../../../../../i18n/en/directory-verificationStatus.json';
 import { sampleWithRequiredData } from '../professional.test-samples';
 import { ProfessionalService } from '../service/professional.service';
 
@@ -416,13 +418,350 @@ describe('Professional Management Component', () => {
       req.flush([], { headers: { 'X-Total-Count': '0' } });
     });
 
-    it('names a row from the address the registration carried', () => {
+    /**
+     * <b>Named from the login, and the address is not on the screen at all.</b>
+     *
+     * This asserted the opposite until 2026-09-07 — it expected `k.quartey@abofonsa.care` in the name
+     * cell, which was item 46's rule and correct under it. Backlog item 47's contract names `login`
+     * as what the console shows and says of `email` that it is "for correlation, not for display";
+     * item 43 had already taken the same value out of every log line. The row carries both fields and
+     * renders one.
+     *
+     * The rendered check is the part that matters: `awaitingName` returning the login would still
+     * leave the address on screen if some other cell printed it.
+     */
+    it('names a row from the login and keeps the address off the screen', () => {
       initAndFlushTable();
-      flushAwaiting([{ id: 'dl-1', source: 'HC_PROFESSIONAL', email: 'k.quartey@abofonsa.care', state: 'DOCUMENTS_SUBMITTED' }], '1');
+      flushAwaiting(
+        [
+          {
+            id: 'dl-1',
+            source: 'HC_PROFESSIONAL',
+            login: 'kquartey',
+            email: 'k.quartey@abofonsa.care',
+            state: 'DOCUMENTS_SUBMITTED',
+          },
+        ],
+        '1',
+      );
 
       expect(comp.awaiting()).toHaveLength(1);
-      expect(comp.awaitingName(comp.awaiting()[0])).toBe('k.quartey@abofonsa.care');
-      expect(comp.awaitingInitials(comp.awaiting()[0])).toBe('KQ');
+      expect(comp.awaitingName(comp.awaiting()[0])).toBe('kquartey');
+
+      fixture.detectChanges();
+      const rendered = fixture.nativeElement.querySelector('[data-cy="awaitingRow"]').textContent;
+      expect(rendered).toContain('kquartey');
+      expect(rendered).not.toContain('k.quartey@abofonsa.care');
+    });
+
+    /**
+     * <b>A link with an address and no login cannot be named, and says so.</b>
+     *
+     * The inversion of the case above, and the reason it is worth its own case: falling back to the
+     * email would satisfy "names a row from the login" on every row that has both. Only a row with
+     * one and not the other can tell a preference from a rule.
+     */
+    it('does not fall back to the address when there is no login', () => {
+      initAndFlushTable();
+      flushAwaiting([{ id: 'dl-1b', source: 'HC_PROFESSIONAL', email: 'k.quartey@abofonsa.care' }], '1');
+
+      expect(comp.awaitingName(comp.awaiting()[0])).toBeNull();
+
+      fixture.detectChanges();
+      const rendered = fixture.nativeElement.querySelector('[data-cy="awaitingRow"]').textContent;
+      expect(rendered).not.toContain('k.quartey@abofonsa.care');
+    });
+
+    // --- the two-phase contract, backlog item 47 -------------------------------------------------
+
+    /**
+     * <b>Both phases in one row, joined by the api on `accountId`.</b>
+     *
+     * Phase 1 gives `login` and `activated`; phase 2 gives the rest. They arrive on two topics with
+     * no ordering between them and the api writes both halves onto one document, so the row reads
+     * them off one object — there is no client-side join and there must not be one.
+     */
+    it('shows both phases in a single row', () => {
+      initAndFlushTable();
+      flushAwaiting(
+        [
+          {
+            id: 'dl-both',
+            source: 'HC_PROFESSIONAL',
+            login: 'yasante',
+            activated: true,
+            profileEventAt: '2026-09-02T14:47:05Z',
+            profileComplete: true,
+            profileVerified: true,
+            profileCreatedDate: '2026-08-19T11:30:00Z',
+            profileModifiedDate: '2026-09-02T14:47:00Z',
+            // hc-professional's login for whoever last wrote the profile, NOT an accountId: their
+            // SpringSecurityAuditorAware fills it from the JWT subject. Deliberately not this row's own
+            // `login`, so the assertion below cannot be satisfied by the name cell.
+            profileLastModifiedBy: 'nosae',
+          },
+        ],
+        '1',
+      );
+      fixture.detectChanges();
+
+      const row = fixture.nativeElement.querySelector('[data-cy="awaitingRow"]');
+      expect(row.querySelector('[data-cy="awaitingActivated"]').textContent).toContain('hcAdminApp.directoryProfessional.awaiting.yes');
+      expect(row.querySelector('[data-cy="awaitingVerified"]').textContent).toContain('hcAdminApp.directoryProfessional.awaiting.yes');
+      expect(row.querySelector('[data-cy="awaitingComplete"]').textContent).toContain('hcAdminApp.directoryProfessional.awaiting.yes');
+      expect(row.querySelector('[data-cy="awaitingCreated"]').textContent).toContain('19 Aug 2026');
+      expect(row.querySelector('[data-cy="awaitingModified"]').textContent).toContain('2 Sep 2026');
+      expect(row.querySelector('[data-cy="awaitingLastModifiedBy"]').textContent).toContain('nosae');
+    });
+
+    /**
+     * <b>A phase-2-only row does not claim a registration it never had.</b>
+     *
+     * The sub-line under the login read "Known from a registration on the professional app" for every
+     * row, including one whose only event is a `ProfileStatus` — a profile for an account nobody has
+     * announced, which is normal on any backfill since the two phases are on two topics with no
+     * ordering between them. For that row the sentence describes a message that was never sent, which
+     * is the same fabrication as reading an absent `isVerified` as "No", one line down the cell.
+     *
+     * <b>It is asserted on the rendered distinction and on the shipped copy, not on the key.</b> No
+     * spec caught this because `TranslatePipe` renders keys rather than copy under test, so an
+     * assertion on `awaiting.noRecord` passes whatever `awaiting.noRecord` says. So this case does
+     * both halves: the two rows must render different keys, and `directoryProfessional.json` must
+     * agree with what each key is for.
+     */
+    it('does not tell a phase-2-only row that it came from a registration', () => {
+      initAndFlushTable();
+      flushAwaiting(
+        [
+          { id: 'dl-registered', source: 'HC_PROFESSIONAL', login: 'kquartey', lastEventAt: '2026-09-05T08:05:00Z' },
+          {
+            id: 'dl-profile-only',
+            source: 'HC_PROFESSIONAL',
+            externalKey: '5e0b9a63-1d47-4c8a-93be-71ca8d6f2b05',
+            profileEventAt: '2026-09-07T05:02:00Z',
+          },
+        ],
+        '2',
+      );
+      fixture.detectChanges();
+
+      expect(comp.hasRegistrationEvent(comp.awaiting()[0])).toBe(true);
+      expect(comp.hasRegistrationEvent(comp.awaiting()[1])).toBe(false);
+
+      const rows = fixture.nativeElement.querySelectorAll('[data-cy="awaitingRow"]');
+      expect(rows[0].textContent).toContain('hcAdminApp.directoryProfessional.awaiting.noRecord');
+      expect(rows[1].textContent).toContain('hcAdminApp.directoryProfessional.awaiting.noRegistration');
+      expect(rows[1].textContent).not.toContain('hcAdminApp.directoryProfessional.awaiting.noRecord');
+
+      // And the copy behind those keys, because the assertions above are about keys and the defect
+      // was about words: a key named noRecord could say anything at all and every check would pass.
+      const awaiting = directoryProfessional.hcAdminApp.directoryProfessional.awaiting;
+      expect(awaiting.noRecord).toContain('registration');
+      expect(awaiting.noRegistration).not.toContain('Known from a registration');
+      expect(awaiting.noRegistration).toContain('profile status');
+    });
+
+    /**
+     * <b>Empty is not false, which is the whole of the display rule.</b>
+     *
+     * A clinician with a registration and no `ProfileStatus` has `verified` and `complete`
+     * <em>unknown</em>. Rendering either as "No" asserts something about a person from the absence of
+     * a message — items 27(a) and 46's prohibition one column along — and it is the failure this
+     * table is likeliest to ship, because "No" is what a falsy check produces without anyone
+     * choosing it.
+     */
+    it('renders an unreported profile status as unknown and never as no', () => {
+      initAndFlushTable();
+      flushAwaiting([{ id: 'dl-phase1', source: 'HC_PROFESSIONAL', login: 'kquartey', activated: false }], '1');
+      fixture.detectChanges();
+
+      const row = fixture.nativeElement.querySelector('[data-cy="awaitingRow"]');
+      expect(comp.hasProfile(comp.awaiting()[0])).toBe(false);
+      expect(row.querySelector('[data-cy="awaitingVerified"]').textContent).toContain('hcAdminApp.directoryProfessional.awaiting.unknown');
+      expect(row.querySelector('[data-cy="awaitingVerified"]').textContent).not.toContain('hcAdminApp.directoryProfessional.awaiting.no');
+      expect(row.querySelector('[data-cy="awaitingComplete"]').textContent).toContain('hcAdminApp.directoryProfessional.awaiting.unknown');
+      // And the account's OWN state, which is a fact and does render as No — the pair is what shows
+      // the two are not being conflated.
+      expect(row.querySelector('[data-cy="awaitingActivated"]').textContent).toContain('hcAdminApp.directoryProfessional.awaiting.no');
+    });
+
+    /**
+     * A profile reported as incomplete renders as "No", which is the other half of that pair.
+     *
+     * Without it, "unknown is never no" would be satisfied by a table that never says no at all.
+     */
+    it('renders a profile reported incomplete as no', () => {
+      initAndFlushTable();
+      flushAwaiting(
+        [
+          {
+            id: 'dl-incomplete',
+            source: 'HC_PROFESSIONAL',
+            login: 'kquartey',
+            profileEventAt: '2026-09-02T14:47:05Z',
+            profileComplete: false,
+            profileVerified: false,
+          },
+        ],
+        '1',
+      );
+      fixture.detectChanges();
+
+      const row = fixture.nativeElement.querySelector('[data-cy="awaitingRow"]');
+      expect(row.querySelector('[data-cy="awaitingComplete"]').textContent).toContain('hcAdminApp.directoryProfessional.awaiting.no');
+      expect(row.querySelector('[data-cy="awaitingComplete"]').textContent).not.toContain(
+        'hcAdminApp.directoryProfessional.awaiting.unknown',
+      );
+      expect(row.querySelector('[data-cy="awaitingVerified"]').textContent).toContain('hcAdminApp.directoryProfessional.awaiting.no');
+    });
+
+    /**
+     * <b>Activation is never derived, in either direction.</b>
+     *
+     * A clinician can be activated with no profile at all, and can complete a verified profile on an
+     * account somebody later deactivates. Both are asserted, because an implementation that read
+     * activation off the profile would pass whichever one was written alone.
+     */
+    it('does not derive activation from the profile status', () => {
+      initAndFlushTable();
+      flushAwaiting(
+        [
+          { id: 'dl-a', source: 'HC_PROFESSIONAL', login: 'active-no-profile', activated: true },
+          {
+            id: 'dl-b',
+            source: 'HC_PROFESSIONAL',
+            login: 'complete-but-off',
+            activated: false,
+            profileEventAt: '2026-09-02T14:47:05Z',
+            profileComplete: true,
+            profileVerified: true,
+          },
+          { id: 'dl-c', source: 'HC_PROFESSIONAL', login: 'nobody-has-said' },
+        ],
+        '3',
+      );
+      fixture.detectChanges();
+
+      const rows = fixture.nativeElement.querySelectorAll('[data-cy="awaitingRow"]');
+      expect(rows[0].querySelector('[data-cy="awaitingActivated"]').textContent).toContain('hcAdminApp.directoryProfessional.awaiting.yes');
+      expect(rows[1].querySelector('[data-cy="awaitingActivated"]').textContent).toContain('hcAdminApp.directoryProfessional.awaiting.no');
+      expect(rows[2].querySelector('[data-cy="awaitingActivated"]').textContent).toContain(
+        'hcAdminApp.directoryProfessional.awaiting.unknown',
+      );
+    });
+
+    /**
+     * <b>The dates say whose they are, per row, because the column falls back.</b>
+     *
+     * Both phases carry a created/modified pair. The profile's is shown when a `ProfileStatus` has
+     * arrived and the account's when it has not — a clinician with no profile still has a registered-on
+     * date worth showing. Showing the account's under a heading a reader takes for the profile's is
+     * the quiet wrong answer, so the source is on the row.
+     */
+    it('says which pair of dates a row is showing', () => {
+      initAndFlushTable();
+      flushAwaiting(
+        [
+          {
+            id: 'dl-acct',
+            source: 'HC_PROFESSIONAL',
+            login: 'kquartey',
+            accountCreatedDate: '2026-08-19T10:04:00Z',
+            accountModifiedDate: '2026-09-01T09:20:00Z',
+          },
+          {
+            id: 'dl-prof',
+            source: 'HC_PROFESSIONAL',
+            login: 'yasante',
+            accountCreatedDate: '2026-08-19T10:04:00Z',
+            profileEventAt: '2026-09-02T14:47:05Z',
+            profileCreatedDate: '2026-08-25T11:30:00Z',
+            profileModifiedDate: '2026-09-02T14:47:00Z',
+          },
+        ],
+        '2',
+      );
+      fixture.detectChanges();
+
+      expect(comp.awaitingDates(comp.awaiting()[0]).source).toBe('account');
+      expect(comp.awaitingDates(comp.awaiting()[1]).source).toBe('profile');
+
+      const rows = fixture.nativeElement.querySelectorAll('[data-cy="awaitingRow"]');
+      expect(rows[0].querySelector('[data-cy="awaitingCreated"]').textContent).toContain('19 Aug 2026');
+      expect(rows[0].querySelector('[data-cy="awaitingCreated"]').textContent).toContain(
+        'hcAdminApp.directoryProfessional.awaiting.dateSource.account',
+      );
+      // The profile's own date, NOT the account's, on a row that has both.
+      expect(rows[1].querySelector('[data-cy="awaitingCreated"]').textContent).toContain('25 Aug 2026');
+      expect(rows[1].querySelector('[data-cy="awaitingCreated"]').textContent).not.toContain('19 Aug 2026');
+      expect(rows[1].querySelector('[data-cy="awaitingCreated"]').textContent).toContain(
+        'hcAdminApp.directoryProfessional.awaiting.dateSource.profile',
+      );
+    });
+
+    /**
+     * <b>`firstSeenAt` and `lastEventAt` are never rendered as the account's dates.</b>
+     *
+     * They are when <em>this console's service</em> saw something — they move when the collection is
+     * rebuilt from a backfill — so using either to fill an empty "created" cell would put a plausible
+     * wrong date on the screen, which is item 45's defect with a timestamp instead of an id. The row
+     * carries both and shows neither.
+     */
+    it('does not fall back to when this service first saw the account', () => {
+      initAndFlushTable();
+      flushAwaiting(
+        [
+          {
+            id: 'dl-seen',
+            source: 'HC_PROFESSIONAL',
+            login: 'kquartey',
+            firstSeenAt: '2026-09-06T09:47:00Z',
+            lastEventAt: '2026-09-06T09:47:00Z',
+          },
+        ],
+        '1',
+      );
+      fixture.detectChanges();
+
+      const row = fixture.nativeElement.querySelector('[data-cy="awaitingRow"]');
+      expect(row.querySelector('[data-cy="awaitingCreated"]').textContent).toContain('hcAdminApp.directoryProfessional.awaiting.unknown');
+      expect(row.textContent).not.toContain('6 Sep 2026');
+    });
+
+    /**
+     * <b>Phase 2 alone renders, keyed on nothing but the accountId.</b>
+     *
+     * A profile for an account this console has not been told about is not an error and must not be
+     * held back until a name arrives: the topics are unordered and both groups read from the earliest
+     * offset, so on a backfill this is ordinary. The row says its identity is not on file and shows
+     * the profile it does have.
+     */
+    it('renders a profile that arrived before its account', () => {
+      initAndFlushTable();
+      flushAwaiting(
+        [
+          {
+            id: 'dl-profile-only',
+            source: 'HC_PROFESSIONAL',
+            externalKey: '5e0b9a63-1d47-4c8a-93be-71ca8d6f2b05',
+            profileEventAt: '2026-09-07T05:02:00Z',
+            profileComplete: false,
+            profileVerified: false,
+            profileCreatedDate: '2026-09-07T05:01:30Z',
+          },
+        ],
+        '1',
+      );
+      fixture.detectChanges();
+
+      const row = fixture.nativeElement.querySelector('[data-cy="awaitingRow"]');
+      expect(row.textContent).toContain('hcAdminApp.directoryProfessional.awaiting.unidentified');
+      expect(row.textContent).not.toContain('5e0b9a63');
+      expect(row.querySelector('[data-cy="awaitingActivated"]').textContent).toContain('hcAdminApp.directoryProfessional.awaiting.unknown');
+      expect(row.querySelector('[data-cy="awaitingComplete"]').textContent).toContain('hcAdminApp.directoryProfessional.awaiting.no');
+      expect(row.querySelector('[data-cy="awaitingCreated"]').textContent).toContain(
+        'hcAdminApp.directoryProfessional.awaiting.dateSource.profile',
+      );
     });
 
     /**
@@ -442,6 +781,35 @@ describe('Professional Management Component', () => {
     });
 
     /**
+     * <b>Two different "Verified" on one screen, and each now says whose it is.</b>
+     *
+     * The awaiting panel's column is hc-professional's `isVerified` — their documents, by their rule.
+     * The directory below carries hc-admin's own `VerificationStatus` chips, which are this console's
+     * credentialing decision and include REVOKED and EXPIRED, states the far side has no concept of.
+     * `DirectoryLink.profileVerified`'s javadoc on the api distinguishes them and the screen did not,
+     * so an administrator reading the panel could reasonably conclude a clinician was credentialed
+     * here.
+     *
+     * Asserted on the copy rather than on the keys, for the reason the case above gives: under test
+     * `TranslatePipe` renders the key, so two columns headed with the same word are indistinguishable
+     * from two columns headed differently unless something reads the dictionary.
+     */
+    it('says whose verification each of the two columns is', () => {
+      const awaitingHeading = directoryProfessional.hcAdminApp.directoryProfessional.awaiting.column.verified;
+      const consoleHeading = verificationStatus.hcAdminApp.VerificationStatus.VERIFIED;
+
+      expect(awaitingHeading).not.toBe(consoleHeading);
+      expect(awaitingHeading.toLowerCase()).toContain('there');
+      expect(directoryProfessional.hcAdminApp.directoryProfessional.verificationFilterLabel.toLowerCase()).toContain('this console');
+
+      initAndFlushTable();
+      flushAwaiting([{ id: 'dl-1', source: 'HC_PROFESSIONAL', login: 'kquartey', lastEventAt: '2026-09-05T08:05:00Z' }], '1');
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.querySelector('[data-cy="verificationFilterLabel"]')).not.toBeNull();
+    });
+
+    /**
      * A clinician who has just registered has no onboarding state, and the row must not invent one.
      *
      * The case backlog item 46 was reported for. `registration.created` carries no `state` field;
@@ -457,7 +825,7 @@ describe('Professional Management Component', () => {
       expect(row.state ?? null).toBeNull();
       fixture.detectChanges();
       const rendered = fixture.nativeElement.querySelector('[data-cy="awaitingRow"]').textContent;
-      expect(rendered).toContain('a.owusu@abofonsa.care');
+      expect(rendered).toContain('aowusu');
       expect(rendered).not.toContain('registration.created');
       expect(rendered).not.toContain('·');
     });

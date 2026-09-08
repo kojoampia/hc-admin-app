@@ -353,11 +353,13 @@ describe('Patient Management Component', () => {
       /**
        * The sub-label under a name that came off a link follows the link's own source.
        *
-       * `resolveLinkIdentity`'s login fallback is documented as being for a professional-sourced
+       * `resolveLinkIdentity`'s login fallback was documented as being for a professional-sourced
        * link, and the case above asserts it — while the single label said "From the patient app
        * account" for every such row. Unreachable today, since no hc-professional link carries a
        * `localId`, but a label contradicting a covered branch is a label that is wrong the moment
-       * the branch is reached.
+       * the branch is reached. (The professional directory stopped using `resolveLinkIdentity` on
+       * 2026-09-07 — backlog item 47 — so the fallback is this screen's own now. The branch and the
+       * reason for covering it are unchanged.)
        */
       describe('where a linked name came from', () => {
         it('names the patient app for an hc-patient link', () => {

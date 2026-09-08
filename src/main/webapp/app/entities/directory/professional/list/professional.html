@@ -63,14 +63,38 @@
 </div>
 
 <!--
-  Clinicians this console knows about and holds no record for — backlog item 46.
+  Clinicians this console knows about and holds no record for — backlog items 46 and 47.
 
-  These rows are not in the table below and cannot be: a registration on hc-professional arrives as a
-  DirectoryLink and produces no Professional, because `role` and `licenceNumber` are required here and
-  are on the wire in no event, in any version. So they are shown as what they are — an account that
-  exists on another stack — rather than fabricated into directory rows with an invented role and
-  licence number, which in the directory whose purpose is verifying licences would be the most
-  plausible possible wrong answer.
+  These rows are not in the directory table below and cannot be: a registration on hc-professional
+  arrives as a DirectoryLink and produces no Professional, because `role` and `licenceNumber` are
+  required here and are on the wire in no event, in any version. So they are shown as what they are —
+  an account that exists on another stack — rather than fabricated into directory rows with an
+  invented role and licence number, which in the directory whose purpose is verifying licences would
+  be the most plausible possible wrong answer.
+
+  IT IS A TABLE, AND UNTIL 2026-09-07 IT WAS DELIBERATELY NOT ONE. Item 46 argued against a table and
+  was right about the table it meant: a clinician with no Professional record under columns headed
+  Role, Licence and Hub is a line of dashes, which reads as a record entered badly — item 45's
+  finding. THESE ARE DIFFERENT COLUMNS. login, activated, verified, complete and the two dates come
+  from the two-phase contract of item 47 and need no Professional document at all, so the reason for
+  keeping these subjects out of the directory table does not apply to this one. Item 46 stays closed
+  and stays correct; this replaces its list.
+
+  Two properties of the row, both of them ways this goes wrong quietly:
+
+  * A ROW EXISTS AS SOON AS EITHER PHASE ARRIVES. Phase 1 (login, activated) is published by
+    hc-professional's gateway and phase 2 (the rest) by its api, onto two topics with no ordering
+    between them. Phase 1 alone is a registered account with no profile yet — common, and what an
+    administrator needs to see. Phase 2 alone is a profile for an account nobody has told us about —
+    rarer, NOT an error, and rendered keyed on the accountId rather than held back until a name
+    arrives.
+  * EMPTY IS NOT FALSE. `verified` and `complete` are unknown until a ProfileStatus arrives. A cell
+    reading "No" for a clinician whose status has merely not been published asserts something about a
+    person from the absence of a message, which is items 27(a) and 46's prohibition one column along.
+    Every one of those cells goes through `hasProfile(link)` first.
+
+  The email is on the wire and off the screen. Item 47 names `login` as what the console shows and
+  says of `email` that it is for correlation; item 43 took the same value out of every log line.
 
   There is deliberately no "create the record" action here. Nothing an administrator could type would
   be a licence hc-admin has verified, and completing these properly is a read hc-professional does not
@@ -89,8 +113,9 @@
       <div>
         <h4 abfTranslate="hcAdminApp.directoryProfessional.awaiting.title">Registered, no record here yet</h4>
         <p abfTranslate="hcAdminApp.directoryProfessional.awaiting.subtitle">
-          These accounts exist on the professional app. This console cannot create a record for them — a registration carries no role and no
-          licence number.
+          These accounts exist on the professional app. This console cannot create a record for them — no event carries a role or a licence
+          number. What is shown is the account and, once it arrives, its profile status. Verification here is hc-professional's check of
+          their documents, not this console's credentialing decision — that one is on the directory below.
         </p>
       </div>
       <span class="pill pill-warn" data-cy="awaitingCount">{{
@@ -98,36 +123,183 @@
       }}</span>
     </div>
 
-    <ul class="awaiting-list">
-      @for (link of awaiting(); track link.id) {
-        <li data-cy="awaitingRow">
-          <span class="dir-av" aria-hidden="true">{{ awaitingInitials(link) }}</span>
-          <div>
-            @if (awaitingName(link); as name) {
-              <div class="dir-name">{{ name }}</div>
-            } @else {
-              <!-- An onboarding.state frame carries neither an address nor a login, so there is
-                   genuinely nothing to name this account by. It says so rather than printing the
-                   accountId, which is a UUID and reads as a corrupted record — item 45's finding. -->
-              <div class="dir-name dir-name-unidentified" abfTranslate="hcAdminApp.directoryProfessional.awaiting.unidentified">
-                Identity not on file
-              </div>
-            }
-            <div class="sub">
-              {{ 'hcAdminApp.directoryProfessional.awaiting.noRecord' | translate }}
-              <!-- Only when the far side reported one. A clinician whose only event is a
-                   registration.created has no onboarding state, and since 2026-09-07 the api
-                   leaves the field absent rather than filling it with the event type — which had
-                   been rendering here as "· registration.created", a wire identifier where a
-                   status goes, on the newest row on the panel. See directory-link.model.ts. -->
-              @if (link.state) {
-                · {{ link.state }}
-              }
-            </div>
-          </div>
-        </li>
-      }
-    </ul>
+    <div class="table-responsive">
+      <table class="table awaiting-table" data-cy="awaitingTable">
+        <thead>
+          <tr>
+            <th scope="col" abfTranslate="hcAdminApp.directoryProfessional.awaiting.column.login">Login</th>
+            <th scope="col" abfTranslate="hcAdminApp.directoryProfessional.awaiting.column.activated">Activated</th>
+            <!--
+              "VERIFIED" MEANS TWO DIFFERENT THINGS ON THIS SCREEN, AND THE HEADING SAYS WHICH.
+
+              This column is hc-professional's `isVerified` — their documents, checked by their rule
+              ("every live document on the profile verified, and at least one present"). The table
+              below carries hc-admin's own `VerificationStatus` chips, which are this console's
+              credentialing decision and include REVOKED and EXPIRED, states the far side has no
+              concept of. `DirectoryLink.profileVerified`'s javadoc on the api distinguishes them; the
+              screen did not, so two columns headed "Verified" sat one card apart meaning different
+              things — and an administrator reading the panel would reasonably conclude a clinician
+              was credentialed here.
+
+              Neither is derivable from the other, which is why this is a wording change and not a
+              merge: a profile whose documents are all verified there has been through no interview
+              here, and item 47 is explicit that `isVerified` is never a function of anything on a
+              topic.
+            -->
+            <th scope="col" abfTranslate="hcAdminApp.directoryProfessional.awaiting.column.verified">Documents verified there</th>
+            <th scope="col" abfTranslate="hcAdminApp.directoryProfessional.awaiting.column.complete">Profile complete</th>
+            <!--
+              One heading for the pair, and it says WHOSE dates per row rather than in the header:
+              the source differs by row, since it falls back to the account's when no ProfileStatus
+              has arrived. A header claiming "Profile created" over a column that is sometimes the
+              account's date is the quiet wrong answer this column is most likely to give.
+            -->
+            <th scope="col" abfTranslate="hcAdminApp.directoryProfessional.awaiting.column.created">Created</th>
+            <th scope="col" abfTranslate="hcAdminApp.directoryProfessional.awaiting.column.modified">Modified</th>
+            <th scope="col" abfTranslate="hcAdminApp.directoryProfessional.awaiting.column.lastModifiedBy">Last changed by</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (link of awaiting(); track link.id) {
+            <tr data-cy="awaitingRow">
+              <td>
+                <div class="dir-cell">
+                  <span class="dir-av" aria-hidden="true">{{ awaitingInitials(link) }}</span>
+                  <div>
+                    @if (awaitingName(link); as name) {
+                      <div class="dir-name">{{ name }}</div>
+                    } @else {
+                      <!--
+                        Phase 1 has not arrived, or arrived carrying no login — an onboarding.state
+                        frame carries neither a login nor an address. There is genuinely nothing to
+                        name this account by, so it says so rather than printing the accountId, which
+                        is a UUID and reads as a corrupted record (item 45's finding).
+                      -->
+                      <div class="dir-name dir-name-unidentified" abfTranslate="hcAdminApp.directoryProfessional.awaiting.unidentified">
+                        Identity not on file
+                      </div>
+                    }
+                    <!--
+                      WHAT IS KNOWN, PER ROW, AND NEVER WHAT IS GUESSED.
+
+                      This said "Known from a registration on the professional app" for every row,
+                      including one that has only ever had a phase 2 — a profile status for an
+                      account nobody has announced, which is normal on any backfill because the two
+                      phases are on two topics with no ordering between them. For that row the
+                      sentence asserts a message that was never sent, which is the same shape as
+                      reading an absent `isVerified` as "No", one line down the cell.
+
+                      Two keys rather than one conditional clause, because the two rows have nothing
+                      to say in common: one is an account we were told about and hold no record for,
+                      the other is a profile for an account we were never told about at all.
+                    -->
+                    <div class="sub">
+                      @if (hasRegistrationEvent(link)) {
+                        {{ 'hcAdminApp.directoryProfessional.awaiting.noRecord' | translate }}
+                      } @else {
+                        {{ 'hcAdminApp.directoryProfessional.awaiting.noRegistration' | translate }}
+                      }
+                      <!-- Only when the far side reported one. A clinician whose only event is a
+                           registration.created has no onboarding state, and since 2026-09-07 the api
+                           leaves the field absent rather than filling it with the event type. -->
+                      @if (link.state) {
+                        · {{ link.state }}
+                      }
+                    </div>
+                  </div>
+                </div>
+              </td>
+              <!--
+                Phase 1. Three states, not two: `activated` is null until an AccountStatus says. It is
+                never derived from the profile being complete or from a ProfileStatus existing —
+                a clinician can be activated with no profile and can complete a profile on an account
+                later deactivated, so an inference would be wrong in both directions (item 47).
+              -->
+              <td data-cy="awaitingActivated">
+                @switch (tristate(link.activated)) {
+                  @case ('yes') {
+                    <span class="pill pill-ok" abfTranslate="hcAdminApp.directoryProfessional.awaiting.yes">Yes</span>
+                  }
+                  @case ('no') {
+                    <span class="pill pill-warn" abfTranslate="hcAdminApp.directoryProfessional.awaiting.no">No</span>
+                  }
+                  @default {
+                    <span class="unknown" abfTranslate="hcAdminApp.directoryProfessional.awaiting.unknown">Not reported</span>
+                  }
+                }
+              </td>
+              <!-- Phase 2, and both of these read `hasProfile` FIRST. Without that branch a clinician
+                   whose profile status has not been published reads as unverified, which is a claim
+                   about a person made from an absent message. -->
+              <td data-cy="awaitingVerified">
+                @switch (tristate(link.profileVerified, hasProfile(link))) {
+                  @case ('yes') {
+                    <span class="pill pill-ok" abfTranslate="hcAdminApp.directoryProfessional.awaiting.yes">Yes</span>
+                  }
+                  @case ('no') {
+                    <span class="pill pill-warn" abfTranslate="hcAdminApp.directoryProfessional.awaiting.no">No</span>
+                  }
+                  @default {
+                    <span class="unknown" abfTranslate="hcAdminApp.directoryProfessional.awaiting.unknown">Not reported</span>
+                  }
+                }
+              </td>
+              <td data-cy="awaitingComplete">
+                @switch (tristate(link.profileComplete, hasProfile(link))) {
+                  @case ('yes') {
+                    <span class="pill pill-ok" abfTranslate="hcAdminApp.directoryProfessional.awaiting.yes">Yes</span>
+                  }
+                  @case ('no') {
+                    <span class="pill pill-warn" abfTranslate="hcAdminApp.directoryProfessional.awaiting.no">No</span>
+                  }
+                  @default {
+                    <span class="unknown" abfTranslate="hcAdminApp.directoryProfessional.awaiting.unknown">Not reported</span>
+                  }
+                }
+              </td>
+              @let dates = awaitingDates(link);
+              <td data-cy="awaitingCreated">
+                @if (dates.created) {
+                  <div>{{ shortDate(dates.created) }}</div>
+                  <!-- Which pair this is, per row, because it falls back. Never omitted: two plausible
+                       dates describing the wrong thing is the failure this column has by design. -->
+                  <div class="sub">{{ 'hcAdminApp.directoryProfessional.awaiting.dateSource.' + dates.source | translate }}</div>
+                } @else {
+                  <span class="unknown" abfTranslate="hcAdminApp.directoryProfessional.awaiting.unknown">Not reported</span>
+                }
+              </td>
+              <td data-cy="awaitingModified">
+                @if (dates.modified) {
+                  {{ shortDate(dates.modified) }}
+                } @else {
+                  <span class="unknown" abfTranslate="hcAdminApp.directoryProfessional.awaiting.unknown">Not reported</span>
+                }
+              </td>
+              <!--
+                hc-professional's LOGIN, shown verbatim, and NOT an accountId — item 47's contract
+                says it is "an accountId, which IS the gateway's User.id" and is wrong about their
+                code: the value is Spring Data auditing's lastModifiedBy on their Profile, which
+                their SpringSecurityAuditorAware fills from the JWT subject. Decision 2 moves their
+                `accountId` onto a User.id and changes nothing about auditing, so the two are in
+                different spaces.
+
+                Nothing about the rendering changes — it is still shown as sent and no name is
+                invented for it, which is the defect this whole panel refuses one column along. What
+                changes is that it must not be read as an identifier on this stack, and that this is
+                the one cell on the row a person can already read.
+              -->
+              <td class="mono" data-cy="awaitingLastModifiedBy">
+                @if (link.profileLastModifiedBy) {
+                  {{ link.profileLastModifiedBy }}
+                } @else {
+                  <span class="unknown" abfTranslate="hcAdminApp.directoryProfessional.awaiting.unknown">Not reported</span>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
 
     @if (awaitingOverflow() > 0) {
       <p class="sub" data-cy="awaitingOverflow">
@@ -155,8 +327,17 @@
 
     Filtered server-side through `verification.equals`, like role and status: counting a page
     client-side breaks the moment the directory exceeds twenty rows.
+
+    THE LABEL IS NOT DECORATION. These states are hc-admin's own credentialing decision — VERIFIED
+    here means an administrator inspected documents and interviewed the person — and the awaiting
+    panel above has a column that also said "Verified", which is hc-professional's document check on
+    their side. Both are now named for whose they are, because neither is derivable from the other and
+    the screen showed them a card apart with the same word.
   -->
   <div class="chip-row">
+    <span class="chip-row-label" abfTranslate="hcAdminApp.directoryProfessional.verificationFilterLabel" data-cy="verificationFilterLabel"
+      >Verified by this console</span
+    >
     @for (option of VERIFICATIONS; track option) {
       <button
         type="button"

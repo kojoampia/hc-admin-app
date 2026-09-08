@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Data, ParamMap, Router, RouterLink } from '@angular/router';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import dayjs from 'dayjs/esm';
 import { NgbPagination } from '@ng-bootstrap/ng-bootstrap/pagination';
 import { TranslatePipe } from '@ngx-translate/core';
 import { Subscription, combineLatest, tap } from 'rxjs';
@@ -12,7 +13,12 @@ import { Subscription, combineLatest, tap } from 'rxjs';
 import { StatusPill } from 'app/console/shared/status-pill/status-pill';
 import { DEFAULT_SORT_DATA, SORT } from 'app/config/navigation.constants';
 import { ITEMS_PER_PAGE, PAGE_HEADER, TOTAL_COUNT_RESPONSE_HEADER } from 'app/config/pagination.constants';
-import { IDirectoryLink, resolveLinkIdentity } from 'app/entities/directory/directory-link/directory-link.model';
+import {
+  IDirectoryLink,
+  hasProfileStatus,
+  hasRegistration,
+  resolveClinicianLogin,
+} from 'app/entities/directory/directory-link/directory-link.model';
 import { DirectoryLinkService } from 'app/entities/directory/directory-link/service/directory-link.service';
 import { AccountStatus } from 'app/entities/enumerations/account-status.model';
 import { ProfessionalRole } from 'app/entities/enumerations/professional-role.model';
@@ -60,12 +66,32 @@ const AWAITING_ROWS = 5;
  * `size=1` query — the message desk's pattern — because counting the rows on screen would count a
  * page and report it as the directory.
  *
- * **And, since backlog item 46, the clinicians this console knows about and holds no record for.**
- * They are not in the table and cannot be: a registration on hc-professional produces a
+ * **And, above it, the clinicians this console knows about and holds no record for.**
+ * They are not in the directory table and cannot be: a registration on hc-professional produces a
  * `DirectoryLink` and no `Professional`, so no query against `/api/professionals` can return them.
- * They are listed in their own panel above the directory, named from what the link carries, saying
- * in as many words that no record exists here — never fabricated into rows with an invented role and
- * licence number, which is what {@link awaitingName} and the panel's copy exist to make unnecessary.
+ *
+ * **Since backlog item 47 they are a table of their own with seven columns, and that supersedes item
+ * 46's list.** The distinction is worth stating because item 46 argued specifically *against* a table
+ * and was right: a clinician with no `Professional` record cannot be a row under Role, Licence and
+ * Hub, because a line of dashes there reads as a record entered badly — item 45's finding. **These
+ * are different columns.** `login`, `activated`, verified, complete, createdDate, modifiedDate and
+ * lastModifiedBy come from the two-phase contract and need no `Professional` document at all, so the
+ * reason for keeping these subjects out of the directory table does not apply to this one. Item 46
+ * stays closed and its reasoning stays correct about the table it was written for.
+ *
+ * Two properties of that table are load-bearing and are the ways it goes wrong quietly:
+ *
+ * - **A row exists as soon as either phase arrives.** The phases are published by two applications
+ *   onto two topics with no ordering between them, so whichever lands first creates the row and the
+ *   other fills it in. Phase 1 alone is a registered account with no profile yet; phase 2 alone is a
+ *   profile for an account this console has not been told about, which is rarer and is *not an
+ *   error*. Neither is held back waiting for the other.
+ * - **Empty is not false.** `verified` and `complete` are unknown until a `ProfileStatus` arrives,
+ *   and a row reading "not verified" for a clinician whose status has merely not been published
+ *   asserts something about a person from the absence of a message. See {@link hasProfile}.
+ *
+ * Nothing here is fabricated into a role or a licence number, which is what {@link awaitingName} and
+ * the table's copy exist to make unnecessary.
  */
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -214,21 +240,24 @@ export class Professional implements OnInit {
   /**
    * How an awaiting-a-record row is named, and `null` when nothing here can name it.
    *
-   * The same rule the patient directory uses for a learned row (`resolveLinkIdentity`): the address
-   * the registration carried, then the login, and **never the `externalKey`** — for a clinician that
-   * key is an `accountId`, a UUID, which is the unreadable-identifier-as-a-name defect backlog item
-   * 45 removed one directory along. A row that cannot be named says so in words instead.
+   * **The login from phase 1, and never the address.** This called `resolveLinkIdentity` until
+   * 2026-09-07, which prefers the email — correct for the patient directory it was written for, and
+   * wrong here: backlog item 47's contract names `login` as the field the console shows and says of
+   * `email` that it is "for correlation, not for display". Item 43 took the same key out of every log
+   * line for the same reason. `externalKey` is not a fallback either — for a clinician it is an
+   * `accountId`, a UUID, which is item 45's defect one directory along. A row that cannot be named
+   * says so in words instead.
    */
   awaitingName(link: IDirectoryLink): string | null {
-    return resolveLinkIdentity(link);
+    return resolveClinicianLogin(link);
   }
 
   /**
-   * Initials for an awaiting row — from the mailbox, never from an id.
+   * Initials for an awaiting row — from the login, never from an id and no longer from the address.
    *
-   * `k.quartey@abofonsa.care` gives `KQ` and a link carrying neither address nor login gives an em
-   * dash. Deliberately identical in shape to the patient list's, because these two chips sit two
-   * clicks apart and the rule they share is that a monogram is a monogram or it is nothing.
+   * A link carrying no login gives an em dash. Deliberately identical in shape to the patient list's,
+   * because these two chips sit two clicks apart and the rule they share is that a monogram is a
+   * monogram or it is nothing.
    *
    * **A login yields one letter per word it can be split on, which for most logins is one letter.**
    * This javadoc promised "its first letters" until 2026-09-07 and the code has never done that:
@@ -237,6 +266,10 @@ export class Professional implements OnInit {
    * to be a monogram of two. Splitting a login into a forename and a surname is not something this
    * console can do, and guessing is the failure mode this whole chip was rewritten to stop making.
    * The rule is stated as what it is so the next reader does not "fix" it.
+   *
+   * The `@` split is kept although a login has no domain: it costs one call and it is what stops a
+   * login that happens to be an address — which some accounts on the far side are — from monogramming
+   * out of the domain.
    */
   awaitingInitials(link: IDirectoryLink): string {
     const identity = this.awaitingName(link);
@@ -250,6 +283,100 @@ export class Professional implements OnInit {
       .slice(0, 2)
       .map(part => part.charAt(0));
     return letters.length > 0 ? letters.join('').toUpperCase() : '—';
+  }
+
+  /**
+   * Whether phase 2 has arrived for this clinician.
+   *
+   * The one branch the row's five phase-2 cells share, so "unknown" is decided once rather than five
+   * times. See `hasProfileStatus` for why it reads `profileEventAt` and not one of the fields a
+   * reader would reach for first.
+   */
+  hasProfile(link: IDirectoryLink): boolean {
+    return hasProfileStatus(link);
+  }
+
+  /**
+   * Whether phase 1 has arrived for this clinician — and therefore whether the row may say it came
+   * from a registration.
+   *
+   * **The sub-line under the login used to say so unconditionally**, and for a phase-2-only row that
+   * sentence — "Known from a registration on the professional app" — describes a message nobody sent.
+   * Such a row is normal rather than exotic: the two phases are on two topics with no ordering
+   * between them and both consumer groups read from the earliest offset, so a profile status landing
+   * before its account event happens on every backfill. It is `dl-prof-profile-only` in the fixture.
+   *
+   * No spec caught it because the translate pipe renders keys rather than copy under test, so an
+   * assertion on the key passes whatever the key says. `professional.spec.ts` asserts the two rows
+   * carry *different* keys and reads the shipped `directoryProfessional.json` for what each one
+   * claims — the distinction is in the copy, so the copy is what has to be looked at.
+   */
+  hasRegistrationEvent(link: IDirectoryLink): boolean {
+    return hasRegistration(link);
+  }
+
+  /**
+   * One boolean cell's answer: `yes`, `no`, or `unknown`.
+   *
+   * **The tri-state rule lives here and in one place, because getting it wrong is invisible.** The
+   * tempting shape in a template is a truthiness check, and a truthiness check renders `undefined` as
+   * "No" — which for `verified` or `complete` means telling an administrator that a clinician's
+   * profile is unverified when the truth is that hc-professional has not published its status yet.
+   * That is a claim about a person made from the absence of a message: items 27(a) and 46 refuse it
+   * for a name, and backlog item 47 refuses it for these two columns in the same terms.
+   *
+   * @param value the field, where `null`/`undefined` mean the producer did not say.
+   * @param reported whether the phase carrying it has arrived at all. Passing
+   *                 {@link hasProfile} for a phase-2 field is what keeps "no `ProfileStatus`" and
+   *                 "a `ProfileStatus` that omitted this field" reading the same on screen — they are
+   *                 the same fact to a reader, and both are unknown.
+   */
+  tristate(value: boolean | null | undefined, reported = true): 'yes' | 'no' | 'unknown' {
+    if (!reported || value === null || value === undefined) {
+      return 'unknown';
+    }
+    return value ? 'yes' : 'no';
+  }
+
+  /**
+   * The dates the row shows, and **which pair they are**.
+   *
+   * Both phases carry a `createdDate` and a `modifiedDate` — the account has its own and so does the
+   * profile — so the column is ambiguous by construction and the row has to resolve it rather than
+   * pick one silently. Backlog item 47: show the profile's when a `ProfileStatus` has been received
+   * and the account's when it has not. A clinician with no profile still has a "registered on" date
+   * worth showing, and falling back beats a blank cell.
+   *
+   * **`source` is returned with them and the template renders it.** Showing account dates under a
+   * heading a reader takes for profile dates is the failure this exists to avoid, and it is the kind
+   * that is never noticed — two plausible dates in the right format, describing the wrong thing.
+   *
+   * **`firstSeenAt` and `lastEventAt` are deliberately not a third fallback.** Those are when *this
+   * service* saw something: they move when the collection is rebuilt from a backfill, and for a
+   * subject learned during a replay they are simply not the account's dates. Rendering one under
+   * "created" would be item 45's defect with a timestamp instead of an id, so an absent pair stays
+   * absent and the cell says nothing.
+   */
+  awaitingDates(link: IDirectoryLink): { created?: string | null; modified?: string | null; source: 'profile' | 'account' } {
+    if (this.hasProfile(link)) {
+      return { created: link.profileCreatedDate, modified: link.profileModifiedDate, source: 'profile' };
+    }
+    return { created: link.accountCreatedDate, modified: link.accountModifiedDate, source: 'account' };
+  }
+
+  /**
+   * A link's date, in the console's usual medium format, and empty for one that is not there.
+   *
+   * **Deliberately not `FormatMediumDatePipe`**, which every generated screen uses: that pipe takes a
+   * `dayjs.Dayjs`, and it gets one because the generated entity services convert their date fields on
+   * the way in. `DirectoryLinkService` does not — it reads the document as it comes off the wire,
+   * because a link is a fact about another system rather than an entity this console edits — so these
+   * five fields are ISO strings and handing one to that pipe renders nothing at all, silently.
+   *
+   * The format string matches the pipe's on purpose, so the two read identically on one screen.
+   */
+  shortDate(value: string | null | undefined): string {
+    return value ? dayjs(value).format('D MMM YYYY') : '';
   }
 
   /** How many are waiting beyond the rows on screen; zero when the panel lists them all. */
