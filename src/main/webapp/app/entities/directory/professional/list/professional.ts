@@ -203,7 +203,27 @@ export class Professional implements OnInit {
 
   trackId = (item: IProfessional): string => this.professionalService.getProfessionalIdentifier(item);
 
-  /** The clinician's name, which lives on the linked profile. Falls back to licence, then id. */
+  /**
+   * The clinician's name, which lives on the linked profile; then the licence number; then an em
+   * dash. The `?? professional.id` in between is a fourth step that nothing reaches.
+   *
+   * **That terminal is a type terminator, not a rendering, and this is where to read why before
+   * re-opening backlog item 49.** That item quoted this line as backlog item 45's defect one
+   * directory along, and it was answered on 2026-09-08: `licenceNumber` is `@NotNull
+   * @Size(max = 40)` on `Professional`, and `DatabaseConfiguration` registers a
+   * `ValidatingMongoEventListener`, so no save of any kind — the REST surface,
+   * `DevelopmentDataInitializer`, any service — can store a clinician without one. The `??`
+   * therefore never fires, and this is the same answer, for the same reason, that
+   * `patient/list/patient.ts`'s `clinicalLead` gives one column along. The argument for not
+   * sweeping the shape is in `record-identity.spec.ts`.
+   *
+   * This summary read "Falls back to licence, then id" for a three-step expression until that item
+   * — exactly the two-versus-three mismatch that made the line read like the evidence it was cited
+   * as, and the reason the count is spelled out above rather than summarised.
+   *
+   * The chip beside this is {@link initials}, and it is **not** shielded the same way — `profile`
+   * is optional where `licenceNumber` is not, which is why that one returns an em dash outright.
+   */
   displayName(professional: IProfessional): string {
     const name = [professional.profile?.firstName, professional.profile?.lastName].filter(Boolean).join(' ');
     // Written out rather than chained with `||`: `join` returns an empty string, which is falsy
@@ -211,7 +231,14 @@ export class Professional implements OnInit {
     if (name.length > 0) {
       return name;
     }
-    return professional.licenceNumber ?? professional.id;
+    const licence = professional.licenceNumber ?? professional.id;
+    // The same emptiness trap one field along, and this one is the api's rather than `join`'s: the
+    // annotation `@NotBlank` appears nowhere in the api's main sources, so `""` satisfies
+    // `@NotNull @Size(max = 40)` and is storable through the REST surface. `??` let it through, and
+    // the template interpolates this straight into the row's link — an anchor with no text in it,
+    // which a reader cannot click and cannot see. Pre-existing, and not item 45's defect: blank is
+    // not an id. The dash is what `initials` already returns for the same record.
+    return licence.trim().length > 0 ? licence : '—';
   }
 
   /**

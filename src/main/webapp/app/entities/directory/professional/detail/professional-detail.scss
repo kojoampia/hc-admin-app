@@ -9,3 +9,13 @@
 .card--full {
   grid-column: 1 / -1;
 }
+
+/*
+ * A clinician nobody on this side can name — the same rendering, wording and reasoning as the
+ * patient record's, because it is the same state one directory along. Italic grey says "this is a
+ * label, not somebody's name"; the record id it replaced said "this row is corrupted".
+ */
+.record-head .who h3.unidentified {
+  font-style: italic;
+  color: var(--abf-grey);
+}

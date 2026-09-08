@@ -163,7 +163,9 @@
         <dl>
           <dt abfTranslate="hcAdminApp.directoryPatient.detail.clinicalLead">Clinical lead</dt>
           <dd>
-            <a [routerLink]="['/professional', lead.id, 'view']">{{ clinicalLeadName() ?? lead.licenceNumber ?? lead.id }}</a>
+            <!-- Not the `??` chain this was: a blank licence number is storable and rendered an
+                 anchor with no text in it. See `clinicalLeadLabel`. -->
+            <a [routerLink]="['/professional', lead.id, 'view']">{{ clinicalLeadLabel() }}</a>
           </dd>
           @if (lead.role) {
             <dt abfTranslate="hcAdminApp.directoryProfessional.role">Role</dt>
