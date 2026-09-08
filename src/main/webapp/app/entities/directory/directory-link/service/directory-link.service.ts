@@ -110,4 +110,34 @@ export class DirectoryLinkService {
       })),
     );
   }
+
+  /**
+   * The plan choices hc-patient has reported in a given status — backlog item 48.
+   *
+   * **Asked of the server, and it has to be.** The plan choice lives on `directory_link` rather than
+   * on `Patient` (the api's `DirectoryLinkResource` says why: how hc-admin models a cross-stack
+   * patient identity is still open, backlog item 22), so `GET /api/patients` cannot filter or sort by
+   * it however it is asked. The alternative — reading every link and filtering here — is the
+   * unpaginated shape this service removed from forty endpoints, over a collection that grows at the
+   * rate two other stacks create accounts.
+   *
+   * `size` and `sort` are sent explicitly, for the reasons the two methods above give: a list
+   * endpoint with no size returns 20, and sorting a received page sorts one page against the wrong
+   * whole. **`lastEventAt,desc` and not `firstSeenAt,desc`** — the panel above the directory is a
+   * queue, and what puts a row at the top of it is the choice having been heard recently, not the
+   * patient having registered recently. Those are years apart for a patient who has been on the
+   * network a while and has just changed tier.
+   *
+   * The total comes off `X-Total-Count` beside the page for the reason {@link findUnlinked} gives: a
+   * count taken from the rows received reports the page size as the size of the queue.
+   */
+  findPlanChoices(planStatus: string, size: number): Observable<DirectoryLinkPage> {
+    const options = createRequestOption({ planStatus, page: 0, size, sort: ['lastEventAt,desc'] });
+    return this.http.get<IDirectoryLink[]>(this.resourceUrl, { params: options, observe: 'response' }).pipe(
+      map(response => ({
+        total: Number(response.headers.get(TOTAL_COUNT_RESPONSE_HEADER) ?? response.body?.length ?? 0),
+        links: response.body ?? [],
+      })),
+    );
+  }
 }

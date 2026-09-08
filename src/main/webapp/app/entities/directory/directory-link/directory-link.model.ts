@@ -148,6 +148,53 @@ export interface IDirectoryLink {
    * "no profile status" is the same conflation of empty and false the block comment above forbids.
    */
   profileEventAt?: string | null;
+
+  // --- the membership tier a patient chose, backlog item 48 --------------------------------------
+  //
+  // hc-patient publishes `PlanChosen` on `patient-events` when a patient picks a tier, and the api
+  // writes its four fields onto this row. Only an HC_PATIENT link ever carries them: a clinician has
+  // no membership and nothing on either of hc-professional's topics mentions one.
+  //
+  // THE PLAN A PATIENT *HOLDS* IS `Patient.plan`, NOT THIS. That field is an administrator's, set on
+  // this console, and no event may write it — hc-patient does not know this service's catalogue
+  // exists. These four are what somebody asked for on the other product, which is a different fact
+  // and is rendered as a different thing.
+
+  /** hc-patient's own id for the `Membership`. A support handle, never a join key. */
+  planMembershipId?: string | null;
+
+  /**
+   * Abofonsa's tier code as hc-patient sent it — `PEAR`, `PAWPAW`, `MELON`.
+   *
+   * Resolved against `ServicePlan.code` **on this side, at render time**. Since backlog item 51 the
+   * two vocabularies are the same one, synced from the same content API, so it normally matches;
+   * when it does not, the tier is one Abofonsa has published and the catalogue sync has not brought
+   * across yet, and the screen says so rather than inventing a plan or drawing a blank.
+   */
+  planCode?: string | null;
+
+  /**
+   * hc-patient's display name for the tier — `"PAWPAW Plan"`.
+   *
+   * **Theirs, not this catalogue's**, and the two can differ. It is what makes an unresolvable code
+   * readable, and it is why the panel can name a tier it holds no record of.
+   */
+  planName?: string | null;
+
+  /**
+   * The status the membership was created with on hc-patient — `PENDING` for anybody but an
+   * administrator there.
+   *
+   * **Not a live status, and it must never be labelled as one.** Their `MembershipResource` publishes
+   * on `POST` alone; `PUT` and `PATCH` write the status and announce nothing, so a membership
+   * approved on their side afterwards says so on no topic and this field goes on reading `PENDING`.
+   * The wording on screen says "reported" for exactly that reason. Item 54's return leg is what
+   * closes the loop from this end.
+   *
+   * A string rather than a union: the vocabulary is hc-patient's and they ship five values today
+   * (`PENDING`, `ACTIVE`, `CANCELLED`, `EXPIRED`, `SUSPENDED`), with nothing stopping a sixth.
+   */
+  planStatus?: string | null;
 }
 
 export const DirectorySource = {
@@ -275,4 +322,27 @@ export function hasProfileStatus(link: IDirectoryLink | null | undefined): boole
  */
 export function hasRegistration(link: IDirectoryLink | null | undefined): boolean {
   return !!link?.lastEventAt;
+}
+
+/**
+ * The status hc-patient reports for a membership that is waiting on a decision.
+ *
+ * One of their five, and the only one that means "awaiting action" — which is the whole reason
+ * `PlanChosen` is published. It is a literal because it is *their* vocabulary: this console does not
+ * own the value and cannot enumerate what they may add, so it names the one it acts on and asks the
+ * server for exactly that rather than fetching every choice and filtering here.
+ */
+export const PLAN_STATUS_PENDING = 'PENDING';
+
+/**
+ * Whether this row carries a plan choice at all.
+ *
+ * `planCode` and not `planStatus`, on the same reasoning `hasProfileStatus` gives one contract along:
+ * the api writes each of the four fields only when the event carried it, and a membership created
+ * through hc-patient's administrative path can legitimately carry no status. A missing code is the
+ * closest thing to "no choice has been made", and a choice with no tier on it is not something to
+ * put under a heading naming tiers.
+ */
+export function hasPlanChoice(link: IDirectoryLink | null | undefined): boolean {
+  return !!link?.planCode;
 }

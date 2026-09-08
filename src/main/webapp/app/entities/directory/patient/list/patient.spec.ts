@@ -104,10 +104,34 @@ describe('Patient Management Component', () => {
       req.flush({ id: 'unused' });
     }
     // Any row without a name provokes one batched link read. Seeded rows carry no profile, so most
-    // tests in this file make it without being about it.
+    // tests in this file make it without being about it. This also mops up the plan-choice read,
+    // which `ngOnInit` and `refresh` fire unconditionally — see `isLinkLookup` for why the two are
+    // told apart everywhere it matters.
     for (const req of httpMock.match(r => r.url.endsWith('/api/directory-links'))) {
       req.flush([]);
     }
+    // The plan catalogue, read once so a chosen tier can be shown with its price.
+    for (const req of httpMock.match(r => r.url.endsWith('/api/service-plans'))) {
+      req.flush([]);
+    }
+  }
+
+  /**
+   * The batched read that names the nameless rows of the page — `localId.in`.
+   *
+   * **Told apart from the plan-choice read by its parameters, and it has to be.** Both address
+   * `/api/directory-links`, so from backlog item 48 onwards a bare `endsWith` matcher matches two
+   * requests and `expectOne` fails on every case in this file that was about neither. The
+   * distinction is not cosmetic either: the two answer different questions and a test that flushed
+   * the wrong one would assert against a page it never asked for.
+   */
+  function isLinkLookup(req: { url: string; params: { has(name: string): boolean } }): boolean {
+    return req.url.endsWith('/api/directory-links') && req.params.has('localId.in');
+  }
+
+  /** Its counterpart: the plan choices awaiting a decision, filtered on the reported status. */
+  function isPlanChoiceLookup(req: { url: string; params: { has(name: string): boolean } }): boolean {
+    return req.url.endsWith('/api/directory-links') && req.params.has('planStatus');
   }
 
   afterEach(() => {
@@ -384,7 +408,7 @@ describe('Patient Management Component', () => {
       req.flush([{ id: 'learned-1' }, { id: 'learned-2' }, { id: 'named-1', profile: { id: 'p', firstName: 'Efua', lastName: 'Mensah' } }]);
       await vitest.runAllTimersAsync();
 
-      const linkReq = httpMock.expectOne(r => r.url.endsWith('/api/directory-links'));
+      const linkReq = httpMock.expectOne(isLinkLookup);
       expect(linkReq.request.params.getAll('localId.in')).toEqual(['learned-1', 'learned-2']);
       // Explicit, because a list endpoint with no size returns 20 and would silently leave the
       // 21st row of a page unresolved.
@@ -405,7 +429,7 @@ describe('Patient Management Component', () => {
       req.flush([{ id: 'named-1', profile: { id: 'p', firstName: 'Efua', lastName: 'Mensah' } }]);
       await vitest.runAllTimersAsync();
 
-      httpMock.expectNone(r => r.url.endsWith('/api/directory-links'));
+      httpMock.expectNone(isLinkLookup);
     });
 
     it('leaves a failed lookup unrecorded, so it is retried rather than fixed as "there is none"', async () => {
@@ -414,7 +438,7 @@ describe('Patient Management Component', () => {
       req.flush([{ id: 'learned-1' }]);
       await vitest.runAllTimersAsync();
 
-      httpMock.expectOne(r => r.url.endsWith('/api/directory-links')).error(new ProgressEvent('network'));
+      httpMock.expectOne(isLinkLookup).error(new ProgressEvent('network'));
       await vitest.runAllTimersAsync();
 
       expect(comp.isUnidentified({ id: 'learned-1' })).toBe(true);
@@ -434,7 +458,7 @@ describe('Patient Management Component', () => {
       TestBed.tick();
       expectListRequest().flush([{ id: 'learned-1' }]);
       await vitest.runAllTimersAsync();
-      httpMock.expectOne(r => r.url.endsWith('/api/directory-links')).flush([]);
+      httpMock.expectOne(isLinkLookup).flush([]);
       await vitest.runAllTimersAsync();
       expect('learned-1' in comp.links()).toBe(true);
 
@@ -445,7 +469,7 @@ describe('Patient Management Component', () => {
       expectListRequest().flush([{ id: 'learned-1' }]);
       await vitest.runAllTimersAsync();
 
-      const again = httpMock.expectOne(r => r.url.endsWith('/api/directory-links'));
+      const again = httpMock.expectOne(isLinkLookup);
       expect(again.request.params.getAll('localId.in')).toEqual(['learned-1']);
       again.flush([{ id: 'link-1', localId: 'learned-1', email: 'ama@example.com' }]);
       await vitest.runAllTimersAsync();
@@ -466,7 +490,7 @@ describe('Patient Management Component', () => {
       expectListRequest().flush([{ id: 'learned-1' }]);
       await vitest.runAllTimersAsync();
 
-      const first = httpMock.expectOne(r => r.url.endsWith('/api/directory-links'));
+      const first = httpMock.expectOne(isLinkLookup);
 
       // A second page lands naming the same nameless row while the first answer is still out.
       comp.load();
@@ -474,11 +498,324 @@ describe('Patient Management Component', () => {
       expectListRequest().flush([{ id: 'learned-1' }]);
       await vitest.runAllTimersAsync();
 
-      httpMock.expectNone(r => r.url.endsWith('/api/directory-links'));
+      httpMock.expectNone(isLinkLookup);
 
       first.flush([{ id: 'link-1', localId: 'learned-1', email: 'ama@example.com' }]);
       await vitest.runAllTimersAsync();
       expect(comp.displayName({ id: 'learned-1' })).toBe('ama@example.com');
+    });
+  });
+
+  /**
+   * **Plan choices awaiting a decision — backlog item 48.**
+   *
+   * hc-patient publishes `PlanChosen` when a patient picks a membership tier, the api writes it onto
+   * the `DirectoryLink`, and this panel is where an administrator finds out there is anything to act
+   * on. The cases below cover the three things that can go quietly wrong with it: asking the wrong
+   * question of the server, showing the tier a patient *holds* instead of the one they asked for,
+   * and turning "the catalogue has not answered" into "there is no such tier".
+   */
+  describe('plan choices awaiting a decision', () => {
+    const pending = {
+      id: 'link-plan-1',
+      source: 'HC_PATIENT' as const,
+      localId: 'a6',
+      email: 'k.darkwa@mail.gh',
+      planMembershipId: 'mem-a6-0117',
+      planCode: 'PAWPAW',
+      planName: 'PAWPAW Plan',
+      planStatus: 'PENDING',
+    };
+
+    /**
+     * The question is asked of the server, in the shape the api's filter answers.
+     *
+     * Every parameter here is load-bearing and each has cost this repository something before.
+     * `planStatus` because the choice is on `directory_link` and `GET /api/patients` cannot see it.
+     * `size` because a list endpoint with no size returns 20. `sort` on `lastEventAt` because this
+     * is a queue — what puts a row at the top is the choice having been heard recently, not the
+     * patient having registered recently, and those are years apart for somebody who has been on the
+     * network a while.
+     */
+    it('asks the server for the pending choices rather than filtering a page here', async () => {
+      TestBed.tick();
+      expectListRequest().flush([]);
+      await vitest.runAllTimersAsync();
+
+      const req = httpMock.expectOne(isPlanChoiceLookup);
+      expect(req.request.params.get('planStatus')).toBe('PENDING');
+      expect(req.request.params.get('size')).toBe('5');
+      expect(req.request.params.get('sort')).toBe('lastEventAt,desc');
+
+      req.flush([pending], { headers: { 'X-Total-Count': '9' } });
+      await vitest.runAllTimersAsync();
+
+      expect(comp.planChoices()).toHaveLength(1);
+      // The count is the queue, not the page: four rows are shown and nine are waiting.
+      expect(comp.planChoiceTotal()).toBe(9);
+      expect(comp.planChoiceOverflow()).toBe(8);
+    });
+
+    /**
+     * The panel is hidden under a filter, under Show archived, and when there is nothing in it.
+     *
+     * The first two because the chips and the archive toggle describe the table below and this panel
+     * is not part of it — leaving it up beside a directory filtered to SUSPENDED would read as a
+     * claim that these are suspended patients' choices. The third because a queue with nothing in it
+     * is not information, and a quiet day's directory should be the screen it was before this
+     * existed.
+     */
+    it('shows only when there is something to act on and no filter is narrowing the table', async () => {
+      TestBed.tick();
+      expectListRequest().flush([]);
+      await vitest.runAllTimersAsync();
+      httpMock.expectOne(isPlanChoiceLookup).flush([pending], { headers: { 'X-Total-Count': '1' } });
+      await vitest.runAllTimersAsync();
+
+      expect(comp.showPlanChoices()).toBe(true);
+
+      comp.status.set('SUSPENDED');
+      expect(comp.showPlanChoices()).toBe(false);
+      comp.status.set(null);
+      comp.showArchived.set(true);
+      expect(comp.showPlanChoices()).toBe(false);
+
+      comp.showArchived.set(false);
+      comp.planChoices.set([]);
+      expect(comp.showPlanChoices()).toBe(false);
+    });
+
+    /**
+     * A row is named from the link, exactly as the directory below names a patient with no profile.
+     *
+     * Both states reach this panel — the `test` fixture has `a13`, a patient learned from an event,
+     * choosing a tier for exactly this reason — and neither may fall back to an id. Item 45 was
+     * reported from production as a corrupted record because a 24-character ObjectId was rendered
+     * where a name goes; a second surface doing it is the same defect one screen along.
+     */
+    it('names a row from the link and never from an id', () => {
+      expect(comp.planChoiceName(pending)).toBe('k.darkwa@mail.gh');
+      expect(comp.planChoiceName({ id: 'link-2', localId: 'a14', planCode: 'PEAR' })).toBeNull();
+      // Not the externalKey either, which for an hc-professional link is a UUID.
+      expect(comp.planChoiceName({ id: 'link-3', externalKey: '9f1c3e77-52aa-4a0b-9a5c-6b3f1d7e0a11' })).toBeNull();
+    });
+
+    /**
+     * The tier resolves against this console's catalogue, and its three absences stay distinct.
+     *
+     * `undefined` while the catalogue is out, `null` once it has answered and holds nothing by that
+     * code, and a plan with a null `monthlyPrice` for the tier item 51 leaves unpriced. Collapsing
+     * any two of them is the failure: "not in this catalogue" said about every row because a request
+     * has not come back is a confident wrong answer, and a zero where a price is unknown reads as
+     * free.
+     */
+    it('tells "still asking" from "no such tier" from "no price set"', async () => {
+      TestBed.tick();
+      expectListRequest().flush([]);
+      await vitest.runAllTimersAsync();
+
+      // Before the catalogue answers, nothing is claimed about any tier.
+      expect(comp.chosenPlan(pending)).toBeUndefined();
+      expect(comp.isUncataloguedPlan(pending)).toBe(false);
+
+      httpMock.expectOne(isPlanChoiceLookup).flush([]);
+      httpMock
+        .expectOne(r => r.url.endsWith('/api/service-plans'))
+        .flush([
+          { id: 'pl2', name: 'PAWPAW Plan', code: 'PAWPAW', currency: 'GHS', monthlyPrice: 5000 },
+          // Item 51's own fixture state: a tier the sync created that nobody has priced.
+          { id: 'pl3', name: 'MELON Plan', code: 'MELON', currency: 'GHS', monthlyPrice: null },
+          // A plan an administrator made before the catalogue was reconciled. It has no code, and it
+          // must not become the answer for every choice whose code is missing.
+          { id: 'pl9', name: 'A legacy plan', code: null, currency: 'GHS', monthlyPrice: 120 },
+        ]);
+      await vitest.runAllTimersAsync();
+
+      expect(comp.chosenPlan(pending)?.monthlyPrice).toBe(5000);
+      expect(comp.isUncataloguedPlan(pending)).toBe(false);
+
+      const unpriced = { id: 'link-melon', planCode: 'MELON' };
+      expect(comp.chosenPlan(unpriced)?.monthlyPrice).toBeNull();
+      expect(comp.isUncataloguedPlan(unpriced)).toBe(false);
+
+      // The tier Abofonsa has published and this catalogue has not synced. Said in words, and
+      // nothing is invented for it.
+      const unknown = { id: 'link-soursop', planCode: 'SOURSOP' };
+      expect(comp.chosenPlan(unknown)).toBeNull();
+      expect(comp.isUncataloguedPlan(unknown)).toBe(true);
+    });
+
+    /**
+     * **A membership that names no tier says so, and claims nothing about the catalogue.**
+     *
+     * The state is real, not half-written: `Membership.plan` and `.name` carry no `@NotNull` on
+     * hc-patient and their administrative CRUD path can create a membership with neither, so
+     * `PlanChosen` publishes a real `membershipId` and `status` with nulls under the tier keys. The
+     * api stores that as it arrives — the four fields move as a group — and this panel has to render
+     * it.
+     *
+     * Before the item 48 review it rendered **two** wrong things for such a row: a blank cell where
+     * the tier goes, and then "Not in this catalogue" beside it, which asserts something about
+     * Abofonsa's catalogue for a membership that named nothing to look up. The second is the worse
+     * one — it is a confident claim rather than an empty cell, which is the distinction item 45 was
+     * reported for.
+     */
+    it('says a membership named no tier rather than blanking the cell or blaming the catalogue', async () => {
+      TestBed.tick();
+      expectListRequest().flush([]);
+      await vitest.runAllTimersAsync();
+
+      const noTier = { id: 'link-no-tier', localId: 'a5', email: 'yaa.a@mail.gh', planMembershipId: 'mem-a5-0204', planStatus: 'PENDING' };
+      httpMock.expectOne(isPlanChoiceLookup).flush([noTier], { headers: { 'X-Total-Count': '1' } });
+      httpMock
+        .expectOne(r => r.url.endsWith('/api/service-plans'))
+        .flush([{ id: 'pl2', name: 'PAWPAW Plan', code: 'PAWPAW', currency: 'GHS', monthlyPrice: 5000 }]);
+      await vitest.runAllTimersAsync();
+
+      expect(comp.hasTierNamed(noTier)).toBe(false);
+      // And the catalogue is not blamed for it. This was true before the guard and is the assertion
+      // that fails if somebody reverts isUncataloguedPlan to `chosenPlan(link) === null`.
+      expect(comp.isUncataloguedPlan(noTier)).toBe(false);
+      expect(comp.isUncataloguedPlan({ id: 'l', planCode: 'SOURSOP' })).toBe(true);
+      // The row still belongs in the queue — it is a membership awaiting a decision, and dropping it
+      // would lose the prompt and make the count disagree with the rows.
+      expect(comp.planChoices()).toHaveLength(1);
+      expect(comp.planChoiceTotal()).toBe(1);
+      // And a row that DOES name a tier is unaffected by the guard.
+      expect(comp.hasTierNamed({ id: 'l', planCode: 'PAWPAW' })).toBe(true);
+    });
+
+    /**
+     * A failed catalogue read leaves every row saying "checking", never "not in this catalogue".
+     *
+     * The two sentences are different claims: one is this console not knowing yet, the other is an
+     * assertion about Abofonsa's catalogue. `planCatalogueLoaded` is only set on success for exactly
+     * this reason.
+     */
+    it('claims nothing about a tier when the catalogue read fails', async () => {
+      TestBed.tick();
+      expectListRequest().flush([]);
+      await vitest.runAllTimersAsync();
+
+      httpMock.expectOne(isPlanChoiceLookup).flush([]);
+      httpMock.expectOne(r => r.url.endsWith('/api/service-plans')).error(new ProgressEvent('network'));
+      await vitest.runAllTimersAsync();
+
+      expect(comp.planCatalogueLoaded()).toBe(false);
+      expect(comp.chosenPlan(pending)).toBeUndefined();
+      expect(comp.isUncataloguedPlan(pending)).toBe(false);
+    });
+
+    /**
+     * A failed read empties the queue rather than leaving yesterday's rows up.
+     *
+     * A stale prompt is worse than none here: acting on it means opening a record whose choice may
+     * already have been dealt with.
+     */
+    it('empties the panel when the read fails rather than showing a stale queue', async () => {
+      TestBed.tick();
+      expectListRequest().flush([]);
+      await vitest.runAllTimersAsync();
+      httpMock.expectOne(isPlanChoiceLookup).flush([pending], { headers: { 'X-Total-Count': '1' } });
+      await vitest.runAllTimersAsync();
+      expect(comp.planChoices()).toHaveLength(1);
+
+      comp.refresh();
+      await vitest.runAllTimersAsync();
+      expectListRequest().flush([]);
+      httpMock.expectOne(isPlanChoiceLookup).error(new ProgressEvent('network'));
+      await vitest.runAllTimersAsync();
+
+      expect(comp.planChoices()).toEqual([]);
+      expect(comp.planChoiceTotal()).toBe(0);
+    });
+
+    /**
+     * **Refresh re-reads both the queue and the catalogue.**
+     *
+     * The queue because it is the part of this screen that changes without anybody here doing
+     * anything — a patient picks a tier on another product. The catalogue because the sync is the
+     * other thing that moves underneath: a row reading "not in this catalogue" becomes a resolvable
+     * one the moment `ServicePlanCatalogueSyncService` brings the tier across, and without the second
+     * read it would go on saying otherwise until a reload.
+     */
+    it('re-reads the queue and the catalogue on refresh', async () => {
+      TestBed.tick();
+      expectListRequest().flush([]);
+      await vitest.runAllTimersAsync();
+      httpMock.expectOne(isPlanChoiceLookup).flush([]);
+      httpMock.expectOne(r => r.url.endsWith('/api/service-plans')).flush([]);
+      await vitest.runAllTimersAsync();
+
+      comp.refresh();
+      await vitest.runAllTimersAsync();
+      expectListRequest().flush([]);
+
+      const again = httpMock.expectOne(isPlanChoiceLookup);
+      expect(again.request.params.get('planStatus')).toBe('PENDING');
+      again.flush([pending], { headers: { 'X-Total-Count': '1' } });
+      httpMock.expectOne(r => r.url.endsWith('/api/service-plans')).flush([]);
+      await vitest.runAllTimersAsync();
+
+      expect(comp.planChoices()).toHaveLength(1);
+    });
+
+    /**
+     * **The panel offers no action, and that absence is the decision rather than an omission.**
+     *
+     * Item 54 owns the outbound leg that tells hc-patient a choice was verified and it is
+     * deliberately not built — it is blocked on their inbound consumer, which is blocked on this. A
+     * control that recorded nothing anywhere would be the worst kind of working screen, and this
+     * console has already removed one for the same reason (the patient Create button, 2026-08-28).
+     * The row links to the record instead, which is where a decision is taken.
+     *
+     * Read off the template, like the Create-button absence one screen along: the way this goes wrong
+     * is somebody adding a plausible "Approve" beside the View, and a component-level assertion
+     * cannot see markup.
+     */
+    it('offers no approve control, because there is nowhere for the decision to go yet', () => {
+      const template = readFileSync('src/main/webapp/app/entities/directory/patient/list/patient.html', 'utf8');
+      const panel = template.slice(template.indexOf('data-cy="planChoices"'), template.indexOf('@if (hasFilter())'));
+
+      expect(panel).toContain('data-cy="planChoiceViewButton"');
+      expect(panel).not.toMatch(/planChoiceApprove|planChoiceVerify|approveChoice/);
+      // And the reason is written where somebody would add it.
+      expect(panel).toContain('item 54');
+    });
+
+    /**
+     * **The tier cell is guarded, read off the template.**
+     *
+     * The component method is covered above; this is the other half. `{{ choice.planName ??
+     * choice.planCode }}` outside the guard renders an empty cell for a membership that named no
+     * tier, and the guard is one deletion away from being removed as redundant by somebody who has
+     * only seen rows that have one. Every fixture short of production had only those rows until this
+     * review added `dl-plan-a5`.
+     */
+    it('guards the tier cell rather than binding the tier unconditionally', () => {
+      const template = readFileSync('src/main/webapp/app/entities/directory/patient/list/patient.html', 'utf8');
+      const panel = template.slice(template.indexOf('data-cy="planChoices"'), template.indexOf('@if (hasFilter())'));
+
+      expect(panel).toContain('hasTierNamed(choice)');
+      expect(panel).toContain('hcAdminApp.directoryPatient.planChoices.noTier');
+      // The tier binding must sit inside the guard, never before it.
+      expect(panel.indexOf('hasTierNamed(choice)')).toBeLessThan(panel.indexOf('choice.planName ?? choice.planCode'));
+    });
+
+    /**
+     * **The status is labelled "Reported", not "Status".**
+     *
+     * hc-patient's `MembershipResource` publishes on `POST` alone — `PUT` and `PATCH` write the
+     * status and announce nothing — so a decision taken on their side afterwards reaches no topic and
+     * this value goes on reading PENDING. A heading saying "Status" over it would be this screen
+     * asserting a live state it cannot see, which is the shape of item 26's and item 25's failures:
+     * a healthy service and a screen that is simply wrong.
+     */
+    it('labels the reported status as reported rather than as a live one', () => {
+      const template = readFileSync('src/main/webapp/app/entities/directory/patient/list/patient.html', 'utf8');
+
+      expect(template).toContain('hcAdminApp.directoryPatient.planChoices.column.reported');
+      expect(template).not.toContain('hcAdminApp.directoryPatient.planChoices.column.status');
     });
   });
 
@@ -785,8 +1122,16 @@ describe('the patient list template', () => {
    * `displayName` correct and the screen wrong.
    */
   it('binds no record id in the name cell', () => {
-    const nameCell = template.slice(template.indexOf('class="dir-who"'), template.indexOf('</td>', template.indexOf('class="dir-who"')));
+    // Anchored on the directory table rather than on the first `dir-who` in the file, which is what
+    // it was until backlog item 48 put a panel above the table. That panel has a name cell of its
+    // own, so an unanchored search found it and asserted against the wrong markup — and had it
+    // happened to contain `displayName(patient)` the case would have passed while covering nothing.
+    // The rule is about the row an administrator clicks through to a record.
+    const table = template.indexOf('data-cy="entityTable"');
+    const cell = template.indexOf('class="dir-who"', table);
+    const nameCell = template.slice(cell, template.indexOf('</td>', cell));
 
+    expect(table).toBeGreaterThan(-1);
     expect(nameCell).toContain('displayName(patient)');
     expect(nameCell).not.toContain('{{ patient.id }}');
   });

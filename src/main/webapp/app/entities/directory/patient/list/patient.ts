@@ -1,3 +1,4 @@
+import { DecimalPipe } from '@angular/common';
 import { HttpHeaders, HttpResponse } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, OnInit, computed, effect, inject, signal, untracked } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -12,8 +13,15 @@ import { Subscription, combineLatest, tap } from 'rxjs';
 import { StatusPill } from 'app/console/shared/status-pill/status-pill';
 import { DEFAULT_SORT_DATA, SORT } from 'app/config/navigation.constants';
 import { ITEMS_PER_PAGE, PAGE_HEADER, TOTAL_COUNT_RESPONSE_HEADER } from 'app/config/pagination.constants';
+import { IServicePlan } from 'app/entities/catalogue/service-plan/service-plan.model';
+import { ServicePlanService } from 'app/entities/catalogue/service-plan/service/service-plan.service';
 import { AccountStatus } from 'app/entities/enumerations/account-status.model';
-import { IDirectoryLink, resolveLinkIdentity } from 'app/entities/directory/directory-link/directory-link.model';
+import {
+  IDirectoryLink,
+  PLAN_STATUS_PENDING,
+  hasPlanChoice,
+  resolveLinkIdentity,
+} from 'app/entities/directory/directory-link/directory-link.model';
 import { DirectoryLinkService } from 'app/entities/directory/directory-link/service/directory-link.service';
 import { ProfessionalService } from 'app/entities/directory/professional/service/professional.service';
 import { Alert } from 'app/shared/alert/alert';
@@ -30,6 +38,26 @@ const ARCHIVED_PARAM = 'archived';
 
 /** Query param carrying the selected status tile, so a filtered directory is a shareable URL. */
 const STATUS_PARAM = 'status';
+
+/**
+ * How many plan choices the panel lists before it stops and says how many are left.
+ *
+ * The same five the professional directory's awaiting table shows, and for the same reason: this is
+ * a prompt that there is work, not the place the work is done. A queue that pushed the directory
+ * below the fold would be a worse screen than one that says "and 14 more".
+ */
+const PLAN_CHOICE_ROWS = 5;
+
+/**
+ * The size asked of the plan catalogue when resolving a chosen tier's price.
+ *
+ * One request for the whole catalogue rather than one per row: it is three rows today and would have
+ * to be a hundred before paging it mattered. It is sent explicitly because a `query()` with no size
+ * returns 20 — the trap `RELATIONSHIP_OPTIONS_PAGE_SIZE` exists for — and a catalogue silently cut
+ * at 20 would render a real tier as one this console has never heard of, which is the one thing this
+ * panel must not say wrongly.
+ */
+const PLAN_CATALOGUE_PAGE_SIZE = 100;
 
 /**
  * The patient directory.
@@ -57,6 +85,11 @@ const STATUS_PARAM = 'status';
     ItemCount,
     StatusPill,
     HasAnyAuthorityDirective,
+    // For the chosen tier's price on the plan-choice panel. `1.0-2` rather than a currency pipe:
+    // `ServicePlan.currency` is a three-letter code this service stores as a string, and the
+    // catalogue screen renders it exactly this way — one rendering of a price per product is the
+    // whole point of item 51.
+    DecimalPipe,
   ],
 })
 export class Patient implements OnInit {
@@ -115,6 +148,48 @@ export class Patient implements OnInit {
    */
   readonly links = signal<Record<string, IDirectoryLink | undefined>>({});
 
+  /**
+   * The plan choices hc-patient has reported as awaiting a decision — backlog item 48.
+   *
+   * **Its own row set above the directory, and the alternatives were weighed rather than skipped.**
+   * Item 48 asks for the decision explicitly: a column on item 47's seven-column awaiting table, or
+   * a row set of its own, "rather than adding a third panel by reflex".
+   *
+   * - **Not a column on item 47's table.** That table is on the *professional* directory and lists
+   *   `HC_PROFESSIONAL` links with no local record; its seven columns are the two-phase account
+   *   contract. A patient's membership tier is a different source, a different subject kind and a
+   *   different screen — there is no row there to hang the column on.
+   * - **Not a column on the table below either**, which was the closer call. A patient with a
+   *   pending choice already has a row in the directory, so a column would show it in place and
+   *   without a second request. It is refused because it cannot do the job: the event exists to
+   *   *prompt* the back office, and a column is only visible on the page the patient happens to be
+   *   on. An administrator would have to page the whole directory to learn there was anything to
+   *   act on, which is the state item 48 was opened about — "the pending membership waits until
+   *   somebody happens to look".
+   * - **Not a dashboard card.** The approval card filters on `AccountStatus`, so a pending plan does
+   *   not appear there for free, and adding a second meaning to that card would make one figure
+   *   answer two questions.
+   *
+   * So: here, where an administrator manages patients, with each row linking to the record the
+   * decision is taken on. It renders only when there is something in it — see {@link showPlanChoices}
+   * — so a directory with nothing pending is exactly the screen it was before.
+   */
+  readonly planChoices = signal<IDirectoryLink[]>([]);
+
+  /** How many there are in total, which is not the number of rows shown — see {@link PLAN_CHOICE_ROWS}. */
+  readonly planChoiceTotal = signal(0);
+
+  /**
+   * The plan catalogue, indexed by `code`, for resolving a chosen tier to a price.
+   *
+   * Empty until it lands and empty if the request fails, and **an empty map is not "no tier
+   * matches"**: {@link planCatalogueLoaded} is what tells the two apart, because saying "not in this
+   * catalogue" about every row because a request has not come back is a confident wrong answer of
+   * exactly the kind item 45 was reported for.
+   */
+  readonly planCatalogue = signal<Map<string, IServicePlan>>(new Map());
+  readonly planCatalogueLoaded = signal(false);
+
   /** True while an export is in flight, so the button cannot be pressed twice into two downloads. */
   readonly isExporting = signal(false);
 
@@ -126,6 +201,7 @@ export class Patient implements OnInit {
   protected readonly sortService = inject(SortService);
   private readonly professionalService = inject(ProfessionalService);
   private readonly directoryLinkService = inject(DirectoryLinkService);
+  private readonly servicePlanService = inject(ServicePlanService);
 
   /**
    * The ids {@link loadLinks} has asked about and not yet heard back on.
@@ -138,6 +214,20 @@ export class Patient implements OnInit {
 
   // eslint-disable-next-line @typescript-eslint/member-ordering
   readonly hasFilter = computed(() => this.status() !== null);
+
+  /**
+   * Whether the plan-choice panel belongs on screen at all.
+   *
+   * Hidden under a status filter and under Show archived, exactly as the professional directory's
+   * awaiting table is, and for the same reason: those controls describe the table below, this panel
+   * is not part of it, and leaving it up beside a directory filtered to `SUSPENDED` would read as a
+   * claim that these are suspended patients' choices.
+   *
+   * And hidden when empty. A queue with nothing in it is not information; the directory an
+   * administrator sees on a quiet day should be the one they saw before this existed.
+   */
+  // eslint-disable-next-line @typescript-eslint/member-ordering
+  readonly showPlanChoices = computed(() => !this.hasFilter() && !this.showArchived() && this.planChoices().length > 0);
 
   constructor() {
     effect(() => {
@@ -330,6 +420,80 @@ export class Patient implements OnInit {
     return this.leadNames()[lead.id] ?? lead.licenceNumber ?? lead.id;
   }
 
+  /**
+   * How a plan-choice row is named, and `null` when nothing here can name it.
+   *
+   * The link's own identity, not the patient record's — `resolveLinkIdentity`, the same function the
+   * directory below falls back to. The two agree for a named patient and the link is the *only*
+   * answer for one learned from an event, which is the state item 45 was reported for and which the
+   * `test` fixture now holds (`a13` chooses a tier for exactly this reason). It never falls back to
+   * `externalKey`, and it never falls back to the patient's ObjectId.
+   */
+  planChoiceName(link: IDirectoryLink): string | null {
+    return resolveLinkIdentity(link);
+  }
+
+  /**
+   * Whether this membership names a tier at all.
+   *
+   * **A membership with no tier is a real state, not a half-written row.** `Membership.plan` and
+   * `.name` carry no `@NotNull` on hc-patient and their administrative CRUD path can create one with
+   * neither, so `PlanChosen` publishes a real `membershipId` and `status` with nulls under `planCode`
+   * and `planName`. The api stores that as it arrives — the four fields move as a group — so the
+   * panel has to render it.
+   *
+   * Everything about the tier branches on this rather than on `planCode` directly, because the row
+   * has two things to get wrong without it: a blank cell where a tier goes, and a price cell reading
+   * "Not in this catalogue", which asserts something about Abofonsa's catalogue for a membership that
+   * named nothing to look up.
+   */
+  hasTierNamed(link: IDirectoryLink): boolean {
+    return hasPlanChoice(link);
+  }
+
+  /**
+   * The tier as this catalogue holds it, or `null` when it holds none by that code.
+   *
+   * **Resolved here rather than on the way in, and that is deliberate on the api's side too.** The
+   * code is stored raw; the catalogue syncs from Abofonsa on its own schedule, so a tier published
+   * this morning may not be here until the sync next runs. Resolving at consume time would freeze
+   * the answer and leave a row reading "not in this catalogue" for ever on a code that started
+   * matching an hour later.
+   *
+   * `undefined` while the catalogue is still loading, which the template tells apart from `null` —
+   * see {@link planCatalogueLoaded}. **No `IServicePlan` is invented for an unmatched code**: item 51
+   * closed this console being a third price list, and manufacturing a plan from a tier code on a
+   * directory row would be the fourth.
+   */
+  chosenPlan(link: IDirectoryLink): IServicePlan | null | undefined {
+    if (!this.planCatalogueLoaded()) {
+      return undefined;
+    }
+    return link.planCode ? (this.planCatalogue().get(link.planCode) ?? null) : null;
+  }
+
+  /**
+   * True once the catalogue has answered and holds no tier by this row's code.
+   *
+   * **False when the membership names no tier at all**, which is not the same question and was the
+   * same answer until the item 48 review. A row with no `planCode` has nothing to look up, so
+   * "Abofonsa published a tier this catalogue has not synced" is a claim about somebody else's
+   * catalogue made from a membership that named nothing — and it rendered exactly that.
+   *
+   * The template guards the branch as well, so this is belt and braces. It is written here anyway
+   * because a method whose name asks one question and whose body answers another is the thing the
+   * next caller gets wrong, and there is no reason for the guard to live only where it happens to be
+   * needed today.
+   */
+  isUncataloguedPlan(link: IDirectoryLink): boolean {
+    return this.hasTierNamed(link) && this.chosenPlan(link) === null;
+  }
+
+  /** How many plan choices there are beyond the ones on screen. */
+  planChoiceOverflow(): number {
+    return Math.max(0, this.planChoiceTotal() - this.planChoices().length);
+  }
+
   ngOnInit(): void {
     this.subscription = combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data])
       .pipe(
@@ -338,6 +502,8 @@ export class Patient implements OnInit {
       )
       .subscribe();
     this.loadTiles();
+    this.loadPlanChoices();
+    this.loadPlanCatalogue();
   }
 
   /** The table only — see {@link loadTiles} for why the tiles are not reloaded on every page turn. */
@@ -355,6 +521,14 @@ export class Patient implements OnInit {
     this.links.set({});
     this.load();
     this.loadTiles();
+    // The plan choices too. They are the part of this screen that changes without anybody here doing
+    // anything — a patient picks a tier on another product — so Refresh is what an administrator
+    // presses to find out whether anything new has arrived.
+    this.loadPlanChoices();
+    // And the catalogue, because the sync is the other thing that changes underneath: a row reading
+    // "not in this catalogue" becomes a resolvable one the moment ServicePlanCatalogueSyncService
+    // brings the tier across, and without this it would go on saying otherwise until a reload.
+    this.loadPlanCatalogue();
   }
 
   /**
@@ -524,6 +698,60 @@ export class Patient implements OnInit {
         error: () => undefined,
       });
     }
+  }
+
+  /**
+   * The plan choices awaiting a decision — backlog item 48.
+   *
+   * Filtered server-side on the status hc-patient reported, because the choice is on
+   * `directory_link` and nothing in `GET /api/patients` can see it. One request, on load and on
+   * Refresh, not per page turn: this panel describes the whole queue and does not move when the
+   * directory below is paged.
+   *
+   * A failed request empties the panel rather than leaving yesterday's rows up. That is the honest
+   * answer for a queue — a stale prompt is worse than none, because acting on it means opening a
+   * record whose choice may already have been dealt with — and it is the same call
+   * {@link loadTiles} makes when a count fails.
+   */
+  private loadPlanChoices(): void {
+    this.directoryLinkService.findPlanChoices(PLAN_STATUS_PENDING, PLAN_CHOICE_ROWS).subscribe({
+      next: page => {
+        this.planChoices.set(page.links);
+        this.planChoiceTotal.set(page.total);
+      },
+      error: () => {
+        this.planChoices.set([]);
+        this.planChoiceTotal.set(0);
+      },
+    });
+  }
+
+  /**
+   * The plan catalogue, indexed by `code`, so a chosen tier can be shown with its price.
+   *
+   * Plans with no `code` are left out rather than keyed on the empty string: since backlog item 51
+   * `code` is optional, null on a plan an administrator created before the catalogue was reconciled,
+   * and a null-keyed entry would make every uncoded plan match every uncoded choice.
+   *
+   * **`planCatalogueLoaded` is only set on success**, so a failed request leaves every row saying
+   * "checking" rather than "not in this catalogue". Those are different sentences: one is this
+   * console not knowing yet, the other is a claim about Abofonsa's catalogue, and item 45's lesson is
+   * that the confident version of an unknown is the worse answer.
+   */
+  private loadPlanCatalogue(): void {
+    this.servicePlanService.query({ page: 0, size: PLAN_CATALOGUE_PAGE_SIZE }).subscribe({
+      next: response => {
+        const byCode = new Map<string, IServicePlan>();
+        for (const plan of response.body ?? []) {
+          if (plan.code) {
+            byCode.set(plan.code, plan);
+          }
+        }
+        this.planCatalogue.set(byCode);
+        this.planCatalogueLoaded.set(true);
+      },
+      error: () => undefined,
+    });
   }
 
   /**

@@ -22,6 +22,23 @@
           "sponsor": "Sponsor"
         }
       },
+      "planChoices": {
+        "title": "Plan choices awaiting a decision",
+        "subtitle": "These patients chose a membership tier in the patient app. The status is what that app reported when the membership was created, not a live one — it publishes nothing when a choice is decided elsewhere. Choosing is a request; the plan a patient holds here is the one on their record.",
+        "count": "{{ count }} waiting",
+        "more": "and {{ count }} more",
+        "noTier": "No tier named",
+        "noPrice": "No price set here",
+        "notInCatalogue": "Not in this catalogue",
+        "checking": "Checking the catalogue…",
+        "unknown": "Not reported",
+        "column": {
+          "patient": "Patient",
+          "chosen": "Tier chosen",
+          "price": "Price here",
+          "reported": "Reported"
+        }
+      },
       "unidentified": "Identity not on file",
       "unidentifiedHintLinked": "Registered on the patient app; the linked account carries no name.",
       "unidentifiedHintUnknown": "No name has been recorded here for this patient.",

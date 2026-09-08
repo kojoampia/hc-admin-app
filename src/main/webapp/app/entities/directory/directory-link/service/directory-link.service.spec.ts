@@ -3,7 +3,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 
-import { hasProfileStatus, resolveClinicianLogin, resolveLinkIdentity } from '../directory-link.model';
+import { PLAN_STATUS_PENDING, hasPlanChoice, hasProfileStatus, resolveClinicianLogin, resolveLinkIdentity } from '../directory-link.model';
 import { DirectoryLinkService } from './directory-link.service';
 
 describe('DirectoryLinkService', () => {
@@ -145,6 +145,58 @@ describe('findUnlinked', () => {
   });
 });
 
+/**
+ * The plan choices awaiting a decision — backlog item 48.
+ *
+ * The third question this endpoint answers, and the third for which "read everything and filter
+ * here" is the wrong shape: the choice is on `directory_link` rather than on `Patient`, so
+ * `GET /api/patients` cannot see it, and the collection grows at the rate two other stacks create
+ * accounts.
+ */
+describe('findPlanChoices', () => {
+  let service: DirectoryLinkService;
+  let httpMock: HttpTestingController;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()],
+    });
+    service = TestBed.inject(DirectoryLinkService);
+    httpMock = TestBed.inject(HttpTestingController);
+  });
+
+  afterEach(() => {
+    httpMock.verify();
+  });
+
+  it('asks the server for one reported status, most recently heard first', () => {
+    service.findPlanChoices(PLAN_STATUS_PENDING, 5).subscribe();
+
+    const req = httpMock.expectOne(r => r.url.includes('directory-links'));
+    expect(req.request.params.get('planStatus')).toBe('PENDING');
+    // Explicit, for the reason the two methods above send one: no size means 20.
+    expect(req.request.params.get('size')).toBe('5');
+    // The queue is ordered by when the choice was HEARD, not by when the patient registered. Those
+    // are years apart for somebody long on the network who has just changed tier — and `firstSeenAt`,
+    // which the clinician panel sorts on, would bury every one of those at the bottom.
+    expect(req.request.params.get('sort')).toBe('lastEventAt,desc');
+    // Deliberately not asked: this is not the unlinked question. Every plan choice names a patient
+    // this service already holds, so `unlinked=true` would answer with none of them.
+    expect(req.request.params.has('unlinked')).toBe(false);
+    req.flush([]);
+  });
+
+  it('takes the total from X-Total-Count rather than from the rows it received', () => {
+    let page: { total: number; links: unknown[] } | undefined;
+    service.findPlanChoices(PLAN_STATUS_PENDING, 5).subscribe(answer => (page = answer));
+
+    httpMock.expectOne(r => r.url.includes('directory-links')).flush([{ id: 'l1' }, { id: 'l2' }], { headers: { 'X-Total-Count': '23' } });
+
+    expect(page?.links).toHaveLength(2);
+    expect(page?.total).toBe(23);
+  });
+});
+
 describe('resolveLinkIdentity', () => {
   it('prefers the address, which is the handle the person themselves would give', () => {
     expect(resolveLinkIdentity({ id: 'l', email: 'ama@example.com', login: 'amensah' })).toBe('ama@example.com');
@@ -233,5 +285,30 @@ describe('hasProfileStatus', () => {
     expect(hasProfileStatus({ id: 'l' })).toBe(false);
     expect(hasProfileStatus(null)).toBe(false);
     expect(hasProfileStatus(undefined)).toBe(false);
+  });
+});
+
+/**
+ * Whether a row carries a plan choice at all — backlog item 48.
+ *
+ * `planCode` and not `planStatus`, on the same reasoning `hasProfileStatus` gives one contract along:
+ * the api writes each of the four fields only when the event carried it, and hc-patient's
+ * administrative path can create a membership with no status on it. A choice with no tier is not
+ * something to put under a heading naming tiers.
+ */
+describe('hasPlanChoice', () => {
+  it('is true once a tier has been chosen', () => {
+    expect(hasPlanChoice({ id: 'l', planCode: 'PAWPAW', planStatus: 'PENDING' })).toBe(true);
+  });
+
+  it('is true for a choice whose status never arrived', () => {
+    expect(hasPlanChoice({ id: 'l', planCode: 'PAWPAW' })).toBe(true);
+  });
+
+  it('is false for every row that has not chosen one', () => {
+    expect(hasPlanChoice({ id: 'l', planStatus: 'PENDING' })).toBe(false);
+    expect(hasPlanChoice({ id: 'l', email: 'ama@example.com' })).toBe(false);
+    expect(hasPlanChoice(null)).toBe(false);
+    expect(hasPlanChoice(undefined)).toBe(false);
   });
 });
