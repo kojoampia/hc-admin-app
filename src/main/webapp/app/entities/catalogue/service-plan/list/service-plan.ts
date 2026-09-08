@@ -108,6 +108,16 @@ export class ServicePlan implements OnInit {
    *
    * Summed from the rows the server sent rather than recomputed from the page, so the total agrees
    * with the shares above it by construction.
+   *
+   * **A row with no revenue is skipped, not read as a zero.** `monthlyRevenue` is null when the
+   * plan has no `monthlyPrice`, which is the state every plan the api's catalogue sync creates is
+   * in until an administrator prices it — Abofonsa publishes a price formatted for a locale and no
+   * machine-readable one. This comment said the opposite until 2026-09-08 ("the server sends zero
+   * rather than null, deliberately"), and it was right under the old invariant that a price was
+   * required. Adding a null in as a zero would make the total say that the unpriced plan's
+   * subscribers pay nothing, which is a claim; leaving it out makes the total what it honestly is,
+   * the revenue of the plans that have a price. The cell beside it renders "—" so the row says
+   * which.
    */
   // eslint-disable-next-line @typescript-eslint/member-ordering
   readonly totalRevenue = computed<number | null>(() => {
@@ -115,10 +125,7 @@ export class ServicePlan implements OnInit {
     if (!summary) {
       return null;
     }
-    // No null guard on monthlyRevenue: the server sends zero rather than null for it, deliberately
-    // — no subscribers at any price earns nothing, which is a fact and not a gap. `share` is the
-    // field that can be null, and it is not summed.
-    return summary.mix.reduce((running, row) => running + row.monthlyRevenue, 0);
+    return summary.mix.reduce((running, row) => running + (row.monthlyRevenue ?? 0), 0);
   });
 
   constructor() {

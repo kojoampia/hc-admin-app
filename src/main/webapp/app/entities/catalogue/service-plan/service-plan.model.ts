@@ -49,6 +49,13 @@ export type NewServicePlan = Omit<IServicePlan, 'id'> & { id: null };
  * `share` is `null`, not `0`, when nobody holds any plan: a share of an empty directory is
  * undefined, and the board renders null as "—". Zero would be the console asserting that a plan
  * holds none of a market, which is a claim rather than an absence.
+ *
+ * `monthlyRevenue` is `null` for the same kind of reason, one field along, and it was `number`
+ * until 2026-09-08. A plan with no `monthlyPrice` has no revenue that can be computed — the server
+ * returned zero for it, so a plan the catalogue sync had just learned read
+ * `Price — · Subscribers 4 · Share 33.3% · Monthly revenue 0`, which says nobody is paying where
+ * the truth is that nobody has said what they pay. It is still genuinely `0` when the price is
+ * known and nobody holds the plan: no subscribers at any price earns nothing, and that is a fact.
  */
 export interface IPlanMixRow {
   planId: string;
@@ -57,7 +64,7 @@ export interface IPlanMixRow {
   currency?: string | null;
   subscribers: number;
   share: number | null;
-  monthlyRevenue: number;
+  monthlyRevenue: number | null;
 }
 
 export interface IServicePlanSummary {

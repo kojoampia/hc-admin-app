@@ -171,9 +171,15 @@
                   —
                 }
               </td>
+              <!--
+                Two different absences, both rendered "—": the summary has not answered, or it
+                answered and this plan has no price to compute a revenue from. Never a 0 for the
+                second — that is the same "nobody is paying" claim the card above refuses to make,
+                and the footer leaves the row out of its total rather than adding a zero in.
+              -->
               <td class="num" [attr.data-cy]="'mixRevenue-' + servicePlan.id">
-                @if (mixFor(servicePlan.id); as row) {
-                  {{ row.monthlyRevenue | number: '1.0-2' }}
+                @if (mixFor(servicePlan.id)?.monthlyRevenue !== null && mixFor(servicePlan.id)?.monthlyRevenue !== undefined) {
+                  {{ mixFor(servicePlan.id)!.monthlyRevenue | number: '1.0-2' }}
                 } @else {
                   —
                 }

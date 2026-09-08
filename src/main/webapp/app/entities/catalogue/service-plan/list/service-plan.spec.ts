@@ -227,7 +227,7 @@ describe('ServicePlan Management Component', () => {
       // deliberately, and deliberately wrong: 41 against a directory of four. The field is gone from
       // the interface, but a server or a stale document could still put it on the wire, and the
       // assertion below is that the screen reads the mix regardless of what arrives beside it.
-      expectListRequest().flush([{ id: 'pl1', name: 'Bridge Essential', monthlyPrice: 320, subscriberCount: 41 }]);
+      expectListRequest().flush([{ id: 'pl1', name: 'PEAR Plan', monthlyPrice: 3000, subscriberCount: 41 }]);
 
       httpMock
         .expectOne(r => r.url.endsWith('/api/service-plans/summary'))
@@ -236,12 +236,12 @@ describe('ServicePlan Management Component', () => {
           mix: [
             {
               planId: 'pl1',
-              name: 'Bridge Essential',
-              monthlyPrice: 320,
+              name: 'PEAR Plan',
+              monthlyPrice: 3000,
               currency: 'GHS',
               subscribers: 4,
               share: 66.7,
-              monthlyRevenue: 1280,
+              monthlyRevenue: 12000,
             },
           ],
         });
@@ -261,13 +261,62 @@ describe('ServicePlan Management Component', () => {
         .flush({
           totalSubscribers: 7,
           mix: [
-            { planId: 'pl1', name: 'A', monthlyPrice: 320, currency: 'GHS', subscribers: 4, share: 57.1, monthlyRevenue: 1280 },
-            { planId: 'pl2', name: 'B', monthlyPrice: 680, currency: 'GHS', subscribers: 3, share: 42.9, monthlyRevenue: 2040 },
+            { planId: 'pl1', name: 'PEAR Plan', monthlyPrice: 3000, currency: 'GHS', subscribers: 4, share: 57.1, monthlyRevenue: 12000 },
+            { planId: 'pl2', name: 'PAWPAW Plan', monthlyPrice: 5000, currency: 'GHS', subscribers: 3, share: 42.9, monthlyRevenue: 15000 },
           ],
         });
 
       // Summed from the server's rows so the total agrees with the shares above it by construction.
-      expect(comp.totalRevenue()).toBe(3320);
+      expect(comp.totalRevenue()).toBe(27000);
+    });
+
+    /**
+     * A plan with no price is left out of the total rather than added in as a zero.
+     *
+     * The state is real and is the one the api's catalogue sync creates: Abofonsa publishes a price
+     * formatted for a locale and no machine-readable one, so a learned plan arrives unpriced and
+     * somebody has to set it. Until 2026-09-08 the server sent `monthlyRevenue: 0` for such a row
+     * and this total added it, so a row read `Price — · Subscribers 4 · Share 33.3% · Monthly
+     * revenue 0` — "nobody is paying" where the truth is "nobody has said" — and the footer was
+     * short by an amount nothing on the screen accounted for.
+     *
+     * The cell is read off the DOM because it is a template branch; the total is read off the
+     * component because that is where the arithmetic is.
+     */
+    it('should show an unpriced plan no revenue rather than zero, and leave it out of the total', async () => {
+      TestBed.tick();
+      expectListRequest().flush([
+        { id: 'pl1', name: 'PEAR Plan', code: 'PEAR', monthlyPrice: 3000, currency: 'GHS' },
+        { id: 'pl-new', name: 'GUAVA Plan', code: 'GUAVA' },
+      ]);
+
+      httpMock
+        .expectOne(r => r.url.endsWith('/api/service-plans/summary'))
+        .flush({
+          totalSubscribers: 7,
+          mix: [
+            { planId: 'pl1', name: 'PEAR Plan', monthlyPrice: 3000, currency: 'GHS', subscribers: 4, share: 57.1, monthlyRevenue: 12000 },
+            // Priced by nobody, and held by three patients all the same.
+            {
+              planId: 'pl-new',
+              name: 'GUAVA Plan',
+              monthlyPrice: null,
+              currency: 'GHS',
+              subscribers: 3,
+              share: 42.9,
+              monthlyRevenue: null,
+            },
+          ],
+        });
+      await vitest.runAllTimersAsync();
+      fixture.detectChanges();
+
+      const table = fixture.nativeElement as HTMLElement;
+      expect(table.querySelector('[data-cy="mixRevenue-pl-new"]')?.textContent.trim()).toBe('—');
+      // The share is a real figure for the same row: not knowing what they pay is not the same as
+      // not knowing how many they are.
+      expect(comp.mixFor('pl-new')?.share).toBe(42.9);
+      expect(comp.totalRevenue()).toBe(12000);
     });
 
     /**
@@ -294,12 +343,13 @@ describe('ServicePlan Management Component', () => {
       expectListRequest().flush([{ id: 'pl1' }]);
 
       // Nobody subscribed to anything: a share of an empty directory is undefined, and the server
-      // says so with null. Revenue genuinely is nought.
+      // says so with null. Revenue genuinely is nought — the plan has a price and nobody is paying
+      // it, which is the case the unpriced one above must not be collapsed into.
       httpMock
         .expectOne(r => r.url.endsWith('/api/service-plans/summary'))
         .flush({
           totalSubscribers: 0,
-          mix: [{ planId: 'pl1', name: 'A', monthlyPrice: 320, currency: 'GHS', subscribers: 0, share: null, monthlyRevenue: 0 }],
+          mix: [{ planId: 'pl1', name: 'PEAR Plan', monthlyPrice: 3000, currency: 'GHS', subscribers: 0, share: null, monthlyRevenue: 0 }],
         });
 
       expect(comp.mixFor('pl1')?.share).toBeNull();
