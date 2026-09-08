@@ -140,6 +140,43 @@ describe('ServicePlan Management Component', () => {
     expect(comp.totalItems()).toBe(57);
   });
 
+  /**
+   * The two states a plan card can be in that this board could not show before 2026-09-08.
+   *
+   * Backlog item 51 and, behind it, item 52's lesson: when a fix's whole purpose is to render a
+   * state, something has to contain that state or the fix is unreachable everywhere a reviewer can
+   * look. The api's `test` seed prices all three published tiers, so the unpriced card exists on no
+   * stack anybody can drive — this is where it exists.
+   *
+   * Both halves are read off the DOM rather than off the component, because both are template
+   * branches: an assertion on `comp.servicePlans()` would pass against a template that renders
+   * neither.
+   */
+  it('should badge a plan with its published code and say when one has no price', async () => {
+    TestBed.tick();
+    const req = expectListRequest();
+    req.flush(
+      [
+        { id: 'p-pear', name: 'PEAR Plan', code: 'PEAR', monthlyPrice: 3000, currency: 'GHS' },
+        // A plan the catalogue sync learned from Abofonsa and nobody has priced yet.
+        { id: 'p-new', name: 'New Plan', code: 'GUAVA' },
+      ],
+      { headers: { 'X-Total-Count': '2' } },
+    );
+    await vitest.runAllTimersAsync();
+    fixture.detectChanges();
+
+    const board = fixture.nativeElement as HTMLElement;
+    expect(board.querySelector('[data-cy="planCode-p-pear"]')?.textContent.trim()).toBe('PEAR');
+    expect(board.querySelector('[data-cy="planCode-p-new"]')?.textContent.trim()).toBe('GUAVA');
+
+    // Never a 0 and never a bare dash: a zero reads as a free plan and a dash as a rendering fault,
+    // and the whole point of the null is that neither is what is being said.
+    const unpriced = board.querySelector('[data-cy="planCard-p-new"] .price');
+    expect(unpriced?.querySelector('.unpriced')).not.toBeNull();
+    expect(unpriced?.textContent).not.toContain('0');
+  });
+
   it('should navigate when a page is chosen', () => {
     comp.navigateToPage(3);
 

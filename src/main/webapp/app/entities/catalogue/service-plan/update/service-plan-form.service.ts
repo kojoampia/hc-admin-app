@@ -19,8 +19,9 @@ type ServicePlanFormDefaults = Pick<NewServicePlan, 'id' | 'featured'>;
 type ServicePlanFormGroupContent = {
   id: FormControl<IServicePlan['id'] | NewServicePlan['id']>;
   name: FormControl<IServicePlan['name']>;
-  tier: FormControl<IServicePlan['tier']>;
+  code: FormControl<IServicePlan['code']>;
   tierLabel: FormControl<IServicePlan['tierLabel']>;
+  displayOrder: FormControl<IServicePlan['displayOrder']>;
   monthlyPrice: FormControl<IServicePlan['monthlyPrice']>;
   currency: FormControl<IServicePlan['currency']>;
   summary: FormControl<IServicePlan['summary']>;
@@ -48,14 +49,22 @@ export class ServicePlanFormService {
       name: new FormControl(servicePlanRawValue.name, {
         validators: [Validators.required, Validators.maxLength(60)],
       }),
-      tier: new FormControl(servicePlanRawValue.tier, {
-        validators: [Validators.required],
+      // Not required, and not disabled either. `code` is kept in step with Abofonsa's published
+      // catalogue by the api's scheduled sync, so an administrator has no reason to type one — but a
+      // plan that predates the reconciliation has none, and locking the field would leave the only
+      // way of giving it one a database edit. The form says where it comes from instead.
+      code: new FormControl(servicePlanRawValue.code, {
+        validators: [Validators.maxLength(40)],
       }),
       tierLabel: new FormControl(servicePlanRawValue.tierLabel, {
         validators: [Validators.maxLength(40)],
       }),
+      displayOrder: new FormControl(servicePlanRawValue.displayOrder),
+      // Optional since 2026-09-08. A plan the catalogue sync created carries no price until somebody
+      // sets one here, because Abofonsa publishes a formatted string rather than a number and this
+      // console must never parse it back. See `IServicePlan.monthlyPrice`.
       monthlyPrice: new FormControl(servicePlanRawValue.monthlyPrice, {
-        validators: [Validators.required, Validators.min(0)],
+        validators: [Validators.min(0)],
       }),
       currency: new FormControl(servicePlanRawValue.currency, {
         validators: [Validators.required, Validators.maxLength(3)],

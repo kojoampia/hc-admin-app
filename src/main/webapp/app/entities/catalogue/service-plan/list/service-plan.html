@@ -45,11 +45,31 @@
               <span class="tier-label">{{ plan.tierLabel }}</span>
             }
             <h3>{{ plan.name }}</h3>
+            <!--
+              Abofonsa's published tier code, shown because it is the join key. An operator comparing
+              this board with web.abofonsa.com or with what a patient chose in their own portal needs
+              the value the two are joined on; the name is not it, and until 2026-09-08 neither was
+              anything on this screen (backlog item 51). A plan created before the catalogue was
+              reconciled has no code, and the badge is simply absent.
+            -->
+            @if (plan.code) {
+              <span class="plan-code" [attr.data-cy]="'planCode-' + plan.id">{{ plan.code }}</span>
+            }
             <p class="price">
-              <b>{{ plan.monthlyPrice !== null && plan.monthlyPrice !== undefined ? (plan.monthlyPrice | number: '1.0-2') : '—' }}</b>
-              <span class="unit"
-                >{{ plan.currency }} <span abfTranslate="hcAdminApp.catalogueServicePlan.home.perMonth">/ month</span></span
-              >
+              <!--
+                "Not priced" rather than "—", and never a 0. This is the one field of a plan that is
+                still this console's own copy: Abofonsa publishes a price formatted for a locale and
+                no machine-readable one, so a plan the catalogue sync learned arrives unpriced and
+                somebody has to set it. A dash reads as a rendering fault and a zero as a free plan.
+              -->
+              @if (plan.monthlyPrice !== null && plan.monthlyPrice !== undefined) {
+                <b>{{ plan.monthlyPrice | number: '1.0-2' }}</b>
+                <span class="unit"
+                  >{{ plan.currency }} <span abfTranslate="hcAdminApp.catalogueServicePlan.home.perMonth">/ month</span></span
+                >
+              } @else {
+                <b class="unpriced" abfTranslate="hcAdminApp.catalogueServicePlan.home.notPriced">Not priced</b>
+              }
             </p>
           </header>
 

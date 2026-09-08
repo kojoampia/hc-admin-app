@@ -69,7 +69,6 @@ enum Priority { HIGH, NORMAL, LOW }
 enum TaskState { TODO, DOING, DONE }
 enum ShiftType { DAY, EVENING, NIGHT, OFF, FLEXIBLE }
 
-enum PlanTier { ESSENTIAL, PLUS, FAMILY }
 enum ServiceHealth { HEALTHY, DEGRADED, DOWN }
 // CredentialRole maps to the gateway's Authority, and Authority values carry
 // the ROLE_ prefix — ROLE_ADMIN, ROLE_USER, ROLE_XXXX. Storing a bare ADMIN
@@ -270,9 +269,10 @@ entity ShiftAssignment {
 entity ServicePlan {
   id String
   name String required maxlength(60)
-  tier PlanTier required
+  code String maxlength(40)
   tierLabel String maxlength(40)
-  monthlyPrice BigDecimal required min(0)
+  displayOrder Integer
+  monthlyPrice BigDecimal min(0)
   currency String required maxlength(3)
   summary String maxlength(240)
   featured Boolean required

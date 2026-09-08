@@ -7,7 +7,6 @@ import facilityType from '../../../i18n/en/platform-facilityType.json';
 import idType from '../../../i18n/en/directory-idType.json';
 import messageChannel from '../../../i18n/en/operations-messageChannel.json';
 import messageStatus from '../../../i18n/en/operations-messageStatus.json';
-import planTier from '../../../i18n/en/catalogue-planTier.json';
 import priority from '../../../i18n/en/operations-priority.json';
 import professionalRole from '../../../i18n/en/directory-professionalRole.json';
 import serviceHealth from '../../../i18n/en/platform-serviceHealth.json';
@@ -39,7 +38,6 @@ const DICTIONARIES = [
   idType,
   messageChannel,
   messageStatus,
-  planTier,
   priority,
   professionalRole,
   serviceHealth,
@@ -60,7 +58,7 @@ const labels: [string, string, string][] = DICTIONARIES.flatMap(dictionary =>
 
 describe('enum labels', () => {
   it('covers every enum dictionary', () => {
-    expect(DICTIONARIES).toHaveLength(16);
+    expect(DICTIONARIES).toHaveLength(15);
     expect(labels.length).toBeGreaterThan(40);
   });
 

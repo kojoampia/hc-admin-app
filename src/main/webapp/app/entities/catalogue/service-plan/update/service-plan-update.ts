@@ -3,10 +3,8 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
-import { TranslatePipe } from '@ngx-translate/core';
 import { Observable, finalize } from 'rxjs';
 
-import { PlanTier } from 'app/entities/enumerations/plan-tier.model';
 import { AlertError } from 'app/shared/alert/alert-error';
 import { TranslateDirective } from 'app/shared/language';
 import { ServicePlanService } from '../service/service-plan.service';
@@ -18,12 +16,11 @@ import { ServicePlanFormGroup, ServicePlanFormService } from './service-plan-for
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'abf-service-plan-update',
   templateUrl: './service-plan-update.html',
-  imports: [TranslateDirective, TranslatePipe, FontAwesomeModule, AlertError, ReactiveFormsModule],
+  imports: [TranslateDirective, FontAwesomeModule, AlertError, ReactiveFormsModule],
 })
 export class ServicePlanUpdate implements OnInit {
   readonly isSaving = signal(false);
   servicePlan: IServicePlan | null = null;
-  planTierValues = Object.keys(PlanTier);
 
   protected servicePlanService = inject(ServicePlanService);
   protected servicePlanFormService = inject(ServicePlanFormService);
