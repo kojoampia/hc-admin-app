@@ -16,7 +16,12 @@ import { ITEMS_PER_PAGE, PAGE_HEADER, TOTAL_COUNT_RESPONSE_HEADER } from 'app/co
 import { IServicePlan } from 'app/entities/catalogue/service-plan/service-plan.model';
 import { ServicePlanService } from 'app/entities/catalogue/service-plan/service/service-plan.service';
 import { AccountStatus } from 'app/entities/enumerations/account-status.model';
-import { IDirectoryLink, PLAN_STATUS_PENDING, resolveLinkIdentity } from 'app/entities/directory/directory-link/directory-link.model';
+import {
+  IDirectoryLink,
+  PLAN_STATUS_PENDING,
+  hasPlanChoice,
+  resolveLinkIdentity,
+} from 'app/entities/directory/directory-link/directory-link.model';
 import { DirectoryLinkService } from 'app/entities/directory/directory-link/service/directory-link.service';
 import { ProfessionalService } from 'app/entities/directory/professional/service/professional.service';
 import { Alert } from 'app/shared/alert/alert';
@@ -429,6 +434,24 @@ export class Patient implements OnInit {
   }
 
   /**
+   * Whether this membership names a tier at all.
+   *
+   * **A membership with no tier is a real state, not a half-written row.** `Membership.plan` and
+   * `.name` carry no `@NotNull` on hc-patient and their administrative CRUD path can create one with
+   * neither, so `PlanChosen` publishes a real `membershipId` and `status` with nulls under `planCode`
+   * and `planName`. The api stores that as it arrives — the four fields move as a group — so the
+   * panel has to render it.
+   *
+   * Everything about the tier branches on this rather than on `planCode` directly, because the row
+   * has two things to get wrong without it: a blank cell where a tier goes, and a price cell reading
+   * "Not in this catalogue", which asserts something about Abofonsa's catalogue for a membership that
+   * named nothing to look up.
+   */
+  hasTierNamed(link: IDirectoryLink): boolean {
+    return hasPlanChoice(link);
+  }
+
+  /**
    * The tier as this catalogue holds it, or `null` when it holds none by that code.
    *
    * **Resolved here rather than on the way in, and that is deliberate on the api's side too.** The
@@ -449,9 +472,21 @@ export class Patient implements OnInit {
     return link.planCode ? (this.planCatalogue().get(link.planCode) ?? null) : null;
   }
 
-  /** True once the catalogue has answered and holds no tier by this row's code. */
+  /**
+   * True once the catalogue has answered and holds no tier by this row's code.
+   *
+   * **False when the membership names no tier at all**, which is not the same question and was the
+   * same answer until the item 48 review. A row with no `planCode` has nothing to look up, so
+   * "Abofonsa published a tier this catalogue has not synced" is a claim about somebody else's
+   * catalogue made from a membership that named nothing — and it rendered exactly that.
+   *
+   * The template guards the branch as well, so this is belt and braces. It is written here anyway
+   * because a method whose name asks one question and whose body answers another is the thing the
+   * next caller gets wrong, and there is no reason for the guard to live only where it happens to be
+   * needed today.
+   */
   isUncataloguedPlan(link: IDirectoryLink): boolean {
-    return this.chosenPlan(link) === null;
+    return this.hasTierNamed(link) && this.chosenPlan(link) === null;
   }
 
   /** How many plan choices there are beyond the ones on screen. */

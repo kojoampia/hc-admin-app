@@ -163,16 +163,34 @@
                   </div>
                 }
               </td>
+              <!--
+                A MEMBERSHIP CAN NAME NO TIER, AND IT MUST SAY SO RATHER THAN RENDER NOTHING.
+                `Membership.plan` and `.name` carry no @NotNull on hc-patient and their administrative
+                CRUD path can create a membership with neither, so a row with a status and no tier is a
+                real stored state — not a half-written one. Without this branch the cell was blank and
+                the price cell then claimed "Not in this catalogue", which asserts something about
+                Abofonsa's catalogue for a membership that named no tier at all.
+              -->
               <td>
-                <!--
-                  hc-patient's own name for the tier, always. It is what makes an unresolvable code
-                  readable, and it is the name the patient was shown when they chose.
-                -->
-                <div>{{ choice.planName ?? choice.planCode }}</div>
-                <div class="sub mono">{{ choice.planCode }}</div>
+                @if (hasTierNamed(choice)) {
+                  <!--
+                    hc-patient's own name for the tier. It is what makes an unresolvable code readable,
+                    and it is the name the patient was shown when they chose. The code sits under it
+                    because that is what resolves against this catalogue.
+                  -->
+                  <div>{{ choice.planName ?? choice.planCode }}</div>
+                  <div class="sub mono">{{ choice.planCode }}</div>
+                } @else {
+                  <span class="unknown" abfTranslate="hcAdminApp.directoryPatient.planChoices.noTier">No tier named</span>
+                }
               </td>
               <td>
-                @if (chosenPlan(choice); as plan) {
+                @if (!hasTierNamed(choice)) {
+                  <!-- Nothing to resolve and nothing to say about the catalogue. A bare dash rather
+                       than a key, like every other empty cell on this screen: there is no sentence
+                       here to translate. -->
+                  <span>—</span>
+                } @else if (chosenPlan(choice); as plan) {
                   @if (plan.monthlyPrice !== null && plan.monthlyPrice !== undefined) {
                     <span>{{ plan.currency }} {{ plan.monthlyPrice | number: '1.0-2' }}</span>
                   } @else {

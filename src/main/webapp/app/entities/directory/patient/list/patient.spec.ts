@@ -646,6 +646,46 @@ describe('Patient Management Component', () => {
     });
 
     /**
+     * **A membership that names no tier says so, and claims nothing about the catalogue.**
+     *
+     * The state is real, not half-written: `Membership.plan` and `.name` carry no `@NotNull` on
+     * hc-patient and their administrative CRUD path can create a membership with neither, so
+     * `PlanChosen` publishes a real `membershipId` and `status` with nulls under the tier keys. The
+     * api stores that as it arrives — the four fields move as a group — and this panel has to render
+     * it.
+     *
+     * Before the item 48 review it rendered **two** wrong things for such a row: a blank cell where
+     * the tier goes, and then "Not in this catalogue" beside it, which asserts something about
+     * Abofonsa's catalogue for a membership that named nothing to look up. The second is the worse
+     * one — it is a confident claim rather than an empty cell, which is the distinction item 45 was
+     * reported for.
+     */
+    it('says a membership named no tier rather than blanking the cell or blaming the catalogue', async () => {
+      TestBed.tick();
+      expectListRequest().flush([]);
+      await vitest.runAllTimersAsync();
+
+      const noTier = { id: 'link-no-tier', localId: 'a5', email: 'yaa.a@mail.gh', planMembershipId: 'mem-a5-0204', planStatus: 'PENDING' };
+      httpMock.expectOne(isPlanChoiceLookup).flush([noTier], { headers: { 'X-Total-Count': '1' } });
+      httpMock
+        .expectOne(r => r.url.endsWith('/api/service-plans'))
+        .flush([{ id: 'pl2', name: 'PAWPAW Plan', code: 'PAWPAW', currency: 'GHS', monthlyPrice: 5000 }]);
+      await vitest.runAllTimersAsync();
+
+      expect(comp.hasTierNamed(noTier)).toBe(false);
+      // And the catalogue is not blamed for it. This was true before the guard and is the assertion
+      // that fails if somebody reverts isUncataloguedPlan to `chosenPlan(link) === null`.
+      expect(comp.isUncataloguedPlan(noTier)).toBe(false);
+      expect(comp.isUncataloguedPlan({ id: 'l', planCode: 'SOURSOP' })).toBe(true);
+      // The row still belongs in the queue — it is a membership awaiting a decision, and dropping it
+      // would lose the prompt and make the count disagree with the rows.
+      expect(comp.planChoices()).toHaveLength(1);
+      expect(comp.planChoiceTotal()).toBe(1);
+      // And a row that DOES name a tier is unaffected by the guard.
+      expect(comp.hasTierNamed({ id: 'l', planCode: 'PAWPAW' })).toBe(true);
+    });
+
+    /**
      * A failed catalogue read leaves every row saying "checking", never "not in this catalogue".
      *
      * The two sentences are different claims: one is this console not knowing yet, the other is an
@@ -741,6 +781,25 @@ describe('Patient Management Component', () => {
       expect(panel).not.toMatch(/planChoiceApprove|planChoiceVerify|approveChoice/);
       // And the reason is written where somebody would add it.
       expect(panel).toContain('item 54');
+    });
+
+    /**
+     * **The tier cell is guarded, read off the template.**
+     *
+     * The component method is covered above; this is the other half. `{{ choice.planName ??
+     * choice.planCode }}` outside the guard renders an empty cell for a membership that named no
+     * tier, and the guard is one deletion away from being removed as redundant by somebody who has
+     * only seen rows that have one. Every fixture short of production had only those rows until this
+     * review added `dl-plan-a5`.
+     */
+    it('guards the tier cell rather than binding the tier unconditionally', () => {
+      const template = readFileSync('src/main/webapp/app/entities/directory/patient/list/patient.html', 'utf8');
+      const panel = template.slice(template.indexOf('data-cy="planChoices"'), template.indexOf('@if (hasFilter())'));
+
+      expect(panel).toContain('hasTierNamed(choice)');
+      expect(panel).toContain('hcAdminApp.directoryPatient.planChoices.noTier');
+      // The tier binding must sit inside the guard, never before it.
+      expect(panel.indexOf('hasTierNamed(choice)')).toBeLessThan(panel.indexOf('choice.planName ?? choice.planCode'));
     });
 
     /**
