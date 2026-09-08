@@ -13,7 +13,14 @@
   <header class="record-head card" data-cy="professionalDetailsHeading">
     <span class="mono-av" aria-hidden="true">{{ initials() }}</span>
     <div class="who">
-      <h3>{{ fullName() ?? professionalRef.id }}</h3>
+      @if (headingName(); as name) {
+        <h3>{{ name }}</h3>
+      } @else {
+        <!-- Not `professionalRef.id`, which is a 24-character ObjectId and reads as a corrupted
+             record (backlog item 45). This heading was that id until 2026-09-08, beside a chip the
+             same item's review had already changed to an em dash. -->
+        <h3 class="unidentified" abfTranslate="hcAdminApp.directoryProfessional.unidentified">Identity not on file</h3>
+      }
       <p>
         @if (professionalRef.role) {
           <span>{{ 'hcAdminApp.ProfessionalRole.' + professionalRef.role | translate }}</span>

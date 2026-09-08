@@ -150,6 +150,52 @@ describe('Professional Management Detail Component', () => {
       expect(comp.initials()).not.toBe('68');
       expect(comp.initials()).toBe('—');
     });
+
+    /**
+     * **The heading is asserted through the DOM, and that is the point of these three cases.**
+     *
+     * The case above has asserted `fullName()` is null for a profile-less clinician since item 45's
+     * review, and the template read `{{ fullName() ?? professionalRef.id }}` for as long as it did:
+     * the chip beside the heading was fixed, the heading was not, and a passing assertion about the
+     * computed is exactly what hid it. A component whose defect is in what the template does with a
+     * correct `null` cannot be caught by reading the component.
+     *
+     * The licence number rather than a dash when there is no profile: it is required on the api
+     * (`@NotNull @Size(max = 40)` on `Professional.licenceNumber`) and it is a readable identifier
+     * in a licence directory, which is the same argument the professional *list*'s `displayName`
+     * makes and the one `record-identity.spec.ts` records as its deliberate exclusion.
+     */
+    it('should head a clinician with no profile by their licence number, never by the record id', () => {
+      fixture.componentRef.setInput('professional', { id: '68b4f2a19c3d5e7f81a02c44', licenceNumber: 'MDC/RN/23-4471' });
+      fixture.detectChanges();
+
+      const heading = fixture.nativeElement.querySelector('[data-cy="professionalDetailsHeading"] h3').textContent;
+      expect(heading).not.toContain('68b4f2a19c3d5e7f81a02c44');
+      expect(heading.trim()).toBe('MDC/RN/23-4471');
+      expect(comp.headingName()).toBe('MDC/RN/23-4471');
+    });
+
+    it('should say identity is not on file rather than print the record id', () => {
+      fixture.componentRef.setInput('professional', { id: '68b4f2a19c3d5e7f81a02c44' });
+      fixture.detectChanges();
+
+      const heading = fixture.nativeElement.querySelector('[data-cy="professionalDetailsHeading"] h3');
+      expect(heading.textContent).not.toContain('68b4f2a19c3d5e7f81a02c44');
+      expect(heading.classList).toContain('unidentified');
+      expect(comp.headingName()).toBeNull();
+    });
+
+    it('should prefer the name over the licence number', () => {
+      fixture.componentRef.setInput('professional', {
+        id: '68b4f2a19c3d5e7f81a02c44',
+        licenceNumber: 'MDC/RN/23-4471',
+        profile: { title: 'DR', firstName: 'Ama', lastName: 'Boateng' },
+      });
+      fixture.detectChanges();
+
+      expect(comp.headingName()).toBe('Dr. Ama Boateng');
+      expect(fixture.nativeElement.querySelector('[data-cy="professionalDetailsHeading"] h3').textContent.trim()).toBe('Dr. Ama Boateng');
+    });
   });
 
   /**
