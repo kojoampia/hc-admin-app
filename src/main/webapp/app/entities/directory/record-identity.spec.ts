@@ -47,6 +47,22 @@ import { describe, expect, it } from 'vitest';
  * each would have been to remove a fallback nothing reaches. **A rule that fires only where it
  * cannot matter teaches that the rule is noise**, which is how the next real one gets silenced.
  *
+ * **That argument alone does not settle it, and on its own it invites "then delete the thirteen
+ * lines".** What settles it is the other half, which is that the proposed rule is badly *under*-
+ * inclusive as well: `?? x.id` is one of several ways to put a whole id on a screen and not the
+ * commonest. Measured on 2026-09-08, **56 templates under `src/main/webapp/app` carry a bare
+ * `{{ x.id }}` interpolation** (68 occurrences), twelve of them in ten files inside the two roots
+ * this sweep already walks — and at least five are a record named by nothing but its id, including
+ * `entities/directory/profile/detail/profile-detail.html:74`,
+ * `<a [routerLink]="['/address', …]">{{ profileRef.address?.id }}</a>`, where an Address's entire
+ * identity as rendered is its ObjectId. Every one of them is invisible to any `?? .id` regex.
+ *
+ * So the rule item 49 asked for would have fired on thirteen dead lines and missed a live one four
+ * directories away. **A rule that fires on dead lines and misses live ones is not the class of rule
+ * the item asked for**, whatever is done about the false positives, and that is why the answer is
+ * not "narrow it until the noise stops". Those five are not fixed here and are not this branch's
+ * scope; they are named so that the next reader starts from the real shape of the problem.
+ *
  * The discriminator is not syntactic and cannot be swept from here: it is whether the candidate
  * before the fallback is required, and that lives in another repository's Java. The fourteenth site,
  * the one where it was **not** — `professional-detail.html`'s heading, `fullName() ??
@@ -94,6 +110,12 @@ describe('directory records are never named by a fragment of their id', () => {
    * this case green over half the screen. That is not hypothetical on this rule: the one live
    * id-as-a-name this sweep did not catch was an interpolation in `professional-detail.html`, and
    * a rendering defect lives in the template more often than in the class.
+   *
+   * `arrayContaining` is a floor, so an unpinned file is walked rather than skipped and nothing
+   * here is a defect on its own. The two list templates were pinned on 2026-09-08 anyway:
+   * `professional/list/professional.html` is the screen backlog item 49 reported, so a reader
+   * checking whether the sweep covers what the item named should find it stated rather than have to
+   * derive it from the walk, and `vendor/list/vendor.html` is its sibling under the same rule.
    */
   it('finds the screens it is meant to be sweeping', () => {
     expect(sources).toEqual(
@@ -103,8 +125,10 @@ describe('directory records are never named by a fragment of their id', () => {
         join('src/main/webapp/app/entities/directory/patient/detail', 'patient-detail.ts'),
         join('src/main/webapp/app/entities/directory/patient/detail', 'patient-detail.html'),
         join('src/main/webapp/app/entities/directory/professional/list', 'professional.ts'),
+        join('src/main/webapp/app/entities/directory/professional/list', 'professional.html'),
         join('src/main/webapp/app/entities/directory/professional/detail', 'professional-detail.ts'),
         join('src/main/webapp/app/entities/directory/professional/detail', 'professional-detail.html'),
+        join('src/main/webapp/app/entities/directory/vendor/list', 'vendor.html'),
         join('src/main/webapp/app/entities/directory/vendor/detail', 'vendor-detail.ts'),
         join('src/main/webapp/app/entities/directory/vendor/detail', 'vendor-detail.html'),
         join('src/main/webapp/app/console/dashboard', 'dashboard.ts'),

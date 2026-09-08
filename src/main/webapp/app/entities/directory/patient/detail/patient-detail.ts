@@ -181,6 +181,34 @@ export class PatientDetail {
   readonly headingName = computed(() => this.fullName() ?? this.linkIdentity());
 
   /**
+   * What the clinical lead link shows: the resolved name, else the licence number, else the id.
+   *
+   * The template carried this as `clinicalLeadName() ?? lead.licenceNumber ?? lead.id` until
+   * 2026-09-08. It is a computed now for the middle step: the annotation `@NotBlank` appears
+   * nowhere in the api's main sources, so `""` satisfies `licenceNumber`'s `@NotNull
+   * @Size(max = 40)` and is storable through the REST surface, and `??` let it through into an
+   * anchor — a link with no text, on a record that does have a clinical lead. Pre-existing, and
+   * not backlog item 45's defect, since blank is not an id.
+   *
+   * The id terminal is unreachable for the reason the professional list's `displayName` records:
+   * `@NotNull` plus the `ValidatingMongoEventListener` `DatabaseConfiguration` registers. It is a
+   * type terminator, not a rendering.
+   */
+  // eslint-disable-next-line @typescript-eslint/member-ordering
+  readonly clinicalLeadLabel = computed(() => {
+    const lead = this.patient()?.clinicalLead;
+    if (!lead) {
+      return null;
+    }
+    const name = this.clinicalLeadName();
+    if (name) {
+      return name;
+    }
+    const licence = lead.licenceNumber ?? lead.id;
+    return licence.trim().length > 0 ? licence : '—';
+  });
+
+  /**
    * The date of birth as a dayjs, because the one on the payload is a string.
    *
    * `PatientService` converts `joinedOn` and `lastActiveOn` and stops there — the nested profile,

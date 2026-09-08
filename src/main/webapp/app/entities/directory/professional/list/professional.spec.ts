@@ -389,6 +389,30 @@ describe('Professional Management Component', () => {
       // directory — this case is about the chip and must not be read as removing that.
       expect(comp.displayName(learned)).toBe('MDC/RN/23-4471');
     });
+
+    /**
+     * A blank licence number is storable and used to render an anchor with no text in it.
+     *
+     * The annotation `@NotBlank` appears nowhere in the api's main sources, so `""` satisfies
+     * `licenceNumber`'s `@NotNull @Size(max = 40)` and reaches this screen through the REST
+     * surface. `licenceNumber ?? id` let it straight through and `professional.html` interpolates
+     * the result into the row's link, so the row's only affordance was invisible and unclickable.
+     *
+     * Pre-existing, found by the review of backlog item 49 rather than introduced by it, and
+     * **not** item 45's defect: blank is not an id. The answer is the em dash `initials` already
+     * gives the same record, not a fall through to `id` — that would trade an invisible link for
+     * the ObjectId this rule exists to keep off the screen, which is asserted here too.
+     */
+    it('renders a dash rather than an empty link when the licence number is blank', () => {
+      expect(comp.displayName({ id: '68b4f2a19c3d5e7f81a02c44', licenceNumber: '' })).toBe('—');
+      expect(comp.displayName({ id: '68b4f2a19c3d5e7f81a02c44', licenceNumber: '   ' })).toBe('—');
+      expect(comp.displayName({ id: '68b4f2a19c3d5e7f81a02c44', licenceNumber: '' })).not.toBe('68b4f2a19c3d5e7f81a02c44');
+      // A name still wins over both, and a real licence number is untouched.
+      expect(comp.displayName({ id: 'p1', licenceNumber: '', profile: { id: 'x', firstName: 'Efua', lastName: 'Mensah' } })).toBe(
+        'Efua Mensah',
+      );
+      expect(comp.displayName({ id: 'p1', licenceNumber: 'MDC/RN/23-4471' })).toBe('MDC/RN/23-4471');
+    });
   });
 
   /**

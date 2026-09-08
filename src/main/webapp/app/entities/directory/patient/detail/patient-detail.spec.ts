@@ -225,6 +225,44 @@ describe('Patient Management Detail Component', () => {
 
       expect(service.find).not.toHaveBeenCalled();
     });
+
+    /**
+     * The link's text, which the template built with `?? lead.licenceNumber ?? lead.id` until
+     * 2026-09-08 and which a blank licence number emptied.
+     *
+     * The annotation `@NotBlank` appears nowhere in the api's main sources, so `""` satisfies
+     * `licenceNumber`'s `@NotNull @Size(max = 40)` and `??` let it through — an `<a>` with no text,
+     * on a record that does have a clinical lead. Pre-existing, found by the review of backlog item
+     * 49, and not item 45's defect: blank is not an id. Read out of the DOM rather than off the
+     * computed, because the defect was in what the template did with a correct value — which is the
+     * same way `professional-detail.html`'s heading hid.
+     */
+    it('never renders an empty clinical lead link when the licence number is blank', () => {
+      const service = TestBed.inject(ProfessionalService);
+      vitest.spyOn(service, 'find').mockReturnValue(of({ id: 'p1', profile: {} }) as any);
+
+      fixture.componentRef.setInput('patient', { id: 'a1', clinicalLead: { id: 'p1', licenceNumber: '' } });
+      fixture.detectChanges();
+
+      expect(comp.clinicalLeadLabel()).toBe('—');
+      const link: HTMLAnchorElement = fixture.nativeElement.querySelector('a[href="/professional/p1/view"]');
+      expect(link).toBeTruthy();
+      expect(link.textContent.trim()).toBe('—');
+      expect(link.textContent.trim()).not.toBe('');
+      expect(link.textContent).not.toContain('p1');
+    });
+
+    it('still prefers the resolved name, then a real licence number', () => {
+      const service = TestBed.inject(ProfessionalService);
+      vitest.spyOn(service, 'find').mockReturnValue(of({ id: 'p1', profile: { firstName: 'Ama', lastName: 'Boateng' } }) as any);
+
+      fixture.componentRef.setInput('patient', { id: 'a1', clinicalLead: { id: 'p1', licenceNumber: 'MDC/RN/23-4471' } });
+      fixture.detectChanges();
+      expect(comp.clinicalLeadLabel()).toBe('Ama Boateng');
+
+      comp.resolvedLeadName.set(null);
+      expect(comp.clinicalLeadLabel()).toBe('MDC/RN/23-4471');
+    });
   });
 
   describe('Archiving', () => {

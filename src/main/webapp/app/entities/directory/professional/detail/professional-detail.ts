@@ -161,14 +161,34 @@ export class ProfessionalDetail {
    * had a 24-character ObjectId where their name goes and an em dash in the chip beside it, which
    * is backlog item 45's reported rendering on a screen its fix did not reach.
    *
-   * `Professional.profile` is an optional `@DBRef` and nothing requires it: the console's own edit
-   * form offers a blank profile option, and `DELETE /api/profiles/{id}` cascades nowhere, so the
-   * reference reads back as null. The state is ordinary, not exotic.
+   * `Professional.profile` is an optional `@DBRef` and **the api does not require it**, which is
+   * what makes the state ordinary rather than exotic. Two paths reach it, and neither is the
+   * console:
+   *
+   * - `ProfileResource.deleteProfile` is a bare `profileRepository.deleteById(id)` and cascades
+   *   nowhere, so deleting a profile leaves every `Professional.profile` pointing at it dangling,
+   *   and a dangling `@DBRef` reads back as `null`.
+   * - `ProfessionalResource` takes `@Valid @RequestBody Professional` on both `POST` and `PUT`
+   *   while `Professional.profile` carries no `@NotNull`, so any client that is not this console
+   *   may create one without a profile — and because `PUT` sends a whole document and the resource
+   *   restores only `verification`, `homeSpaceId` and `unavailabilityPeriods` from the stored copy,
+   *   a `PUT` that omits `profile` nulls one that was there.
+   *
+   * This doc-block, and the commit that added it, said instead that "the console's own edit form
+   * offers a blank profile option". **That was false and is worth naming rather than quietly
+   * replacing**: `professional-form.service.ts` declares `profile` with `Validators.required` and
+   * `professional-update.html` disables save on `editForm.invalid`, so the blank `<option>` is
+   * JHipster's null-state render and not a savable value. The conclusion survived on the two paths
+   * above, which is the only reason the change was right — a true conclusion resting on a reason
+   * that does not hold is one edit away from being deleted as dead code.
    *
    * The licence number rather than a dash in between, unlike the patient record: it is required on
    * the api (`@NotNull`), and it is a readable identifier in a directory that exists to verify
-   * licences. That is the professional list's `displayName` rule and the exclusion
-   * `record-identity.spec.ts` records — this heading is what falls *past* it that should not.
+   * licences. That step is shared with the professional list's `displayName` and is the exclusion
+   * `record-identity.spec.ts` records — this heading is what falls *past* it that should not. The
+   * blankness guard below is **not** inherited from there: `displayName` guarded blankness on the
+   * joined name only and let a `""` licence through until the same review that found this, so this
+   * comment credited that site with a rule it did not implement. Both guard it now.
    */
   // eslint-disable-next-line @typescript-eslint/member-ordering
   readonly headingName = computed(() => {
@@ -185,6 +205,17 @@ export class ProfessionalDetail {
     if (licence.length > 0) {
       return licence;
     }
+    // Reached only by a `Professional` whose `licenceNumber` is null or blank, and `@NotNull` on
+    // the api forbids the first — so this is defence, not a rendering anyone has seen. It is kept
+    // because the guard above is the thing that has to be true, and a `?? id` terminal here would
+    // be the defect the guard exists to avoid.
+    //
+    // **This is not the awaiting panel's "Identity not on file", and the two must not be equated.**
+    // `directoryProfessional.awaiting.unidentified` names a `DirectoryLink` with no local record at
+    // all — reachable, seeded as `dl-prof-anon`, and the ordinary state of a clinician known only
+    // from an `onboarding.state` frame. This one names a `Professional` document that exists and
+    // has no legible identifier on it. The two keys carry the same English string today and are
+    // deliberately separate, so a wording change to one does not silently restate the other.
     return null;
   });
 
