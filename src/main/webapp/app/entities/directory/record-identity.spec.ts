@@ -28,6 +28,36 @@ import { describe, expect, it } from 'vitest';
  * professional list does, behind a required licence number, and a licence number is a readable
  * identifier in a licence directory. The defect is specifically *taking a fragment of an opaque
  * identifier and presenting it as somebody's initials*, which no amount of context makes legible.
+ *
+ * ## Why that exclusion was not widened when it was questioned, 2026-09-08
+ *
+ * Backlog item 49 proposed exactly that widening — fail on a bare `?? x.id` in any display path —
+ * against the two sites it read as defects, `patient/list`'s `clinicalLead` and `professional/list`'s
+ * `displayName`. **Neither is reachable, and the exclusion above is why.** Fourteen expressions had
+ * this shape when that was checked, and at thirteen of them the candidate in front of `?? x.id` is
+ * required on the api: `licenceNumber` is `@NotNull` on `Professional`, and `name` is `@NotNull` on
+ * `Vendor`, `Hub`, `Team`, `ServicePlan`, `Angel`, `Document` and `Facility`. Nothing can strip one
+ * either, because `DatabaseConfiguration` registers a `ValidatingMongoEventListener`, so every
+ * `save` — the REST surface, the seed initializer, any service — validates. `patient.clinicalLead`
+ * is a second lock on the same door: it is a `@DBRef` to a `Professional` **document**, a clinician
+ * known only from a domain event has no such document by design, and a dangling `@DBRef` reads
+ * back as `null` rather than as a stub, so the row shows the established `—`.
+ *
+ * So widening it would have gone red on thirteen lines that cannot render an id, and the fix for
+ * each would have been to remove a fallback nothing reaches. **A rule that fires only where it
+ * cannot matter teaches that the rule is noise**, which is how the next real one gets silenced.
+ *
+ * The discriminator is not syntactic and cannot be swept from here: it is whether the candidate
+ * before the fallback is required, and that lives in another repository's Java. The fourteenth site,
+ * the one where it was **not** — `professional-detail.html`'s heading, `fullName() ??
+ * professionalRef.id`, where `Professional.profile` is an optional `@DBRef` — was found by reading
+ * the api rather than by any sweep, and was fixed on 2026-09-08 rather than excused. Do not take
+ * the count above as current; count it if you need it, the way `PaginationIT` refuses to state one.
+ * It is worth knowing how it hid: item 45's
+ * review changed the monogram beside that heading to an em dash and asserted `fullName()` is null
+ * for a profile-less clinician, and the heading two lines below went on printing the ObjectId. The
+ * assertion was about the component; the defect was in what the template did with a correct `null`.
+ * `professional-detail.spec.ts` reads that heading out of the DOM now, for that reason.
  */
 describe('directory records are never named by a fragment of their id', () => {
   /** Every screen that draws a record header or a directory row, walked rather than listed. */
@@ -58,15 +88,25 @@ describe('directory records are never named by a fragment of their id', () => {
    * The discovery can fail as quietly as the rule can. A moved folder or a tightened extension
    * filter would leave this passing over nothing at all, so the walk is pinned against the files the
    * rule exists for before anything is asserted about their contents.
+   *
+   * **Templates are pinned as well as components**, since 2026-09-08. Every path here was a `.ts`,
+   * so dropping `.html` from the filter above — the likeliest way to tighten it — would have left
+   * this case green over half the screen. That is not hypothetical on this rule: the one live
+   * id-as-a-name this sweep did not catch was an interpolation in `professional-detail.html`, and
+   * a rendering defect lives in the template more often than in the class.
    */
   it('finds the screens it is meant to be sweeping', () => {
     expect(sources).toEqual(
       expect.arrayContaining([
         join('src/main/webapp/app/entities/directory/patient/list', 'patient.ts'),
+        join('src/main/webapp/app/entities/directory/patient/list', 'patient.html'),
         join('src/main/webapp/app/entities/directory/patient/detail', 'patient-detail.ts'),
+        join('src/main/webapp/app/entities/directory/patient/detail', 'patient-detail.html'),
         join('src/main/webapp/app/entities/directory/professional/list', 'professional.ts'),
         join('src/main/webapp/app/entities/directory/professional/detail', 'professional-detail.ts'),
+        join('src/main/webapp/app/entities/directory/professional/detail', 'professional-detail.html'),
         join('src/main/webapp/app/entities/directory/vendor/detail', 'vendor-detail.ts'),
+        join('src/main/webapp/app/entities/directory/vendor/detail', 'vendor-detail.html'),
         join('src/main/webapp/app/console/dashboard', 'dashboard.ts'),
       ]),
     );

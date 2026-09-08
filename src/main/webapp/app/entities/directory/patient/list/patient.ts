@@ -307,7 +307,21 @@ export class Patient implements OnInit {
     return address.region ?? null;
   }
 
-  /** The lead's name once it has arrived; the licence number until then, so the cell is never blank. */
+  /**
+   * The lead's name once it has arrived; the licence number until then, so the cell is never blank.
+   *
+   * **The third fallback is unreachable and is kept as a type terminator, not as a rendering.** It
+   * was read as backlog item 45's defect one column along (item 49) and it is not one, for two
+   * independent reasons worth having here rather than rediscovering: `licenceNumber` is `@NotNull`
+   * on `Professional` and `DatabaseConfiguration` registers a `ValidatingMongoEventListener`, so no
+   * save of any kind can store one without it; and `clinicalLead` is a `@DBRef` to a `Professional`
+   * **document**, so a clinician known only from a sibling event — which has no such document, by
+   * design, and never gets one — cannot be a lead at all. A `@DBRef` whose target has been deleted
+   * reads back as `null`, not as a stub, so that row takes the template's `—` instead.
+   *
+   * If it is ever removed, remove it upwards: return `string | null` and let the `@else` in
+   * `patient.html` render the dash. Do not make it render the id in some other way.
+   */
   clinicalLead(patient: IPatient): string | null {
     const lead = patient.clinicalLead;
     if (!lead) {

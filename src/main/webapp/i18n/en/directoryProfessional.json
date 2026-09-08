@@ -91,6 +91,7 @@
           "account": "from the account"
         }
       },
+      "unidentified": "Identity not on file",
       "archivedNotice": "This record is archived and does not appear in the directory.",
       "isArchived": "Archived",
       "step": {

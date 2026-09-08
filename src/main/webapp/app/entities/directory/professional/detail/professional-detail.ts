@@ -152,6 +152,42 @@ export class ProfessionalDetail {
     return name || null;
   });
 
+  /**
+   * What the heading shows: the name, else the licence number, else null.
+   *
+   * Null is rendered as "Identity not on file" by the template rather than as the record id — the
+   * same answer the patient record gives, for the same reason. The heading read
+   * `{{ fullName() ?? professionalRef.id }}` until this existed, so a clinician with no `Profile`
+   * had a 24-character ObjectId where their name goes and an em dash in the chip beside it, which
+   * is backlog item 45's reported rendering on a screen its fix did not reach.
+   *
+   * `Professional.profile` is an optional `@DBRef` and nothing requires it: the console's own edit
+   * form offers a blank profile option, and `DELETE /api/profiles/{id}` cascades nowhere, so the
+   * reference reads back as null. The state is ordinary, not exotic.
+   *
+   * The licence number rather than a dash in between, unlike the patient record: it is required on
+   * the api (`@NotNull`), and it is a readable identifier in a directory that exists to verify
+   * licences. That is the professional list's `displayName` rule and the exclusion
+   * `record-identity.spec.ts` records — this heading is what falls *past* it that should not.
+   */
+  // eslint-disable-next-line @typescript-eslint/member-ordering
+  readonly headingName = computed(() => {
+    const name = this.fullName();
+    if (name) {
+      return name;
+    }
+    // Emptiness is checked, not assumed nullish, and this is why it is written out rather than
+    // chained with `??`. `licenceNumber` is `@NotNull @Size(max = 40)` on the api and there is no
+    // `@NotBlank`, so `""` is storable through the REST surface; `??` would let it through and
+    // print an empty heading, which is the one outcome worse than the id. The api's own
+    // `PatientCsvExporter` guards the same field with `isBlank()` for the same reason.
+    const licence = this.professional()?.licenceNumber?.trim() ?? '';
+    if (licence.length > 0) {
+      return licence;
+    }
+    return null;
+  });
+
   /** The monogram, and an em dash when no profile names them — never the record id (item 45). */
   // eslint-disable-next-line @typescript-eslint/member-ordering
   readonly initials = computed(() => {
