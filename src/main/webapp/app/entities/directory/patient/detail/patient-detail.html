@@ -143,7 +143,21 @@
             <a [routerLink]="['/service-plan', plan.id, 'view']">{{ plan.name ?? plan.id }}</a>
           </dd>
           <dt abfTranslate="hcAdminApp.directoryPatient.detail.monthly">Monthly</dt>
-          <dd>{{ plan.currency ?? '' }} {{ plan.monthlyPrice ?? '—' }}</dd>
+          <!--
+            The same answer the plan board gives for the same value: "Not priced", never a dash and
+            never a 0. This interpolated the currency beside "monthlyPrice ?? em-dash" until
+            2026-09-08, which rendered "GHS —" for a plan the sync had learned and nobody had priced —
+            a currency labelling an amount that does not exist, and a dash that reads as a rendering
+            fault on a record screen where every other missing field is one. The wording is the plan
+            board's own key, so the two screens cannot drift apart.
+          -->
+          <dd>
+            @if (plan.monthlyPrice !== null && plan.monthlyPrice !== undefined) {
+              {{ plan.currency ?? '' }} {{ plan.monthlyPrice }}
+            } @else {
+              <span class="text-muted" abfTranslate="hcAdminApp.catalogueServicePlan.home.notPriced">Not priced</span>
+            }
+          </dd>
           @if (plan.tierLabel) {
             <dt abfTranslate="hcAdminApp.directoryPatient.detail.tier">Tier</dt>
             <dd>{{ plan.tierLabel }}</dd>

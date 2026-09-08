@@ -7,7 +7,6 @@ import { FacilityType } from './facility-type.model';
 import { IdType } from './id-type.model';
 import { MessageChannel } from './message-channel.model';
 import { MessageStatus } from './message-status.model';
-import { PlanTier } from './plan-tier.model';
 import { Priority } from './priority.model';
 import { ProfessionalRole } from './professional-role.model';
 import { ServiceHealth } from './service-health.model';
@@ -24,7 +23,6 @@ import facilityType from '../../../i18n/en/platform-facilityType.json';
 import idType from '../../../i18n/en/directory-idType.json';
 import messageChannel from '../../../i18n/en/operations-messageChannel.json';
 import messageStatus from '../../../i18n/en/operations-messageStatus.json';
-import planTier from '../../../i18n/en/catalogue-planTier.json';
 import priority from '../../../i18n/en/operations-priority.json';
 import professionalRole from '../../../i18n/en/directory-professionalRole.json';
 import serviceHealth from '../../../i18n/en/platform-serviceHealth.json';
@@ -70,7 +68,6 @@ const PAIRS: [string, Record<string, string>, Record<string, string>][] = [
   ['IdType', IdType, idType.hcAdminApp.IdType],
   ['MessageChannel', MessageChannel, messageChannel.hcAdminApp.MessageChannel],
   ['MessageStatus', MessageStatus, messageStatus.hcAdminApp.MessageStatus],
-  ['PlanTier', PlanTier, planTier.hcAdminApp.PlanTier],
   ['Priority', Priority, priority.hcAdminApp.Priority],
   ['ProfessionalRole', ProfessionalRole, professionalRole.hcAdminApp.ProfessionalRole],
   ['ServiceHealth', ServiceHealth, serviceHealth.hcAdminApp.ServiceHealth],
@@ -86,7 +83,7 @@ const labelledValues = (dictionary: Record<string, string>): string[] => Object.
 
 describe('enum label coverage', () => {
   it('covers every enum dictionary', () => {
-    expect(PAIRS).toHaveLength(16);
+    expect(PAIRS).toHaveLength(15);
   });
 
   it.each(PAIRS)('%s has a label for every value', (_name, values, dictionary) => {

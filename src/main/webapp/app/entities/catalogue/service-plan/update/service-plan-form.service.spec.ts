@@ -21,8 +21,9 @@ describe('ServicePlan Form Service', () => {
           expect.objectContaining({
             id: expect.any(Object),
             name: expect.any(Object),
-            tier: expect.any(Object),
+            code: expect.any(Object),
             tierLabel: expect.any(Object),
+            displayOrder: expect.any(Object),
             monthlyPrice: expect.any(Object),
             currency: expect.any(Object),
             summary: expect.any(Object),
@@ -38,8 +39,9 @@ describe('ServicePlan Form Service', () => {
           expect.objectContaining({
             id: expect.any(Object),
             name: expect.any(Object),
-            tier: expect.any(Object),
+            code: expect.any(Object),
             tierLabel: expect.any(Object),
+            displayOrder: expect.any(Object),
             monthlyPrice: expect.any(Object),
             currency: expect.any(Object),
             summary: expect.any(Object),

@@ -34,19 +34,26 @@
           }
         </div>
 
-        @let tierRef = editForm.get('tier')!;
+        <!--
+          `code` and `displayOrder` replaced a Tier select on 2026-09-08 (backlog item 51). Both are
+          kept in step with Abofonsa's published catalogue by the api's scheduled sync, so an edit
+          here is overwritten on the next pass — the hint says so rather than the field being locked,
+          because a plan created before the reconciliation has no code and locking it would leave a
+          database edit as the only way to give it one.
+        -->
+        @let codeRef = editForm.get('code')!;
         <div class="mb-3">
-          <label class="form-label" for="field_tier" abfTranslate="hcAdminApp.catalogueServicePlan.tier">Tier</label>
-          <select class="form-control" name="tier" formControlName="tier" id="field_tier" data-cy="tier">
-            <option [ngValue]="null">{{ 'hcAdminApp.PlanTier.null' | translate }}</option>
-            @for (planTier of planTierValues; track $index) {
-              <option [value]="planTier">{{ 'hcAdminApp.PlanTier.' + planTier | translate }}</option>
-            }
-          </select>
-          @if (tierRef.invalid && (tierRef.dirty || tierRef.touched)) {
+          <label class="form-label" for="field_code" abfTranslate="hcAdminApp.catalogueServicePlan.code">Code</label>
+          <input type="text" class="form-control" name="code" id="field_code" data-cy="code" formControlName="code" />
+          <small class="form-text text-muted" abfTranslate="hcAdminApp.catalogueServicePlan.help.code"
+            >Abofonsa's published tier code. Kept in step automatically.</small
+          >
+          @if (codeRef.invalid && (codeRef.dirty || codeRef.touched)) {
             <div>
-              @if (tierRef.errors?.required) {
-                <small class="form-text text-danger" abfTranslate="entity.validation.required">This field is required.</small>
+              @if (codeRef.errors?.maxlength) {
+                <small class="form-text text-danger" abfTranslate="entity.validation.maxlength" [translateValues]="{ max: '40' }"
+                  >This field cannot be longer than 40 characters.</small
+                >
               }
             </div>
           }
@@ -67,6 +74,23 @@
           }
         </div>
 
+        <div class="mb-3">
+          <label class="form-label" for="field_displayOrder" abfTranslate="hcAdminApp.catalogueServicePlan.displayOrder"
+            >Display Order</label
+          >
+          <input
+            type="number"
+            class="form-control"
+            name="displayOrder"
+            id="field_displayOrder"
+            data-cy="displayOrder"
+            formControlName="displayOrder"
+          />
+          <small class="form-text text-muted" abfTranslate="hcAdminApp.catalogueServicePlan.help.displayOrder"
+            >The order the published catalogue lists the tiers in. Kept in step automatically.</small
+          >
+        </div>
+
         @let monthlyPriceRef = editForm.get('monthlyPrice')!;
         <div class="mb-3">
           <label class="form-label" for="field_monthlyPrice" abfTranslate="hcAdminApp.catalogueServicePlan.monthlyPrice"
@@ -80,11 +104,12 @@
             data-cy="monthlyPrice"
             formControlName="monthlyPrice"
           />
+          <small class="form-text text-muted" abfTranslate="hcAdminApp.catalogueServicePlan.help.monthlyPrice"
+            >This console's own figure, used for the monthly revenue on the plan board. Abofonsa publishes a formatted price and no
+            machine-readable one, so this is not filled in automatically — check it against the published catalogue.</small
+          >
           @if (monthlyPriceRef.invalid && (monthlyPriceRef.dirty || monthlyPriceRef.touched)) {
             <div>
-              @if (monthlyPriceRef.errors?.required) {
-                <small class="form-text text-danger" abfTranslate="entity.validation.required">This field is required.</small>
-              }
               @if (monthlyPriceRef.errors?.min) {
                 <small class="form-text text-danger" abfTranslate="entity.validation.min" [translateValues]="{ min: '0' }"
                   >This field should be at least 0.</small

@@ -62,6 +62,15 @@
     padding: 3px 8px;
   }
 
+  .plan-code {
+    display: inline-block;
+    margin-left: 8px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    color: var(--abf-grey);
+  }
+
   .price {
     display: flex;
     align-items: baseline;
@@ -72,6 +81,13 @@
       font-size: 1.75rem;
       font-weight: 700;
       color: var(--abf-ink);
+    }
+
+    // A plan nobody has priced yet. Smaller and muted, so it does not read as a figure.
+    b.unpriced {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--abf-grey);
     }
 
     .unit {

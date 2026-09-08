@@ -8,6 +8,7 @@
         "createOrEditLabel": "Create or edit a Service Plan",
         "notFound": "No service plans found",
         "perMonth": "/ month",
+        "notPriced": "Not priced",
         "featuresPending": "Loading features…",
         "subscribers": "subscribers",
         "subscribersColumn": "Subscribers",
@@ -28,13 +29,20 @@
       },
       "id": "Id",
       "name": "Name",
-      "tier": "Tier",
+      "code": "Code",
       "tierLabel": "Tier Label",
+      "displayOrder": "Display Order",
       "monthlyPrice": "Monthly Price",
       "currency": "Currency",
       "summary": "Summary",
       "featured": "Featured",
-      "feature": "Feature"
+      "feature": "Feature",
+      "priceNotSet": "Not set",
+      "help": {
+        "code": "Abofonsa's published tier code. Kept in step automatically.",
+        "displayOrder": "The order the published catalogue lists the tiers in. Kept in step automatically.",
+        "monthlyPrice": "This console's own figure, used for the monthly revenue on the plan board. Abofonsa publishes a formatted price and no machine-readable one, so this is not filled in automatically — check it against the published catalogue."
+      }
     }
   }
 }

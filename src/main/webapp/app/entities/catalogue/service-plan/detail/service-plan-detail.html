@@ -19,19 +19,37 @@
           <dd>
             <span>{{ servicePlanRef.name }}</span>
           </dd>
-          <dt><span abfTranslate="hcAdminApp.catalogueServicePlan.tier">Tier</span></dt>
+          <dt><span abfTranslate="hcAdminApp.catalogueServicePlan.code">Code</span></dt>
           <dd>
-            <span [abfTranslate]="'hcAdminApp.PlanTier.' + (servicePlanRef.tier ?? 'null')">{{
-              { null: '', ESSENTIAL: 'ESSENTIAL', PLUS: 'PLUS', FAMILY: 'FAMILY' }[servicePlanRef.tier ?? 'null']
-            }}</span>
+            <!--
+              Abofonsa's published tier code, not a local classification. Shown verbatim: it is the
+              join key, and a reader comparing this screen with the public site needs the value the
+              two are joined on rather than a prettier rendering of it. A plan created before the
+              catalogue was reconciled has none — see the model.
+            -->
+            <span>{{ servicePlanRef.code || '—' }}</span>
           </dd>
           <dt><span abfTranslate="hcAdminApp.catalogueServicePlan.tierLabel">Tier Label</span></dt>
           <dd>
             <span>{{ servicePlanRef.tierLabel }}</span>
           </dd>
+          <dt><span abfTranslate="hcAdminApp.catalogueServicePlan.displayOrder">Display Order</span></dt>
+          <dd>
+            <span>{{ servicePlanRef.displayOrder }}</span>
+          </dd>
           <dt><span abfTranslate="hcAdminApp.catalogueServicePlan.monthlyPrice">Monthly Price</span></dt>
           <dd>
-            <span>{{ servicePlanRef.monthlyPrice }}</span>
+            <!--
+              "Not set" rather than a blank, and never a 0. A plan learned from Abofonsa's catalogue
+              carries no price until an administrator sets one, and a blank cell would read as a
+              rendering fault where a zero would read as a free plan. The same distinction the wage
+              rate grid makes.
+            -->
+            @if (servicePlanRef.monthlyPrice === null || servicePlanRef.monthlyPrice === undefined) {
+              <span class="text-muted" abfTranslate="hcAdminApp.catalogueServicePlan.priceNotSet">Not set</span>
+            } @else {
+              <span>{{ servicePlanRef.monthlyPrice }}</span>
+            }
           </dd>
           <dt><span abfTranslate="hcAdminApp.catalogueServicePlan.currency">Currency</span></dt>
           <dd>
