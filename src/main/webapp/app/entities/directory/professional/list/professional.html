@@ -114,7 +114,8 @@
         <h4 abfTranslate="hcAdminApp.directoryProfessional.awaiting.title">Registered, no record here yet</h4>
         <p abfTranslate="hcAdminApp.directoryProfessional.awaiting.subtitle">
           These accounts exist on the professional app. This console cannot create a record for them — no event carries a role or a licence
-          number. What is shown is the account and, once it arrives, its profile status.
+          number. What is shown is the account and, once it arrives, its profile status. Verification here is hc-professional's check of
+          their documents, not this console's credentialing decision — that one is on the directory below.
         </p>
       </div>
       <span class="pill pill-warn" data-cy="awaitingCount">{{
@@ -128,7 +129,24 @@
           <tr>
             <th scope="col" abfTranslate="hcAdminApp.directoryProfessional.awaiting.column.login">Login</th>
             <th scope="col" abfTranslate="hcAdminApp.directoryProfessional.awaiting.column.activated">Activated</th>
-            <th scope="col" abfTranslate="hcAdminApp.directoryProfessional.awaiting.column.verified">Verified</th>
+            <!--
+              "VERIFIED" MEANS TWO DIFFERENT THINGS ON THIS SCREEN, AND THE HEADING SAYS WHICH.
+
+              This column is hc-professional's `isVerified` — their documents, checked by their rule
+              ("every live document on the profile verified, and at least one present"). The table
+              below carries hc-admin's own `VerificationStatus` chips, which are this console's
+              credentialing decision and include REVOKED and EXPIRED, states the far side has no
+              concept of. `DirectoryLink.profileVerified`'s javadoc on the api distinguishes them; the
+              screen did not, so two columns headed "Verified" sat one card apart meaning different
+              things — and an administrator reading the panel would reasonably conclude a clinician
+              was credentialed here.
+
+              Neither is derivable from the other, which is why this is a wording change and not a
+              merge: a profile whose documents are all verified there has been through no interview
+              here, and item 47 is explicit that `isVerified` is never a function of anything on a
+              topic.
+            -->
+            <th scope="col" abfTranslate="hcAdminApp.directoryProfessional.awaiting.column.verified">Documents verified there</th>
             <th scope="col" abfTranslate="hcAdminApp.directoryProfessional.awaiting.column.complete">Profile complete</th>
             <!--
               One heading for the pair, and it says WHOSE dates per row rather than in the header:
@@ -161,8 +179,26 @@
                         Identity not on file
                       </div>
                     }
+                    <!--
+                      WHAT IS KNOWN, PER ROW, AND NEVER WHAT IS GUESSED.
+
+                      This said "Known from a registration on the professional app" for every row,
+                      including one that has only ever had a phase 2 — a profile status for an
+                      account nobody has announced, which is normal on any backfill because the two
+                      phases are on two topics with no ordering between them. For that row the
+                      sentence asserts a message that was never sent, which is the same shape as
+                      reading an absent `isVerified` as "No", one line down the cell.
+
+                      Two keys rather than one conditional clause, because the two rows have nothing
+                      to say in common: one is an account we were told about and hold no record for,
+                      the other is a profile for an account we were never told about at all.
+                    -->
                     <div class="sub">
-                      {{ 'hcAdminApp.directoryProfessional.awaiting.noRecord' | translate }}
+                      @if (hasRegistrationEvent(link)) {
+                        {{ 'hcAdminApp.directoryProfessional.awaiting.noRecord' | translate }}
+                      } @else {
+                        {{ 'hcAdminApp.directoryProfessional.awaiting.noRegistration' | translate }}
+                      }
                       <!-- Only when the far side reported one. A clinician whose only event is a
                            registration.created has no onboarding state, and since 2026-09-07 the api
                            leaves the field absent rather than filling it with the event type. -->
@@ -239,9 +275,19 @@
                   <span class="unknown" abfTranslate="hcAdminApp.directoryProfessional.awaiting.unknown">Not reported</span>
                 }
               </td>
-              <!-- An accountId, shown verbatim. It IS the gateway's User.id, so there is nothing here
-                   to resolve it against and nothing is invented — a name guessed for an id is the
-                   defect this whole panel refuses, one column along. -->
+              <!--
+                hc-professional's LOGIN, shown verbatim, and NOT an accountId — item 47's contract
+                says it is "an accountId, which IS the gateway's User.id" and is wrong about their
+                code: the value is Spring Data auditing's lastModifiedBy on their Profile, which
+                their SpringSecurityAuditorAware fills from the JWT subject. Decision 2 moves their
+                `accountId` onto a User.id and changes nothing about auditing, so the two are in
+                different spaces.
+
+                Nothing about the rendering changes — it is still shown as sent and no name is
+                invented for it, which is the defect this whole panel refuses one column along. What
+                changes is that it must not be read as an identifier on this stack, and that this is
+                the one cell on the row a person can already read.
+              -->
               <td class="mono" data-cy="awaitingLastModifiedBy">
                 @if (link.profileLastModifiedBy) {
                   {{ link.profileLastModifiedBy }}
@@ -281,8 +327,17 @@
 
     Filtered server-side through `verification.equals`, like role and status: counting a page
     client-side breaks the moment the directory exceeds twenty rows.
+
+    THE LABEL IS NOT DECORATION. These states are hc-admin's own credentialing decision — VERIFIED
+    here means an administrator inspected documents and interviewed the person — and the awaiting
+    panel above has a column that also said "Verified", which is hc-professional's document check on
+    their side. Both are now named for whose they are, because neither is derivable from the other and
+    the screen showed them a card apart with the same word.
   -->
   <div class="chip-row">
+    <span class="chip-row-label" abfTranslate="hcAdminApp.directoryProfessional.verificationFilterLabel" data-cy="verificationFilterLabel"
+      >Verified by this console</span
+    >
     @for (option of VERIFICATIONS; track option) {
       <button
         type="button"

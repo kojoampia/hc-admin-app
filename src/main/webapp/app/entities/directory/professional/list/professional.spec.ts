@@ -21,6 +21,8 @@ import {
 import { provideTranslateService } from '@ngx-translate/core';
 import { Subject, of } from 'rxjs';
 
+import directoryProfessional from '../../../../../i18n/en/directoryProfessional.json';
+import verificationStatus from '../../../../../i18n/en/directory-verificationStatus.json';
 import { sampleWithRequiredData } from '../professional.test-samples';
 import { ProfessionalService } from '../service/professional.service';
 
@@ -493,7 +495,10 @@ describe('Professional Management Component', () => {
             profileVerified: true,
             profileCreatedDate: '2026-08-19T11:30:00Z',
             profileModifiedDate: '2026-09-02T14:47:00Z',
-            profileLastModifiedBy: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+            // hc-professional's login for whoever last wrote the profile, NOT an accountId: their
+            // SpringSecurityAuditorAware fills it from the JWT subject. Deliberately not this row's own
+            // `login`, so the assertion below cannot be satisfied by the name cell.
+            profileLastModifiedBy: 'nosae',
           },
         ],
         '1',
@@ -506,7 +511,54 @@ describe('Professional Management Component', () => {
       expect(row.querySelector('[data-cy="awaitingComplete"]').textContent).toContain('hcAdminApp.directoryProfessional.awaiting.yes');
       expect(row.querySelector('[data-cy="awaitingCreated"]').textContent).toContain('19 Aug 2026');
       expect(row.querySelector('[data-cy="awaitingModified"]').textContent).toContain('2 Sep 2026');
-      expect(row.querySelector('[data-cy="awaitingLastModifiedBy"]').textContent).toContain('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11');
+      expect(row.querySelector('[data-cy="awaitingLastModifiedBy"]').textContent).toContain('nosae');
+    });
+
+    /**
+     * <b>A phase-2-only row does not claim a registration it never had.</b>
+     *
+     * The sub-line under the login read "Known from a registration on the professional app" for every
+     * row, including one whose only event is a `ProfileStatus` — a profile for an account nobody has
+     * announced, which is normal on any backfill since the two phases are on two topics with no
+     * ordering between them. For that row the sentence describes a message that was never sent, which
+     * is the same fabrication as reading an absent `isVerified` as "No", one line down the cell.
+     *
+     * <b>It is asserted on the rendered distinction and on the shipped copy, not on the key.</b> No
+     * spec caught this because `TranslatePipe` renders keys rather than copy under test, so an
+     * assertion on `awaiting.noRecord` passes whatever `awaiting.noRecord` says. So this case does
+     * both halves: the two rows must render different keys, and `directoryProfessional.json` must
+     * agree with what each key is for.
+     */
+    it('does not tell a phase-2-only row that it came from a registration', () => {
+      initAndFlushTable();
+      flushAwaiting(
+        [
+          { id: 'dl-registered', source: 'HC_PROFESSIONAL', login: 'kquartey', lastEventAt: '2026-09-05T08:05:00Z' },
+          {
+            id: 'dl-profile-only',
+            source: 'HC_PROFESSIONAL',
+            externalKey: '5e0b9a63-1d47-4c8a-93be-71ca8d6f2b05',
+            profileEventAt: '2026-09-07T05:02:00Z',
+          },
+        ],
+        '2',
+      );
+      fixture.detectChanges();
+
+      expect(comp.hasRegistrationEvent(comp.awaiting()[0])).toBe(true);
+      expect(comp.hasRegistrationEvent(comp.awaiting()[1])).toBe(false);
+
+      const rows = fixture.nativeElement.querySelectorAll('[data-cy="awaitingRow"]');
+      expect(rows[0].textContent).toContain('hcAdminApp.directoryProfessional.awaiting.noRecord');
+      expect(rows[1].textContent).toContain('hcAdminApp.directoryProfessional.awaiting.noRegistration');
+      expect(rows[1].textContent).not.toContain('hcAdminApp.directoryProfessional.awaiting.noRecord');
+
+      // And the copy behind those keys, because the assertions above are about keys and the defect
+      // was about words: a key named noRecord could say anything at all and every check would pass.
+      const awaiting = directoryProfessional.hcAdminApp.directoryProfessional.awaiting;
+      expect(awaiting.noRecord).toContain('registration');
+      expect(awaiting.noRegistration).not.toContain('Known from a registration');
+      expect(awaiting.noRegistration).toContain('profile status');
     });
 
     /**
@@ -726,6 +778,35 @@ describe('Professional Management Component', () => {
       expect(comp.awaitingName(row)).toBeNull();
       expect(comp.awaitingInitials(row)).toBe('—');
       expect(comp.awaitingInitials(row)).not.toBe('B7');
+    });
+
+    /**
+     * <b>Two different "Verified" on one screen, and each now says whose it is.</b>
+     *
+     * The awaiting panel's column is hc-professional's `isVerified` — their documents, by their rule.
+     * The directory below carries hc-admin's own `VerificationStatus` chips, which are this console's
+     * credentialing decision and include REVOKED and EXPIRED, states the far side has no concept of.
+     * `DirectoryLink.profileVerified`'s javadoc on the api distinguishes them and the screen did not,
+     * so an administrator reading the panel could reasonably conclude a clinician was credentialed
+     * here.
+     *
+     * Asserted on the copy rather than on the keys, for the reason the case above gives: under test
+     * `TranslatePipe` renders the key, so two columns headed with the same word are indistinguishable
+     * from two columns headed differently unless something reads the dictionary.
+     */
+    it('says whose verification each of the two columns is', () => {
+      const awaitingHeading = directoryProfessional.hcAdminApp.directoryProfessional.awaiting.column.verified;
+      const consoleHeading = verificationStatus.hcAdminApp.VerificationStatus.VERIFIED;
+
+      expect(awaitingHeading).not.toBe(consoleHeading);
+      expect(awaitingHeading.toLowerCase()).toContain('there');
+      expect(directoryProfessional.hcAdminApp.directoryProfessional.verificationFilterLabel.toLowerCase()).toContain('this console');
+
+      initAndFlushTable();
+      flushAwaiting([{ id: 'dl-1', source: 'HC_PROFESSIONAL', login: 'kquartey', lastEventAt: '2026-09-05T08:05:00Z' }], '1');
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.querySelector('[data-cy="verificationFilterLabel"]')).not.toBeNull();
     });
 
     /**

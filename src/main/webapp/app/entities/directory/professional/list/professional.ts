@@ -13,7 +13,12 @@ import { Subscription, combineLatest, tap } from 'rxjs';
 import { StatusPill } from 'app/console/shared/status-pill/status-pill';
 import { DEFAULT_SORT_DATA, SORT } from 'app/config/navigation.constants';
 import { ITEMS_PER_PAGE, PAGE_HEADER, TOTAL_COUNT_RESPONSE_HEADER } from 'app/config/pagination.constants';
-import { IDirectoryLink, hasProfileStatus, resolveClinicianLogin } from 'app/entities/directory/directory-link/directory-link.model';
+import {
+  IDirectoryLink,
+  hasProfileStatus,
+  hasRegistration,
+  resolveClinicianLogin,
+} from 'app/entities/directory/directory-link/directory-link.model';
 import { DirectoryLinkService } from 'app/entities/directory/directory-link/service/directory-link.service';
 import { AccountStatus } from 'app/entities/enumerations/account-status.model';
 import { ProfessionalRole } from 'app/entities/enumerations/professional-role.model';
@@ -289,6 +294,25 @@ export class Professional implements OnInit {
    */
   hasProfile(link: IDirectoryLink): boolean {
     return hasProfileStatus(link);
+  }
+
+  /**
+   * Whether phase 1 has arrived for this clinician — and therefore whether the row may say it came
+   * from a registration.
+   *
+   * **The sub-line under the login used to say so unconditionally**, and for a phase-2-only row that
+   * sentence — "Known from a registration on the professional app" — describes a message nobody sent.
+   * Such a row is normal rather than exotic: the two phases are on two topics with no ordering
+   * between them and both consumer groups read from the earliest offset, so a profile status landing
+   * before its account event happens on every backfill. It is `dl-prof-profile-only` in the fixture.
+   *
+   * No spec caught it because the translate pipe renders keys rather than copy under test, so an
+   * assertion on the key passes whatever the key says. `professional.spec.ts` asserts the two rows
+   * carry *different* keys and reads the shipped `directoryProfessional.json` for what each one
+   * claims — the distinction is in the copy, so the copy is what has to be looked at.
+   */
+  hasRegistrationEvent(link: IDirectoryLink): boolean {
+    return hasRegistration(link);
   }
 
   /**

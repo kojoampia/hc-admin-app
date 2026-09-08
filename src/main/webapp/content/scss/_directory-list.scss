@@ -34,6 +34,24 @@
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
+  align-items: center;
+}
+
+/*
+ * A lead-in naming what a row of chips filters on, for the case where the word alone is ambiguous.
+ *
+ * Added for the professional directory, where "Verified" appears twice on one screen meaning two
+ * different things — hc-admin's own credentialing decision here, hc-professional's document check on
+ * the awaiting panel above. It is quiet on purpose: this is a disambiguation, not a section heading,
+ * and every other chip row on every other directory reads perfectly well without one and should not
+ * grow one for symmetry.
+ */
+.chip-row-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--abf-grey);
+  letter-spacing: 0.01em;
+  margin-right: 2px;
 }
 
 .chip {

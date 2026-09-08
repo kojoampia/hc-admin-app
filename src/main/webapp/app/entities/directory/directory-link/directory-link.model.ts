@@ -66,6 +66,22 @@ export interface IDirectoryLink {
   /** The local record this subject produced, when it produced one. This is the join to `Patient.id`. */
   localId?: string | null;
 
+  /**
+   * When the newest **phase-1** event was applied — the test for whether a registration has been seen
+   * at all, and the mirror of `profileEventAt` below.
+   *
+   * The class comment above said the watermark was carried by the document and deliberately not
+   * modelled here, on the grounds that it is a fact about consumption rather than about the person.
+   * That is still true of what it *holds*; what it answers is not. Since item 47 a row can exist with
+   * phase 2 and no phase 1 — normal on any backfill, since the two phases are on two topics with no
+   * ordering between them — and the console was telling every such row it was "known from a
+   * registration on the professional app", which is a claim nothing has made. `undefined` here is
+   * that state, and it is the only thing on the row that can distinguish it.
+   *
+   * Read through `hasRegistration` and never rendered: what a reader sees is the sentence it selects.
+   */
+  lastEventAt?: string | null;
+
   // --- the two-phase professional contract, backlog item 47 -------------------------------------
   //
   // A clinician is accepted in two phases, published by two applications onto two topics with no
@@ -109,10 +125,18 @@ export interface IDirectoryLink {
   profileModifiedDate?: string | null;
 
   /**
-   * Phase 2's `lastModifiedBy`, which is an **accountId** and never a display name.
+   * Phase 2's `lastModifiedBy`: **hc-professional's login** for whoever last wrote the profile, and
+   * never a display name.
    *
-   * That accountId is the gateway's `User.id` — the identifier space this estate already audits
-   * against — so there is nothing to resolve it to here and nothing is invented. Shown verbatim.
+   * Item 47's contract calls it "an accountId, which IS the gateway's `User.id`", and that is wrong
+   * about their code — the value is Spring Data auditing's `lastModifiedBy` on their `Profile`,
+   * filled by their `SpringSecurityAuditorAware` from the JWT subject, or their `system` when nobody
+   * was authenticated. The architect's decision 2 moves their *`accountId`* onto a `User.id` and
+   * changes nothing about auditing, so the two are in different identifier spaces.
+   *
+   * Nothing follows for the rendering: it is shown verbatim, and nothing is invented for it. What
+   * follows is that it must not be matched against a login on *this* gateway — it names an account on
+   * another stack — and that, incidentally, it is legible, which is why the column needs no apology.
    */
   profileLastModifiedBy?: string | null;
 
@@ -212,7 +236,43 @@ export function resolveClinicianLogin(link: IDirectoryLink | null | undefined): 
  * else, which is why it and not `profileComplete` or `profileId` answers this: a `ProfileStatus` may
  * legitimately omit either of those, and reading their absence as "no profile status" would report a
  * clinician's profile as unreported on the strength of one missing field.
+ *
+ * **The review asked whether "some frame was accepted" is really "a `ProfileStatus` arrived", and
+ * under the architect's decision 3 of 2026-09-08 it is — exactly, and not approximately.** That
+ * decision has `SiblingEventParser.parseProfessionalProfileEvent` accept `type == "ProfileStatus"`
+ * and nothing else on `hc.professional.entity`, and `profile_event_at` is written on the one path
+ * that a parsed profile status reaches. So the name and the test agree, and the function is left as
+ * it is rather than renamed or re-keyed.
+ *
+ * It was a real gap before that decision and is worth recording as one: the parser then accepted
+ * `entity.created` and `entity.updated` for a `Profile`, which are hc-professional's generic entity
+ * signal and carry none of `isComplete`, `isVerified` or `lastModifiedBy` — so a stamped
+ * `profileEventAt` could have meant a frame that answered no column, and every cell on the row would
+ * have read "Not reported" while this function said the status had arrived.
+ *
+ * **What would break it again is a second accepted type on that topic**, not a change here. If one
+ * is ever added, the question this function asks stops being the question the row needs, and the
+ * answer is a field the api sets only for a status rather than a looser test on this side.
  */
 export function hasProfileStatus(link: IDirectoryLink | null | undefined): boolean {
   return !!link?.profileEventAt;
+}
+
+/**
+ * Whether phase 1 has arrived for this clinician at all — a registration, an account event, or an
+ * onboarding state.
+ *
+ * **The mirror of `hasProfileStatus`, and it exists because a row can have neither phase's
+ * counterpart.** `lastEventAt` is stamped by the api on every applied phase-1 frame and by nothing
+ * else, so its absence is "no registration has been seen" and not "the registration carried no
+ * login". The two are different sentences on the screen: a phase-2-only row is a profile for an
+ * account nobody has announced, and telling a reader it was "known from a registration" asserts a
+ * message that was never sent — the same shape as reading an absent `isVerified` as "No".
+ *
+ * Not `!login`, which was the tempting test and answers a different question: `dl-prof-anon` has a
+ * registration and no login, because an `onboarding.state` frame carries neither an address nor a
+ * name.
+ */
+export function hasRegistration(link: IDirectoryLink | null | undefined): boolean {
+  return !!link?.lastEventAt;
 }
