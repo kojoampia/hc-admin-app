@@ -335,10 +335,26 @@
                       @if (patient.profile?.idNumber) {
                         <div class="sub">{{ patient.profile?.idNumber }}</div>
                       } @else if (!patient.profile) {
-                        <!-- The name above is the address off the sibling-stack link, not a profile.
-                             Saying so keeps an operator from reading it as a record that has one, and
-                             the wording follows the link's own source rather than assuming hc-patient. -->
-                        <div class="sub">{{ identityFromLinkKey(patient) | translate }}</div>
+                        <!-- The name above is not a profile on this service: it is either the name
+                             hc-patient holds for this account (item 50) or the address off the
+                             sibling-stack link (item 45). Saying which keeps an operator from reading
+                             it as a record that has one, and the address wording follows the link's
+                             own source rather than assuming hc-patient. -->
+                        @if (isNameFromPatientApp(patient)) {
+                          <div class="sub" abfTranslate="hcAdminApp.directoryPatient.identityResolvedPatientApp">
+                            Name from the patient app — no profile recorded here
+                          </div>
+                        } @else {
+                          <div class="sub">{{ identityFromLinkKey(patient) | translate }}</div>
+                          <!-- Only when a lookup was owed and did not come back. A name hc-patient
+                               simply does not supply needs no sentence: the address is the whole
+                               answer, and a note on every learned row would be noise. -->
+                          @if (isNameUnavailable(patient)) {
+                            <div class="sub sub-muted" abfTranslate="hcAdminApp.directoryPatient.nameUnavailable">
+                              The patient app could not be checked for a name
+                            </div>
+                          }
+                        }
                       }
                     }
                   </div>

@@ -21,6 +21,13 @@
              identifier belongs. -->
         <h3 class="unidentified" abfTranslate="hcAdminApp.directoryPatient.unidentified">Identity not on file</h3>
       }
+      <!-- Said once, under the heading it qualifies: the name above is the address off the link
+           because the patient app could not be asked, not because it holds no name (item 50). -->
+      @if (nameUnavailable()) {
+        <p class="name-unavailable" abfTranslate="hcAdminApp.directoryPatient.nameUnavailable">
+          The patient app could not be checked for a name
+        </p>
+      }
       <p>
         @if (patientRef.profile?.idNumber) {
           <span>{{ 'hcAdminApp.IdType.' + (patientRef.profile?.idType ?? 'null') | translate }} {{ patientRef.profile?.idNumber }}</span>

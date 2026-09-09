@@ -3,7 +3,15 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 
-import { PLAN_STATUS_PENDING, hasPlanChoice, hasProfileStatus, resolveClinicianLogin, resolveLinkIdentity } from '../directory-link.model';
+import {
+  PLAN_STATUS_PENDING,
+  hasPlanChoice,
+  hasProfileStatus,
+  isNameUnavailable,
+  resolveClinicianLogin,
+  resolveLinkDisplayName,
+  resolveLinkIdentity,
+} from '../directory-link.model';
 import { DirectoryLinkService } from './directory-link.service';
 
 describe('DirectoryLinkService', () => {
@@ -40,6 +48,22 @@ describe('DirectoryLinkService', () => {
     // Without an explicit size the server returns 20, and a page of more than 20 nameless rows
     // would silently resolve the first 20 only — the RELATIONSHIP_OPTIONS_PAGE_SIZE trap.
     expect(req.request.params.get('size')).toBe('3');
+    req.flush([]);
+  });
+
+  /**
+   * **It asks the api to name these people — backlog item 50.**
+   *
+   * The one thing this endpoint does that leaves the process, so it is spent here and nowhere else:
+   * a page of nameless rows is exactly the request that is missing a name. The fan-out is the api's
+   * because hc-patient's lookup takes one address at a time, so doing it in the browser would be one
+   * request per row and this method exists to be one per page.
+   */
+  it('asks for the names as well as the links', () => {
+    service.findByLocalIds(['a13', 'a15']).subscribe();
+
+    const req = httpMock.expectOne(r => r.url.includes('directory-links'));
+    expect(req.request.params.get('resolveNames')).toBe('true');
     req.flush([]);
   });
 
@@ -109,6 +133,10 @@ describe('findUnlinked', () => {
     // Explicit, for the same reason findByLocalIds sends one: no size means 20.
     expect(req.request.params.get('size')).toBe('5');
     expect(req.request.params.get('sort')).toBe('firstSeenAt,desc');
+    // And deliberately NOT the name lookup — backlog item 50. These rows are clinicians, whose
+    // correlation key is a UUID; hc-patient's endpoint is keyed on an email address and could only
+    // answer 404, once per clinician, per page.
+    expect(req.request.params.has('resolveNames')).toBe(false);
     req.flush([]);
   });
 
@@ -183,6 +211,10 @@ describe('findPlanChoices', () => {
     // Deliberately not asked: this is not the unlinked question. Every plan choice names a patient
     // this service already holds, so `unlinked=true` would answer with none of them.
     expect(req.request.params.has('unlinked')).toBe(false);
+    // Nor the name lookup — backlog item 50. Five rows would be five cross-stack calls on every
+    // directory load, to decorate a panel whose rows each link to the record where the name
+    // resolves anyway. A deliberate omission rather than one nobody considered.
+    expect(req.request.params.has('resolveNames')).toBe(false);
     req.flush([]);
   });
 
@@ -194,6 +226,61 @@ describe('findPlanChoices', () => {
 
     expect(page?.links).toHaveLength(2);
     expect(page?.total).toBe(23);
+  });
+});
+
+/**
+ * The rung backlog item 50 added on top of `resolveLinkIdentity`, and nothing below it moved.
+ *
+ * hc-patient owns a patient's name and answers for it; this console shows what comes back, falls
+ * back to everything item 45 decided, and stores none of it. The two suites sit side by side so that
+ * a change to either has to be a deliberate change to the order.
+ */
+describe('resolveLinkDisplayName', () => {
+  it('prefers the name hc-patient supplied over the address', () => {
+    expect(resolveLinkDisplayName({ id: 'l', email: 'kojo@jac.net', resolvedName: 'Kojo Ampia-Addison' })).toBe('Kojo Ampia-Addison');
+  });
+
+  it('falls back to item 45 exactly, address then login', () => {
+    expect(resolveLinkDisplayName({ id: 'l', email: 'kojo@jac.net' })).toBe('kojo@jac.net');
+    expect(resolveLinkDisplayName({ id: 'l', login: 'kojo' })).toBe('kojo');
+    expect(resolveLinkDisplayName({ id: 'l' })).toBeNull();
+    expect(resolveLinkDisplayName(null)).toBeNull();
+  });
+
+  /**
+   * hc-patient's `Profile` requires neither name, so a lookup can succeed and carry nothing. An
+   * empty string is falsy but not nullish, which is how a blank would reach the cell through a `??`
+   * chain — the trap `Patient.location()` documents one screen along.
+   */
+  it('treats a blank resolved name as no name rather than as somebody called nothing', () => {
+    expect(resolveLinkDisplayName({ id: 'l', email: 'kojo@jac.net', resolvedName: '   ' })).toBe('kojo@jac.net');
+  });
+
+  it('still never returns the correlation key', () => {
+    expect(resolveLinkDisplayName({ id: 'l', externalKey: '9f1c3e77-52aa-4a0b-9a5c-6b3f1d7e0a11' })).toBeNull();
+  });
+});
+
+/**
+ * One outcome gets words on the screen, and it is not the common one.
+ *
+ * `NOT_FOUND` is hc-patient genuinely not naming this person to this caller — the address is the
+ * honest answer and a sentence on every learned row would be noise. An absent outcome is a row that
+ * was never a candidate. Only `UNAVAILABLE` is "there is a name and this console could not get it",
+ * which is a thing to report rather than a record to act on.
+ */
+describe('isNameUnavailable', () => {
+  it('is true only when a lookup was owed and did not come back', () => {
+    expect(isNameUnavailable({ id: 'l', nameResolution: 'UNAVAILABLE' })).toBe(true);
+    expect(isNameUnavailable({ id: 'l', nameResolution: 'NOT_FOUND' })).toBe(false);
+    expect(isNameUnavailable({ id: 'l', nameResolution: 'RESOLVED' })).toBe(false);
+  });
+
+  it('is false for a row nobody could have asked about', () => {
+    expect(isNameUnavailable({ id: 'l' })).toBe(false);
+    expect(isNameUnavailable(null)).toBe(false);
+    expect(isNameUnavailable(undefined)).toBe(false);
   });
 });
 

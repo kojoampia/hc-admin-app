@@ -385,6 +385,87 @@ describe('Patient Management Component', () => {
        * 2026-09-07 — backlog item 47 — so the fallback is this screen's own now. The branch and the
        * reason for covering it are unchanged.)
        */
+      /**
+       * **The name hc-patient holds, which is backlog item 50.**
+       *
+       * Item 45 stopped this row printing an ObjectId and put the address on it; the address is what
+       * an operator then reported from production as an email where a name should be. hc-patient
+       * owns the name and answers for it — `GET /api/profiles/email/{email}`, asked by the api with
+       * the administrator's own token — and the row shows what comes back.
+       *
+       * **Nothing below the name changed.** The address, the login, "Identity not on file" and the
+       * refusal to print an id are item 45's and are asserted above; these cases are about the rung
+       * added on top of them.
+       */
+      describe('the name resolved from the patient app', () => {
+        it('prefers the resolved name over the address it would otherwise show', () => {
+          comp.links.set({
+            '68b4f2a19c3d5e7f81a02c44': {
+              id: 'link-1',
+              source: 'HC_PATIENT',
+              email: 'kojo@jac.net',
+              resolvedName: 'Kojo Ampia-Addison',
+              nameResolution: 'RESOLVED',
+            },
+          });
+
+          expect(comp.displayName(learned)).toBe('Kojo Ampia-Addison');
+          expect(comp.isUnidentified(learned)).toBe(false);
+          // One rule serves both: the `@` split leaves a name whole, so the word initials come out
+          // of the same code path as a mailbox's.
+          expect(comp.initials(learned)).toBe('KA');
+        });
+
+        it('says the name came from the patient app rather than claiming a profile exists here', () => {
+          comp.links.set({
+            '68b4f2a19c3d5e7f81a02c44': { id: 'link-1', source: 'HC_PATIENT', email: 'kojo@jac.net', resolvedName: 'Kojo Ampia-Addison' },
+          });
+
+          expect(comp.isNameFromPatientApp(learned)).toBe(true);
+        });
+
+        it('falls back to the address when hc-patient does not name them, and says nothing extra', () => {
+          // NOT_FOUND covers both "no profile there" and "this caller may not see it" — their
+          // endpoint answers the same 404 for each — so the row must not explain which.
+          comp.links.set({
+            '68b4f2a19c3d5e7f81a02c44': { id: 'link-1', source: 'HC_PATIENT', email: 'naa.adjeley@mail.gh', nameResolution: 'NOT_FOUND' },
+          });
+
+          expect(comp.displayName(learned)).toBe('naa.adjeley@mail.gh');
+          expect(comp.isNameUnavailable(learned)).toBe(false);
+          expect(comp.isNameFromPatientApp(learned)).toBe(false);
+        });
+
+        it('says the patient app could not be checked when the lookup did not come back', () => {
+          comp.links.set({
+            '68b4f2a19c3d5e7f81a02c44': { id: 'link-1', source: 'HC_PATIENT', email: 'kojo@jac.net', nameResolution: 'UNAVAILABLE' },
+          });
+
+          expect(comp.displayName(learned)).toBe('kojo@jac.net');
+          expect(comp.isNameUnavailable(learned)).toBe(true);
+        });
+
+        it('says nothing about a row nobody could have asked about', () => {
+          // An absent outcome is "never a candidate", not "asked and failed". A clinician's link and
+          // a patient link with no address carry none, and telling a reader their name could not be
+          // checked would be true of nothing.
+          comp.links.set({ '68b4f2a19c3d5e7f81a02c44': { id: 'link-1', source: 'HC_PROFESSIONAL', login: 'kquartey' } });
+
+          expect(comp.isNameUnavailable(learned)).toBe(false);
+        });
+
+        it('does not print a blank as somebody name when the resolved name is whitespace', () => {
+          // hc-patient's Profile requires neither name, so a resolved lookup can carry nothing. An
+          // empty string is falsy but not nullish, which is how it would reach the cell.
+          comp.links.set({
+            '68b4f2a19c3d5e7f81a02c44': { id: 'link-1', source: 'HC_PATIENT', email: 'kojo@jac.net', resolvedName: '   ' },
+          });
+
+          expect(comp.displayName(learned)).toBe('kojo@jac.net');
+          expect(comp.isNameFromPatientApp(learned)).toBe(false);
+        });
+      });
+
       describe('where a linked name came from', () => {
         it('names the patient app for an hc-patient link', () => {
           comp.links.set({ '68b4f2a19c3d5e7f81a02c44': { id: 'link-1', source: 'HC_PATIENT', email: 'ama@example.com' } });
@@ -413,6 +494,11 @@ describe('Patient Management Component', () => {
       // Explicit, because a list endpoint with no size returns 20 and would silently leave the
       // 21st row of a page unresolved.
       expect(linkReq.request.params.get('size')).toBe('2');
+      // And the api is asked to name them — backlog item 50. Without this parameter the response is
+      // exactly what it was before that item, which is a screen that looks right and is a rung
+      // short. The fan-out to hc-patient is deliberately on that side: their lookup takes one
+      // address at a time, so doing it here would be one request per nameless row.
+      expect(linkReq.request.params.get('resolveNames')).toBe('true');
 
       linkReq.flush([{ id: 'link-1', localId: 'learned-1', email: 'ama@example.com' }]);
       await vitest.runAllTimersAsync();

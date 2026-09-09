@@ -57,6 +57,16 @@ export class DirectoryLinkService {
    * An empty request is answered without a round trip. It also must not be sent: `createRequestOption`
    * drops empty values, so `localId.in: []` would produce a URL with no filter on it at all, and the
    * server would answer with the first page of the whole collection.
+   *
+   * **`resolveNames` is sent here and on no other method — backlog item 50.** It has the api ask
+   * hc-patient to name each of these people, which is the one thing this endpoint does that leaves
+   * the process, so it is spent only where a name is what the caller is missing. The fan-out is on
+   * the api deliberately: hc-patient's lookup takes one address at a time, so doing it in the browser
+   * would be one request per nameless row and this method exists to be one per page. The two other
+   * readers of this endpoint — {@link findUnlinked}, {@link findPlanChoices} — do not send it, and
+   * neither should a third without deciding it: the awaiting-a-record table lists clinicians, whose
+   * correlation key is a UUID that endpoint cannot use, and the plan-choice panel's five rows each
+   * link to the record where the name resolves anyway.
    */
   findByLocalIds(localIds: readonly string[]): Observable<Map<string, IDirectoryLink>> {
     const wanted = [...new Set(localIds.filter(id => !!id))];
@@ -64,7 +74,7 @@ export class DirectoryLinkService {
       return of(new Map<string, IDirectoryLink>());
     }
 
-    const options = createRequestOption({ 'localId.in': wanted, page: 0, size: wanted.length });
+    const options = createRequestOption({ 'localId.in': wanted, page: 0, size: wanted.length, resolveNames: true });
     return this.http.get<IDirectoryLink[]>(this.resourceUrl, { params: options }).pipe(
       map(links => {
         const byLocalId = new Map<string, IDirectoryLink>();

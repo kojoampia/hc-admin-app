@@ -20,6 +20,8 @@ import {
   IDirectoryLink,
   PLAN_STATUS_PENDING,
   hasPlanChoice,
+  isNameUnavailable,
+  resolveLinkDisplayName,
   resolveLinkIdentity,
 } from 'app/entities/directory/directory-link/directory-link.model';
 import { DirectoryLinkService } from 'app/entities/directory/directory-link/service/directory-link.service';
@@ -252,21 +254,57 @@ export class Patient implements OnInit {
   trackId = (item: IPatient): string => this.patientService.getPatientIdentifier(item);
 
   /**
-   * The patient's name, which lives on the linked profile.
+   * The patient's name, which lives on the linked profile — or, for a patient learned from an event,
+   * on hc-patient.
    *
-   * When there is no profile the row falls back to the address on the patient's
-   * {@link DirectoryLinkService} link, and when there is no link either it says so — see
-   * {@link isUnidentified}. **It never falls back to `patient.id`**, which is what it did until
-   * backlog item 45: a row read `68b4f2a19c3d5e7f81a02c44` under a chip saying `68`, which is not
-   * "identity not known" but a corrupted record, and an operator raised a ticket about it from
-   * production.
+   * When there is no profile the row shows the name hc-patient holds for the address on the
+   * patient's {@link DirectoryLinkService} link (backlog item 50), then the address itself
+   * (item 45), then says its name is not on file — see {@link isUnidentified}. **It never falls back
+   * to `patient.id`**, which is what it did until item 45: a row read `68b4f2a19c3d5e7f81a02c44`
+   * under a chip saying `68`, which is not "identity not known" but a corrupted record, and an
+   * operator raised a ticket about it from production.
+   *
+   * **An operator sees the address where an administrator sees the name, and that is accepted rather
+   * than overlooked.** The lookup relays the caller's own token, and hc-patient's guard is
+   * `patientScope.isUnrestricted()` — true for `ROLE_ADMIN` and false for `ROLE_OPERATOR` — so the
+   * same row reads differently to two signed-in people. The alternatives were worse: calling with a
+   * service identity would hand every operator the read that guard exists to deny them, and a banner
+   * explaining it would be permanent, unactionable and on a screen where nothing is wrong. Nothing
+   * regresses for an operator, who sees exactly what they saw before item 50.
    */
   displayName(patient: IPatient): string | null {
     const name = [patient.profile?.firstName, patient.profile?.lastName].filter(Boolean).join(' ');
     if (name.length > 0) {
       return name;
     }
-    return resolveLinkIdentity(this.links()[patient.id]);
+    return resolveLinkDisplayName(this.links()[patient.id]);
+  }
+
+  /**
+   * Whether to say, under the address, that the name could not be checked with the patient app.
+   *
+   * True for one outcome only — the api could not get an answer — and never for a row whose name
+   * hc-patient genuinely does not supply. Those two look identical on screen without this, and they
+   * are opposite facts: one is "there is no more to know", the other is "there is, and this console
+   * could not reach it", which is a thing to report rather than a record to act on.
+   *
+   * It is a quiet sub-line and not an alert. Nothing here is broken from the operator's side, and
+   * the row is still perfectly usable — the address is what it showed before item 50.
+   */
+  isNameUnavailable(patient: IPatient): boolean {
+    return isNameUnavailable(this.links()[patient.id]);
+  }
+
+  /**
+   * Whether the name on this row came from hc-patient rather than off the link.
+   *
+   * The row's sub-label reads differently for the two, because they are different claims: a resolved
+   * name is a person as another product knows them, while an address is a contact detail standing in
+   * for a name. Both say "no profile recorded here", which is the part an administrator has to know
+   * before acting on the row.
+   */
+  isNameFromPatientApp(patient: IPatient): boolean {
+    return !!this.links()[patient.id]?.resolvedName?.trim();
   }
 
   /**
@@ -340,9 +378,11 @@ export class Patient implements OnInit {
         .toUpperCase();
     }
 
-    // From the address, so a learned patient's chip is the first letters of their mailbox rather
-    // than two hex characters of a Mongo id. `ama.mensah@example.com` gives `AM`, and a mailbox
-    // with no separator in it gives its first letter alone.
+    // From whatever named the row, so a learned patient's chip is their initials rather than two hex
+    // characters of a Mongo id. The `@` split makes one rule serve both cases and is not two rules
+    // that happen to agree: `ama.mensah@example.com` gives `AM` off the mailbox, and a name resolved
+    // from hc-patient — which has no `@` in it — gives `KA` for `Kojo Ampia-Addison` off the same
+    // word split. A mailbox with no separator in it gives its first letter alone.
     const identity = this.displayName(patient);
     if (identity) {
       const mailbox = identity.split('@')[0];
