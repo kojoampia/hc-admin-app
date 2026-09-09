@@ -112,24 +112,33 @@ describe('dashboard', () => {
    * endpoint without becoming a tautology:
    *
    * <ul>
-   *   <li>`5` is the count the card is capped at (`APPROVAL_ROWS` in `dashboard.ts`) as well as the
-   *       number of PENDING accounts the seed holds. Reading the count from the endpoint and
-   *       asserting the screen shows it would pass against a card that renders every row it is given
-   *       and against one that renders none, since an empty list matches an empty query. What is
-   *       being pinned is that the cap and the fixture are on either side of each other — five rows
-   *       with more behind them — which is a property of the pair, not of either.
+   *   <li>`5` is the count the card is capped at (`APPROVAL_ROWS` in `dashboard.ts`). Reading the
+   *       count from the endpoint and asserting the screen shows it would pass against a card that
+   *       renders every row it is given and against one that renders none, since an empty list
+   *       matches an empty query. What is being pinned is that the cap and the fixture are on either
+   *       side of each other — five rows with more behind them — which is a property of the pair, not
+   *       of either.
+   *
+   *       <p>**That claim was vacuous until 2026-09-09 and this paragraph said the opposite.** It
+   *       also read "as well as the number of PENDING accounts the seed holds", and the seed held
+   *       exactly five — so there was nothing behind the cap and the case could not tell a card that
+   *       caps from one that simply renders what it is handed. Backlog item 52's `p10` is a sixth
+   *       PENDING account, so the cap now bites. It is the vendor row that drops out, not this
+   *       case's own subject: `loadApprovals()` concatenates patients, then professionals, then
+   *       vendors, and Beatrice Sarsah is a patient.
    *   <li>`'Beatrice Sarsah'` proves the row renders a PERSON and not an id, which is the whole
    *       failure `record-label.pipe.ts` exists for. A derived expectation would read the same field
    *       the template reads and pass whatever it contained, including a UUID.
    * </ul>
    *
-   * <p>So: if the seed's PENDING accounts change, this case is expected to go red and be updated. It
-   * is a deliberate coupling to the fixture, which is a different thing from `116` — a number copied
-   * from a mock that had been deleted, guarding nothing, that no change to the fixture could ever
-   * have corrected.
+   * <p>So: if the seed's PENDING accounts change, this case may go red and be updated — it will not
+   * do so for an account *added*, now that there are more than five, and only for one added ahead of
+   * Beatrice or for the patient rows going away. It is a deliberate coupling to the fixture, which is
+   * a different thing from `116` — a number copied from a mock that had been deleted, guarding
+   * nothing, that no change to the fixture could ever have corrected.
    */
   it('should list the accounts waiting for approval', () => {
-    // Two patients, two professionals and one vendor are PENDING.
+    // Two patients, three professionals and one vendor are PENDING — six, against a cap of five.
     cy.get('[data-cy="approvals"]').find('.lrow').should('have.length', 5);
     cy.get('[data-cy="approvals"]').should('contain.text', 'Beatrice Sarsah');
   });

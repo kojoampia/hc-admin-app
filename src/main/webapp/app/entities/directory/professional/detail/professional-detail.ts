@@ -174,6 +174,15 @@ export class ProfessionalDetail {
    *   restores only `verification`, `homeSpaceId` and `unavailabilityPeriods` from the stored copy,
    *   a `PUT` that omits `profile` nulls one that was there.
    *
+   * **It is also, since 2026-09-09, a state a reviewer can actually look at.** It was not when this
+   * was written: all nine `test` professionals carried a resolvable `profile` and `dev` seeds none,
+   * so on `quality/`, on `deploy/e2e/compose.yml` and under `ng serve` the first branch was the only
+   * one that had ever rendered — the fix below was correct and invisible everywhere but production.
+   * The api's `test` seed now holds `p10`, a `Professional` written with only its five required
+   * fields, and `SeedNamelessRecordCoverageTest` in that repository is what stops the next record
+   * type with an optional `Profile` arriving without one. That is backlog item 52, and the reason it
+   * is worth a paragraph here is that this is the screen the rule was learned on for the third time.
+   *
    * This doc-block, and the commit that added it, said instead that "the console's own edit form
    * offers a blank profile option". **That was false and is worth naming rather than quietly
    * replacing**: `professional-form.service.ts` declares `profile` with `Validators.required` and
