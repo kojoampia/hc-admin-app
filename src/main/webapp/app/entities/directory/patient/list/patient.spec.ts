@@ -436,13 +436,36 @@ describe('Patient Management Component', () => {
           expect(comp.isNameFromPatientApp(learned)).toBe(false);
         });
 
-        it('says the patient app could not be checked when the lookup did not come back', () => {
+        it('says a name could not be looked up when the lookup did not come back', () => {
           comp.links.set({
             '68b4f2a19c3d5e7f81a02c44': { id: 'link-1', source: 'HC_PATIENT', email: 'kojo@jac.net', nameResolution: 'UNAVAILABLE' },
           });
 
           expect(comp.displayName(learned)).toBe('kojo@jac.net');
           expect(comp.isNameUnavailable(learned)).toBe(true);
+        });
+
+        /**
+         * **And that sentence names no stack, which is the wording rather than a preference.**
+         *
+         * `UNAVAILABLE` has four causes and three of them are on *this* side: a base url naming a
+         * container that does not exist in this environment, the lookup configured off, or a request
+         * carrying no token to relay. Only the fourth is hc-patient being unreachable. A row reading
+         * "the patient app could not be checked" therefore sends an operator to go and look at a
+         * system that is working — item 24's wrong-machine pointer, on a screen — and it is the
+         * *likeliest* reading, because the default base url is the production container's name and
+         * every other environment has to override it.
+         *
+         * Asserted against the catalogue rather than the component, because the component only picks
+         * a key: the thing that can quietly go wrong is somebody making the sentence more helpful.
+         */
+        it('blames nobody, because three of the four causes are on this side', () => {
+          const catalogue = JSON.parse(readFileSync('src/main/webapp/i18n/en/directoryPatient.json', 'utf8'));
+          const sentence: string = catalogue.hcAdminApp.directoryPatient.nameUnavailable;
+
+          expect(sentence).toBeTruthy();
+          expect(sentence.toLowerCase()).not.toContain('patient app');
+          expect(sentence.toLowerCase()).not.toContain('hc-patient');
         });
 
         it('says nothing about a row nobody could have asked about', () => {

@@ -45,7 +45,7 @@
       "identityFromLinkPatientApp": "From the patient app account — no profile recorded here",
       "identityFromLinkOther": "From a linked account on another stack — no profile recorded here",
       "identityResolvedPatientApp": "Name from the patient app — no profile recorded here",
-      "nameUnavailable": "The patient app could not be checked for a name",
+      "nameUnavailable": "A name could not be looked up for this account",
       "created": "A new Patient is created with identifier {{ param }}",
       "updated": "A Patient is updated with identifier {{ param }}",
       "deleted": "A Patient is deleted with identifier {{ param }}",

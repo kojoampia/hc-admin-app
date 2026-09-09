@@ -209,7 +209,7 @@ export interface IDirectoryLink {
    *
    * Not `UNAVAILABLE`, which means a lookup was owed and did not come back. A clinician's link and a
    * patient link with no address carry nothing here, because hc-patient's endpoint is keyed on an
-   * address and there was nothing to ask — telling a reader their name "could not be checked" would
+   * address and there was nothing to ask — telling a reader their name could not be looked up would
    * be true of nothing.
    *
    * Only `UNAVAILABLE` reaches the screen as words. `RESOLVED` shows the name, `NOT_FOUND` shows the

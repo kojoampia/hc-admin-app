@@ -281,7 +281,7 @@ export class Patient implements OnInit {
   }
 
   /**
-   * Whether to say, under the address, that the name could not be checked with the patient app.
+   * Whether to say, under the address, that a name could not be looked up for this account.
    *
    * True for one outcome only — the api could not get an answer — and never for a row whose name
    * hc-patient genuinely does not supply. Those two look identical on screen without this, and they

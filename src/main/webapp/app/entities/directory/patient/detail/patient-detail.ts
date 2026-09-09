@@ -142,7 +142,7 @@ export class PatientDetail {
   });
 
   /**
-   * Whether to say, under the heading, that the name could not be checked with the patient app.
+   * Whether to say, under the heading, that a name could not be looked up for this account.
    *
    * The record's half of backlog item 50, and the same rule as the directory list's: only the
    * outcome where a lookup was owed and did not come back. A patient hc-patient genuinely does not
