@@ -448,18 +448,25 @@ describe('Patient Management Component', () => {
         /**
          * **And that sentence names no stack, which is the wording rather than a preference.**
          *
-         * `UNAVAILABLE` has four causes and three of them are on *this* side: a base url naming a
-         * container that does not exist in this environment, the lookup configured off, or a request
-         * carrying no token to relay. Only the fourth is hc-patient being unreachable. A row reading
-         * "the patient app could not be checked" therefore sends an operator to go and look at a
+         * `UNAVAILABLE` has **five** producers and **four** of them are on *this* side: a base url
+         * naming a container that does not exist in this environment, the lookup configured off, a
+         * request carrying no token to relay, and the api's per-request budget being spent before
+         * this row was reached — that fourth one is set by `DirectoryNameResolutionService` rather
+         * than by the client, which is why every prose list of these keeps dropping it, this one
+         * included until 2026-09-09. Only the fifth is hc-patient being unreachable.
+         *
+         * So a row reading "the patient app could not be checked" sends an operator to look at a
          * system that is working — item 24's wrong-machine pointer, on a screen — and it is the
          * *likeliest* reading, because the default base url is the production container's name and
          * every other environment has to override it.
          *
+         * The api's list is `NameResolution.UNAVAILABLE`'s javadoc and the two are meant to agree;
+         * neither can assert the other, so both say so.
+         *
          * Asserted against the catalogue rather than the component, because the component only picks
          * a key: the thing that can quietly go wrong is somebody making the sentence more helpful.
          */
-        it('blames nobody, because three of the four causes are on this side', () => {
+        it('blames nobody, because four of the five causes are on this side', () => {
           const catalogue = JSON.parse(readFileSync('src/main/webapp/i18n/en/directoryPatient.json', 'utf8'));
           const sentence: string = catalogue.hcAdminApp.directoryPatient.nameUnavailable;
 
