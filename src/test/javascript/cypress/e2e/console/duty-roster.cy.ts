@@ -45,7 +45,12 @@
  */
 const SEEDED = {
   week: 'Week of 17 August 2026',
-  staff: 7, // 9 professionals less the 2 with status PENDING, which buildRows() drops
+  // 10 professionals less the 3 with status PENDING, which buildRows() drops. It was 9 less 2 until
+  // 2026-09-09: `p10` — the profile-less clinician backlog item 52 seeded, so that the record
+  // heading's licence-number branch renders on some stack — is PENDING, so the figure did not move
+  // and only its derivation did. A stale derivation on an unmoved number is the harder kind to
+  // notice, which is why the recipe above is the thing to re-run rather than this comment.
+  staff: 7,
   cells: 49, // staff x 7 days
   planned: 49, // every slot filled — this week is fully covered
 };
