@@ -7,7 +7,7 @@ import { TranslatePipe } from '@ngx-translate/core';
 import dayjs from 'dayjs/esm';
 
 import { StatusPill } from 'app/console/shared/status-pill/status-pill';
-import { resolveLinkIdentity } from 'app/entities/directory/directory-link/directory-link.model';
+import { isNameUnavailable, resolveLinkDisplayName } from 'app/entities/directory/directory-link/directory-link.model';
 import { DirectoryLinkService } from 'app/entities/directory/directory-link/service/directory-link.service';
 import { ProfessionalService } from 'app/entities/directory/professional/service/professional.service';
 import { Alert } from 'app/shared/alert/alert';
@@ -100,7 +100,14 @@ export class PatientDetail {
         return;
       }
       this.directoryLinkService.findByLocalIds([patient.id]).subscribe({
-        next: links => this.resolvedLinkIdentity.set({ id: patient.id, identity: resolveLinkIdentity(links.get(patient.id)) }),
+        next: links => {
+          const link = links.get(patient.id);
+          this.resolvedLinkIdentity.set({
+            id: patient.id,
+            identity: resolveLinkDisplayName(link),
+            unavailable: isNameUnavailable(link),
+          });
+        },
         // The heading says "Identity not on file", which is true of what this console can see.
         error: () => this.resolvedLinkIdentity.set(null),
       });
@@ -125,13 +132,30 @@ export class PatientDetail {
    * the fix is the same shape — see {@link linkIdentity}.
    */
   // eslint-disable-next-line @typescript-eslint/member-ordering
-  readonly resolvedLinkIdentity = signal<{ id: string; identity: string | null } | null>(null);
+  readonly resolvedLinkIdentity = signal<{ id: string; identity: string | null; unavailable?: boolean } | null>(null);
 
   /** The linked identity, but only when it is an identity for the record currently on screen. */
   // eslint-disable-next-line @typescript-eslint/member-ordering
   readonly linkIdentity = computed(() => {
     const resolved = this.resolvedLinkIdentity();
     return resolved && resolved.id === this.patient()?.id ? resolved.identity : null;
+  });
+
+  /**
+   * Whether to say, under the heading, that a name could not be looked up for this account.
+   *
+   * The record's half of backlog item 50, and the same rule as the directory list's: only the
+   * outcome where a lookup was owed and did not come back. A patient hc-patient genuinely does not
+   * name gets no sentence — the address above is the whole answer.
+   *
+   * Keyed like everything else on this component, because `/patient/A/view` → `/patient/B/view`
+   * reuses the instance and A's response can land after B's record has. An unkeyed flag would put
+   * A's caveat under B's name.
+   */
+  // eslint-disable-next-line @typescript-eslint/member-ordering
+  readonly nameUnavailable = computed(() => {
+    const resolved = this.resolvedLinkIdentity();
+    return !!resolved && resolved.id === this.patient()?.id && resolved.unavailable === true;
   });
 
   /** Initials for the monogram, from whatever name is known — never from the id. */

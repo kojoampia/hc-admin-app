@@ -181,6 +181,45 @@ export interface IDirectoryLink {
    */
   planName?: string | null;
 
+  // --- the name hc-patient holds, backlog item 50 ------------------------------------------------
+  //
+  // A patient learned from an event has no `Profile` here and can never be given one, so item 45 put
+  // the address from this link on the row — which an operator reported from production as an email
+  // where a name should be. These two fields are the missing half: the api asks hc-patient
+  // (`GET /api/profiles/email/{email}`, with the administrator's own token) when the console sends
+  // `resolveNames=true`, and returns the name and nothing else.
+  //
+  // NEITHER IS STORED ON EITHER SIDE. The api sets them on transient fields of a document it never
+  // saves; this console holds them for as long as the page does. A second copy of a person's name is
+  // a second thing that can disagree with hc-patient, which is the rule item 27(a) states and item 45
+  // followed by refusing to default a `Profile`.
+
+  /**
+   * The name, when hc-patient supplied one.
+   *
+   * Absent when the lookup was not asked for, found nobody, could not be made — or succeeded against
+   * a profile that carries no name, which is a real state there (`firstName` and `lastName` have no
+   * `@NotNull` on their `Profile`). The row falls back to the address in all four cases, so nothing
+   * on screen has to tell them apart; `nameResolution` is what does, for the one that needs a word.
+   */
+  resolvedName?: string | null;
+
+  /**
+   * What happened when the name was looked up, and **absent means the row was never a candidate**.
+   *
+   * Not `UNAVAILABLE`, which means a lookup was owed and did not come back. A clinician's link and a
+   * patient link with no address carry nothing here, because hc-patient's endpoint is keyed on an
+   * address and there was nothing to ask — telling a reader their name could not be looked up would
+   * be true of nothing.
+   *
+   * Only `UNAVAILABLE` reaches the screen as words. `RESOLVED` shows the name, `NOT_FOUND` shows the
+   * address exactly as it did before item 50, and neither needs explaining. There is deliberately no
+   * fourth value for "a name exists and you may not see it": hc-patient answers the same 404 for a
+   * refusal as for an absence, and inferring it from the caller's own authorities would copy their
+   * `PatientScope` into a fourth repository to drift.
+   */
+  nameResolution?: 'RESOLVED' | 'NOT_FOUND' | 'UNAVAILABLE' | null;
+
   /**
    * The status the membership was created with on hc-patient — `PENDING` for anybody but an
    * administrator there.
@@ -239,6 +278,44 @@ export function resolveLinkIdentity(link: IDirectoryLink | null | undefined): st
     return login;
   }
   return null;
+}
+
+/**
+ * How a **patient** with no local profile is named on screen — the name if hc-patient supplied one,
+ * else `resolveLinkIdentity`'s answer, else `null`.
+ *
+ * **The order is the whole of backlog item 50 and it is not negotiable downwards.** The address is
+ * honest and was the right answer while nothing here could learn the name; a name is what the row is
+ * for. Below it, everything item 45 decided stands untouched — the address, then the login, then
+ * "Identity not on file", and never the record's ObjectId.
+ *
+ * `trim()` before testing, for the reason `resolveLinkIdentity` gives one function down: an empty
+ * string is falsy but not nullish, so a `??` chain would print a blank where a name goes. The api
+ * already nulls a blank name; this is the same rule stated on the side that renders it, because a
+ * server changing its mind about `""` must not become a blank cell here.
+ */
+export function resolveLinkDisplayName(link: IDirectoryLink | null | undefined): string | null {
+  const resolved = link?.resolvedName?.trim();
+  if (resolved) {
+    return resolved;
+  }
+  return resolveLinkIdentity(link);
+}
+
+/**
+ * Whether this row's name was looked up and the lookup did not come back.
+ *
+ * The one outcome that gets words on the screen. `NOT_FOUND` deliberately does not: hc-patient
+ * genuinely does not name this person to this caller, the address is the honest answer, and a
+ * sentence saying so on every learned row would be noise on the common case. `UNAVAILABLE` is
+ * different in kind — the row *would* have had a name and this console could not obtain it — and
+ * saying nothing would leave an operator comparing two rows that differ for a reason nothing on
+ * screen explains.
+ *
+ * An absent `nameResolution` is false, not unknown: it means the row was never a candidate.
+ */
+export function isNameUnavailable(link: IDirectoryLink | null | undefined): boolean {
+  return link?.nameResolution === 'UNAVAILABLE';
 }
 
 /**

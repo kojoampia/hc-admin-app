@@ -21,6 +21,14 @@
              identifier belongs. -->
         <h3 class="unidentified" abfTranslate="hcAdminApp.directoryPatient.unidentified">Identity not on file</h3>
       }
+      <!-- Said once, under the heading it qualifies: the name above is the address off the link
+           because the lookup did not come back, not because hc-patient holds no name (item 50). It
+           names no stack — three of the four causes are on this side. -->
+      @if (nameUnavailable()) {
+        <p class="name-unavailable" abfTranslate="hcAdminApp.directoryPatient.nameUnavailable">
+          A name could not be looked up for this account
+        </p>
+      }
       <p>
         @if (patientRef.profile?.idNumber) {
           <span>{{ 'hcAdminApp.IdType.' + (patientRef.profile?.idType ?? 'null') | translate }} {{ patientRef.profile?.idNumber }}</span>
