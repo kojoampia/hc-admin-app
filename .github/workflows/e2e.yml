@@ -112,8 +112,27 @@ name: E2E
 on:
   push:
     branches: [main]
+
+  # No `branches:` filter — item 37, 2026-09-09, and the reasoning is ci.yml's at length. The short
+  # version: `pull_request: branches:` matches the BASE, so with `[main]` here a stacked pull request
+  # matched neither trigger and this gate did not run at all, silently.
+  #
+  # This file is in item 37's change even though the item names only ci.yml, because item 37's "done
+  # when" is that a stacked pull request runs THE SAME GATE as one opened onto `main` — and in this
+  # repository that gate is two workflows, not one. Gating a stacked PR's lint and unit tests while
+  # leaving its Cypress specs unrun would satisfy the item's letter and not its sentence.
+  #
+  # The delta is the same near-zero measured there — exactly one pull request in the three repos'
+  # combined history has ever had a base other than `main` — and the standing worry about this
+  # workflow's cost is unchanged by it, because a stack is only stood up when somebody opens a pull
+  # request. The `concurrency` group below still collapses a push storm to one run.
+  #
+  # This is NOT a required status check and item 37 does not make it one — the paragraph above about
+  # `latest` siblings, and the fork paragraph above that, are both still why. So none of ci.yml's
+  # skipped-check reasoning applies here; the note there about never adding a draft `if:` does,
+  # if this ever joins the required list.
   pull_request:
-    branches: [main]
+
   workflow_dispatch:
     inputs:
       spec-set:
