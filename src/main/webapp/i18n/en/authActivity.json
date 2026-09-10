@@ -1,0 +1,52 @@
+{
+  "authActivity": {
+    "pageTitle": "Sign-in and registrations",
+    "title": "Sign-in and registrations",
+    "subtitle": "Who has registered across BridgeCare, and what has happened at the console's sign-in page",
+    "refresh": "Refresh",
+    "state": {
+      "activated": "Activated",
+      "notActivated": "Not activated",
+      "notReported": "Not reported"
+    },
+    "source": {
+      "HC_PATIENT": "Patient system",
+      "HC_PROFESSIONAL": "Clinician system"
+    },
+    "registrations": {
+      "title": "Registrations across BridgeCare",
+      "subtitle": "Everyone who has registered on the patient and clinician systems",
+      "scope": "Everyone who registered on the patient and clinician systems — patients, care angels and clinicians. This is not the count of console staff accounts below.",
+      "total": "Registered accounts",
+      "source": "System",
+      "notReportedNote": "\"Not reported\" is not the same as \"not activated\". A clinician known to this console only from an onboarding event has told us nothing either way — no event has said whether the account can sign in."
+    },
+    "staff": {
+      "title": "Console staff accounts",
+      "scope": "Administrators and operators on this console, created by an administrator. There is no self-registration here, so this number is small by design and is not a count of patients or clinicians."
+    },
+    "logins": {
+      "title": "Sign-in attempts",
+      "subtitle": "Successes and failures at this console's sign-in page",
+      "chartLabel": "Failed sign-ins per day",
+      "succeeded": "Signed in, last {{ days }} days",
+      "failed": "Failed, last {{ days }} days",
+      "failureRate": "Of attempts failed",
+      "day": "Day",
+      "succeededShort": "Succeeded",
+      "failedShort": "Failed"
+    },
+    "failedLogins": {
+      "title": "Most-tried logins that failed",
+      "scope": "Shown exactly as they were typed, over the same window. A failed attempt is usually not the account holder, so treat these as attempts rather than as people.",
+      "login": "Login tried",
+      "failures": "Failures",
+      "none": "No sign-in has failed in this window."
+    },
+    "retentionNote": "Sign-in attempts are kept for {{ days }} days and then deleted automatically.",
+    "error": {
+      "forbidden": "This part of the screen is for administrators only.",
+      "unavailable": "These figures could not be loaded. The rest of the screen is unaffected."
+    }
+  }
+}

@@ -85,7 +85,8 @@
         "platformHealth": "Platform health",
         "wageRates": "Wage rates",
         "organisation": "Organisation",
-        "deletionRequests": "Deletion requests"
+        "deletionRequests": "Deletion requests",
+        "authActivity": "Sign-in activity"
       },
       "quickAdd": {
         "task": "Task",
