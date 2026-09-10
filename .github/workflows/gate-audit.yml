@@ -1,0 +1,103 @@
+# Asks whether `main` is red on this repository's gates, and files an issue rather than an email.
+#
+# --- Why this exists --------------------------------------------------------------------------------
+#
+# Nothing did. `main` went red on the E2E gate at 802eb66 on 2026-09-09 and stayed red for a day
+# across several merges, and it surfaced only when somebody's own branch was blocked by it. GitHub
+# emails the actor on a failed run; that is the mechanism that already existed and it is the one that
+# did not work. An email is an event — read once or not at all, by one person, and its absence proves
+# nothing. An open issue is a state: it persists, it is attributable, it can be closed, and "is there
+# an open gate-audit issue?" is a question with an answer. That is release-audit.yml's argument and it
+# transfers wholesale. (backlog item 67.)
+#
+# --- Why a reconciliation, and not `if: failure()` inside the gates ---------------------------------
+#
+# Both watched workflows set `cancel-in-progress: true`, so a run superseded by a newer push is
+# cancelled — and a run cancelled while still PENDING never creates a job, which means no step inside
+# it, notification step included, ever executes. release-audit.sh's header has the measurement behind
+# that claim (24 cancelled runs across the three repos, all with zero jobs).
+#
+# It also asks a better question. "Did this run fail" is about a run; "is main red" is about a branch,
+# and it is the branch that blocks everybody. A failure later superseded by a green push is not a red
+# branch, and this reports the branch.
+#
+# --- Failure modes, which are four and not two -----------------------------------------------------
+#
+# exit 0 = every watched gate's newest verdict on main is a success; any open issue is closed.
+# exit 1 = at least one is red; the issue is filed or updated FIRST so the record outlives the run.
+# exit 2 = the audit could not run or could not be trusted — a failed API read, a workflow file that
+#          does not exist, an issue listing that failed on the reporting path, a watch list that
+#          swept nothing. NEVER reported as red.
+# exit 3 = the sweep finished, found nothing red among the gates it could read, and could not read
+#          some. The issue is left exactly as it was: not opened, not closed.
+name: Gate audit
+
+on:
+  # The backstop, and the only trigger that carries the guarantee. Off-peak, off the hour because
+  # GitHub's scheduler is heavily contended at :00, and away from release-audit.yml's 06:23 so the
+  # two do not queue behind each other.
+  schedule:
+    - cron: '47 5 * * *'
+
+  # After either gate finishes, so a fresh red is reported in minutes rather than up to a day. An
+  # accelerator, not the mechanism: a run cancelled before it started may never fire this, which is
+  # exactly the case the schedule covers. These are the workflows' `name:` values, not their file
+  # names — the API takes file names and this trigger does not, which is why they appear in two
+  # spellings across this file and the WORKFLOWS list below.
+  workflow_run:
+    workflows: [E2E, CI]
+    types: [completed]
+
+  workflow_dispatch:
+
+# A `permissions:` block sets every scope it does not name to `none`, so this list is exhaustive
+# rather than additive. `actions: read` is what the first API call needs — the audit lists runs
+# through /repos/{repo}/actions/workflows/{file}/runs — and without it that read is a 403 and the job
+# dies before it has swept anything. `issues: write` covers the label as well as the issue; the
+# script creates the `gate-audit` label idempotently rather than assuming somebody made it by hand.
+permissions:
+  actions: read
+  contents: read
+  issues: write
+
+concurrency:
+  group: gate-audit-${{ github.repository }}
+  # Dropping a pending audit loses nothing: the run that does survive measures the same branch and
+  # the same workflows and reports the same set. This job is idempotent, which is precisely what
+  # release.yml's identical setting is not — see the comment there before copying either.
+  cancel-in-progress: false
+
+jobs:
+  audit:
+    name: Reconcile the gates on main
+    runs-on: ubuntu-latest
+    # `workflow_run` fires for runs on any branch, so without this a pull-request run of E2E would
+    # start an audit that then reads `main` and says something about a branch the trigger had nothing
+    # to do with. Harmless but wasteful, and confusing in the Actions tab. Schedule and dispatch pass
+    # through. The literal must agree with BRANCH below; there is only one branch this repository
+    # gates and hard-coding it in both places beats deriving one from the other.
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.head_branch == 'main'
+    steps:
+      # Shallow on purpose, and this is the one place it differs from release-audit.yml. That audit
+      # calls `git merge-base --is-ancestor` and a shallow clone silently answers "not an ancestor"
+      # for everything it cannot see, so it needs `fetch-depth: 0`. Nothing here walks history: the
+      # tip of the branch is read from the API. The checkout exists only to get the script.
+      - name: Check out
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Reconcile
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: main
+          # The gates, by workflow FILE NAME — what the runs API addresses. Adding or dropping one is
+          # a word here rather than an edit to the script, which is what keeps the script free of
+          # anything repository-specific.
+          #
+          # ci.yml is watched as well as e2e.yml even though item 67 is about the Cypress gate: a red
+          # `main` on the fast gate tells nobody by exactly the same mechanism, and excluding it
+          # would leave the identical outage live in the same repository for no reason anybody could
+          # state later.
+          WORKFLOWS: e2e.yml ci.yml
+        run: bash .github/gate-audit.sh

@@ -4,6 +4,9 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { HttpRequest, provideHttpClient } from '@angular/common/http';
 import { provideRouter } from '@angular/router';
 import { provideTranslateService } from '@ngx-translate/core';
+import { FaIconLibrary } from '@fortawesome/angular-fontawesome';
+
+import { fontAwesomeIcons } from 'app/config/font-awesome-icons';
 
 import Dashboard from './dashboard';
 
@@ -143,5 +146,112 @@ describe('dashboard approvals', () => {
     expect(component.approvals()).toEqual([]);
     expect(component.hiddenApprovals()).toBe(0);
     expect(component.approvalOverflow()).toEqual([]);
+  });
+});
+
+/**
+ * The same card, in a real DOM — which is a different question and the one that went red.
+ *
+ * <p>Everything above reads the component's signals, and every assertion in it was correct and
+ * passing on the day `main` went red on `dashboard.cy.ts` with **"Too many elements found. Found
+ * '6', expected 5"** against `[data-cy="approvals"] .lrow`. Signals cannot see that, because the
+ * collision is in the markup: the overflow indicator is a `<div class="lrow more">`, sharing the
+ * class with the rows for its styling (`.lrow.more` in `dashboard.scss`). Five rows plus one
+ * indicator is six `.lrow`, and `setApprovals()` slices to `APPROVAL_ROWS`, so a sixth row is not a
+ * state this card can reach at all. Backlog item 67.
+ *
+ * <p>**The seed was blamed, and the seed was right.** Item 52 added a sixth PENDING account, which
+ * made `hiddenApprovals()` non-zero for the first time on any stack and put the indicator on the
+ * screen — so a correct fixture change surfaced a selector that had always been wrong and had never
+ * had anything to over-select. The lesson generalises past this card: a class says how something
+ * looks, a `data-cy` says what it is, and a count of the first is a count of whatever is dressed
+ * alike.
+ *
+ * <p>This costs a full `TestBed.createComponent` where the rest of the file constructs the
+ * component directly, which is why it is a separate block rather than folded in above. It is worth
+ * it once: nothing cheaper can see a rendering collision, and the Cypress gate that could see it
+ * cannot be run outside CI.
+ */
+describe('dashboard approvals, as rendered', () => {
+  let httpMock: HttpTestingController;
+
+  const pending =
+    (fragment: string) =>
+    (request: HttpRequest<unknown>): boolean =>
+      request.url.includes(fragment) && request.params.get('status.equals') === 'PENDING';
+
+  const patient = (id: string): unknown => ({ id, profile: { firstName: 'Ama', lastName: 'Boateng' } });
+
+  /**
+   * Renders the dashboard with more pending accounts than the card has rows, and hands back the
+   * approvals card.
+   *
+   * <p>Six patients on one page against a total of nine, no professionals, two vendors: five rows
+   * shown, six hidden, and two directories to link. Deliberately lopsided — with the same count in
+   * each directory a wrong total and a right one would render the same digits.
+   */
+  const cardInOverflow = (): HTMLElement => {
+    const fixture = TestBed.createComponent(Dashboard);
+    fixture.detectChanges();
+
+    httpMock
+      .expectOne(pending('patients'))
+      .flush([patient('a1'), patient('a2'), patient('a3'), patient('a4'), patient('a5'), patient('a6')], {
+        headers: { 'X-Total-Count': '9' },
+      });
+    httpMock.expectOne(pending('professionals')).flush([], { headers: { 'X-Total-Count': '0' } });
+    httpMock.expectOne(pending('vendors')).flush([], { headers: { 'X-Total-Count': '2' } });
+
+    fixture.detectChanges();
+    return fixture.nativeElement.querySelector('[data-cy="approvals"]') as HTMLElement;
+  };
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([]), provideTranslateService()],
+    });
+    // The template renders `fa-icon` in the approvals empty state and throughout the rest of the
+    // dashboard; an unregistered icon is a thrown error rather than a blank, so the whole library
+    // goes in rather than the handful this block happens to reach.
+    TestBed.inject(FaIconLibrary).addIcons(...fontAwesomeIcons);
+    httpMock = TestBed.inject(HttpTestingController);
+  });
+
+  /**
+   * The assertion the Cypress case makes, at a hundredth of the cost.
+   *
+   * <p>Both numbers are pinned on purpose. The five is the claim; the six is the *reason the claim
+   * needs a `data-cy`, and it is what a reader will otherwise undo. If this case ever fails on the
+   * six alone — because the indicator stopped carrying `.lrow` — the collision is gone and this
+   * case can go with it. Do not "fix" it by loosening the selector back to the class.
+   */
+  it('distinguishes an approval row from the overflow indicator that shares its class', () => {
+    const card = cardInOverflow();
+
+    expect(card.querySelectorAll('[data-cy="approvalRow"]')).toHaveLength(5);
+    expect(card.querySelectorAll('.lrow')).toHaveLength(6);
+    expect(card.querySelector('[data-cy="approvalsOverflow"]')?.classList.contains('lrow')).toBe(true);
+  });
+
+  /**
+   * The footer renders, and each link carries the count of what is at the other end of it.
+   *
+   * <p>The two numbers on that footer are different and are meant to be: "and N more waiting" is
+   * `pending − shown`, while a directory button carries that directory's whole pending total,
+   * because the button navigates to `?status=PENDING` and its count is what the reader finds on
+   * arrival. Only the second is assertable here — `TranslateService` has no catalogue loaded in a
+   * unit test, so `| translate` returns the key and the interpolated copy exists only against a
+   * real stack. `dashboard.cy.ts` asserts that half.
+   */
+  it('links each directory with pending records, carrying that directory’s own total', () => {
+    const overflow = cardInOverflow().querySelector('[data-cy="approvalsOverflow"]')!;
+    const links = Array.from(overflow.querySelectorAll('a')).map(link => [link.getAttribute('href'), link.textContent.trim()]);
+
+    // The professional directory has none pending and is deliberately absent: a link promising
+    // nought more is worse than no link.
+    expect(links).toEqual([
+      ['/patient?status=PENDING', expect.stringContaining('9')],
+      ['/vendor?status=PENDING', expect.stringContaining('2')],
+    ]);
   });
 });
