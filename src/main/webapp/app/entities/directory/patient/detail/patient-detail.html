@@ -178,6 +178,99 @@
       }
     </section>
 
+    <!--
+      Plan choice awaiting a decision — backlog item 54, the dequeue for item 48's queue.
+
+      IT SITS BESIDE "SERVICE PLAN" AND MUST NOT BE FOLDED INTO IT. The card above is
+      `Patient.plan`: the plan this patient HOLDS, an administrator's own field that no event may
+      write. This one is what they ASKED for in the patient portal, which hc-patient announced and
+      which nobody here has answered yet. They are different facts with different owners and they
+      routinely disagree — that disagreement is the entire reason an administrator is being asked to
+      look. Merging them would put a request and a holding under one heading.
+
+      WHY THE DECISION IS HERE AND NOT ON THE DIRECTORY LIST. The list's plan-choices row set says so
+      itself: "The decision is taken on the record, so the row goes there." A verify button on a list
+      row decides something about a patient whose record the administrator has not opened.
+
+      It renders only when the choice names a tier. A membership can name none — hc-patient's
+      `Membership.plan` carries no @NotNull — and the server refuses to verify one, because the
+      payload's single field is a consistency check that a null defeats. An enabled button that
+      always fails is worse than no button.
+    -->
+    @if (hasPlanChoice()) {
+      @if (planChoice(); as choice) {
+        <section class="card" data-cy="planChoice">
+          <h4>
+            <fa-icon icon="clipboard-check" />
+            <span abfTranslate="hcAdminApp.directoryPatient.detail.planChoice.title">Plan choice</span>
+          </h4>
+          <dl>
+            <dt abfTranslate="hcAdminApp.directoryPatient.detail.planChoice.chosen">Tier chosen</dt>
+            <dd>
+              <div>{{ choice.planName ?? choice.planCode }}</div>
+              <div class="sub mono" data-cy="planChoiceCode">{{ choice.planCode }}</div>
+            </dd>
+            <!--
+              "Reported", never "Status" — the same wording as the directory panel and for the same
+              reason. The value is what hc-patient said when the membership was CREATED: their
+              MembershipResource publishes on POST alone, so a decision taken on their side afterwards
+              says so on no topic and this field goes on reading PENDING. A bare "Status" heading
+              would be this screen asserting a live state it cannot see.
+            -->
+            <dt abfTranslate="hcAdminApp.directoryPatient.detail.planChoice.reported">Reported</dt>
+            <dd>
+              @if (choice.planStatus) {
+                <span class="pill pill-warn" data-cy="planChoiceStatus">{{ choice.planStatus }}</span>
+              } @else {
+                <span class="text-muted" abfTranslate="hcAdminApp.directoryPatient.detail.planChoice.unknown">Not reported</span>
+              }
+            </dd>
+            @if (choice.planMembershipId) {
+              <!-- hc-patient's own handle for the subscription. What a person quotes when asking them
+                   about it, and deliberately NOT on the wire — MembershipID is the field item 54
+                   removed from the payload. -->
+              <dt abfTranslate="hcAdminApp.directoryPatient.detail.planChoice.membership">Membership</dt>
+              <dd class="mono">{{ choice.planMembershipId }}</dd>
+            }
+          </dl>
+
+          @if (verifiedPlan(); as announced) {
+            <!--
+              WHAT WAS SENT, NOT WHAT THE MEMBERSHIP NOW IS, and the distinction is load-bearing
+              rather than pedantic. This console stores no plan state and hc-patient announces
+              nothing when a status moves, so nothing here can know the outcome. The pill above
+              deliberately still reads PENDING: rewriting it would assert a state no event has
+              reported, and the next PlanChosen would put it back.
+            -->
+            <p class="empty" data-cy="planChoiceVerified">
+              {{ 'hcAdminApp.directoryPatient.detail.planChoice.sent' | translate: { plan: announced } }}
+            </p>
+          } @else {
+            <!--
+              "Verify", NEVER "Activate". VERIFIED is not ACTIVE: hc-patient's clients test for
+              ACTIVE when deciding whether a patient holds a plan, and what VERIFIED means beside it
+              is an open question on their side. Labelling this "activate" would promise an outcome
+              this console does not decide and cannot see.
+
+              And there is no Refuse beside it. Whether a refusal exists at all is not established —
+              dropping the payload's isVerified flag answered hc-patient's question as "no rejection
+              path" — so a decline button would be a control with nothing behind it.
+            -->
+            <button
+              type="button"
+              class="btn btn-primary btn-sm"
+              data-cy="verifyPlanChoice"
+              [disabled]="isVerifying()"
+              (click)="verifyPlanChoice()"
+            >
+              <fa-icon icon="check" />
+              <span abfTranslate="hcAdminApp.directoryPatient.detail.planChoice.verify">Verify this choice</span>
+            </button>
+          }
+        </section>
+      }
+    }
+
     <!-- Care -->
     <section class="card">
       <h4><fa-icon icon="stethoscope" /><span abfTranslate="hcAdminApp.directoryPatient.detail.care">Care</span></h4>

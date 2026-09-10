@@ -21,6 +21,19 @@ export interface DirectoryLinkPage {
 }
 
 /**
+ * What the server announced to hc-patient, echoed back.
+ *
+ * Deliberately not a record shape: nothing was stored, so it carries no id and there is no `GET`.
+ * `membershipId` is hc-patient's own handle for the subscription — shown so an administrator can say
+ * which membership they acted on, and **not** on the wire to hc-patient, where it is the field item
+ * 54 removed.
+ */
+export interface IPlanVerification {
+  plan: string;
+  membershipId?: string | null;
+}
+
+/**
  * Reads what this service has learned about sibling-stack accounts.
  *
  * This is not an entity service — there is no list screen, no form and no create/update/delete,
@@ -39,6 +52,13 @@ export class DirectoryLinkService {
   protected readonly http = inject(HttpClient);
   protected readonly applicationConfigService = inject(ApplicationConfigService);
   protected readonly resourceUrl = this.applicationConfigService.getEndpointFor('api/directory-links', ADMIN_SERVICE);
+
+  /**
+   * Its own collection rather than a verb under {@link resourceUrl}, matching the server.
+   *
+   * Built through `getEndpointFor` like everything else — never a hardcoded `/services/...` path.
+   */
+  protected readonly planVerificationUrl = this.applicationConfigService.getEndpointFor('api/patient-plan-verifications', ADMIN_SERVICE);
 
   /**
    * The links naming these local records, keyed by `localId`.
@@ -149,5 +169,35 @@ export class DirectoryLinkService {
         links: response.body ?? [],
       })),
     );
+  }
+
+  /**
+   * Records that an administrator verified this plan choice, which tells hc-patient.
+   *
+   * Backlog item 54, and the dequeue for the queue {@link findPlanChoices} draws. The server
+   * publishes one event on `patient-events-plan` keyed on the patient's lowercased address, and
+   * **stores nothing** — hc-patient owns `Membership.status` and the event is the record.
+   *
+   * **A decision is posted, never a status patched**, and that is the same contract the professional
+   * verification states: `professional-detail.ts:291` records that this console removed exactly such
+   * a toggle on 2026-08-24, because the field is written only by the server from a recorded decision.
+   * So there is no `PUT`, no `PATCH` and no `DELETE` here, and no status argument — asking is the
+   * whole API. It is deliberately not on this class's read-only sibling methods' endpoint either:
+   * `/api/directory-links` has no write but the reconciliation, and a verification is not an edit to
+   * a link.
+   *
+   * **Three things the caller must not infer from a resolved observable.** The server answers `202`,
+   * not `200`: the publish is queued off the request thread, so a success here means the decision was
+   * accepted and not that hc-patient has it. The link's `planStatus` does **not** change — it is what
+   * hc-patient reported when the membership was created and only their next event moves it, so a
+   * screen that flips the pill locally would be asserting a state nobody has observed. And
+   * `VERIFIED` is not `ACTIVE`: their clients test for `ACTIVE` when deciding whether a patient holds
+   * a plan, so this action must never be labelled "activate".
+   *
+   * @param linkId the `directory_link` carrying the choice — the link and not the patient, because
+   *               the patient does not hold the tier.
+   */
+  verifyPlanChoice(linkId: string): Observable<IPlanVerification> {
+    return this.http.post<IPlanVerification>(this.planVerificationUrl, { linkId });
   }
 }
