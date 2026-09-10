@@ -34,21 +34,65 @@ interface DeskRow {
 }
 
 /**
- * A typed GET against the admin service, with the signed-in user's token.
+ * The three directories the approval card concatenates, in the order `loadApprovals()` asks for
+ * them. Order matters to the cap: with more pending accounts than rows, it is the last directory
+ * that drops off the card.
+ *
+ * <p>`api` is the collection the admin service serves and `route` is where the console sends a
+ * reader, and they are spelled differently — `/patients` against `/patient`. Naming both beats
+ * deriving one from the other, which is a rule about English plurals hiding in a test.
+ */
+const APPROVAL_DIRECTORIES = [
+  { api: 'patients', route: 'patient' },
+  { api: 'professionals', route: 'professional' },
+  { api: 'vendors', route: 'vendor' },
+] as const;
+
+/**
+ * `APPROVAL_ROWS` in `app/console/dashboard/dashboard.ts`, copied because it cannot be imported.
+ *
+ * <p>The cypress `tsconfig.json` resets `baseUrl` to `./`, so the `app/…` alias the application
+ * compiles against does not resolve from here — the same forced duplication `support/console.ts`
+ * records for `ConsoleRoleKey`. Nothing links the two: change both.
+ */
+const APPROVAL_ROWS = 5;
+
+/**
+ * A typed request against the admin service, with the signed-in user's token.
  *
  * <p>`.request<T>()` rather than `cy.adminApi` or `.its('body')` — both are `any`, and an `any` here
  * would silently un-type every assertion below, which is the opposite of the point.
  */
-const adminGet = <T>(path: string): Cypress.Chainable<T> =>
+const adminRequest = <T>(path: string): Cypress.Chainable<Cypress.Response<T>> =>
   cy.window().then(win => {
     const stored =
       win.sessionStorage.getItem(Cypress.expose('jwtStorageName')) ?? win.localStorage.getItem(Cypress.expose('jwtStorageName'));
-    return cy
-      .request<T>({ url: `${ADMIN_API}${path}`, headers: { Authorization: `Bearer ${JSON.parse(stored!) as string}` } })
-      .then(response => response.body);
+    return cy.request<T>({ url: `${ADMIN_API}${path}`, headers: { Authorization: `Bearer ${JSON.parse(stored!) as string}` } });
   });
 
+const adminGet = <T>(path: string): Cypress.Chainable<T> => adminRequest<T>(path).then(response => response.body);
+
 const metrics = (): Cypress.Chainable<DashboardFigures> => adminGet<DashboardFigures>('/dashboard/metrics');
+
+/**
+ * How many records a directory holds in `PENDING`, taken from `X-Total-Count`.
+ *
+ * <p>The header and not the body, and `size=1` rather than a page big enough to count: that header
+ * carries the whole matching total whatever the page size, which is the same thing `loadApprovals()`
+ * reads and the only thing that makes "and N more" a real number rather than a count of the rows
+ * that happened to arrive. Counting a body here would reproduce, in the test, the bug the screen
+ * was written to avoid.
+ */
+const pendingTotal = (directory: string): Cypress.Chainable<number> =>
+  adminRequest<unknown[]>(`/${directory}?page=0&size=1&status.equals=PENDING`).then(response => {
+    const total = Number(response.headers['x-total-count']);
+    // An absent header gives NaN, which arithmetic swallows into every figure downstream and which
+    // then reads as a wrong count rather than a missing one. `PaginationIT` is what keeps that
+    // header on every list endpoint and `edge.cy.ts` is what keeps it surviving nginx; this is the
+    // line that says which of those broke.
+    expect(Number.isNaN(total), `${directory} answered an X-Total-Count header`).to.eq(false);
+    return total;
+  });
 
 describe('dashboard', () => {
   beforeEach(() => {
@@ -126,6 +170,17 @@ describe('dashboard', () => {
    *       PENDING account, so the cap now bites. It is the vendor row that drops out, not this
    *       case's own subject: `loadApprovals()` concatenates patients, then professionals, then
    *       vendors, and Beatrice Sarsah is a patient.
+   *
+   *       <p>**And making the cap bite is what exposed the selector, which was the real defect.**
+   *       Item 52's change was correct in every respect and this gate went red on `main` for a day
+   *       anyway, because the moment `hiddenApprovals()` stopped being zero the card gained a second
+   *       kind of `.lrow` — the overflow indicator, `<div class="lrow more">`, sharing the class
+   *       for its styling. "Found '6', expected 5" named a sixth row and there is no sixth row:
+   *       `setApprovals()` slices to `APPROVAL_ROWS` and `dashboard-approvals.spec.ts` pins that
+   *       against seven rows delivered. **The lesson is not about this card.** A class is how
+   *       something looks and a `data-cy` is what something is, and counting the first is counting
+   *       whatever happens to be dressed alike; the sibling desk card has the same `.lrow` count
+   *       assertion and is correct only because it has never had an overflow state. Backlog item 67.
    *   <li>`'Beatrice Sarsah'` proves the row renders a PERSON and not an id, which is the whole
    *       failure `record-label.pipe.ts` exists for. A derived expectation would read the same field
    *       the template reads and pass whatever it contained, including a UUID.
@@ -138,9 +193,71 @@ describe('dashboard', () => {
    * nothing, that no change to the fixture could ever have corrected.
    */
   it('should list the accounts waiting for approval', () => {
-    // Two patients, three professionals and one vendor are PENDING — six, against a cap of five.
-    cy.get('[data-cy="approvals"]').find('.lrow').should('have.length', 5);
+    // Rows are `[data-cy="approvalRow"]`, NOT `.lrow`. This asserted `.lrow` and went red on
+    // 2026-09-09 with "Found '6', expected 5" — which read as a sixth row against a cap of five and
+    // is not: `setApprovals()` does `rows.slice(0, APPROVAL_ROWS)`, so a sixth row cannot render.
+    // The sixth element was the overflow indicator, which is a `<div class="lrow more">` and shares
+    // the class for its styling. The fixture and the cap were both correct; the selector was not.
+    // Backlog item 67.
+    cy.get('[data-cy="approvals"]').find('[data-cy="approvalRow"]').should('have.length', APPROVAL_ROWS);
     cy.get('[data-cy="approvals"]').should('contain.text', 'Beatrice Sarsah');
+  });
+
+  /**
+   * **The other side of the cap, which nothing exercised until now.**
+   *
+   * <p>The card promises two things and the case above only checks one. Showing five of six is the
+   * pagination failure `CLAUDE.md` documents — worse than an unbounded list, because it looks
+   * complete — so the card also has to say what it is not showing and offer a way to reach it.
+   * `dashboard-approvals.spec.ts` pins that against mocked totals; nothing pinned it against a real
+   * backend, and until item 52 added a sixth PENDING account nothing on any stack could have: with
+   * five pending accounts and five rows, `hiddenApprovals()` was 0 and this whole block rendered
+   * nowhere short of production.
+   *
+   * <p>The counts are derived, per this file's header, but the *relationship* is asserted by hand
+   * first — the fixture has to hold more pending accounts than the card has rows, or every
+   * assertion below is about an element that does not exist and the case would pass by asserting
+   * nothing. That is the same guard the network-totals case above makes, for the same reason.
+   *
+   * <p>**Note what the two numbers on that footer mean, because they do not agree and are not
+   * meant to.** "and N more waiting" is `pending − shown`: one, today. Each directory button
+   * carries that directory's *whole* pending total — 2, 3, 1 — because the button navigates to
+   * `/<directory>?status=PENDING`, and its count is what the reader will find when they arrive
+   * rather than what this card left out. Asserting them against different derivations is
+   * deliberate.
+   */
+  it('should say how many pending accounts it is not showing, and where they are', () => {
+    const totals = new Map<string, number>();
+    APPROVAL_DIRECTORIES.forEach(directory => {
+      pendingTotal(directory.api).then(total => totals.set(directory.api, total));
+    });
+
+    cy.then(() => {
+      const pending = APPROVAL_DIRECTORIES.reduce((sum, directory) => sum + totals.get(directory.api)!, 0);
+      expect(pending, 'the fixture still holds more pending accounts than the card has rows').to.be.greaterThan(APPROVAL_ROWS);
+
+      // A whole-word match rather than `contain.text`: "and 11 more waiting" contains the substring
+      // "1 more", so a plain containment assertion would pass on a count off by a factor of ten. It
+      // reads the rendered copy rather than the key, so a translation that dropped the interpolation
+      // fails here too.
+      cy.get('[data-cy="approvalsOverflow"]')
+        .find('.grow')
+        .invoke('text')
+        .should('match', new RegExp(`\\b${pending - APPROVAL_ROWS}\\b`));
+
+      // One link per directory that has anything pending, each carrying its own total. Located by
+      // the href the router builds, because the labels are translated and a bare count is not
+      // unique enough to find a button by.
+      const linked = APPROVAL_DIRECTORIES.filter(directory => totals.get(directory.api)! > 0);
+      cy.get('[data-cy="approvalsOverflow"]').find('a').should('have.length', linked.length);
+
+      linked.forEach(directory => {
+        cy.get('[data-cy="approvalsOverflow"]')
+          .find(`a[href="/${directory.route}?status=PENDING"]`)
+          .invoke('text')
+          .should('match', new RegExp(`\\b${totals.get(directory.api)!}\\b`));
+      });
+    });
   });
 
   /**
