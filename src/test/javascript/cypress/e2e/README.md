@@ -165,3 +165,32 @@ the backlog.
 So: **derive the expectation from the endpoint the screen reads**, as `dashboard.cy.ts`,
 `administration.cy.ts` and `duty-roster.cy.ts` now do, and keep the literals for things a fixture
 cannot supply — the relationship between two figures, a label, an absence.
+
+## Count rows by a `data-cy`, never by a class
+
+`main` was red on this gate for a day in September 2026, on
+
+```
+AssertionError: Timed out retrying after 4000ms: Too many elements found. Found '6', expected 5
+```
+
+from `cy.get('[data-cy="approvals"]').find('.lrow').should('have.length', 5)`. It reads as a sixth
+row against a card capped at five, and it was not: `dashboard.ts` slices the list to
+`APPROVAL_ROWS`, so a sixth row is not a state that card can reach. The sixth element was the
+**overflow indicator** — `<div class="lrow more">` — which shares the class with the rows because it
+is styled like them. The fixture was right, the cap was right, and the selector had always been
+wrong; the only thing that changed was that a sixth pending account in the seed made the indicator
+render for the first time on any stack. (backlog item 67.)
+
+**A class says how something looks; a `data-cy` says what it is.** A count of the first is a count of
+whatever is dressed alike, and it goes wrong later, on a change that is itself correct, in a spec
+nobody was editing. So: add the hook to the template and name it here.
+
+Two specific things follow from it:
+
+- **`.lrow` is a style, and two cards use it.** `[data-cy="latestMessages"] .lrow` is still counted
+  by class in `dashboard.cy.ts` and is correct **only because that card has no overflow state** —
+  checked, not assumed. Give the desk card one and that assertion breaks the same way.
+- **A negative selector is not the fix.** `.lrow:not(.more)` would have gone green here and would
+  fail silently the day somebody renames the modifier — which is a stylesheet edit, made by
+  somebody who has no reason to look in this folder.

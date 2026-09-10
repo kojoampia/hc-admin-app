@@ -171,7 +171,10 @@
     </div>
     <div class="card" data-cy="approvals">
       @for (row of approvals(); track row.kind + row.id) {
-        <a class="lrow" [routerLink]="row.route">
+        <!-- `data-cy` rather than the `.lrow` class, because this card has a second `.lrow` that is
+             not a row: the overflow indicator below shares the class for its styling. Counting
+             `.lrow` here counted six on a five-row card and broke the gate (backlog item 67). -->
+        <a class="lrow" data-cy="approvalRow" [routerLink]="row.route">
           <span class="mono-av">{{ initials(row.name) }}</span>
           <span class="grow">
             @if (isUnnamed(row)) {
