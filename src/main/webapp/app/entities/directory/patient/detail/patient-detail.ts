@@ -7,7 +7,7 @@ import { TranslatePipe } from '@ngx-translate/core';
 import dayjs from 'dayjs/esm';
 
 import { StatusPill } from 'app/console/shared/status-pill/status-pill';
-import { isNameUnavailable, resolveLinkDisplayName } from 'app/entities/directory/directory-link/directory-link.model';
+import { IDirectoryLink, isNameUnavailable, resolveLinkDisplayName } from 'app/entities/directory/directory-link/directory-link.model';
 import { DirectoryLinkService } from 'app/entities/directory/directory-link/service/directory-link.service';
 import { ProfessionalService } from 'app/entities/directory/professional/service/professional.service';
 import { Alert } from 'app/shared/alert/alert';
@@ -94,22 +94,39 @@ export class PatientDetail {
     effect(() => {
       const patient = this.patient();
       this.resolvedLinkIdentity.set(null);
-      // Only when there is no name to show. A patient with a profile needs no link read at all,
-      // which is every record in the directory that was not learned from an event.
-      if (!patient || [patient.profile?.firstName, patient.profile?.lastName].some(Boolean)) {
+      this.resolvedLink.set(null);
+      this.verified.set(null);
+      if (!patient) {
         return;
       }
+      // ONE read, unconditionally, and it used to be gated on the patient having no name.
+      //
+      // The gate was right when the link was wanted for one thing — a patient with a profile needs
+      // no identity from it, which is every record not learned from an event. Item 54 wants the same
+      // document for a second reason: the plan choice hc-patient announced lives on the link, and a
+      // named patient can have chosen a tier just as easily as a nameless one. Gated, the verify
+      // action would have been reachable only on patients with no profile, which is a rare state and
+      // exactly the wrong half of the directory.
+      //
+      // Widened rather than doubled: a second effect would mean two requests for a nameless patient
+      // to answer two questions of one document. `linkIdentity` keeps the naming rule — it is the
+      // computed that declines to name a patient who has a profile, not the fetch.
       this.directoryLinkService.findByLocalIds([patient.id]).subscribe({
         next: links => {
           const link = links.get(patient.id);
+          this.resolvedLink.set({ id: patient.id, link: link ?? null });
           this.resolvedLinkIdentity.set({
             id: patient.id,
             identity: resolveLinkDisplayName(link),
             unavailable: isNameUnavailable(link),
           });
         },
-        // The heading says "Identity not on file", which is true of what this console can see.
-        error: () => this.resolvedLinkIdentity.set(null),
+        // The heading says "Identity not on file", which is true of what this console can see, and
+        // the plan panel does not render at all rather than claiming there is no choice.
+        error: () => {
+          this.resolvedLinkIdentity.set(null);
+          this.resolvedLink.set(null);
+        },
       });
     });
   }
@@ -266,8 +283,86 @@ export class PatientDetail {
     return Number.isFinite(years) && years >= 0 ? years : null;
   });
 
+  /**
+   * The whole sibling-stack link for the record on screen, or null — <b>keyed by the patient</b>.
+   *
+   * Keyed for the reason every other signal on this component is: `/patient/A/view` →
+   * `/patient/B/view` reuses this instance, so A's response can land after B's record has. Unkeyed,
+   * that put one patient's address on another patient's heading, and here it would offer B's verify
+   * button against A's plan choice — a decision announced to hc-patient about the wrong person.
+   */
+  // eslint-disable-next-line @typescript-eslint/member-ordering
+  readonly resolvedLink = signal<{ id: string; link: IDirectoryLink | null } | null>(null);
+
+  /**
+   * The plan choice hc-patient reported for the patient on screen, or null when there is none.
+   *
+   * A choice needs a tier to be actionable: {@link hasPlanChoice} is what the panel renders on, and
+   * `planCode` is what decides it. A membership naming no tier is a real stored state — hc-patient's
+   * `Membership.plan` carries no `@NotNull` — and the server refuses to verify one, because the
+   * payload's single field is a consistency check that a null defeats. Showing an enabled button
+   * that always 400s would be worse than showing none.
+   */
+  // eslint-disable-next-line @typescript-eslint/member-ordering
+  readonly planChoice = computed(() => {
+    const resolved = this.resolvedLink();
+    return resolved && resolved.id === this.patient()?.id ? resolved.link : null;
+  });
+
+  // eslint-disable-next-line @typescript-eslint/member-ordering
+  readonly hasPlanChoice = computed(() => !!this.planChoice()?.planCode);
+
+  /** True while the decision is in flight, so the button cannot be pressed twice by accident. */
+  // eslint-disable-next-line @typescript-eslint/member-ordering
+  readonly isVerifying = signal(false);
+
+  /**
+   * The tier this console announced, once it has — <b>keyed by the link it was announced for</b>.
+   *
+   * Set only from a response. It is deliberately <b>not</b> used to rewrite the reported status
+   * pill: `planStatus` is what hc-patient said when the membership was created, their
+   * `MembershipResource` publishes on `POST` alone, and nothing announces the state moving. A
+   * console that flipped that pill to VERIFIED would be asserting a state no event has reported and
+   * that this service does not store — and the next `PlanChosen` would put it back.
+   *
+   * So the confirmation says what was *sent*, not what the membership now *is*.
+   */
+  // eslint-disable-next-line @typescript-eslint/member-ordering
+  readonly verified = signal<{ linkId: string; plan: string } | null>(null);
+
+  /** The confirmation, but only when it belongs to the choice currently on screen. */
+  // eslint-disable-next-line @typescript-eslint/member-ordering
+  readonly verifiedPlan = computed(() => {
+    const announced = this.verified();
+    return announced && announced.linkId === this.planChoice()?.id ? announced.plan : null;
+  });
+
   previousState(): void {
     globalThis.history.back();
+  }
+
+  /**
+   * Records that this plan choice stands, which publishes it to hc-patient.
+   *
+   * <b>There is no matching refuse.</b> Whether a refusal exists at all is not established — item
+   * 54 leaves it open, and dropping the payload's `isVerified` flag answered hc-patient's question
+   * as "no rejection path". When one is decided it is a second control here, not this one inverted.
+   */
+  verifyPlanChoice(): void {
+    const link = this.planChoice();
+    if (!link?.planCode || this.isVerifying()) {
+      return;
+    }
+    this.isVerifying.set(true);
+    this.directoryLinkService.verifyPlanChoice(link.id).subscribe({
+      next: announced => {
+        this.verified.set({ linkId: link.id, plan: announced.plan });
+        this.isVerifying.set(false);
+      },
+      // Say nothing. The error interceptor raises the alert, and a confirmation after a failed
+      // publish would tell an administrator that hc-patient had been told when it had not.
+      error: () => this.isVerifying.set(false),
+    });
   }
 
   toggleArchived(): void {

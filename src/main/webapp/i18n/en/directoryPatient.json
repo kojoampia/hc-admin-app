@@ -75,7 +75,16 @@
         "noAddress": "No address on file.",
         "noAngel": "No sponsor recorded.",
         "noPlan": "No plan subscribed.",
-        "noLead": "No clinical lead assigned."
+        "noLead": "No clinical lead assigned.",
+        "planChoice": {
+          "title": "Plan choice",
+          "chosen": "Tier chosen",
+          "reported": "Reported",
+          "unknown": "Not reported",
+          "membership": "Membership",
+          "verify": "Verify this choice",
+          "sent": "Verification of {{ plan }} was sent to the patient app. This console does not hold the result — the reported status above changes only when that app announces it."
+        }
       },
       "id": "Id",
       "status": "Status",

@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { beforeEach, describe, expect, it, vitest } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter, withComponentInputBinding } from '@angular/router';
@@ -8,6 +9,8 @@ import {
   faArrowLeft,
   faBoxArchive,
   faBoxOpen,
+  faCheck,
+  faClipboardCheck,
   faCreditCard,
   faHeart,
   faLocationDot,
@@ -20,6 +23,7 @@ import { provideTranslateService } from '@ngx-translate/core';
 import dayjs from 'dayjs/esm';
 import { of, throwError } from 'rxjs';
 
+import { DirectoryLinkService } from 'app/entities/directory/directory-link/service/directory-link.service';
 import { ProfessionalService } from 'app/entities/directory/professional/service/professional.service';
 import { PatientService } from '../service/patient.service';
 import { PatientDetail } from './patient-detail';
@@ -51,6 +55,9 @@ describe('Patient Management Detail Component', () => {
     library.addIcons(faBoxOpen);
     // The six card icons. A record that renders every field and throws on an icon is still broken.
     library.addIcons(faUser, faLocationDot, faShieldHalved, faHeart, faCreditCard, faStethoscope);
+    // The plan-choice card and its decision button (item 54). Registered here because
+    // `font-awesome-icons.ts` is the application's library and this harness builds its own.
+    library.addIcons(faClipboardCheck, faCheck);
   });
 
   beforeEach(() => {
@@ -298,6 +305,176 @@ describe('Patient Management Detail Component', () => {
 
       expect(comp.isArchived()).toBe(false);
       expect(comp.isSaving()).toBe(false);
+    });
+  });
+  /**
+   * Backlog item 54 — the decision that answers item 48's queue.
+   *
+   * The wire format hc-patient receives is the api's to prove; what these cases pin is that this
+   * console asks for a DECISION rather than setting a status, that it does not claim an outcome it
+   * cannot see, and that it never calls the act "activate".
+   */
+  describe('plan choice', () => {
+    const CHOICE = {
+      id: 'dl-a13',
+      localId: 'a13',
+      planCode: 'MELON',
+      planName: 'MELON Plan',
+      planStatus: 'PENDING',
+      planMembershipId: 'mem-a13-0041',
+    };
+
+    function withLink(link: unknown): void {
+      const links = TestBed.inject(DirectoryLinkService);
+      vitest
+        .spyOn(links, 'findByLocalIds')
+        .mockReturnValue(of(new Map(link ? [[(link as { localId: string }).localId, link]] : [])) as never);
+    }
+
+    /**
+     * A decision is POSTed, not a status toggled — the contract
+     * `professional-detail.ts:291` records after this console removed exactly such a toggle on
+     * 2026-08-24. The service is asked for the LINK's id, because the choice lives on the link and
+     * not on the patient.
+     */
+    it('posts a decision naming the link, rather than patching a status', () => {
+      withLink(CHOICE);
+      const links = TestBed.inject(DirectoryLinkService);
+      const verify = vitest.spyOn(links, 'verifyPlanChoice').mockReturnValue(of({ plan: 'MELON', membershipId: 'mem-a13-0041' }));
+
+      fixture.componentRef.setInput('patient', { id: 'a13' });
+      fixture.detectChanges();
+      comp.verifyPlanChoice();
+
+      expect(verify).toHaveBeenCalledWith('dl-a13');
+    });
+
+    /**
+     * There is no way to un-verify and no way to set a status, and the absence is the contract
+     * rather than an unfinished screen. Read off the service so that adding one is what fails,
+     * rather than a component that happens not to call it yet.
+     */
+    it('offers no way to set, patch or undo a plan status', () => {
+      const links = TestBed.inject(DirectoryLinkService) as unknown as Record<string, unknown>;
+
+      expect(links.verifyPlanChoice).toBeTypeOf('function');
+      for (const forbidden of ['updatePlanChoice', 'setPlanStatus', 'patchPlanChoice', 'unverifyPlanChoice', 'refusePlanChoice']) {
+        expect(links[forbidden]).toBeUndefined();
+      }
+    });
+
+    /**
+     * VERIFIED is not ACTIVE. hc-patient's clients test for ACTIVE when deciding whether a patient
+     * holds a plan, and what VERIFIED means beside it is an open question on their side — so this
+     * console must not promise an outcome it does not decide.
+     *
+     * **Read out of the i18n bundle and NOT out of the DOM, and the first version of this case did
+     * the latter and could not fail.** `provideTranslateService()` loads no catalogue in these
+     * tests, so `TranslatePipe` renders the KEY — the button's text is
+     * `hcAdminApp.…planChoice.verify`, which contains neither "verify" nor "activate" whatever the
+     * English says. Measured: changing the bundle to "Activate this choice" left the DOM assertion
+     * green. A wording rule has to be asserted against the words.
+     *
+     * The DOM half is still worth keeping and is here too — that the button exists at all, and that
+     * it is bound to the key this case then reads, so the two cannot drift apart.
+     */
+    it('never labels the action "activate"', () => {
+      withLink(CHOICE);
+      fixture.componentRef.setInput('patient', { id: 'a13' });
+      fixture.detectChanges();
+
+      const button: HTMLElement = fixture.nativeElement.querySelector('[data-cy="verifyPlanChoice"]');
+      expect(button).not.toBeNull();
+      expect(button.textContent).toContain('hcAdminApp.directoryPatient.detail.planChoice.verify');
+
+      const catalogue = JSON.parse(readFileSync('src/main/webapp/i18n/en/directoryPatient.json', 'utf8'));
+      const label: string = catalogue.hcAdminApp.directoryPatient.detail.planChoice.verify;
+      expect(label.toLowerCase()).not.toContain('activate');
+      expect(label.toLowerCase()).toContain('verify');
+    });
+
+    /**
+     * A membership can name no tier — hc-patient's `Membership.plan` carries no @NotNull — and the
+     * server refuses to verify one, because the payload's single field is a consistency check that
+     * a null defeats. `dl-plan-a5` in the `test` fixture is exactly this row, so the branch is
+     * reachable on every stack rather than only in production.
+     */
+    it('renders no decision for a choice that names no tier', () => {
+      withLink({ id: 'dl-plan-a5', localId: 'a5', planStatus: 'PENDING', planMembershipId: 'mem-a5-0204' });
+      fixture.componentRef.setInput('patient', { id: 'a5' });
+      fixture.detectChanges();
+
+      expect(comp.hasPlanChoice()).toBe(false);
+      expect(fixture.nativeElement.querySelector('[data-cy="verifyPlanChoice"]')).toBeNull();
+    });
+
+    it('renders no card for a patient with no plan choice at all', () => {
+      withLink({ id: 'dl-a15', localId: 'a15' });
+      fixture.componentRef.setInput('patient', { id: 'a15' });
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.querySelector('[data-cy="planChoice"]')).toBeNull();
+    });
+
+    /**
+     * **The reported status is not rewritten by verifying**, and this is the assertion most likely
+     * to be "fixed" into a bug. `planStatus` is what hc-patient said when the membership was
+     * created; their MembershipResource publishes on POST alone, so nothing announces the state
+     * moving and this console stores none. Flipping the pill would assert a state no event has
+     * reported — and the next PlanChosen would put it back.
+     */
+    it('leaves the reported status alone after announcing, and says only what was sent', () => {
+      withLink(CHOICE);
+      const links = TestBed.inject(DirectoryLinkService);
+      vitest.spyOn(links, 'verifyPlanChoice').mockReturnValue(of({ plan: 'MELON', membershipId: 'mem-a13-0041' }));
+
+      fixture.componentRef.setInput('patient', { id: 'a13' });
+      fixture.detectChanges();
+      comp.verifyPlanChoice();
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.querySelector('[data-cy="planChoiceStatus"]').textContent).toContain('PENDING');
+      expect(fixture.nativeElement.querySelector('[data-cy="planChoiceVerified"]')).not.toBeNull();
+    });
+
+    /** A failed publish must not confirm: it would say hc-patient was told when they were not. */
+    it('confirms nothing when the announcement fails', () => {
+      withLink(CHOICE);
+      const links = TestBed.inject(DirectoryLinkService);
+      vitest.spyOn(links, 'verifyPlanChoice').mockReturnValue(throwError(() => new Error('nope')));
+
+      fixture.componentRef.setInput('patient', { id: 'a13' });
+      fixture.detectChanges();
+      comp.verifyPlanChoice();
+      fixture.detectChanges();
+
+      expect(comp.verifiedPlan()).toBeNull();
+      expect(comp.isVerifying()).toBe(false);
+      expect(fixture.nativeElement.querySelector('[data-cy="planChoiceVerified"]')).toBeNull();
+    });
+
+    /**
+     * The stale-response window every signal on this component is keyed against.
+     * `/patient/A/view` -> `/patient/B/view` reuses the instance, so A's link can land after B's
+     * record has. Unkeyed, this would offer B's button against A's choice — a decision announced to
+     * hc-patient about the wrong person.
+     */
+    it('ignores a link that belongs to a patient no longer on screen', () => {
+      fixture.componentRef.setInput('patient', { id: 'a14' });
+      comp.resolvedLink.set({ id: 'a13', link: CHOICE });
+
+      expect(comp.planChoice()).toBeNull();
+      expect(comp.hasPlanChoice()).toBe(false);
+    });
+
+    /** And a confirmation belonging to a choice no longer on screen is not shown either. */
+    it('ignores a confirmation that belongs to another choice', () => {
+      withLink(CHOICE);
+      fixture.componentRef.setInput('patient', { id: 'a13' });
+      fixture.detectChanges();
+      comp.verified.set({ linkId: 'dl-plan-a6', plan: 'PAWPAW' });
+
+      expect(comp.verifiedPlan()).toBeNull();
     });
   });
 });
