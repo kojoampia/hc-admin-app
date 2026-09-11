@@ -145,23 +145,79 @@
       <input id="planName" type="text" [(ngModel)]="planName" name="planName" data-cy="planName" maxlength="120" />
     </div>
     <div class="field">
-      <label for="planCustomers" abfTranslate="dutyRoster.plan.customers">Customer ids</label>
-      <input id="planCustomers" type="text" [(ngModel)]="planCustomerIds" name="planCustomers" data-cy="planCustomers" />
-      <!-- Typed, not picked, and the reason is in planRound()'s comment: a visit's customerId is a
-           patientservice patientId and this service holds no mapping to it. A picker over hc-admin's
-           own patients would send a plausible id that means nobody. Backlog item 22. -->
+      <label for="planCustomer" abfTranslate="dutyRoster.plan.customers">Patients to visit</label>
+      <!-- Picked by name, and the VALUE is hc-patient's patientId (DirectoryLink.externalId), never
+           this console's Patient.id. Backlog item 22 forbids a dropdown that sends the latter, which
+           is a different control from this one — planRound()'s javadoc argues it, because a reader
+           arriving from that entry will read a dropdown here as the thing it warned about. -->
+      @if (customersFailed()) {
+        <small class="tiny text-danger" data-cy="planCustomersFailed" abfTranslate="dutyRoster.plan.customersFailed">
+          The list of patients could not be loaded, so none can be chosen. A round with no visits can still be planned.
+        </small>
+      } @else {
+        <div class="abf-row gap-8">
+          <select id="planCustomer" [(ngModel)]="planCustomerChoice" name="planCustomer" data-cy="planCustomer">
+            <option value="">{{ 'dutyRoster.plan.choosePatient' | translate }}</option>
+            @for (customer of offerableCustomers(); track customer.customerId) {
+              <!-- The NAME is the label and the id is the value, never the other way round: item 45's
+                   rule, and `name` is null when this service holds nothing that can name the person. -->
+              <option [value]="customer.customerId">{{ customer.name ?? ('dutyRoster.plan.unidentified' | translate) }}</option>
+            }
+          </select>
+          <button
+            type="button"
+            class="btn btn-ghost btn-sm"
+            [disabled]="planCustomerChoice === ''"
+            (click)="addCustomer()"
+            data-cy="planCustomerAdd"
+          >
+            <fa-icon icon="plus" />
+            <span abfTranslate="dutyRoster.plan.addPatient">Add</span>
+          </button>
+        </div>
+      }
+      @if (chosenCustomers().length > 0) {
+        <ul class="plan-visits" data-cy="planVisits">
+          @for (customer of chosenCustomers(); track customer.customerId; let index = $index) {
+            @let times = visitTimes(index);
+            <li>
+              <span class="visit-when">{{ times.startTime }}–{{ times.endTime }}</span>
+              <span class="visit-who">{{ customer.name ?? ('dutyRoster.plan.unidentified' | translate) }}</span>
+              <button
+                type="button"
+                class="btn btn-ghost btn-sm"
+                (click)="removeCustomer(customer.customerId)"
+                [attr.aria-label]="'dutyRoster.plan.removePatient' | translate"
+                data-cy="planVisitRemove"
+              >
+                <fa-icon icon="times" />
+              </button>
+            </li>
+          }
+        </ul>
+      }
       <small class="tiny muted" abfTranslate="dutyRoster.plan.customersHint">
-        Patient ids on the patient stack, comma separated. Leave empty for ward cover or on-call time — a round with no visits is valid.
+        One visit each, an hour apart, in the order added. Leave empty for ward cover or on-call time — a round with no visits is valid.
       </small>
+      <!-- The picker is deliberately incomplete and has to say so. A patient whose account on
+           hc-patient's stack this service cannot address has no id to send, so they are absent rather
+           than offered with a wrong one — and a reader cannot tell that from a list that is simply
+           short. See `showsPartialCoverage`. -->
+      @if (showsPartialCoverage()) {
+        <small class="tiny muted" data-cy="planCustomersPartial" abfTranslate="dutyRoster.plan.customersPartial">
+          Only patients whose account on the patient app is known to this console can be visited. A patient registered here without one is
+          not listed, because there is no id to send the roster service for them.
+        </small>
+      }
       <!-- Refused here rather than by hc-professional. Visits are placed an hour apart from one hour
            into the shift, so past the cap a visit falls outside the shift window and the far service
            400s — which arrives as "the roster service refused the round" and points the reader at
-           another stack for something they typed in this box. See tooManyVisits(). -->
+           another stack for something they chose in this panel. See tooManyVisits(). -->
       @if (tooManyVisits(); as tooMany) {
         <small class="tiny text-danger" data-cy="planVisitsTooMany">
           @if (planShift === 'OFF') {
             <span abfTranslate="dutyRoster.plan.visitsOnAnOffRound"
-              >An OFF round is a rest day and cannot carry visits. Choose a working shift, or clear the customer ids.</span
+              >An OFF round is a rest day and cannot carry visits. Choose a working shift, or remove the patients.</span
             >
           } @else {
             {{ 'dutyRoster.plan.tooManyVisits' | translate: { count: tooMany, limit: visitLimit(), shift: planShift } }}

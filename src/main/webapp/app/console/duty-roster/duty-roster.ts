@@ -7,7 +7,7 @@ import { TranslatePipe } from '@ngx-translate/core';
 import dayjs from 'dayjs/esm';
 import { forkJoin, map, of, switchMap } from 'rxjs';
 
-import { GeographicSpaceRef, PlanReport, PlanRole, PlanShift, RosterPlanService } from './roster-plan.service';
+import { GeographicSpaceRef, PlanReport, PlanRole, PlanShift, RosterPlanService, RoundCustomer } from './roster-plan.service';
 
 import { IProfessional } from 'app/entities/directory/professional/professional.model';
 import { ProfessionalService } from 'app/entities/directory/professional/service/professional.service';
@@ -94,13 +94,16 @@ export function visitWindow(shift: PlanShift, index: number): { startTime: strin
  */
 export const MAX_VISITS_PER_ROUND: Record<PlanShift, number> = { DAY: 7, EVENING: 7, NIGHT: 8, OFF: 0, FLEXIBLE: 13 };
 
-/** The customer ids as the request will read them: trimmed, blanks dropped. */
-export function parseCustomerIds(raw: string): string[] {
-  return raw
-    .split(',')
-    .map(id => id.trim())
-    .filter(id => id !== '');
-}
+/**
+ * The patients chosen for a round, in the order their visits will be placed.
+ *
+ * <p>This replaced a comma-separated text box on 2026-09-11 (backlog item 22). Order is load-bearing
+ * rather than incidental: `visitWindow` places the nth chosen patient n hours into the shift, so the
+ * list is a sequence and not a set. It is therefore the order they were added in, shown with the
+ * times beside it, and **not** sorted — changing it means removing a row and adding it again, which
+ * is the honest affordance for a list of three or four.
+ */
+export type ChosenCustomers = readonly RoundCustomer[];
 
 export interface RosterCell {
   readonly dayIndex: number;
@@ -158,12 +161,45 @@ export default class DutyRoster implements OnInit {
    */
   readonly planCallFailed = signal(false);
 
+  /**
+   * The patients a visit can be planned against — backlog item 22.
+   *
+   * <p>Every patient in this directory whose account on hc-patient's stack this service can address,
+   * which is **not** every patient in the directory. See {@link customersLoaded} for why the
+   * distinction has to survive as far as the template.
+   */
+  readonly customers = signal<RoundCustomer[]>([]);
+
+  /**
+   * Whether the list above has been answered for, as opposed to being empty.
+   *
+   * <p>Three states, not two, and collapsing them is how a picker lies. An empty `customers()` can
+   * mean the request has not come back, that it failed, or that this stack genuinely can address
+   * nobody — and only the third is a fact about the data. A dropdown showing nothing while a request
+   * is in flight reads as "no patient can be planned for", which is exactly the plausible-wrong-state
+   * item 22 exists to keep off this screen.
+   */
+  readonly customersLoaded = signal(false);
+
+  /** The list could not be read at all. Distinct from an empty list, for the reason above. */
+  readonly customersFailed = signal(false);
+
+  /**
+   * The patients chosen for this round, in the order their visits will be placed.
+   *
+   * <p>A list rather than a multi-select binding, because the order decides the times:
+   * `visitWindow` puts the nth of these n hours into the shift.
+   */
+  readonly chosenCustomers = signal<RoundCustomer[]>([]);
+
   planDayIndex = 0;
   planRole: PlanRole = 'NURSE';
   planShift: PlanShift = 'DAY';
   planSpaceId = '';
   planName = '';
-  planCustomerIds = '';
+
+  /** The `customerId` currently selected in the picker, before it is added to the round. */
+  planCustomerChoice = '';
 
   private readonly rosterWeekService = inject(RosterWeekService);
   private readonly shiftService = inject(ShiftAssignmentService);
@@ -232,6 +268,32 @@ export default class DutyRoster implements OnInit {
   readonly rosterServiceNotConfigured = computed(
     () => this.report()?.rounds.some(round => round.reason === 'ROSTER_SERVICE_NOT_CONFIGURED') ?? false,
   );
+
+  /**
+   * The patients still offerable: those this stack can address, minus the ones already on the round.
+   *
+   * <p>Removing the chosen ones is how a patient is kept off a round twice. hc-professional would
+   * refuse the second visit anyway — it rejects two visits on one round that overlap — but it would
+   * refuse the *whole round*, and the message that comes back names the roster service rather than
+   * the duplicate. The same reasoning as `tooManyVisits`, one input along.
+   */
+  // eslint-disable-next-line @typescript-eslint/member-ordering
+  readonly offerableCustomers = computed(() => {
+    const chosen = new Set(this.chosenCustomers().map(customer => customer.customerId));
+    return this.customers().filter(customer => !chosen.has(customer.customerId));
+  });
+
+  /**
+   * Whether to tell the reader that this picker cannot offer everybody.
+   *
+   * <p>Shown whenever the list has been answered for, and **not** only when it happens to be short:
+   * the reader cannot see how many patients the directory holds from this panel, so "some patients
+   * are missing" is not something they can infer from the list being small. Suppressed while the
+   * request is in flight and when it failed, because those have their own sentences and stacking
+   * three explanations on one control explains nothing.
+   */
+  // eslint-disable-next-line @typescript-eslint/member-ordering
+  readonly showsPartialCoverage = computed(() => this.customersLoaded() && !this.customersFailed());
 
   // eslint-disable-next-line @typescript-eslint/member-ordering
   readonly dayLabels = computed(() => {
@@ -426,6 +488,22 @@ export default class DutyRoster implements OnInit {
         error: () => this.spaces.set([]),
       });
     }
+    if (!this.customersLoaded() && !this.customersFailed()) {
+      this.rosterPlanService.customers().subscribe({
+        next: customers => {
+          this.customers.set(customers);
+          this.customersLoaded.set(true);
+        },
+        // Unlike the space list, a failure here gets its own words. An empty space picker is
+        // obviously unusable — nothing can be planned without an area — but an empty patient picker
+        // is a legitimate state (a round with no visits is valid), so silence would leave a reader
+        // unable to tell "nobody can be planned for" from "the list did not load".
+        error: () => {
+          this.customers.set([]);
+          this.customersFailed.set(true);
+        },
+      });
+    }
   }
 
   closePlanner(): void {
@@ -448,9 +526,36 @@ export default class DutyRoster implements OnInit {
     );
   }
 
-  /** How many visits the typed ids will become. */
+  /** How many visits the chosen patients will become — one each, in the order they were added. */
   visitCount(): number {
-    return parseCustomerIds(this.planCustomerIds).length;
+    return this.chosenCustomers().length;
+  }
+
+  /**
+   * Put the selected patient on the round, at the end of the list.
+   *
+   * <p>Resolved from `customers()` rather than trusted from the select's value: the control's value
+   * is a string that arrived from the DOM, and the round is built from the `RoundCustomer` record so
+   * that what is sent is what the api offered. Silently does nothing for an id that is not on offer,
+   * which is not a state the screen can produce and is not worth a message.
+   */
+  addCustomer(): void {
+    const chosen = this.customers().find(candidate => candidate.customerId === this.planCustomerChoice);
+    if (!chosen || this.chosenCustomers().some(already => already.customerId === chosen.customerId)) {
+      return;
+    }
+    this.chosenCustomers.update(current => [...current, chosen]);
+    this.planCustomerChoice = '';
+  }
+
+  /** Take a patient off the round. The visits after them move an hour earlier, which is the intent. */
+  removeCustomer(customerId: string): void {
+    this.chosenCustomers.update(current => current.filter(customer => customer.customerId !== customerId));
+  }
+
+  /** When this patient's visit starts and ends, given where they sit in the list. */
+  visitTimes(index: number): { startTime: string; endTime: string } {
+    return visitWindow(this.planShift, index);
   }
 
   /** The cap for the shift currently chosen, so the template can name it. */
@@ -479,11 +584,25 @@ export default class DutyRoster implements OnInit {
   /**
    * Staff one round and file it with the roster of record.
    *
-   * <p><b>Customer ids are typed in, and that is a known limitation rather than a design.</b> A
-   * visit's `customerId` is a `patientservice` `Profile.patientId`, and this service holds no
-   * mapping from its own `Patient` documents to that id — see backlog item 22. Offering a picker
-   * over hc-admin's patients would send a plausible id that means nobody, which is worse than
-   * asking. A round with no visits is valid: ward cover and on-call time are real shifts.
+   * <h2>Patients are picked by name now, and the id sent is hc-patient's — backlog item 22</h2>
+   *
+   * <p>This used to be a comma-separated box of ids typed in by hand, because a visit's `customerId`
+   * is a `patientservice` `Profile.patientId` and nothing here could produce one. That changed when
+   * `directory_link` arrived on 2026-09-07: a patient's link carries `externalId`, which **is**
+   * hc-patient's id for them, and `GET /api/round-customers` is the join.
+   *
+   * <p><b>⚠ Item 22 says "do not close this by making the field a dropdown of hc-admin patients",
+   * and a reader arriving from that entry will think it was ignored.</b> It was not. The failure it
+   * names is sending `Patient.id` — this console's own key — which hc-professional would accept and
+   * file into a day plan for nobody. `customerId` here is `DirectoryLink.externalId`, the id the far
+   * stack actually keys on, so this is the control the entry describes carrying the opposite value.
+   *
+   * <p><b>What the picker cannot do is offer everybody</b>, and the panel says so rather than hiding
+   * it: a patient with no link carrying that id is absent from the list, because there is no id to
+   * send and a plausible wrong one is worse than a blank field. That is the entry's own standing
+   * lesson, kept.
+   *
+   * <p>A round with no visits is still valid: ward cover and on-call time are real shifts.
    */
   planRound(): void {
     const date = this.planDate();
@@ -494,8 +613,9 @@ export default class DutyRoster implements OnInit {
     this.report.set(null);
     this.planCallFailed.set(false);
 
-    const visits = parseCustomerIds(this.planCustomerIds).map((customerId, index) => ({
-      customerId,
+    // `customer.customerId` and never anything off the local record — see this method's javadoc.
+    const visits = this.chosenCustomers().map((customer, index) => ({
+      customerId: customer.customerId,
       ...visitWindow(this.planShift, index),
     }));
 
