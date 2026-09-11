@@ -314,3 +314,31 @@
   background: var(--abf-warn-bg);
   color: var(--abf-warn);
 }
+
+// The chosen patients, in the order their visits will be placed.
+//
+// A list and not a table: three or four rows of a time and a name, and a table head would be more
+// chrome than content. The time is first because the order is the meaning — remove a row and every
+// visit after it moves an hour earlier, which is visible in this column and nowhere else.
+.plan-visits {
+  list-style: none;
+  margin: 9px 0 0;
+  padding: 0;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 3px 0;
+  }
+
+  .visit-when {
+    font-variant-numeric: tabular-nums;
+    color: var(--abf-grey);
+    font-size: 12px;
+  }
+
+  .visit-who {
+    flex: 1;
+  }
+}
