@@ -16,7 +16,27 @@ export default defineConfig(
       },
     },
   },
-  { ignores: ['target/classes/static/', 'target/', 'src/main/webapp/swagger-ui/', 'dist/'] },
+  // `.claude/` holds agent git worktrees — a second, complete copy of this application at
+  // `<repo>/.claude/worktrees/agent-*`, created INSIDE the repository while an agent is mid-cycle.
+  //
+  // Without this entry `eslint .` walks that copy, and every file in it fails to parse:
+  //
+  //   Parsing error: "parserOptions.project" has been provided for @typescript-eslint/parser.
+  //   The file was not found in any of the provided project(s): .claude/worktrees/…/navbar.ts
+  //
+  // Measured here on 2026-09-12 with one throwaway worktree present: **634 errors**, and because
+  // `pretest` runs `npm run lint`, `npm test` fails before a single test — under a message naming a
+  // parser option rather than the nesting. hc-vendor hit exactly this and closed it the same way.
+  //
+  // THE MECHANISM IS NOT THE ONE THE GLOB SUGGESTS, and the naive probe misses it. The typed block's
+  // glob is `src/main/webapp/**/*.ts`, anchored — planting a single `.ts` at that path does NOT
+  // reproduce it. What does: ESLint 10 resolves a config file PER LINTED FILE, searching upward from
+  // that file's own directory, so the nested checkout's OWN `eslint.config.ts` applies with the nested
+  // directory as its basePath — against which the anchored glob matches perfectly well — while
+  // `parserOptions.project` still resolves against `process.cwd()`, the outer root. So the trigger is
+  // **a config file in a subdirectory**, not a worktree, and git is irrelevant: a plain directory
+  // holding a copy of this config and one `.ts` reproduces it.
+  { ignores: ['target/classes/static/', 'target/', 'src/main/webapp/swagger-ui/', 'dist/', '.claude/'] },
   eslint.configs.recommended,
   {
     files: ['**/*.{js,cjs,mjs}'],
