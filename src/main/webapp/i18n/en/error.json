@@ -8,6 +8,7 @@
       "405": "The HTTP verb you used is not supported for this URL.",
       "500": "Internal server error."
     },
+    "accountidambiguous": "More than one vendor record holds this portal login, so it no longer identifies a single vendor. Find the vendor records sharing it and clear the login from all but the one it really belongs to.",
     "concurrencyFailure": "Another user modified this data at the same time as you. Your changes were rejected.",
     "validation": "Validation error on the server."
   }

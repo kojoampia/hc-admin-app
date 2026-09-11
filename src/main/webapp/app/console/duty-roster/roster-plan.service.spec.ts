@@ -192,4 +192,51 @@ describe('RosterPlanService', () => {
       expect(seen).toEqual([[]]);
     });
   });
+
+  /**
+   * The patients a visit can be planned against — backlog item 22.
+   *
+   * <p>A narrow read of its own rather than `api/patients`, which serves the directory screen and
+   * returns whole records. What this list carries is the pair the picker needs: hc-patient's id for
+   * the person, and a name to choose by.
+   */
+  describe('customers', () => {
+    it('reads api/round-customers under the hcadminservice prefix', () => {
+      service.customers().subscribe();
+
+      const req = httpMock.expectOne(request => request.method === 'GET' && request.url.includes('round-customers'));
+      // Built through ApplicationConfigService, never a hardcoded /services path.
+      expect(req.request.url).toContain('services/hcadminservice/api/round-customers');
+      req.flush([]);
+    });
+
+    /**
+     * Asked for with a size, for the reason `spaces` gives one block up.
+     *
+     * <p>A `<select>` silently offering the first twenty patients is worse than the free-text box it
+     * replaced, because it looks complete — and this list is already deliberately incomplete for a
+     * different reason, which the panel explains. Two kinds of missing on one control, only one of
+     * them honest.
+     */
+    it('asks for a page big enough to hold the directory', () => {
+      service.customers().subscribe();
+
+      const req = httpMock.expectOne(r => r.url.includes('round-customers'));
+      expect(req.request.params.get('size')).toBe('500');
+      // No `sort`: the api orders by a name computed from two documents, which is not a key either
+      // collection can sort on, so a sort parameter here would be silently ignored.
+      expect(req.request.params.get('sort')).toBeNull();
+      req.flush([]);
+    });
+
+    /** A body-less 200 is an empty list rather than a null the picker would throw on. */
+    it('answers an empty list when the response carries no body', () => {
+      const seen: unknown[] = [];
+      service.customers().subscribe(customers => seen.push(customers));
+
+      httpMock.expectOne(r => r.url.includes('round-customers')).flush(null, { status: 200, statusText: 'OK' });
+
+      expect(seen).toEqual([[]]);
+    });
+  });
 });

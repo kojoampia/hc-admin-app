@@ -10,6 +10,7 @@ import { readFileSync } from 'node:fs';
 import dayjs from 'dayjs/esm';
 
 import DutyRoster, { MAX_VISITS_PER_ROUND, SHIFT_CYCLE, nextShift, visitWindow } from './duty-roster';
+import { RoundCustomer } from './roster-plan.service';
 
 /**
  * The grid's arithmetic, which the dashboard now has to match.
@@ -313,19 +314,25 @@ describe('duty roster planning', () => {
     component.planName = 'Morning round';
     component.planShift = 'DAY';
 
-    component.planCustomerIds = Array.from({ length: MAX_VISITS_PER_ROUND.DAY }, (_, i) => `patient-${i}`).join(',');
+    component.chosenCustomers.set(Array.from({ length: MAX_VISITS_PER_ROUND.DAY }, (_, i) => customer(`hcp-${i}`, `Patient ${i}`)));
     expect(component.tooManyVisits()).toBeNull();
     expect(component.canPlan()).toBe(true);
 
-    component.planCustomerIds += ',patient-one-too-many';
+    component.chosenCustomers.update(chosen => [...chosen, customer('hcp-one-too-many', 'One Too Many')]);
     expect(component.visitCount()).toBe(MAX_VISITS_PER_ROUND.DAY + 1);
     expect(component.tooManyVisits()).toBe(MAX_VISITS_PER_ROUND.DAY + 1);
     expect(component.canPlan()).toBe(false);
   });
 
-  /** Blank entries are dropped before counting, so trailing commas do not cost a visit. */
-  it('counts only the ids that will become visits', () => {
-    component.planCustomerIds = ' patient-a , , patient-b,  ,';
+  /** One visit per chosen patient — the count is the list, since a patient cannot be added twice. */
+  it('counts one visit for each patient on the round', () => {
+    component.customers.set([customer('hcp-a', 'Ama Ofori'), customer('hcp-b', 'Kwesi Mensah')]);
+
+    component.planCustomerChoice = 'hcp-a';
+    component.addCustomer();
+    component.planCustomerChoice = 'hcp-b';
+    component.addCustomer();
+
     expect(component.visitCount()).toBe(2);
   });
 
@@ -347,5 +354,245 @@ describe('duty roster planning', () => {
     component.planDayIndex = 3;
 
     expect(component.planDate()?.format('YYYY-MM-DD')).toBe('2026-08-13');
+  });
+
+  function customer(customerId: string, name: string | null): RoundCustomer {
+    return { customerId, name };
+  }
+});
+
+/**
+ * The patient picker — backlog item 22, and the one assertion this block exists for is which id is
+ * sent.
+ *
+ * <h2>Why a dropdown here is not the dropdown item 22 forbids</h2>
+ *
+ * <p>That entry says "do not close this by making the field a dropdown of hc-admin patients", and
+ * the failure it names is sending `Patient.id` — this console's own key — which hc-professional
+ * would accept, file, and turn into a day plan for nobody. The picker sends `customerId`, which the
+ * api reads off the patient's `DirectoryLink.externalId`: hc-patient's own id for the person, and
+ * the value a visit is actually keyed on over there.
+ *
+ * <p><b>`sends the sibling's id for the patient and never this console's` is the guard, and it was
+ * watched failing</b> — changing `planRound` to send anything off the local record turns it red with
+ * a message naming the confusion. It asserts the request body rather than the component, because the
+ * body is what crosses the boundary.
+ *
+ * <h2>Who is absent, and why the screen has to say so</h2>
+ *
+ * <p>The api offers only patients whose link carries that id — six of fifteen in today's seed. Three
+ * cases below pin the exclusions the fixture already has (an unlinked patient, a care angel, an
+ * erased subject) at the level this side can see them: they never arrive in `customers()`, so what
+ * this block asserts is that nothing on this side invents a row for them, and
+ * `RoundCustomerServiceTest` asserts the server-side rule that keeps them out.
+ */
+describe('duty roster patient picker', () => {
+  const template = readFileSync('src/main/webapp/app/console/duty-roster/duty-roster.html', 'utf8');
+  let component: DutyRoster;
+  let planned: any[];
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([]), provideTranslateService()],
+    });
+    component = TestBed.runInInjectionContext(() => new DutyRoster());
+    planned = [];
+
+    component.week.set({ id: 'week-1', label: 'W', startDate: dayjs('2026-08-10') });
+    component.planSpaceId = 'space-osu';
+    component.planName = 'Morning round';
+    (component as any).rosterPlanService = {
+      plan: (request: any) => (planned.push(request), { subscribe: () => undefined }),
+      spaces: () => ({ subscribe: () => undefined }),
+      customers: () => ({ subscribe: () => undefined }),
+    };
+  });
+
+  /**
+   * <b>The id on the wire is hc-patient's, never this console's.</b>
+   *
+   * <p>Both halves are asserted: what goes on the visit, and what must not. The second is not
+   * redundant — an implementation that sent the local id would fail the first with a string diff a
+   * reader has to interpret, and fails the second with a sentence saying what the mistake is.
+   */
+  it("sends the sibling's id for the patient and never this console's", () => {
+    // `a6` is the patient's id in THIS directory; `hcp-6120` is hc-patient's, off the link. Both are
+    // the fixture's real values for one person, which is what makes the pair worth asserting.
+    component.chosenCustomers.set([{ customerId: 'hcp-6120', name: 'Kwame Darkwa' }]);
+
+    component.planRound();
+
+    expect(planned).toHaveLength(1);
+    const visits = planned[0].rounds[0].visits;
+    expect(visits).toHaveLength(1);
+    expect(visits[0].customerId).toBe('hcp-6120');
+    expect(visits[0].customerId, 'sending Patient.id is the failure backlog item 22 exists to prevent').not.toBe('a6');
+  });
+
+  /** Visits are placed in the order the patients were added, an hour apart. */
+  it('places one visit per chosen patient, in the order they were added', () => {
+    component.planShift = 'DAY';
+    component.customers.set([
+      { customerId: 'hcp-6120', name: 'Kwame Darkwa' },
+      { customerId: 'hcp-8814', name: 'naa.adjeley@mail.gh' },
+    ]);
+
+    component.planCustomerChoice = 'hcp-8814';
+    component.addCustomer();
+    component.planCustomerChoice = 'hcp-6120';
+    component.addCustomer();
+    component.planRound();
+
+    expect(planned[0].rounds[0].visits).toEqual([
+      { customerId: 'hcp-8814', startTime: '08:00', endTime: '09:00' },
+      { customerId: 'hcp-6120', startTime: '09:00', endTime: '10:00' },
+    ]);
+  });
+
+  /**
+   * A patient with no link is not offered, and nothing on this side puts them back.
+   *
+   * <p>`a14` in the `test` fixture: a real, permanent state rather than a pending one — there is no
+   * id to send for them, so the round cannot name them at all.
+   */
+  it('does not offer a patient the api left out for having no link', () => {
+    component.customers.set([{ customerId: 'hcp-6120', name: 'Kwame Darkwa' }]);
+    component.customersLoaded.set(true);
+
+    expect(component.offerableCustomers().map(candidate => candidate.customerId)).toEqual(['hcp-6120']);
+
+    // And an id the api never offered cannot be added, however it reaches the control's value.
+    component.planCustomerChoice = 'a14';
+    component.addCustomer();
+    expect(component.chosenCustomers()).toHaveLength(0);
+  });
+
+  /** A care angel is an account on hc-patient's stack and is not a patient — `dl-angel` in the seed. */
+  it('does not offer a care angel', () => {
+    component.customers.set([{ customerId: 'hcp-6120', name: 'Kwame Darkwa' }]);
+    component.customersLoaded.set(true);
+
+    component.planCustomerChoice = 'kojo.sarsah@mail.gh';
+    component.addCustomer();
+
+    expect(component.chosenCustomers()).toHaveLength(0);
+    expect(component.offerableCustomers().map(candidate => candidate.name)).not.toContain('kojo.sarsah@mail.gh');
+  });
+
+  /** Somebody hc-patient has erased — `dl-erased` in the seed — is never a visit on a clinician's day. */
+  it('does not offer an erased subject', () => {
+    component.customers.set([{ customerId: 'hcp-6120', name: 'Kwame Darkwa' }]);
+    component.customersLoaded.set(true);
+
+    component.planCustomerChoice = 'hcp-0000';
+    component.addCustomer();
+    component.planRound();
+
+    expect(component.chosenCustomers()).toHaveLength(0);
+    expect(planned[0].rounds[0].visits).toEqual([]);
+  });
+
+  /**
+   * The screen says why a patient may not be listed.
+   *
+   * <p>A picker that silently omits nine of fifteen patients is its own defect: the reader cannot see
+   * the directory from this panel, so "some are missing" is not something they can infer from a short
+   * list. Read out of the template and out of the catalogue, because a signal asserted on the
+   * component would pass against a panel that rendered nothing.
+   */
+  it('explains on screen that not every patient can be listed', () => {
+    expect(template).toContain('data-cy="planCustomersPartial"');
+    expect(template).toContain('dutyRoster.plan.customersPartial');
+
+    const words = JSON.parse(readFileSync('src/main/webapp/i18n/en/dutyRoster.json', 'utf8')).dutyRoster.plan.customersPartial;
+    expect(words).toContain('not listed');
+    expect(words).toContain('no id to send');
+
+    // Shown once the list has been answered for, and not while it is in flight or after it failed —
+    // those have their own sentences, and three explanations on one control explain nothing.
+    expect(component.showsPartialCoverage()).toBe(false);
+    component.customersLoaded.set(true);
+    expect(component.showsPartialCoverage()).toBe(true);
+    component.customersFailed.set(true);
+    expect(component.showsPartialCoverage()).toBe(false);
+  });
+
+  /**
+   * A row nothing can name is labelled in words, never by its id.
+   *
+   * <p>Item 45's rule at the one place this screen renders a person. The api sends `null` for such a
+   * row — `a13` and `a15` in the seed have no `Profile` — and the option shows the catalogue's
+   * words. Asserted on the template, because the fallback is a template expression.
+   */
+  it('labels an unnameable patient in words rather than by an id', () => {
+    expect(template).toContain("customer.name ?? ('dutyRoster.plan.unidentified' | translate)");
+    // The name is the label and the id is the value, and never the other way round.
+    expect(template).toContain('<option [value]="customer.customerId">');
+    expect(template).not.toContain('{{ customer.customerId }}');
+  });
+
+  /** A patient already on the round is not offered again — hc-professional refuses overlapping visits. */
+  it('stops a patient being added to the same round twice', () => {
+    component.customers.set([
+      { customerId: 'hcp-6120', name: 'Kwame Darkwa' },
+      { customerId: 'hcp-8814', name: 'naa.adjeley@mail.gh' },
+    ]);
+
+    component.planCustomerChoice = 'hcp-6120';
+    component.addCustomer();
+    expect(component.offerableCustomers().map(candidate => candidate.customerId)).toEqual(['hcp-8814']);
+
+    component.planCustomerChoice = 'hcp-6120';
+    component.addCustomer();
+    expect(component.chosenCustomers()).toHaveLength(1);
+  });
+
+  /** Taking a patient off the round moves the visits after them an hour earlier, which is the intent. */
+  it('closes the gap when a patient is removed', () => {
+    component.planShift = 'DAY';
+    component.chosenCustomers.set([
+      { customerId: 'hcp-1', name: 'First' },
+      { customerId: 'hcp-2', name: 'Second' },
+      { customerId: 'hcp-3', name: 'Third' },
+    ]);
+
+    component.removeCustomer('hcp-1');
+    component.planRound();
+
+    expect(planned[0].rounds[0].visits).toEqual([
+      { customerId: 'hcp-2', startTime: '08:00', endTime: '09:00' },
+      { customerId: 'hcp-3', startTime: '09:00', endTime: '10:00' },
+    ]);
+  });
+
+  /**
+   * An empty list that has not loaded, one that failed and one that is genuinely empty are three
+   * states, and the panel keeps them apart.
+   *
+   * <p>Collapsing them is how a picker lies: a dropdown showing nothing while a request is in flight
+   * reads as "no patient can be planned for", which is the plausible-wrong-state item 22 exists to
+   * keep off this screen.
+   */
+  it('tells an unloaded patient list from a failed one and from an empty one', () => {
+    expect(component.customersLoaded()).toBe(false);
+    expect(component.customersFailed()).toBe(false);
+
+    (component as any).rosterPlanService.customers = () => ({
+      subscribe: ({ error }: { error: (reason: unknown) => void }): void => error(new Error('nope')),
+    });
+    component.openPlanner();
+
+    expect(component.customersFailed()).toBe(true);
+    expect(component.customersLoaded()).toBe(false);
+    expect(component.customers()).toEqual([]);
+    expect(template).toContain('data-cy="planCustomersFailed"');
+  });
+
+  /** A round with no visits is valid — ward cover and on-call time are real shifts. */
+  it('still plans a round with nobody on it', () => {
+    component.planRound();
+
+    expect(planned).toHaveLength(1);
+    expect(planned[0].rounds[0].visits).toEqual([]);
   });
 });
