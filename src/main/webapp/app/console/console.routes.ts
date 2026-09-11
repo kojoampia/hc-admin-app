@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 
 import { UserRouteAccessService } from 'app/core/auth/user-route-access.service';
+import { Authority } from 'app/shared/jhipster/constants';
 
 /**
  * The six custom console screens.
@@ -70,6 +71,35 @@ const routes: Routes = [
     data: { pageTitle: 'wageRates.pageTitle', breadcrumb: 'global.menu.group.catalogue' },
     canActivate: [UserRouteAccessService],
     loadComponent: () => import('./wage-rates/wage-rates'),
+  },
+  {
+    /**
+     * Sign-in and registrations — backlog item 75.
+     *
+     * **The only console route that names an authority**, and the exception is deliberate rather than
+     * an inconsistency with the comment at the top of this file. Every other screen here is readable
+     * by all three roles because write access is what gets gated, per control. This one is different:
+     * hc-admin-gateway's `GET /api/auth-activity` is `ROLE_ADMIN` alone — narrower than every other
+     * read this console makes — because its `topFailedLogins` names logins exactly as they were
+     * entered, which on a failure is usually not the account holder.
+     *
+     * So an operator reaching this screen would get a 403 for the half it exists for and a working
+     * chart for the other. That is a screen advertising a dead end, which is the same argument the
+     * deletion-requests entry in `shell-navigation.ts` makes for hiding a link — except that here the
+     * refusal is the security boundary rather than a matter of taste, so it is on the route as well
+     * as in the nav.
+     *
+     * **The guard is not the boundary.** The gateway refuses independently; this only decides whether
+     * an operator is shown a screen that would half-work. Relax the server first if this ever changes.
+     */
+    path: 'auth-activity',
+    data: {
+      authorities: [Authority.ADMIN],
+      pageTitle: 'authActivity.pageTitle',
+      breadcrumb: 'global.menu.group.administration',
+    },
+    canActivate: [UserRouteAccessService],
+    loadComponent: () => import('./auth-activity/auth-activity'),
   },
   {
     path: 'organisation-profile',

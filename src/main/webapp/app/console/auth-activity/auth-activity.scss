@@ -1,0 +1,29 @@
+// Imported per component, which is the only way these classes reach this template — Angular scopes a
+// component's styles. See the design-system section of CLAUDE.md: the OTHER console stylesheet,
+// _console-admin.scss, is the global one, and a class a GENERATED create/edit screen needs must live
+// there instead. This is a hand-written screen, so this is the right file.
+@import 'console-components';
+
+// The same idiom as wage-rates.scss, deliberately duplicated rather than promoted to the global
+// sheet: a gold-ruled aside for a sentence the screen has to say out loud. Three of them here carry
+// scope statements that this screen is wrong without — see auth-activity.ts.
+.note {
+  margin: 0 0 16px;
+  padding: 10px 14px;
+  border-left: 3px solid var(--abf-gold);
+  background: var(--abf-gold-050);
+  border-radius: 0 6px 6px 0;
+  font-size: 13px;
+  color: var(--abf-ink);
+}
+
+.mb-18 {
+  margin-bottom: 18px;
+}
+
+// The staff card is deliberately quieter than the headline above it. The two numbers are a real
+// operational answer and are NOT the estate's registrations, and a card of the same visual weight
+// invites reading them as one figure.
+.card-pad .sec-head p {
+  max-width: 62ch;
+}

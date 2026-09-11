@@ -76,6 +76,19 @@ export const SHELL_NAVIGATION: readonly ShellNavItem[] = [
     group: 'global.menu.group.administration',
     authorities: [Authority.ADMIN],
   },
+  // Admin-only for a stronger reason than the entry above it, and the difference is worth knowing.
+  // There the refusal is taste — an operator sees a correct read-only queue and simply cannot act on
+  // it. Here hc-admin-gateway refuses `GET /api/auth-activity` outright for anyone but an
+  // administrator, because that response names logins exactly as they were typed. So an operator
+  // following this link would get half a screen and a 403, and this authority mirrors a server rule
+  // rather than hiding a dead end. `console.routes.ts` carries the same guard and says the same.
+  {
+    route: 'auth-activity',
+    label: 'global.menu.console.authActivity',
+    icon: 'user-shield',
+    group: 'global.menu.group.administration',
+    authorities: [Authority.ADMIN],
+  },
 
   // JHipster's stock admin screens, adopted into the console rather than left
   // unreachable. They are the only entries that name an authority: the routes

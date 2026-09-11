@@ -1,0 +1,203 @@
+<div class="sec-head">
+  <div>
+    <h3 abfTranslate="authActivity.title">Sign-in and registrations</h3>
+    <p abfTranslate="authActivity.subtitle">Who has registered across BridgeCare, and what has happened at the console's sign-in page</p>
+  </div>
+  <div class="sec-head-actions">
+    <button type="button" class="btn btn-info" (click)="load()" [disabled]="isLoading()" data-cy="authActivityRefresh">
+      <fa-icon icon="sync" [animation]="isLoading() ? 'spin' : undefined" />
+      <span abfTranslate="authActivity.refresh">Refresh</span>
+    </button>
+  </div>
+</div>
+
+<!--
+  THE HEADLINE. Registrations across the estate, from directory_link.
+
+  The scope sentence under the title is not decoration and must not be trimmed: without it, the much
+  smaller staff-account figure further down reads as the platform's user count. See auth-activity.ts.
+-->
+<abf-chart-card title="authActivity.registrations.title" subtitle="authActivity.registrations.subtitle">
+  <div chartFigure>
+    <p class="note" data-cy="registrationsScope" abfTranslate="authActivity.registrations.scope">
+      Everyone who registered on the patient and clinician systems — patients, care angels and clinicians. This is not the count of console
+      staff accounts below.
+    </p>
+
+    @if (registrationsError(); as message) {
+      <div class="alert alert-warning" role="alert" data-cy="registrationsError">{{ message | translate }}</div>
+    } @else if (registrations(); as totals) {
+      <div class="abf-row gap-16 wrap mb-18">
+        <div class="stat">
+          <b data-cy="registrationsTotal">{{ totals.total }}</b>
+          <span abfTranslate="authActivity.registrations.total">Registered accounts</span>
+        </div>
+      </div>
+      <abf-stacked-bar [data]="registrationSegments()" [ariaLabel]="'authActivity.registrations.title' | translate" />
+    }
+  </div>
+
+  <div chartLegend class="legend">
+    @for (segment of registrationSegments(); track segment.key; let i = $index) {
+      <span class="li">
+        <span class="sw" [style.background]="seriesColours[i]"></span>
+        {{ 'authActivity.state.' + segment.key | translate }} · {{ segment.value }}
+      </span>
+    }
+  </div>
+
+  <table chartTable class="viz-tbl" data-cy="registrationsTable">
+    <thead>
+      <tr>
+        <th abfTranslate="authActivity.registrations.source">System</th>
+        <th abfTranslate="authActivity.state.activated">Activated</th>
+        <th abfTranslate="authActivity.state.notActivated">Not activated</th>
+        <th abfTranslate="authActivity.state.notReported">Not reported</th>
+        <th abfTranslate="authActivity.registrations.total">Registered accounts</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (row of registrations()?.bySource ?? []; track row.source) {
+        <tr>
+          <td>{{ 'authActivity.source.' + row.source | translate }}</td>
+          <td>{{ row.activated }}</td>
+          <td>{{ row.notActivated }}</td>
+          <td>{{ row.notReported }}</td>
+          <td>{{ row.total }}</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</abf-chart-card>
+
+<!--
+  "Not reported" is a THIRD state, stated on the screen because a reader who assumes two will read it
+  as "not activated" and conclude that clinicians are being blocked. DirectoryLink.activated is
+  nullable for exactly this reason and its javadoc records the api having got this wrong once.
+-->
+<p class="note" data-cy="notReportedNote" abfTranslate="authActivity.registrations.notReportedNote">
+  "Not reported" is not the same as "not activated". A clinician known to this console only from an onboarding event has told us nothing
+  either way — no event has said whether the account can sign in.
+</p>
+
+<!--
+  The gateway's own accounts. Deliberately AFTER the headline and visibly smaller.
+-->
+<section class="card card-pad mb-18">
+  <div class="sec-head">
+    <div>
+      <h4 abfTranslate="authActivity.staff.title">Console staff accounts</h4>
+      <p data-cy="staffScope" abfTranslate="authActivity.staff.scope">
+        Administrators and operators on this console, created by an administrator. There is no self-registration here, so this number is
+        small by design and is not a count of patients or clinicians.
+      </p>
+    </div>
+  </div>
+
+  @if (activityError(); as message) {
+    <div class="alert alert-warning" role="alert" data-cy="staffError">{{ message | translate }}</div>
+  } @else if (activity(); as data) {
+    <div class="abf-row gap-16 wrap">
+      <div class="stat">
+        <b data-cy="staffActivated">{{ data.accounts.activated }}</b>
+        <span abfTranslate="authActivity.state.activated">Activated</span>
+      </div>
+      <div class="stat">
+        <b data-cy="staffNotActivated">{{ data.accounts.notActivated }}</b>
+        <span abfTranslate="authActivity.state.notActivated">Not activated</span>
+      </div>
+    </div>
+  }
+</section>
+
+<!-- Sign-ins. Every figure here is over the window the server reports, never an assumed one. -->
+@if (activityError(); as message) {
+  <div class="alert alert-warning" role="alert" data-cy="loginsError">{{ message | translate }}</div>
+} @else if (activity(); as data) {
+  <abf-chart-card title="authActivity.logins.title" subtitle="authActivity.logins.subtitle">
+    <div chartFigure>
+      <div class="abf-row gap-16 wrap mb-18">
+        <div class="stat">
+          <b data-cy="loginsSucceeded">{{ data.logins.succeeded }}</b>
+          <span>{{ 'authActivity.logins.succeeded' | translate: { days: data.windowDays } }}</span>
+        </div>
+        <div class="stat">
+          <b data-cy="loginsFailed">{{ data.logins.failed }}</b>
+          <span>{{ 'authActivity.logins.failed' | translate: { days: data.windowDays } }}</span>
+        </div>
+        <div class="stat">
+          <!--
+            A rate, because a raw failure count answers nothing without a denominator. A dash rather
+            than 0% when nothing was attempted: "0% failed" is a reassuring way of saying no data.
+          -->
+          <b data-cy="loginsFailureRate">{{ failureRate() === null ? '—' : failureRate() + '%' }}</b>
+          <span abfTranslate="authActivity.logins.failureRate">Of attempts failed</span>
+        </div>
+      </div>
+      <abf-line-chart [points]="failedByDay()" [ariaLabel]="'authActivity.logins.chartLabel' | translate" />
+    </div>
+
+    <table chartTable class="viz-tbl" data-cy="loginsTable">
+      <thead>
+        <tr>
+          <th abfTranslate="authActivity.logins.day">Day</th>
+          <th abfTranslate="authActivity.logins.succeededShort">Succeeded</th>
+          <th abfTranslate="authActivity.logins.failedShort">Failed</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (point of data.logins.daily; track point.day) {
+          <tr>
+            <td>{{ point.day }}</td>
+            <td>{{ point.succeeded }}</td>
+            <td>{{ point.failed }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </abf-chart-card>
+
+  <section class="card card-pad">
+    <div class="sec-head">
+      <div>
+        <h4 abfTranslate="authActivity.failedLogins.title">Most-tried logins that failed</h4>
+        <!--
+          The value below is the login AS TYPED, which on a failure is usually not the account holder.
+          The gateway gates this whole endpoint on ROLE_ADMIN alone for that reason — narrower than
+          every other read on this console. Say so where it is shown.
+        -->
+        <p data-cy="failedLoginsScope" abfTranslate="authActivity.failedLogins.scope">
+          Shown exactly as they were typed, over the same window. A failed attempt is usually not the account holder, so treat these as
+          attempts rather than as people.
+        </p>
+      </div>
+    </div>
+
+    @if (data.logins.topFailedLogins.length === 0) {
+      <p class="note" data-cy="failedLoginsNone" abfTranslate="authActivity.failedLogins.none">No sign-in has failed in this window.</p>
+    } @else {
+      <table class="viz-tbl" data-cy="failedLoginsTable">
+        <thead>
+          <tr>
+            <th abfTranslate="authActivity.failedLogins.login">Login tried</th>
+            <th abfTranslate="authActivity.failedLogins.failures">Failures</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of data.logins.topFailedLogins; track row.login) {
+            <tr>
+              <td>{{ row.login }}</td>
+              <td>{{ row.failures }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </section>
+
+  <!--
+    Retention is a property of the store, not of this screen, and it is said out loud so nobody has to
+    read a compose file to find out how far back the figures can go.
+  -->
+  <p class="note" data-cy="retentionNote">{{ 'authActivity.retentionNote' | translate: { days: data.retentionDays } }}</p>
+}
