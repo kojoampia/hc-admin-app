@@ -168,3 +168,13 @@ coverage/
 # 2026-08-07; re-adding them would republish what that removed.
 /Abofonsa-Admin-JHipster-Prompt.md
 /admin-systems.pdf
+
+######################
+# The admin service's sources, when CI (or a local reproduction of it) checks
+# them out here
+######################
+# `alert-error-key-resolution.spec.ts` derives the error keys this console has
+# to answer from `api`'s Java. In a developer tree it finds the sibling
+# checkout; on a runner `ci.yml` clones `src/main/java` to this path and points
+# ABF_API_SOURCE at it. It is another repository's code — never this one's.
+/.api-source/

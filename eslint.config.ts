@@ -36,7 +36,11 @@ export default defineConfig(
   // `parserOptions.project` still resolves against `process.cwd()`, the outer root. So the trigger is
   // **a config file in a subdirectory**, not a worktree, and git is irrelevant: a plain directory
   // holding a copy of this config and one `.ts` reproduces it.
-  { ignores: ['target/classes/static/', 'target/', 'src/main/webapp/swagger-ui/', 'dist/', '.claude/'] },
+  // `.api-source/` is the admin service's own sources, checked out inside this one by `ci.yml` so the
+  // error-key sweep has the Java it derives its keys from (backlog item 92). It is another
+  // repository's code and none of this repository's rules apply to it — and the same lesson as the
+  // entry above applies: a tool that walks from the root now has a second project inside it.
+  { ignores: ['target/classes/static/', 'target/', 'src/main/webapp/swagger-ui/', 'dist/', '.claude/', '.api-source/'] },
   eslint.configs.recommended,
   {
     files: ['**/*.{js,cjs,mjs}'],
