@@ -111,6 +111,34 @@ export class AlertError implements OnDestroy {
     }
   }
 
+  /**
+   * Everything that is not a 0, 400 or 404 — in practice 401, 403, 405, 409, 500 and Spring's own
+   * 406/413/415/503 family.
+   *
+   * `error.params` is handed to ngx-translate as the interpolation argument, so a `{{ … }}` in the
+   * message key resolves only if `params` is a MAP. Since backlog item 89 (`api` `4f5d0ad`) the
+   * server guarantees that: `ExceptionTranslator.buildInterpolationParams` wraps a non-map `params`
+   * as `{ entityName: … }` on every non-400 status, so both branches of this class now receive the
+   * same shape and a placeholder works on any key.
+   *
+   * Before that it did not, and the symptom was silent: `AmbiguousAccountException` set `params` to
+   * the bare string `"directoryVendor"`, a string is not a parameter map, and so a `{{ … }}` rendered
+   * literally while the bundle looked identical to a key that worked. `error.accountidambiguous` is
+   * worded without a placeholder because of it — see backlog item 86 — and is left that way
+   * deliberately: the value is the raw api entity name, not the console's label, because the
+   * translation through `global.menu.entities.<param>` happens in `handleBadRequest` above and the
+   * server cannot do it.
+   *
+   * WHAT WOULD BREAK IT AGAIN: an exception setting `params` to a map whose keys are not the ones the
+   * message interpolates, or a future default-path handler bypassing `customizeProblem`. The server
+   * side is pinned by `ExceptionTranslatorIT.testDefaultPathCarriesParamsAsAMap`.
+   *
+   * ⚠ THE 400 PATH ABOVE IS NOT THE HEALTHY COUNTEREXAMPLE IT LOOKS LIKE. `buildHeaders` never runs
+   * for a `BadRequestAlertException` — see backlog item 91 — so `getMessageFromHeaders` finds no
+   * `errorKey`, control falls to the `error.message` branch, and the body's `params` is read there
+   * instead. `error.idexists`'s `{{ entityName }}` therefore renders literally today. Do not reason
+   * from "the 400 branch builds a proper object" — it does, and nothing reads it.
+   */
   private handleDefaultError(httpErrorResponse: HttpErrorResponse): void {
     if (httpErrorResponse.error !== '' && httpErrorResponse.error.message) {
       this.addErrorAlert(
