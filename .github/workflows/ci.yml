@@ -102,6 +102,39 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      # --- The other half of the error-key join (backlog item 92) ------------------------------
+      #
+      # `alert-error-key-resolution.spec.ts` derives the `error.*` keys this console must answer from
+      # the admin service's own Java — every `new BadRequestAlertException(…, "somekey")` — rather
+      # than from a list in the spec. A list is what let twelve keys render as raw strings in front of
+      # an operator: item 86 added one, nothing swept for the rest, and the next exception somebody
+      # adds would have been missing the same way.
+      #
+      # THAT MEANS THE SWEEP NEEDS `api` ON DISK, AND CI HAD NOTHING BUT THIS REPOSITORY. In a
+      # developer tree the sibling checkout is simply there, by the workspace layout; on a runner it
+      # is here only because of this step. The spec FAILS rather than skips when it cannot find the
+      # sources, so forgetting this step reddens the build instead of quietly reducing the sweep to
+      # nothing — which is the same defect as the one it guards against, one level up.
+      #
+      # Sparse and shallow on purpose: `src/main/java` alone, so none of the service's package.json,
+      # node_modules or config lands inside this checkout where eslint, tsc and the bundler walk. The
+      # path is dotted for the same reason and is gitignored, so a local reproduction of this job
+      # leaves `git status` clean.
+      #
+      # It tracks the service's DEFAULT BRANCH, deliberately and like `e2e.yml`'s deploy checkout.
+      # The question this sweep asks is "does the console answer every key the api can raise", and the
+      # api that will deploy is `main` — so a key added there turns THIS gate amber until a phrase is
+      # written for it. That is the alarm, not a misfire. The default token is enough because
+      # hc-admin-service is public; if it is ever made private this step fails on the checkout, naming
+      # the repository it could not read.
+      - name: Check out the admin service, for the error-key sweep
+        uses: actions/checkout@v7
+        with:
+          repository: kojoampia/hc-admin-service
+          path: .api-source
+          sparse-checkout: src/main/java
+          sparse-checkout-cone-mode: true
+
       - uses: actions/setup-node@v7
         with:
           # package.json engines: node >=24.18.0. Angular 21 also accepts 20/22, but the floor here
@@ -128,8 +161,14 @@ jobs:
         run: npx tsc -p tsconfig.spec.json --noEmit --composite false
 
       # eslint via pretest, then Vitest with coverage.
+      #
+      # ABF_API_SOURCE points the error-key sweep at the checkout above. Without it the spec walks up
+      # from the working directory looking for a sibling `api/`, which is how a developer tree and an
+      # agent worktree find it, and which no runner layout provides.
       - name: Lint and test
         run: npm test
+        env:
+          ABF_API_SOURCE: .api-source
 
       # The suite passing does not prove the production bundle builds: different tsconfig, different
       # optimiser, and templates are only fully checked here.
