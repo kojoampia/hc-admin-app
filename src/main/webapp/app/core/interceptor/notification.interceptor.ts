@@ -12,7 +12,11 @@ export const notificationInterceptor: HttpInterceptorFn = (req, next) => {
   return next(req).pipe(
     tap((event: HttpEvent<any>) => {
       if (event instanceof HttpResponse) {
-        const headers = Object.fromEntries(event.headers.keys().map(key => [key, event.headers.getAll(key)]));
+        // Lower-cased for the same reason as in `alert-error.ts`: the MESSAGE_*_HEADER_NAME constants
+        // are lower case and `HttpHeaders.keys()` preserves the case the header was set in. This is the
+        // SUCCESS path — the one that has never shown a toast, because until backlog item 95 no service
+        // emitted a name this console reads at all.
+        const headers = Object.fromEntries(event.headers.keys().map(key => [key.toLowerCase(), event.headers.getAll(key)]));
         const message = getMessageFromHeaders(headers);
 
         if (message.alertKey) {

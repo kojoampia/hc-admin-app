@@ -91,7 +91,20 @@ export class AlertError implements OnDestroy {
   }
 
   private handleBadRequest(httpErrorResponse: HttpErrorResponse): void {
-    const headers = Object.fromEntries(httpErrorResponse.headers.keys().map(key => [key, httpErrorResponse.headers.getAll(key)]));
+    // LOWER-CASED ON THE WAY IN, because the lookup below is an exact string match against
+    // MESSAGE_*_HEADER_NAME and those constants are lower case. `HttpHeaders.keys()` returns the name
+    // in whatever case it was SET, not normalised — measured 2026-09-13: a response carrying
+    // `X-hcAdminApp-error` yields `keys() === ["X-hcAdminApp-error"]`, and `headers['x-hcadminapp-error']`
+    // is then `undefined`.
+    //
+    // In a browser this happened to work anyway: XHR's `getAllResponseHeaders()` lower-cases names, so
+    // Angular builds the map from already-lower-cased keys. **That is a property of a layer this suite
+    // cannot reach**, and betting the alert path on it is the kind of assumption backlog item 95 exists
+    // to close — the services and the console disagreed about a header name for the whole life of this
+    // repository and nobody noticed, because nothing failed loudly.
+    const headers = Object.fromEntries(
+      httpErrorResponse.headers.keys().map(key => [key.toLowerCase(), httpErrorResponse.headers.getAll(key)]),
+    );
     const message = getMessageFromHeaders(headers);
     if (message.errorKey) {
       const alertData = message.param ? { entityName: this.entityName(message.param) } : undefined;
