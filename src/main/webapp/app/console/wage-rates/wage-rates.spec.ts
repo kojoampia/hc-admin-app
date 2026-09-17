@@ -141,7 +141,7 @@ describe('WageRates', () => {
       ShiftType.FLEXIBLE,
     ]);
     expect(rows.filter(row => row.startsRole).map(row => row.role)).toEqual([
-      ProfessionalRole.CAREGIVER,
+      ProfessionalRole.CARER,
       ProfessionalRole.PARAMEDIC,
       ProfessionalRole.THERAPIST,
       ProfessionalRole.NURSE,
@@ -170,7 +170,7 @@ describe('WageRates', () => {
   it("leaves an unpriced cell as null rather than zero or a sibling shift's rate", () => {
     const component = build();
 
-    expect(cell(component, ProfessionalRole.CAREGIVER, ShiftType.DAY).current).toBeNull();
+    expect(cell(component, ProfessionalRole.CARER, ShiftType.DAY).current).toBeNull();
     // The role is priced, this shift type is not. The 550 next door must not leak into it.
     expect(cell(component, ProfessionalRole.DOCTOR, ShiftType.EVENING).current).toBeNull();
   });
@@ -263,7 +263,7 @@ describe('WageRates', () => {
   it('defaults currency to GHS when the cell has never been priced', () => {
     const component = build();
 
-    component.startReprice(cell(component, ProfessionalRole.CAREGIVER, ShiftType.DAY));
+    component.startReprice(cell(component, ProfessionalRole.CARER, ShiftType.DAY));
     component.form.patchValue({ amount: 200, validFrom: '2026-10-01' });
     component.save();
 

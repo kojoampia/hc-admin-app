@@ -8,8 +8,15 @@ import { ApplicationConfigService } from 'app/core/config/application-config.ser
 /** The five shift types, as both sides of the estate spell them since 2026-09-04. */
 export type PlanShift = 'DAY' | 'EVENING' | 'NIGHT' | 'OFF' | 'FLEXIBLE';
 
-/** hc-admin's own role vocabulary. The api translates it into hc-professional's duty names. */
-export type PlanRole = 'CAREGIVER' | 'PARAMEDIC' | 'THERAPIST' | 'NURSE' | 'DOCTOR';
+/**
+ * The roles hc-admin can actually roster. The api translates these into hc-professional's duty names.
+ *
+ * The five PAYABLE ones only — PHARMACIST, CHEMIST and TECHNICIAN exist on `ProfessionalRole` since
+ * item 35 D2 so a clinician of those disciplines can be described, but the api refuses a round asking
+ * for one with reason `ROLE_IS_NOT_ROSTERED_HERE`. Offering them here would build a request the server
+ * is guaranteed to decline.
+ */
+export type PlanRole = 'CARER' | 'PARAMEDIC' | 'THERAPIST' | 'NURSE' | 'DOCTOR';
 
 export interface PlanVisit {
   readonly customerId: string;
@@ -49,6 +56,9 @@ export type PlanOutcome = 'PLANNED' | 'UNPLANNED' | 'FAILED';
  * file, not the estate. See the third standing panel in `duty-roster.html`.
  */
 export type PlanReason =
+  // Asked for a discipline hc-admin describes but never rosters — PHARMACIST, CHEMIST, TECHNICIAN
+  // (item 35 D2). The api refuses before looking for teams or candidates.
+  | 'ROLE_IS_NOT_ROSTERED_HERE'
   | 'NO_TEAM_COVERS_THE_SPACE'
   | 'NO_CANDIDATE_HOLDS_THE_ROLE'
   | 'NO_CANDIDATE_IS_AVAILABLE'

@@ -4,7 +4,7 @@ import { IProfessional, NewProfessional } from './professional.model';
 
 export const sampleWithRequiredData: IProfessional = {
   id: '72aa3c17-bf53-46c0-9e51-9e2b65b8b6e2',
-  role: 'CAREGIVER',
+  role: 'CARER',
   licenceNumber: 'memorise',
   verification: 'VERIFIED',
   status: 'PENDING',
@@ -37,7 +37,7 @@ export const sampleWithFullData: IProfessional = {
 };
 
 export const sampleWithNewData: NewProfessional = {
-  role: 'CAREGIVER',
+  role: 'CARER',
   licenceNumber: 'sushi yum shout',
   verification: 'VERIFIED',
   status: 'PENDING',

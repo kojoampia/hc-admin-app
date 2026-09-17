@@ -2,11 +2,14 @@
   "hcAdminApp": {
     "ProfessionalRole": {
       "null": "",
-      "CAREGIVER": "Caregiver",
+      "CARER": "Carer",
       "PARAMEDIC": "Paramedic",
       "THERAPIST": "Therapist",
       "NURSE": "Nurse",
-      "DOCTOR": "Doctor"
+      "DOCTOR": "Doctor",
+      "PHARMACIST": "Pharmacist",
+      "CHEMIST": "Chemist",
+      "TECHNICIAN": "Technician"
     }
   }
 }
