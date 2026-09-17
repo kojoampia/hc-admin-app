@@ -33,7 +33,7 @@
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
             "assets": [
-              "src/main/webapp/content",
+              { "glob": "**/*", "input": "src/main/webapp/content", "output": "content", "ignore": ["scss/**"] },
               "src/main/webapp/favicon.ico",
               "src/main/webapp/manifest.webapp",
               "src/main/webapp/robots.txt",

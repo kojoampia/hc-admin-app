@@ -76,9 +76,18 @@ npm test                  # ng test → Vitest with coverage; `pretest` runs lin
 npm run lint / lint:fix
 npm run cypress           # interactive; e2e:headless for a headless run
 npm run webapp:prod       # production build → target/classes/static/
+npm run check:built-assets # reads that output — run it AFTER a build, never before
 npm run prettier:format   # ts, html, scss, json, yml, md
 npx ng build              # run this too — see point 5 above
 ```
+
+**`check:built-assets` is the only check here that reads build OUTPUT, and it exits 1 when there is
+none** rather than passing on an empty tree. It exists because nothing in this repository looked at
+what the build copied: `angular.json` listed the content directory as a bare string, so every
+production build published `content/scss/*.scss` — the palette rationale and the token definitions —
+plus `global-styles.spec.ts`, on a console deployed at `admin.abofonsa.com` (backlog item 114). It is
+deliberately **not** a Vitest spec: `npm test` builds no bundle and `ci.yml` runs the suite before the
+production build, so such a spec could only skip.
 
 `:9000`, not 4200. `angular.json` sets the port and `cypress.config.ts`'s `baseUrl` matches it. The
 4200 in older notes is `deploy/dev/startup.sh`, which passes `--port 4200` explicitly — so the specs
