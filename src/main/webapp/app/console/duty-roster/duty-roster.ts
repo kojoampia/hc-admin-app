@@ -141,7 +141,7 @@ export default class DutyRoster implements OnInit {
 
   /** Plannable shifts. `OFF` is absent: hc-professional refuses visits on a rest day. */
   readonly planShifts: PlanShift[] = ['DAY', 'EVENING', 'NIGHT', 'FLEXIBLE'];
-  readonly planRoles: PlanRole[] = ['DOCTOR', 'NURSE', 'PARAMEDIC', 'THERAPIST', 'CAREGIVER'];
+  readonly planRoles: PlanRole[] = ['DOCTOR', 'NURSE', 'PARAMEDIC', 'THERAPIST', 'CARER'];
 
   readonly week = signal<IRosterWeek | null>(null);
   readonly rows = signal<RosterRow[]>([]);

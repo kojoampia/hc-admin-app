@@ -15,9 +15,17 @@ import { ConsoleAuthority } from 'app/shared/auth/console-role';
 import { FormatMediumDatePipe, FormatMediumDatetimePipe } from 'app/shared/date';
 import { TranslateDirective } from 'app/shared/language';
 
-/** Every role, in the order the bands run — cheapest first, which is how the table reads. */
+/**
+ * Every PAYABLE role, in the order the bands run — cheapest first, which is how the table reads.
+ *
+ * Deliberately NOT every value of `ProfessionalRole`. Since item 35 D2 the enum also carries
+ * PHARMACIST, CHEMIST and TECHNICIAN, which hc-admin describes but never rosters or pays; the api's
+ * `ProfessionalRole.PAYABLE` is the authoritative list and this mirrors it. Adding them here would
+ * draw three rows of cells that can never hold a rate, and `ShiftValuationService` matches
+ * (role, shiftType, date) exactly with no fallback, so a rate for one would never be read anyway.
+ */
 const ROLE_ORDER: readonly ProfessionalRole[] = [
-  ProfessionalRole.CAREGIVER,
+  ProfessionalRole.CARER,
   ProfessionalRole.PARAMEDIC,
   ProfessionalRole.THERAPIST,
   ProfessionalRole.NURSE,

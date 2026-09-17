@@ -13,7 +13,7 @@
       "fieldName": "role",
       "fieldType": "ProfessionalRole",
       "fieldValidateRules": ["required"],
-      "fieldValues": "CAREGIVER,PARAMEDIC,THERAPIST,NURSE,DOCTOR"
+      "fieldValues": "CARER,PARAMEDIC,THERAPIST,NURSE,DOCTOR,PHARMACIST,CHEMIST,TECHNICIAN"
     },
     {
       "fieldName": "speciality",

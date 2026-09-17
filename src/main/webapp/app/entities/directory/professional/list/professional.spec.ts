@@ -283,9 +283,16 @@ describe('Professional Management Component', () => {
 
   describe('role tiles', () => {
     it('should cover every role, so no clinician is counted in no tile', () => {
-      // The demo draws four tiles and the enum has five — a THERAPIST would sit in the table,
+      // The demo draws four tiles and the enum has eight — a THERAPIST would sit in the table,
       // be counted nowhere and be reachable by no filter. Listing the enum is what closes that.
-      expect(comp.ROLES).toEqual(['CAREGIVER', 'PARAMEDIC', 'THERAPIST', 'NURSE', 'DOCTOR']);
+      //
+      // ALL EIGHT, including the three the wage grid and the planner deliberately omit. Those two
+      // are about what hc-admin ROSTERS AND PAYS; this is about what it can DESCRIBE, and a
+      // PHARMACIST in the directory must be countable and filterable like anyone else. `ROLES`
+      // derives from the enum precisely so this cannot drift — the list below is the human-readable
+      // half, and a new role should fail here and make somebody decide which of the three lists it
+      // belongs in.
+      expect(comp.ROLES).toEqual(['CARER', 'PARAMEDIC', 'THERAPIST', 'NURSE', 'DOCTOR', 'PHARMACIST', 'CHEMIST', 'TECHNICIAN']);
     });
 
     it('should ask for a headcount and an active count per role, over the unarchived directory', () => {

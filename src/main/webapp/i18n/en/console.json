@@ -1,6 +1,6 @@
 {
   "console": {
-    "loading": "Loading…",
+    "loading": "Loading\u2026",
     "status": {
       "ACTIVE": "Active",
       "PENDING": "Pending",
@@ -31,12 +31,15 @@
       "DONE": "Done"
     },
     "professionalRole": {
-      "null": "—",
-      "CAREGIVER": "Caregiver",
+      "null": "\u2014",
+      "CARER": "Carer",
       "PARAMEDIC": "Paramedic",
       "THERAPIST": "Therapist",
       "NURSE": "Nurse",
-      "DOCTOR": "Doctor"
+      "DOCTOR": "Doctor",
+      "PHARMACIST": "Pharmacist",
+      "CHEMIST": "Chemist",
+      "TECHNICIAN": "Technician"
     },
     "channel": {
       "PATIENT_APP": "Patient app",
@@ -59,10 +62,10 @@
       "OFF": "O"
     },
     "shiftHours": {
-      "DAY": "Day 07–15",
-      "EVENING": "Evening 15–23",
-      "NIGHT": "Night 23–07",
-      "FLEXIBLE": "Flexible 2–4 h",
+      "DAY": "Day 07\u201315",
+      "EVENING": "Evening 15\u201323",
+      "NIGHT": "Night 23\u201307",
+      "FLEXIBLE": "Flexible 2\u20134 h",
       "OFF": "Off"
     },
     "filter": {
