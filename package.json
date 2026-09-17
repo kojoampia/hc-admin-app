@@ -9,6 +9,7 @@
     "app:start": "ng serve",
     "build": "npm run webapp:prod --",
     "build-watch": "concurrently 'npm run webapp:build:dev -- --watch'",
+    "check:built-assets": "node build-plugins/check-built-assets.mjs",
     "ci:e2e:dev": "concurrently -k -s first -n application,e2e -c red,blue npm:app:start npm:e2e:headless",
     "ci:e2e:run": "concurrently -k -s first -n application,e2e -c red,blue npm:ci:e2e:server:start npm:e2e:headless",
     "ci:e2e:server:start": "ng serve --configuration production",

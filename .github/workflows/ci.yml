@@ -175,6 +175,20 @@ jobs:
       - name: Production build
         run: npm run webapp:build:prod
 
+      # Reads target/classes/static — what the build just copied, and what it did not. Backlog item
+      # 114: `angular.json` listed the content directory as a bare string, so every production build
+      # published this repo's eight Sass sources at /content/scss/, plus `global-styles.spec.ts` —
+      # nine files, on a console deployed on the public internet. Item 114 measured eight, having
+      # counted one extension; the ninth is what the check found on its first run.
+      #
+      # THIS STEP HAS TO BE HERE RATHER THAN IN `npm test`, and the ordering above is the reason.
+      # `ng test` is the Vitest builder and produces no bundle, and this job runs the suite BEFORE the
+      # production build — so a spec asserting over the output directory would find nothing there on
+      # every run and could only skip. The guarded thing is build output, so the check runs after a
+      # build; it exits 1 when the directory is absent rather than passing on an empty tree.
+      - name: Check the built assets
+        run: npm run check:built-assets
+
       # --omit=dev, because a build-time advisory is not a shipped one and this gate has to stay
       # actionable.
       #
