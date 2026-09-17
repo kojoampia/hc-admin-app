@@ -1,5 +1,15 @@
 # Project Overview
 
+## ⚠ First: confirm which repository you are in
+
+This product is several independent repositories sitting side by side in a plain directory, so a checkout that looks right can be the
+wrong one. **Run `git remote -v` before drawing any conclusion from `git`** — before `git log`, `git branch` or `git status`, not after.
+It must name the repository you were asked to change; if it names another, **stop and report rather than editing the shared checkout**.
+
+The wrong answer is not an error. It is a plausible repository with unfamiliar history, and a session's working directory can also move
+after a correct start. So a `git log` that surprises you — an unrecognised `main`, a branch of yours that is suddenly missing — means
+find out which repository you are reading. It does not mean your work was lost.
+
 This is `hc-admin-app` — the **BridgeCare admin console**, the Angular frontend of the Health Connect admin stack. It is the current UI and the only one: the earlier `hc-admin-dashboard` (`web/`) was archived on 2026-08-11 and is read-only on GitHub.
 
 There is **no Java in this project** — no `pom.xml`, no Maven wrapper. The deployed image is built from `deploy/docker/app.Dockerfile` in the private `hc-admin-ci` repo, not from here.
