@@ -20,10 +20,10 @@ find out which repository you are reading. It does not mean your work was lost.
 
 ## The traps, in order of how much time they cost
 
-- **Tests are Vitest, not Jest.** `ng test` is bound to the Vitest builder over `vitest-base.config.ts`; `jest.conf.js` does not exist and JHipster's Jest guidance does not transfer. Run `npm test` — invoking Vitest directly on a path misses `vitest-setup.ts` and every spec fails with `Need to call TestBed.initTestEnvironment() first`. `--filter` matches test **names**, not paths.
+- **Tests are Vitest, not Jest.** `ng test` is bound to the Vitest builder over `vitest-base.config.ts` — `angular.json` sets `runnerConfig: true`, and that filename is the Angular builder's own search convention. `jest.conf.js` does not exist and JHipster's Jest guidance does not transfer. Run `npm test`: invoking Vitest directly bypasses the builder, and **the builder is what initializes the TestBed**, so every spec fails with `Need to call TestBed.initTestEnvironment() first`. Handing Vitest the config by hand does not fix that — `vitest-setup.ts` only restores real timers. `--filter` matches test **names**, not paths.
 - **`@ngx-translate` is at 18.** `TranslateModule` no longer exists; import `TranslatePipe` and `TranslateDirective` directly. `TranslateModule.forChild()` will not resolve.
 - **Bootstrap 5 + ng-bootstrap — not Material, not Tailwind.** Neither `@angular/material` nor `tailwindcss` is a dependency. `_bootstrap-variables.scss` is load-bearing. Guidance written for the archived `web/` repo, or for `hc-professional/web`, inverts here.
-- **`global.scss` imports `_console-admin.scss` only.** `_console-components.scss` is imported per component. Generated create/edit components declare **no `styleUrl`**, so a class they need must live in `_console-admin.scss`. The wrong file compiles, lints, type-checks, passes every test and renders unstyled.
+- **`global.scss` reaches `_console-admin.scss` and never `_console-components.scss`**, which is imported per component. (`content/scss/global-styles.spec.ts` pins exactly that pair; `global.scss` also pulls `_bootstrap-variables.scss`, the token feed.) Generated create/edit components declare **no `styleUrl`**, so a class they need must live in `_console-admin.scss`. The wrong file compiles, lints, type-checks, passes every test and renders unstyled.
 - **Run `npx ng build` as well as `npm test`.** Unrouted generated files are otherwise never type-checked.
 
 ## Architecture
@@ -31,7 +31,7 @@ find out which repository you are reading. It does not mean your work was lost.
 - Frontend only — **no Java, no `pom.xml`**. The deployed image is built from `deploy/docker/app.Dockerfile` in the private `hc-admin-ci` repo.
 - Requests are same-origin: `proxy.config.mjs` forwards `/api`, `/management` and `/services` in development; nginx does in production.
 - **Build URLs with `ApplicationConfigService.getEndpointFor(api, microservice?)`** — never hardcode `/services/...`. Entity services resolve to `/services/hcadminservice/api/<entity>`. `credential` is the deliberate exception and is gateway-relative (`/api/account`).
-- `core/auth/state-storage.service.ts` is the **only** file permitted to touch `localStorage` / `sessionStorage`.
+- Web storage is centralised in `core/auth/state-storage.service.ts` and new storage belongs there. **Two files bypass it today and nothing enforces the rule** — `layouts/shell-state.service.ts:60,68` (the sidebar rail flag) and `core/util/message-stream.service.ts:165`, which re-reads the auth token rather than calling `getAuthenticationToken()`. Do not add a third.
 - Colour comes from `var(--abf-*)`, never a hex literal; `content/scss/_hc-tokens.scss` is the single source. Never put white text on gold (fails AA).
 - Charts are hand-written SVG in `shared/viz/` over `viz-palette.ts`. There is no charting library.
 - Pagination is `<ngb-pagination>` beside `abf-item-count`. A `query()` with no `size` returns 20 — pass `RELATIONSHIP_OPTIONS_PAGE_SIZE` in relationship loaders.
@@ -45,7 +45,7 @@ find out which repository you are reading. It does not mean your work was lost.
 
 ## Writing tests
 
-- Assert on the request **and** on what the code does with the response. Specs here have passed while asserting nothing — a `StreamingResponseBody` needs `asyncDispatch`, and `URL.createObjectURL` does not exist in jsdom, so a download path throws inside a subscriber while the assertion above it still passes.
+- Assert on the request **and** on what the code does with the response. Specs here have passed while asserting nothing: `URL.createObjectURL` does not exist in jsdom, so a download path throws inside a subscriber while the request assertion above it still passes. Stub browser plumbing explicitly — `entities/directory/patient/list/patient.spec.ts` does.
 - Effects run on change detection: call `fixture.detectChanges()` before asserting on effect-loaded state.
 - Add every icon a template renders to the spec's `FaIconLibrary`, or the whole file fails on the chrome.
 - Prefer discovery to enumeration — a guard whose coverage is maintained by hand silently stops covering things.
