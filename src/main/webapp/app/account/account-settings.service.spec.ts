@@ -48,38 +48,60 @@ describe('AccountSettingsService', () => {
   });
 
   /**
-   * `Profile.accountId` holds the gateway **login**, and the account carries an id that looks just
-   * as much like a key. Asking with the id returns 404, which this service reports as "no profile"
-   * — so the screen offered every administrator a blank create form for a record that existed, and
-   * no test disagreed because every one of them passed the same opaque string in and out.
+   * `Profile.accountId` holds the gateway **user id** — item 123's migration — and the account
+   * carries a login that looks just as much like a key. Asking with the wrong one returns 404,
+   * which this service reports as "no profile", so the screen offers a blank create form for a
+   * record that exists, and no test disagrees unless it asserts the identifier by kind.
    *
-   * These three assert the identifier by kind, which is the only thing that separates them.
+   * These cases did exactly that for the OLD contract — "reads by the login, not by the gateway
+   * user id" — which is why flipping the join key flipped them rather than sliding past them.
+   * That is the job: whichever way the contract moves next, these must be the tests that go red.
    */
   describe('which identifier joins an account to a person', () => {
-    it('reads by the login, not by the gateway user id', () => {
+    it('reads by the gateway user id, not by the login', () => {
       service.findProfile(anAccount()).subscribe();
 
       const req = httpMock.expectOne(r => r.url.includes('by-account'));
-      expect(req.request.url).toContain('by-account/admin');
-      expect(req.request.url).not.toContain('acct-1');
+      expect(req.request.url).toContain('by-account/acct-1');
+      expect(req.request.url).not.toContain('by-account/admin');
       req.flush({}, { status: 404, statusText: 'Not Found' });
     });
 
-    it('creates with the login, whatever the caller put in the body', () => {
-      service.createProfile(anAccount(), { id: null, accountId: 'acct-1', firstName: 'Efua' }).subscribe();
+    it('creates with the gateway user id, whatever the caller put in the body', () => {
+      service.createProfile(anAccount(), { id: null, accountId: 'admin', firstName: 'Efua' }).subscribe();
 
       const req = httpMock.expectOne(r => r.method === 'POST' && r.url.endsWith('api/profiles'));
-      expect(req.request.body.accountId).toEqual('admin');
+      expect(req.request.body.accountId).toEqual('acct-1');
       req.flush({ id: 'p1' });
     });
 
     /** A profile already stored against the wrong key is corrected by a save, not carried forward. */
     it('rewrites the link on update rather than passing back what it read', () => {
-      service.updateProfile(anAccount(), { id: 'p1', accountId: 'acct-1' }).subscribe();
+      service.updateProfile(anAccount(), { id: 'p1', accountId: 'admin' }).subscribe();
 
       const req = httpMock.expectOne(r => r.method === 'PUT');
-      expect(req.request.body.accountId).toEqual('admin');
+      expect(req.request.body.accountId).toEqual('acct-1');
       req.flush({ id: 'p1' });
+    });
+
+    /**
+     * No id, no join — and the two directions deliberately differ. A read degrades: null is "no
+     * profile", the same answer a 404 gets, so the greeting chain and the account screen stay on
+     * their fallbacks. A write refuses: storing a profile under a blank key is the unfindable-
+     * record defect the whole service exists to prevent. And there is NO fallback to the login —
+     * that is the second join key item 123 removed.
+     */
+    it('answers null without asking when the account carries no id', () => {
+      let result: unknown = 'untouched';
+      service.findProfile(anIdLessAccount()).subscribe(value => (result = value));
+
+      httpMock.expectNone(r => r.url.includes('by-account'));
+      expect(result).toBeNull();
+    });
+
+    it('refuses to create or update a profile for an account with no id', () => {
+      expect(() => service.createProfile(anIdLessAccount(), { id: null, accountId: null })).toThrow(/no id/);
+      expect(() => service.updateProfile(anIdLessAccount(), { id: 'p1', accountId: null })).toThrow(/no id/);
     });
 
     /**
@@ -119,7 +141,7 @@ describe('AccountSettingsService', () => {
       let result: any;
       service.findProfile(anAccount()).subscribe(value => (result = value));
 
-      httpMock.expectOne(r => r.url.includes('by-account')).flush({ id: 'p1', firstName: 'Ama', accountId: 'admin' });
+      httpMock.expectOne(r => r.url.includes('by-account')).flush({ id: 'p1', firstName: 'Ama', accountId: 'acct-1' });
 
       expect(result.firstName).toEqual('Ama');
     });
@@ -171,17 +193,24 @@ describe('AccountSettingsService', () => {
     it('creates a profile with POST and updates one with PUT', () => {
       service.createProfile(anAccount(), { id: null, accountId: null }).subscribe();
       const created = httpMock.expectOne(r => r.method === 'POST' && r.url.endsWith('api/profiles'));
-      expect(created.request.body.accountId).toEqual('admin');
+      expect(created.request.body.accountId).toEqual('acct-1');
       created.flush({ id: 'p1' });
 
-      service.updateProfile(anAccount(), { id: 'p1', accountId: 'admin' }).subscribe();
+      service.updateProfile(anAccount(), { id: 'p1', accountId: 'acct-1' }).subscribe();
       const updated = httpMock.expectOne(r => r.method === 'PUT');
       expect(updated.request.url).toContain('api/profiles/p1');
       updated.flush({ id: 'p1' });
     });
   });
 
+  /** `acct-1` is the id and `admin` the login: the join key and the near-miss, in one fixture. */
   function anAccount(): Account {
     return new Account(true, ['ROLE_ADMIN'], 'admin@abofonsa.com', 'Administrator', 'en', 'Account', 'admin', null, 'acct-1');
+  }
+
+  /** The contract violation: `GET /api/account` always carries an id, so only a stale session or a
+   *  hand-built fixture produces this. The service must not invent a key for it. */
+  function anIdLessAccount(): Account {
+    return new Account(true, ['ROLE_ADMIN'], 'admin@abofonsa.com', 'Administrator', 'en', 'Account', 'admin', null);
   }
 });
