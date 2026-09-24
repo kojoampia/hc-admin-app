@@ -83,26 +83,34 @@ describe('Patient accountId is carried, never offered', () => {
     // made it invalid, which makes it both wrong here and useless as a guard.
     const form = service().createPatientFormGroup();
     const { accountId, ...withoutAccountId } = sampleWithRequiredData;
-    // No cast: `accountId` is optional on IPatient, so a record without it is still an IPatient —
-    // which is the type-level statement of the same merge-order window this case measures.
-    service().resetForm(form, withoutAccountId);
+    // `profile` is `required` on this form and `sampleWithRequiredData` carries none, so it is
+    // supplied here — otherwise `form.invalid` is true because of *that* control and this case
+    // measures the wrong thing. No cast: `accountId` is optional on IPatient, so a record without
+    // it is still an IPatient, which is the type-level statement of this same merge-order window.
+    service().resetForm(form, { ...withoutAccountId, profile: { id: 'p1' } });
     const control = form.get('accountId')!;
 
     expect(accountId).toBeDefined();
     expect(control.disabled).toBe(true);
     expect(control.errors).toBeNull();
     expect(form.value).not.toHaveProperty('accountId');
+    // The thing `patient-update.html` actually binds — `[disabled]="editForm.invalid || isSaving()"`.
+    expect(form.invalid).toBe(false);
 
     // And the same control, enabled, is the state a regeneration produces: the mirrored `required`
-    // fires on an empty value, `editForm.invalid` follows, and `patient-update.html` binds
-    // `[disabled]="editForm.invalid || isSaving()"` — Save dead, with no field on screen to fix it.
+    // fires on an empty value and the group follows it, so Save is dead with no field on screen to
+    // fix it. Asserted on both the control and the group, because the control alone is a proxy for
+    // what the template binds and the group alone cannot say which control made it invalid.
     control.enable();
     expect(control.errors).toEqual({ required: true });
+    expect(form.invalid).toBe(true);
   });
 
   it('is on no input in the template', () => {
-    // Repo-root-relative, the idiom `entities/directory/record-identity.spec.ts` already uses:
-    // under this runner `__dirname` resolves to the project root, not to this file's directory.
+    // Repo-root-relative, the idiom `record-identity.spec.ts:123` and `patient.spec.ts:893` both
+    // use: this runner puts `process.cwd()` at the project root, which is what the path resolves
+    // against. (`__dirname` is this file's own directory — an earlier version of this comment said
+    // the opposite, and would have misdirected a reader whichever way they acted on it.)
     const template = readFileSync(join('src/main/webapp/app/entities/directory/patient/update', 'patient-update.html'), 'utf8');
 
     expect(template).not.toContain('accountId');

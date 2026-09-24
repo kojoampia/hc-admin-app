@@ -17,10 +17,11 @@ import { IPatient, NewPatient } from './patient.model';
  * `dl-a15` link already names. So real, referenceable ids DO exist; what makes a
  * fixture right *here* is narrower and unaffected — a unit test needs no account at all.
  *
- * ⚠ At the time of writing the api's own seed does NOT yet use that real id: at
- * `875521b` all 15 seeded patients carry `fixture-account-aN` and all 14 seeded
- * `directoryLinks` carry `accountId: null`. Changing that is the api half's work and it
- * is in review. Do not read this note as a description of what that seed holds today.
+ * Pinned to a commit rather than to a date, because the api seed moved while this was being
+ * written: at `875521b` all 15 seeded patients carried `fixture-account-aN` and all 14 seeded
+ * `directoryLinks` carried `accountId: null`; `a3b7c28` then gave `a15` and `dl-a15` the real
+ * `user-demo-kojo`. Neither statement describes what that seed holds *now* — read it there.
+ * Nothing on this side depends on either: these samples are this repository's own.
  */
 export const sampleWithRequiredData: IPatient = {
   id: '1b675df3-31ea-404e-b43c-e3a1e4dd1ad7',

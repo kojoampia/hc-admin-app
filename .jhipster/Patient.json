@@ -4,13 +4,14 @@
   },
   "applications": ["hcAdmin"],
   "clientRootFolder": "directory",
+  "documentation": "A person this console administers, whose account lives on another stack.\n\n`accountId` is the identity link to that account \u2014 for a patient, an hc-patient-gateway account, since patients register there and this stack's gateway never issues ROLE_PATIENT. Backlog item 115.",
   "fields": [
     {
       "fieldName": "id",
       "fieldType": "String"
     },
     {
-      "documentation": "The identity link to the subject's gateway Account \u2014 the estate join of 2026-09-17, `account.id = accountId`, the same identifier Profile.accountId carries. For a patient the account is hc-patient-gateway's. It is an id, never a login, never an email, and never hc-patient's own patientId.\n\nCarried through the edit form and never offered by it: update/patient-form.service.ts declares the control disabled, so getRawValue() puts it in the PUT body with nothing on screen to type it into. A regeneration would re-create it as an editable input \u2014 the guard that turns that red is account-id-is-carried-not-offered.spec.ts, which this generator does not own. Backlog item 115.",
+      "documentation": "The hc-patient gateway account this record belongs to \u2014 the estate join of 2026-09-17, `account.id = accountId`, the same identifier Profile.accountId carries. An id, never a login, never an email, and never hc-patient's own patientId. It is set by the patient event stream and by the api's backfill, never typed in: the edit form carries it disabled and the guard for that is account-id-is-carried-not-offered.spec.ts, which this generator does not own.",
       "fieldName": "accountId",
       "fieldType": "String",
       "fieldValidateRules": ["required", "maxlength"],
