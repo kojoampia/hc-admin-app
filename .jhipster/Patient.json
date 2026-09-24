@@ -10,6 +10,12 @@
       "fieldType": "String"
     },
     {
+      "fieldName": "accountId",
+      "fieldType": "String",
+      "fieldValidateRules": ["required", "maxlength"],
+      "fieldValidateRulesMaxlength": "60"
+    },
+    {
       "fieldName": "status",
       "fieldType": "AccountStatus",
       "fieldValidateRules": ["required"],

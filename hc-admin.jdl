@@ -157,6 +157,7 @@ entity Angel {
 
 entity Patient {
   id String
+  accountId String required maxlength(60)
   status AccountStatus required
   joinedOn LocalDate required
   lastActiveOn LocalDate
