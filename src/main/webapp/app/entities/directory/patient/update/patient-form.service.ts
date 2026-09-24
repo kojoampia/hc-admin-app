@@ -66,9 +66,24 @@ export class PatientFormService {
        * by hand would be strictly worse than the thing that rule exists to prevent.
        *
        * The validators mirror the api's `@NotNull @Size(max = 60)` so they are correct if
-       * this is ever enabled. They do not fire today: Angular excludes disabled controls
-       * from a group's validity, which is also why an event-created patient whose id has
-       * not loaded yet cannot wedge the Save button.
+       * this is ever enabled. They do not fire today, because Angular excludes disabled
+       * controls from a group's validity — and that exclusion is load-bearing rather than
+       * incidental. Measured 2026-09-25 on this form: enabled with no value,
+       * `editForm.invalid` is `true` and `errors` is `{ required: true }`, and
+       * `patient-update.html` binds `[disabled]="editForm.invalid || isSaving()"`, so Save
+       * is permanently dead with no field on screen to fix it. That is the state every
+       * patient edit would be in against an api that does not carry this field — which is
+       * every api until item 115's server half ships, and which is exactly the window this
+       * change has to survive.
+       *
+       * ⚠ A record that carries an explicit `accountId: null` is a different case and is
+       * NOT handled here: `JSON.stringify` keeps a null where it drops an `undefined`, so
+       * the body says `"accountId":null` and the new api refuses it 400. That is the api's
+       * own documented state for a row its backfill could not resolve — readable, never
+       * again writable — so the refusal is correct. The cost is that `onSaveError()` is
+       * empty and no i18n key names this field, so an administrator sees a save that does
+       * nothing. Do not "fix" it by defaulting the value; the remedy is the api's backfill
+       * or an operator setting the real account id.
        */
       accountId: new FormControl(
         { value: patientRawValue.accountId, disabled: true },

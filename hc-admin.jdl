@@ -155,6 +155,22 @@ entity Angel {
   country String maxlength(60)
 }
 
+/**
+ * A person this console administers, whose account lives on another stack.
+ *
+ * `accountId` is the identity link to that account — the estate join of
+ * 2026-09-17, `account.id = accountId`, the same identifier Profile carries
+ * above. For a patient the account is **hc-patient-gateway's**, since patients
+ * register there and this stack's gateway never issues ROLE_PATIENT. It is an
+ * id, never a login and never an email, and never hc-patient's own patientId.
+ *
+ * On this side it is carried through the edit form and never offered by it —
+ * see `update/patient-form.service.ts`, which declares the control `disabled`
+ * so `getRawValue()` puts it in the PUT body with nothing on screen to type it
+ * into. A REGENERATION WOULD RE-CREATE IT AS AN EDITABLE INPUT; the guard that
+ * turns that red is `account-id-is-carried-not-offered.spec.ts`, which is
+ * deliberately not a file this generator owns. Backlog item 115.
+ */
 entity Patient {
   id String
   accountId String required maxlength(60)

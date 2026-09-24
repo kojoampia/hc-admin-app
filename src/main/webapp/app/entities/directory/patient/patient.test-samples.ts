@@ -14,8 +14,13 @@ import { IPatient, NewPatient } from './patient.model';
  * `SeedData.buildUser` takes a fixed id, `DevSeedDataInitializer` pins `user-1`…
  * `user-5`, their external seed document carries an optional `id`, and their quality
  * seed pins `user-demo-kojo` for `kojo@jac.net` — which is the address hc-admin's own
- * `dl-a15` link already names. Real ids therefore exist and the api's seed uses that
- * one; what makes a fixture right *here* is that a unit test needs no account at all.
+ * `dl-a15` link already names. So real, referenceable ids DO exist; what makes a
+ * fixture right *here* is narrower and unaffected — a unit test needs no account at all.
+ *
+ * ⚠ At the time of writing the api's own seed does NOT yet use that real id: at
+ * `875521b` all 15 seeded patients carry `fixture-account-aN` and all 14 seeded
+ * `directoryLinks` carry `accountId: null`. Changing that is the api half's work and it
+ * is in review. Do not read this note as a description of what that seed holds today.
  */
 export const sampleWithRequiredData: IPatient = {
   id: '1b675df3-31ea-404e-b43c-e3a1e4dd1ad7',
