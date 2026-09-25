@@ -170,6 +170,25 @@ entity Angel {
  * into. A REGENERATION WOULD RE-CREATE IT AS AN EDITABLE INPUT; the guard that
  * turns that red is `account-id-is-carried-not-offered.spec.ts`, which is
  * deliberately not a file this generator owns. Backlog item 115.
+ *
+ * `isArchived` is the same shape for a different reason, and it is here for a
+ * reason worth stating: it was in NEITHER this file nor `.jhipster/Patient.json`
+ * until backlog item 135, so a regeneration dropped it from `patient.model.ts`
+ * and `update/patient-form.service.ts` **together** — and a guard that compares
+ * the model against the form is blind by construction to a loss that takes both
+ * sides at once. Archived records are hidden from the directory rather than
+ * deleted, and the list filters `isArchived.notEquals=true`, which matches a
+ * null; `PUT /api/patients/{id}` is a full replace, so a form that does not
+ * carry the field tells the server to forget it and the record silently returns
+ * to the directory it was archived out of.
+ *
+ * It is likewise carried disabled, but NOT for `accountId`'s reason — the field
+ * may be changed freely; what it may not have is a second writer.
+ * `PatientService.setArchived` PATCHes the single field and its javadoc argues
+ * against exactly the whole-document write an enabled control would make. A
+ * REGENERATION WOULD RE-CREATE IT AS AN EDITABLE CHECKBOX; the guard that turns
+ * that red is `archived-survives-an-edit.spec.ts`, also deliberately not a file
+ * this generator owns. Backlog item 135.
  */
 entity Patient {
   id String
@@ -178,6 +197,7 @@ entity Patient {
   joinedOn LocalDate required
   lastActiveOn LocalDate
   caseCount Integer min(0)
+  isArchived Boolean
 }
 
 entity Professional {
