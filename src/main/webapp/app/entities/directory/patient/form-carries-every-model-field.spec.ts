@@ -10,10 +10,19 @@ import { PatientFormService } from './update/patient-form.service';
  *
  * `PatientUpdate` saves with a `PUT` and `PatientResource.save` persists the deserialised body
  * directly, with no DTO and no merge against the stored document. So for this entity **a field in the
- * model and not in the form is a field an edit destroys**, and the model is the only place that lists
- * them. Item 115 found `accountId` missing that way and item 135 found `isArchived` missing the same
- * way, one field along, three weeks apart — the second silent, because it carries no `@NotNull` to
- * turn the omission into a 400.
+ * model and not in the form is a field an edit destroys**. Item 115 found `accountId` missing that way
+ * and item 135 found `isArchived` missing the same way, one field along, three weeks apart — the
+ * second silent, because it carries no `@NotNull` to turn the omission into a 400.
+ *
+ * ⚠ **This comparison is blind, by construction, to a field that leaves BOTH sides at once**, and
+ * that is a reachable state rather than a theoretical one: `patient.model.ts` and
+ * `update/patient-form.service.ts` are both generated from `hc-admin.jdl` and `.jhipster/Patient.json`,
+ * so a field missing from those regenerates out of the model and the form together and every case
+ * here stays green. `isArchived` was in neither until item 135 added it to both. **The guard for that
+ * case is not this file** — it is `archived-survives-an-edit.spec.ts`, which names the field
+ * explicitly and is therefore not satisfied by its disappearance; `account-id-is-carried-not-offered.spec.ts`
+ * is the same move for the field beside it. A field worth adding here is worth naming in a spec of
+ * its own for exactly this reason.
  *
  * **This is a standing guard and not a one-off sweep, and that is the decision rather than an
  * accident.** Item 135's "Done when" asked whether any other `IPatient` field was in the model and not
@@ -49,8 +58,16 @@ describe('Patient form carries every model field', () => {
    * **Empty, and that is the post-item-135 state rather than a placeholder.** An entry here is a
    * written decision that a `PUT` may destroy that field, so adding one needs the reason beside it —
    * and note that "the screen does not show it" is *not* such a reason: `id`, `accountId` and
-   * `isArchived` are all carried disabled and shown nowhere. The question this guard asks is whether
-   * the field is **sent**, not whether it is offered.
+   * `isArchived` are all carried disabled and shown nowhere.
+   *
+   * ⚠ **What this guard asks is whether a control is DECLARED — not whether the field is sent.**
+   * Those differ by one line: being sent additionally requires `getPatient` to stay
+   * `form.getRawValue()`, and changing it to `form.value` would drop every disabled control — `id`,
+   * `accountId` and `isArchived` at once — while every case in this file stayed green, because the
+   * controls would all still be declared. The round trip is covered next door, on the wire, by
+   * `archived-survives-an-edit.spec.ts` and by `account-id-is-carried-not-offered.spec.ts`. The
+   * property holds across that pair and **not** in this file alone; do not read a green run here as
+   * evidence that anything reaches the server.
    */
   const DELIBERATELY_NOT_ON_THE_FORM: readonly string[] = [];
 

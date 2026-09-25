@@ -91,12 +91,23 @@ describe('Patient isArchived survives an edit', () => {
     expect(formService().getPatient(form)).toEqual(expect.objectContaining({ isArchived: true }));
   });
 
-  it('is on no input in the template', () => {
+  it('is bound to no input in the template', () => {
     // Repo-root-relative: this runner puts `process.cwd()` at the project root, which is what the path
     // resolves against. (`__dirname` would be this file's own directory.)
     const template = readFileSync(join('src/main/webapp/app/entities/directory/patient/update', 'patient-update.html'), 'utf8');
 
-    expect(template).not.toContain('isArchived');
+    // ⚠ Asserted on the BINDING, not on the bare identifier, and the narrower string is the point.
+    // `not.toContain('isArchived')` would also fire on a comment — and a comment is exactly what
+    // someone closes this loop with, since explanatory comments in templates are house practice here
+    // and `list/patient.spec.ts:899` asserts that a template *contains* one. So the bare form turns
+    // red for a reader doing the right thing, which trains people to delete the guard. What must not
+    // exist is a control bound to this field; `formControlName` is how this template binds every one
+    // of them, and it is the string a regeneration would emit.
+    //
+    // (`account-id-is-carried-not-offered.spec.ts` still asserts the bare identifier for the field
+    // beside this one. Same brittleness, not touched here — it belongs to item 115's file and is
+    // noted rather than fixed in passing.)
+    expect(template).not.toContain('formControlName="isArchived"');
   });
 
   describe('on the wire', () => {
