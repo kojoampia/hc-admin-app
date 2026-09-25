@@ -28,8 +28,8 @@ import { AlertError } from 'app/shared/alert/alert-error';
 import { TranslateDirective } from 'app/shared/language';
 import { ItemCount } from 'app/shared/pagination';
 import { SortByDirective, SortDirective, SortService, type SortState, sortStateSignal } from 'app/shared/sort';
-import { IProfessional } from '../professional.model';
-import { ProfessionalService } from '../service/professional.service';
+import { IProfessionalUser, IProfessionalProfile } from '../professional.model';
+import { ProfessionalUserService, ProfessionalProfileService } from '../service/professional.service';
 
 /** Query param that puts the archived half of the directory on screen. */
 const ARCHIVED_PARAM = 'archived';
@@ -129,7 +129,9 @@ export class Professional implements OnInit {
   readonly VERIFICATIONS = Object.keys(VerificationStatus) as (keyof typeof VerificationStatus)[];
 
   subscription: Subscription | null = null;
-  readonly professionals = signal<IProfessional[]>([]);
+  readonly professionalProfiles = signal<IProfessionalProfile[]>([]);
+  readonly professionalUsers = signal<IProfessionalUser[]>([]);
+  readonly isLoading = signal(false);
 
   sortState = sortStateSignal({});
 
@@ -166,9 +168,12 @@ export class Professional implements OnInit {
   readonly awaitingTotal = signal(0);
 
   readonly router = inject(Router);
-  protected readonly professionalService = inject(ProfessionalService);
+  protected readonly professionalUserService = inject(ProfessionalUserService);
   // eslint-disable-next-line @typescript-eslint/member-ordering
-  readonly isLoading = this.professionalService.professionalsResource.isLoading;
+  readonly isUserLoading = this.professionalUserService.professionalUserResource.isLoading;
+  protected readonly professionalProfileService = inject(ProfessionalProfileService);
+  // eslint-disable-next-line @typescript-eslint/member-ordering
+  readonly isProfileLoading = this.professionalProfileService.professionalProfileResource.isLoading;
   protected readonly activatedRoute = inject(ActivatedRoute);
   protected readonly sortService = inject(SortService);
   private readonly directoryLinkService = inject(DirectoryLinkService);
@@ -191,17 +196,17 @@ export class Professional implements OnInit {
 
   constructor() {
     effect(() => {
-      const headers = this.professionalService.professionalsResource.headers();
+      const headers = this.professionalUserService.professionalUserResource.headers();
       if (headers) {
         this.fillComponentAttributesFromResponseHeader(headers);
       }
     });
     effect(() => {
-      this.professionals.set(this.fillComponentAttributesFromResponseBody([...this.professionalService.professionals()]));
+      this.professionalUsers.set(this.fillComponentAttributesFromResponseBody([...this.professionalUserService.professionalUsers()]));
     });
   }
 
-  trackId = (item: IProfessional): string => this.professionalService.getProfessionalIdentifier(item);
+  trackId = (item: IProfessionalUser): string => this.professionalUserService.getProfessionalUserIdentifier(item);
 
   /**
    * The clinician's name, which lives on the linked profile; then the licence number; then an em
@@ -624,5 +629,44 @@ export class Professional implements OnInit {
 
   private totalOf(headers: HttpHeaders): number {
     return Number(headers.get(TOTAL_COUNT_RESPONSE_HEADER) ?? 0);
+  }
+
+  setActive(user: IProfessionalUser, isActivated: boolean): void {
+    if (!this.canToggle(user)) {
+      return;
+    }
+    this.professionalService.update({ ...user, activated: isActivated }).subscribe(() => this.loadProfessionalUsers());
+  }
+
+  trackIdentity = (item: IProfessionalUser): string => item.login ?? String(item.id);
+
+  loadProfessionalUsers(): void {
+    this.isLoading.set(true);
+    this.professionalService
+      .query({
+        page: this.page() - 1,
+        size: this.itemsPerPage,
+        sort: this.sortService.buildSortParam(this.sortState()),
+      })
+      .subscribe({
+        next: response => {
+          this.isLoading.set(false);
+          this.onProfessionalUsers(response.body, response.headers);
+        },
+        error: () => this.isLoading.set(false),
+      });
+  }
+
+  navigateToWithComponentValues(event: SortState): void {
+    this.handleNavigation(this.page(), event);
+  }
+
+  navigateToPage(page: number): void {
+    this.handleNavigation(page, this.sortState());
+  }
+
+  private onProfessionalUsers(users: IProfessionalUser[] | null, headers: HttpHeaders): void {
+    this.totalItems.set(Number(headers.get(TOTAL_COUNT_RESPONSE_HEADER)));
+    this.professionalUsers.set(users);
   }
 }

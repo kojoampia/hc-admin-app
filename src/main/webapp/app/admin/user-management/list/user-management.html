@@ -22,7 +22,6 @@
       <table class="table table-striped" aria-describedby="user-management-page-heading">
         <thead>
           <tr abfSort [(sortState)]="sortState" (sortChange)="navigateToWithComponentValues($event)">
-            <th scope="col" abfSortBy="id"><span abfTranslate="global.field.id">ID</span> <fa-icon [icon]="'sort'" /></th>
             <th scope="col" abfSortBy="login"><span abfTranslate="userManagement.login">Login</span> <fa-icon [icon]="'sort'" /></th>
             <th scope="col" abfSortBy="email"><span abfTranslate="userManagement.email">Email</span> <fa-icon [icon]="'sort'" /></th>
             <th scope="col"></th>
@@ -38,9 +37,8 @@
           @for (user of users; track trackIdentity(user)) {
             <tr>
               <td>
-                <a [routerLink]="['./', user.login, 'view']">{{ user.id }}</a>
+                <a [routerLink]="['./', user.login, 'view']">{{ user.login }}</a>
               </td>
-              <td>{{ user.login }}</td>
               <td>{{ user.email }}</td>
               <td>
                 @if (user.activated) {

@@ -352,153 +352,100 @@
   </div>
 
   @if (hasFilter()) {
-    <button type="button" class="btn-quiet sm" (click)="clearFilter()" abfTranslate="console.filter.clear" data-cy="clearFilter">
+    <button type="button" class="btn-quiet btn-round sm" (click)="clearFilter()" abfTranslate="console.filter.clear" data-cy="clearFilter">
       Clear filters
     </button>
   }
 </div>
 
-@if (professionals().length === 0) {
-  <div class="alert alert-warning" id="no-result">
-    @if (showArchived()) {
-      <span abfTranslate="hcAdminApp.directoryProfessional.home.noneArchived">No archived Professionals</span>
-    } @else if (hasFilter()) {
-      <span abfTranslate="hcAdminApp.directoryProfessional.home.noneMatching">No professionals match this filter</span>
-    } @else {
-      <span abfTranslate="hcAdminApp.directoryProfessional.home.notFound">No Professionals found</span>
-    }
-  </div>
-} @else {
-  <div class="card">
-    <div class="table-responsive table-entities" id="entities">
-      <table class="table dir-table" aria-describedby="page-heading">
-        <thead>
-          <tr abfSort [(sortState)]="sortState" (sortChange)="navigateToWithComponentValues($event)">
-            <th scope="col" abfSortBy="profile.lastName">
-              <div class="d-flex">
-                <span abfTranslate="hcAdminApp.directoryProfessional.home.column.professional">Professional</span>
-                <fa-icon class="p-1" icon="sort" />
+@if (professionalUsers(); as users) {
+  <div class="table-responsive">
+    <table class="table table-striped" aria-describedby="user-management-page-heading">
+      <thead>
+        <tr abfSort [(sortState)]="sortState" (sortChange)="navigateToWithComponentValues($event)">
+          <th scope="col" abfSortBy="login"><span abfTranslate="userManagement.login">Login</span> <fa-icon [icon]="'sort'" /></th>
+          <th scope="col" abfSortBy="email"><span abfTranslate="userManagement.email">Email</span> <fa-icon [icon]="'sort'" /></th>
+          <th scope="col"></th>
+          <th scope="col" abfSortBy="langKey"><span abfTranslate="userManagement.langKey">Language</span> <fa-icon [icon]="'sort'" /></th>
+          <th scope="col"><span abfTranslate="userManagement.profiles">Authorities</span></th>
+          <th scope="col" abfSortBy="createdDate">
+            <span abfTranslate="userManagement.createdDate">Created</span> <fa-icon [icon]="'sort'" />
+          </th>
+          <th scope="col"></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (user of users; track trackIdentity(user)) {
+          <tr>
+            <td>
+              <a [routerLink]="['./', user.login, 'view']">{{ user.login }}</a>
+            </td>
+            <td>{{ user.email }}</td>
+            <td>
+              @if (user.activated) {
+                <button class="btn btn-success btn-sm" (click)="setActive(user, false)" abfTranslate="userManagement.activated">
+                  Activated
+                </button>
+              } @else {
+                <button
+                  class="btn btn-danger btn-sm"
+                  (click)="setActive(user, true)"
+                  [disabled]="!canToggle(user)"
+                  abfTranslate="userManagement.deactivated"
+                >
+                  Deactivated
+                </button>
+              }
+            </td>
+            <td>{{ user.langKey }}</td>
+            <td>
+              @for (authority of user.authorities; track authority) {
+                <span class="badge bg-info me-1">{{ authority }}</span>
+              }
+            </td>
+            <td>{{ user.createdDate | formatMediumDatetime }}</td>
+            <td class="text-end">
+              <div class="btn-group">
+                <a [routerLink]="['./', user.login, 'view']" class="btn btn-info btn-sm">
+                  <fa-icon icon="eye" />
+                  <span class="d-none d-md-inline" abfTranslate="entity.action.view">View</span>
+                </a>
+                <a [routerLink]="['./', user.login, 'edit']" class="btn btn-primary btn-sm">
+                  <fa-icon icon="pencil-alt" />
+                  <span class="d-none d-md-inline" abfTranslate="entity.action.edit">Edit</span>
+                </a>
+                <button
+                  type="button"
+                  (click)="deleteUser(user)"
+                  class="btn btn-danger btn-sm"
+                  [disabled]="!canToggle(user)"
+                  data-cy="entityDeleteButton"
+                >
+                  <fa-icon icon="times" />
+                  <span class="d-none d-md-inline" abfTranslate="entity.action.delete">Delete</span>
+                </button>
               </div>
-            </th>
-            <th scope="col" abfSortBy="role">
-              <div class="d-flex">
-                <span abfTranslate="hcAdminApp.directoryProfessional.role">Role</span>
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
-            <th scope="col" abfSortBy="team.name">
-              <div class="d-flex">
-                <span abfTranslate="hcAdminApp.directoryProfessional.team">Team</span>
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
-            <th scope="col" abfSortBy="licenceNumber">
-              <div class="d-flex">
-                <span abfTranslate="hcAdminApp.directoryProfessional.licenceNumber">Licence</span>
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
-            <th scope="col" abfSortBy="hub.name">
-              <div class="d-flex">
-                <span abfTranslate="hcAdminApp.directoryProfessional.hub">Hub</span>
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
-            <th scope="col" class="num" abfSortBy="patientCount">
-              <div class="d-flex">
-                <span abfTranslate="hcAdminApp.directoryProfessional.patientCount">Patients</span>
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
-            <th scope="col" class="num" abfSortBy="rating">
-              <div class="d-flex">
-                <span abfTranslate="hcAdminApp.directoryProfessional.rating">Rating</span>
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
-            <th scope="col" abfSortBy="status">
-              <div class="d-flex">
-                <span abfTranslate="hcAdminApp.directoryProfessional.status">Status</span>
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
-            <th scope="col"></th>
+            </td>
           </tr>
-        </thead>
-        <tbody>
-          @for (professional of professionals(); track trackId(professional)) {
-            <tr data-cy="entityTable">
-              <td>
-                <div class="dir-who">
-                  <span class="dir-av" aria-hidden="true">{{ initials(professional) }}</span>
-                  <div>
-                    <a class="dir-name" [routerLink]="['/professional', professional.id, 'view']">{{ displayName(professional) }}</a>
-                    @if (professional.speciality) {
-                      <div class="sub">{{ professional.speciality }}</div>
-                    }
-                  </div>
-                </div>
-              </td>
-              <td>{{ 'console.professionalRole.' + (professional.role ?? 'null') | translate }}</td>
-              <td>{{ professional.team?.name ?? '—' }}</td>
-              <td>
-                {{ professional.licenceNumber ?? '—' }}
-                <!--
-                  A pill rather than the plain line it used to be. Verification is now a decision
-                  with a history behind it and four states rather than three, and REVOKED beside
-                  VERIFIED in the same grey text is a distinction nobody reads at a glance.
-
-                  Namespaced to VerificationStatus, not console.status: the shared dictionary has no
-                  REVOKED or EXPIRED, so those two rendered as a raw key here.
-                -->
-                @if (professional.verification) {
-                  <div class="sub">
-                    <abf-status-pill [status]="professional.verification" namespace="hcAdminApp.VerificationStatus" />
-                  </div>
-                }
-              </td>
-              <td>{{ professional.hub?.name ?? '—' }}</td>
-              <td class="num">{{ professional.patientCount ?? '—' }}</td>
-              <td class="num">
-                {{ professional.rating !== null && professional.rating !== undefined ? (professional.rating | number: '1.1-1') : '—' }}
-              </td>
-              <td><abf-status-pill [status]="professional.status" /></td>
-              <td class="text-end">
-                <div class="btn-group">
-                  <a [routerLink]="['/professional', professional.id, 'view']" class="btn btn-ghost btn-sm" data-cy="entityDetailsButton">
-                    <fa-icon icon="eye" />
-                    <span class="d-none d-md-inline" abfTranslate="entity.action.view">View</span>
-                  </a>
-                  <a [routerLink]="['/professional', professional.id, 'edit']" class="btn btn-ghost btn-sm" data-cy="entityEditButton">
-                    <fa-icon icon="pencil-alt" />
-                    <span class="d-none d-md-inline" abfTranslate="entity.action.edit">Edit</span>
-                  </a>
-                </div>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    </div>
+        }
+      </tbody>
+    </table>
   </div>
-}
 
-@if (professionals().length > 0) {
-  <div>
+  @if (totalItems() > 0) {
     <div class="d-flex justify-content-center">
-      <abf-item-count [params]="{ page: page(), totalItems: totalItems(), itemsPerPage: itemsPerPage() }" />
+      <abf-item-count [params]="{ page: page(), totalItems: totalItems(), itemsPerPage: itemsPerPage }" />
     </div>
-
     <div class="d-flex justify-content-center">
       <ngb-pagination
         [collectionSize]="totalItems()"
         [page]="page()"
-        [pageSize]="itemsPerPage()"
+        [pageSize]="itemsPerPage"
         [maxSize]="5"
         [rotate]="true"
         [boundaryLinks]="true"
         (pageChange)="navigateToPage($event)"
       />
     </div>
-  </div>
+  }
 }

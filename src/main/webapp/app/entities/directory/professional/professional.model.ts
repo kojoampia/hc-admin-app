@@ -36,3 +36,76 @@ export interface IProfessional {
 }
 
 export type NewProfessional = Omit<IProfessional, 'id'> & { id: null };
+
+/**
+ * The gateway's Account, as the console sees it.
+ *
+ * User records are owned by hc-admin-gateway, not by hc-admin-service: this
+ * is the same record the JDL calls `Credential`, and `authorities` holds
+ * gateway `Authority` values — always in ROLE_XXXX shape, because that is the
+ * exact string that rides on the JWT's `auth` claim and is compared by
+ * `hasAnyAuthority`. Translating between shapes at the boundary is how you
+ * get an authority that silently never matches.
+ *
+ * Field names follow JHipster's stock user-management payload so the module
+ * reads the way a JHipster developer expects, and so pointing it at a real
+ * gateway needs no mapping layer.
+ */
+import dayjs from 'dayjs/esm';
+
+export interface IProfessionalUser {
+  id: string | null;
+  login?: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  email?: string;
+  activated?: boolean;
+  langKey?: string;
+  authorities?: string[];
+  createdBy?: string;
+  createdDate?: dayjs.Dayjs | null;
+  lastModifiedBy?: string;
+  lastModifiedDate?: dayjs.Dayjs | null;
+  password?: string;
+}
+
+export class ProfessionalUser implements IProfessionalUser {
+  constructor(
+    public id: string | null,
+    public login?: string,
+    public firstName?: string | null,
+    public lastName?: string | null,
+    public email?: string,
+    public activated?: boolean,
+    public langKey?: string,
+    public authorities?: string[],
+    public createdBy?: string,
+    public createdDate?: dayjs.Dayjs | null,
+    public lastModifiedBy?: string,
+    public lastModifiedDate?: dayjs.Dayjs | null,
+    public password?: string,
+  ) {}
+}
+
+/** A user being created has no id yet; everything else is the same record. */
+export type NewProfessionalUser = Omit<IProfessionalUser, 'id'> & { id: null };
+
+export class IProfessionalProfile implements IProfile {
+  constructor(
+    public id: string | null,
+    public accountId?: string | null,
+    public title?: keyof typeof Title | null,
+    public firstName?: string | null,
+    public middleName?: string | null,
+    public lastName?: string | null,
+    public dateOfBirth?: dayjs.Dayjs | null,
+    public sex?: keyof typeof Sex | null,
+    public mobilePhone?: string | null,
+    public email?: string | null,
+    public idType?: keyof typeof IdType | null,
+    public idNumber?: string | null,
+    public address?: IAddress | null,
+  ) {}
+}
+
+export type NewProfessionalProfile = Omit<IProfessionalProfile, 'id'> & { id: null };
