@@ -68,6 +68,11 @@
       "fieldName": "joinedOn",
       "fieldType": "LocalDate",
       "fieldValidateRules": ["required"]
+    },
+    {
+      "documentation": "Archived records are hidden from the directory rather than deleted; the list filters `isArchived.notEquals=true`, which matches a null. Absent from this file and from hc-admin.jdl until backlog item 139, so a regeneration dropped it from professional.model.ts and the form service together — which a model-to-form parity guard cannot see, both sides losing it at once. Carried through the edit form disabled, but NOT for accountId's reason: the field may be changed freely, it simply may not have a second writer. ProfessionalService.setArchived PATCHes it alone and argues against the whole-document PUT an enabled control would make. A regeneration would re-create it as an editable checkbox; the guard is archived-survives-an-edit.spec.ts, which this generator does not own.",
+      "fieldName": "isArchived",
+      "fieldType": "Boolean"
     }
   ],
   "name": "Professional",

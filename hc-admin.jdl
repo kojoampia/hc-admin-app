@@ -200,6 +200,32 @@ entity Patient {
   isArchived Boolean
 }
 
+/**
+ * `isArchived` is here for the reason `Patient`'s is, one item later. It was in
+ * NEITHER this file nor `.jhipster/Professional.json` until backlog item 139, so
+ * a regeneration dropped it from `professional.model.ts` and
+ * `update/professional-form.service.ts` **together** — and a guard that compares
+ * the model against the form is blind by construction to a loss that takes both
+ * sides at once. Archived records are hidden from the directory rather than
+ * deleted, and the list filters `isArchived.notEquals=true`, which matches a
+ * null; `PUT /api/professionals/{id}` is a full replace, so a form that does not
+ * carry the field tells the server to forget it and the clinician silently
+ * returns to the directory they were archived out of.
+ *
+ * It is carried disabled, but NOT for `accountId`'s reason — the field may be
+ * changed freely; what it may not have is a second writer.
+ * `ProfessionalService.setArchived` PATCHes the single field and its javadoc
+ * argues against exactly the whole-document write an enabled control would make.
+ * A REGENERATION WOULD RE-CREATE IT AS AN EDITABLE CHECKBOX; the guard that turns
+ * that red is `archived-survives-an-edit.spec.ts`, deliberately not a file this
+ * generator owns. Backlog item 139.
+ *
+ * ⚠ `homeSpaceId` and `unavailabilityPeriods` are on the api's `Professional` and
+ * are deliberately NOT here: the console has no field for either, and
+ * `ProfessionalResource.updateProfessional` already protects them by restoring
+ * the stored value before saving. Adding them here would put an editable control
+ * on screen for data this console does not own.
+ */
 entity Professional {
   id String
   role ProfessionalRole required
@@ -212,6 +238,7 @@ entity Professional {
   visitCount Integer min(0)
   rating BigDecimal min(0) max(5)
   joinedOn LocalDate required
+  isArchived Boolean
 }
 
 /**
@@ -240,6 +267,33 @@ entity Team {
   description String maxlength(200)
 }
 
+/**
+ * `isArchived` is here for the reason `Patient`'s and `Professional`'s are. It
+ * was in NEITHER this file nor `.jhipster/Vendor.json` until backlog item 139, so
+ * a regeneration dropped it from `vendor.model.ts` and
+ * `update/vendor-form.service.ts` **together** — and a guard that compares the
+ * model against the form is blind by construction to a loss that takes both sides
+ * at once. Archived records are hidden from the directory rather than deleted,
+ * and the list filters `isArchived.notEquals=true`, which matches a null;
+ * `PUT /api/vendors/{id}` is a full replace, so a form that does not carry the
+ * field tells the server to forget it and the vendor silently returns to the
+ * directory it was archived out of.
+ *
+ * It is carried disabled, but NOT for `accountId`'s reason — the field may be
+ * changed freely; what it may not have is a second writer.
+ * `VendorService.setArchived` PATCHes the single field and its javadoc argues
+ * against exactly the whole-document write an enabled control would make. A
+ * REGENERATION WOULD RE-CREATE IT AS AN EDITABLE CHECKBOX; the guard that turns
+ * that red is `archived-survives-an-edit.spec.ts`, deliberately not a file this
+ * generator owns. Backlog item 139.
+ *
+ * ⚠ `documents` and `facilities` are relationships this console never writes, and
+ * the api's `Vendor.accountId` is not modelled here at all. All three are absent
+ * from the `PUT` body and `VendorResource.updateVendor` restores nothing, so all
+ * three are overwritten by an edit — but none wants a control on this form. They
+ * want the restore-from-stored rule `ProfessionalResource` already applies, which
+ * is an api change. Qualified and filed under item 139; do not close it here.
+ */
 entity Vendor {
   id String
   name String required maxlength(100)
@@ -255,6 +309,7 @@ entity Vendor {
   orderCount Integer min(0)
   spendToDate BigDecimal min(0)
   rating BigDecimal min(0) max(5)
+  isArchived Boolean
 }
 
 // ============================================================
