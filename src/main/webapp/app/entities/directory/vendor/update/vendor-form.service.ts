@@ -112,14 +112,20 @@ export class VendorFormService {
        * over `@Field("is_archived")` — and because the active list filters on `isArchived.notEquals=true`,
        * which matches a null, the archived vendor silently returns to the directory.
        *
-       * ⚠ **`VendorResource.updateVendor` restores nothing at all from the stored document**, unlike
-       * its professional counterpart, which re-reads three fields before saving. So on this entity the
-       * form is the only thing standing between an edit and the field. That also means this control
-       * closes one instance of a wider hole rather than the hole: `documents`, `facilities` and the
-       * server-side `accountId` are likewise absent from the `PUT` body and likewise overwritten, and
-       * none of the three is a field a hidden control should carry — they want the restore-from-stored
-       * rule that `ProfessionalResource` already applies to `homeSpaceId`. Filed rather than fixed
-       * here; see backlog item 139's report.
+       * ⚠ **This control is still the only thing holding `isArchived`, and that is now the narrow
+       * claim rather than the wide one.** Until item 144 this comment read that
+       * `VendorResource.updateVendor` "restores nothing at all from the stored document" — true when
+       * written, false since. That resource now re-reads the stored document and puts back the three
+       * fields the console cannot send: `accountId` (null-guarded, `homeSpaceId`'s shape) and
+       * `documents` / `facilities` (unconditionally — both are declared `= new HashSet<>()` on the
+       * entity, so an omitted key deserialises to an *empty set* rather than null and no guard can
+       * tell "absent" from "cleared").
+       *
+       * **`isArchived` is deliberately NOT among them**, which is why nothing here changes. It is a
+       * console-owned field that this form legitimately writes, so restoring it server-side would make
+       * the archive toggle unable to un-archive. The server protects what the console cannot say; this
+       * control says it. Do not read item 144 as making this control redundant — removing it puts the
+       * defect straight back, and `archived-survives-an-edit.spec.ts` will say so.
        *
        * ⚠ **No validators, deliberately.** The api declares no constraint on this field, so there is
        * nothing to mirror — and a mirrored `required` is the precise wedge item 115 measured on
