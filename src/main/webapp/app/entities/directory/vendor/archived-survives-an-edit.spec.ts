@@ -21,17 +21,19 @@ import { sampleWithRequiredData } from './vendor.test-samples';
  * _Show archived_ table, which is one click from an operator looking at archived records precisely
  * because they are archived.
  *
- * ## ⚠ This entity's resource restores nothing, so the form is the only thing holding the field
+ * ## ⚠ The resource restores three fields now, and `isArchived` is deliberately not one of them
  *
- * `ProfessionalResource.updateProfessional` re-reads the stored document and puts three fields back
- * before saving. `VendorResource.updateVendor` does not do this for any field: it normalises
- * `accountId`, rejects a duplicate, and saves. That is worth knowing before reading a green run here
- * as more than it is — **this control closes one instance of a wider hole rather than the hole.**
- * `documents` and `facilities` are `@DBRef` sets persisted on the vendor document and are likewise
- * absent from the `PUT` body, and the server-side `accountId` is not on the console model at all, so
- * a model-to-form sweep cannot even see it. None of those three wants a hidden form control — they
- * want the restore-from-stored rule the professional resource already applies. Filed rather than
- * fixed under item 139; this spec deliberately claims only what its name says.
+ * This section read *"this entity's resource restores nothing, so the form is the only thing holding
+ * the field"* until item 144. That was true when written and is false now:
+ * `VendorResource.updateVendor` re-reads the stored document and puts back `accountId` (null-guarded)
+ * and `documents` / `facilities` (unconditionally, because both are declared `= new HashSet<>()` on
+ * the entity, so an omitted key arrives as an *empty set* and no null guard could fire).
+ *
+ * **`isArchived` is not restored, on purpose** — it is a console-owned field this form legitimately
+ * writes, and restoring it server-side would leave the archive toggle unable to un-archive. So the
+ * form really is still the only thing holding *this* field, and this spec's reason for existing is
+ * unchanged. What has changed is that the claim is now narrow and accurate instead of wide and
+ * stale: the three fields this section used to list as open are closed.
  *
  * ## Why this file is not in `update/`
  *
