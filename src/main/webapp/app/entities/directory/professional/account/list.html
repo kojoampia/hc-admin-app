@@ -44,11 +44,11 @@
               <td>{{ user.createdDate | formatMediumDatetime }}</td>
               <td class="text-end">
                 <div class="btn-group">
-                  <a [routerLink]="['./', user.id, 'view']" class="btn btn-info btn-sm">
+                  <a [routerLink]="['/professional', user.id, 'view']" class="btn btn-info btn-sm">
                     <fa-icon icon="eye" />
                     <span class="d-none d-md-inline" abfTranslate="entity.action.view">View</span>
                   </a>
-                  <a [routerLink]="['./', user.id, 'edit']" class="btn btn-primary btn-sm">
+                  <a [routerLink]="['/professional', user.id, 'edit']" class="btn btn-primary btn-sm">
                     <fa-icon icon="pencil-alt" />
                     <span class="d-none d-md-inline" abfTranslate="entity.action.edit">Edit</span>
                   </a>

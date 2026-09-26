@@ -37,7 +37,7 @@
     "sonar": "sonar-scanner",
     "start": "ng serve --hmr",
     "start-tls": "npm run webapp:dev-ssl",
-    "pretest": "npm run lint",
+    "pretest": "npm run lint:fix",
     "test": "ng test --coverage",
     "test:watch": "npm run test -- --watch",
     "watch": "concurrently npm:start",

@@ -63,6 +63,10 @@ export class ProfessionalAccountService {
     return this.http.get<RestProfessionalUser>(`${this.resourceUrl}/${encodeURIComponent(login)}`).pipe(map(fromServer));
   }
 
+  findById(id: string): Observable<IProfessionalUser> {
+    return this.http.get<RestProfessionalUser>(`${this.resourceUrl}/id/${encodeURIComponent(id)}`).pipe(map(fromServer));
+  }
+
   query(req?: Record<string, unknown>): Observable<HttpResponse<IProfessionalUser[]>> {
     const options = createRequestOption(req);
     return this.http

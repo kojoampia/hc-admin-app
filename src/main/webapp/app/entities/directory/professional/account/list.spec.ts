@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { provideTranslateService, TranslateService } from '@ngx-translate/core';
-import { ProfessionalAccount } from './professional-account';
+import { ProfessionalAccount } from './list';
 
 describe('ProfessionalAccount', () => {
   let component: ProfessionalAccount;
