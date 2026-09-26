@@ -1,21 +1,20 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { provideTranslateService, TranslateService } from '@ngx-translate/core';
-import { ProfessionalAccount } from './professional-account';
+import { ProfessionalDashboard } from './professional-dashboard';
+import { provideTranslateService } from '@ngx-translate/core';
 
-describe('ProfessionalAccount', () => {
-  let component: ProfessionalAccount;
-  let fixture: ComponentFixture<ProfessionalAccount>;
+describe('ProfessionalDashboard', () => {
+  let component: ProfessionalDashboard;
+  let fixture: ComponentFixture<ProfessionalDashboard>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ProfessionalAccount],
+      imports: [ProfessionalDashboard],
       providers: [provideRouter([]), provideTranslateService()],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(ProfessionalAccount);
+    fixture = TestBed.createComponent(ProfessionalDashboard);
     component = fixture.componentInstance;
-    fixture.detectChanges();
     await fixture.whenStable();
   });
 

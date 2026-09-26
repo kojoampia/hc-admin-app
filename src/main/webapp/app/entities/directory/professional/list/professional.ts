@@ -30,6 +30,8 @@ import { ItemCount } from 'app/shared/pagination';
 import { SortByDirective, SortDirective, SortService, type SortState, sortStateSignal } from 'app/shared/sort';
 import { IProfessional } from '../professional.model';
 import { ProfessionalService } from '../service/professional.service';
+import { ProfessionalAccount } from '../account/professional-account';
+import { ProfessionalProfile } from '../profile/professional-profile';
 
 /** Query param that puts the archived half of the directory on screen. */
 const ARCHIVED_PARAM = 'archived';
@@ -112,6 +114,8 @@ const AWAITING_ROWS = 5;
     ItemCount,
     StatusPill,
     DecimalPipe,
+    ProfessionalAccount,
+    ProfessionalProfile,
   ],
 })
 export class Professional implements OnInit {

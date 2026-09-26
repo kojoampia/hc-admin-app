@@ -1,0 +1,21 @@
+<div class="sec-head">
+  <div>
+    <h3 id="page-heading" data-cy="ProfessionalHeading" abfTranslate="hcAdminApp.directoryProfessional.home.title">Professionals</h3>
+    <p abfTranslate="hcAdminApp.directoryProfessional.home.subtitle">Clinicians and carers on the network</p>
+  </div>
+  <div class="head-tools no-print">
+    <a class="btn btn-ghost btn-sm" routerLink="/duty-roster" data-cy="rosterShortcut">
+      <fa-icon icon="calendar-alt" />
+      <span abfTranslate="hcAdminApp.directoryProfessional.home.roster">Roster</span>
+    </a>
+  </div>
+</div>
+
+<abf-alert-error />
+<abf-alert />
+<div class="mt-2 mb-3">
+  <abf-professional-account></abf-professional-account>
+</div>
+<div class="mt-2 mb-3">
+  <abf-professional-profile></abf-professional-profile>
+</div>
