@@ -16,3 +16,7 @@
  * service deliberately has no such entity, so that one keeps its gateway-relative path.
  */
 export const ADMIN_SERVICE = 'hcadminservice';
+export const PROFESSIONAL_SERVICE = 'professionalservice';
+export const PATIENT_SERVICE = 'patientservice';
+export const PROFESSIONAL_GATEWAY = 'hcprofessionalgateway';
+export const PATIENT_GATEWAY = 'hcpatientgateway';

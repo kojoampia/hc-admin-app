@@ -235,7 +235,7 @@ describe('Professional Management Component', () => {
     expectListRequest();
 
     // THEN
-    expect(service.professionalsParams()).toMatchObject(expect.objectContaining({ sort: ['id,desc'] }));
+    expect(service.professionalParams()).toMatchObject(expect.objectContaining({ sort: ['id,desc'] }));
   });
 
   describe('archived filter', () => {
@@ -245,8 +245,8 @@ describe('Professional Management Component', () => {
 
       // notEquals, not equals=false: a record saved before isArchived existed has no value at
       // all, and equals=false would not match it — the whole directory would read as empty.
-      expect(service.professionalsParams()).toMatchObject(expect.objectContaining({ 'isArchived.notEquals': true }));
-      expect(service.professionalsParams()).not.toMatchObject(expect.objectContaining({ 'isArchived.equals': true }));
+      expect(service.professionalParams()).toMatchObject(expect.objectContaining({ 'isArchived.notEquals': true }));
+      expect(service.professionalParams()).not.toMatchObject(expect.objectContaining({ 'isArchived.equals': true }));
     });
 
     it('should ask for the archived half when the route says so', () => {
@@ -260,7 +260,7 @@ describe('Professional Management Component', () => {
       TestBed.tick();
       expectListRequest();
 
-      expect(service.professionalsParams()).toMatchObject(expect.objectContaining({ 'isArchived.equals': true }));
+      expect(service.professionalParams()).toMatchObject(expect.objectContaining({ 'isArchived.equals': true }));
     });
 
     it('should carry the archived flag into the URL when toggled on', () => {
@@ -352,7 +352,7 @@ describe('Professional Management Component', () => {
       TestBed.tick();
       expectListRequest();
 
-      expect(service.professionalsParams()).toMatchObject(expect.objectContaining({ 'role.equals': 'NURSE', 'status.equals': 'ACTIVE' }));
+      expect(service.professionalParams()).toMatchObject(expect.objectContaining({ 'role.equals': 'NURSE', 'status.equals': 'ACTIVE' }));
     });
 
     it('should ignore a role the enum does not have', () => {

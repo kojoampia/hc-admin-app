@@ -28,8 +28,9 @@ import { AlertError } from 'app/shared/alert/alert-error';
 import { TranslateDirective } from 'app/shared/language';
 import { ItemCount } from 'app/shared/pagination';
 import { SortByDirective, SortDirective, SortService, type SortState, sortStateSignal } from 'app/shared/sort';
-import { IProfessional } from '../professional.model';
-import { ProfessionalService } from '../service/professional.service';
+import { IProfessionalUser, IProfessionalProfile, IProfessional } from '../professional.model';
+import { ProfessionalService, ProfessionalUserService, ProfessionalProfileService } from '../service/professional.service';
+import FormatMediumDatetimePipe from 'app/shared/date/format-medium-datetime.pipe';
 
 /** Query param that puts the archived half of the directory on screen. */
 const ARCHIVED_PARAM = 'archived';
@@ -112,6 +113,7 @@ const AWAITING_ROWS = 5;
     ItemCount,
     StatusPill,
     DecimalPipe,
+    FormatMediumDatetimePipe,
   ],
 })
 export class Professional implements OnInit {
@@ -130,6 +132,9 @@ export class Professional implements OnInit {
 
   subscription: Subscription | null = null;
   readonly professionals = signal<IProfessional[]>([]);
+  readonly professionalUsers = signal<IProfessionalUser[]>([]);
+  readonly professionalProfiles = signal<IProfessionalProfile[]>([]);
+  readonly isLoading = signal(false);
 
   sortState = sortStateSignal({});
 
@@ -167,8 +172,14 @@ export class Professional implements OnInit {
 
   readonly router = inject(Router);
   protected readonly professionalService = inject(ProfessionalService);
+  protected readonly professionalUserService = inject(ProfessionalUserService);
   // eslint-disable-next-line @typescript-eslint/member-ordering
-  readonly isLoading = this.professionalService.professionalsResource.isLoading;
+  readonly isUserLoading = this.professionalUserService.professionalUserResource.isLoading;
+  protected readonly professionalProfileService = inject(ProfessionalProfileService);
+  // eslint-disable-next-line @typescript-eslint/member-ordering
+  readonly isProfileLoading = this.professionalProfileService.professionalProfilesResource.isLoading;
+  // eslint-disable-next-line @typescript-eslint/member-ordering
+  readonly isProfessionalLoading = this.professionalService.professionalResource.isLoading;
   protected readonly activatedRoute = inject(ActivatedRoute);
   protected readonly sortService = inject(SortService);
   private readonly directoryLinkService = inject(DirectoryLinkService);
@@ -191,17 +202,17 @@ export class Professional implements OnInit {
 
   constructor() {
     effect(() => {
-      const headers = this.professionalService.professionalsResource.headers();
+      const headers = this.professionalUserService.professionalUserResource.headers();
       if (headers) {
         this.fillComponentAttributesFromResponseHeader(headers);
       }
     });
     effect(() => {
-      this.professionals.set(this.fillComponentAttributesFromResponseBody([...this.professionalService.professionals()]));
+      this.professionalUsers.set(this.fillComponentAttributesFromResponseBody([...this.professionalUserService.professionalUsers()]));
     });
   }
 
-  trackId = (item: IProfessional): string => this.professionalService.getProfessionalIdentifier(item);
+  trackId = (item: IProfessionalUser): string => this.professionalUserService.getProfessionalIdentifier(item);
 
   /**
    * The clinician's name, which lives on the linked profile; then the licence number; then an em
@@ -530,7 +541,7 @@ export class Professional implements OnInit {
     if (verification) {
       queryObject['verification.equals'] = verification;
     }
-    this.professionalService.professionalsParams.set(queryObject);
+    this.professionalService.professionalParams.set(queryObject);
   }
 
   protected handleNavigation(page: number, sortState: SortState): void {
@@ -550,6 +561,33 @@ export class Professional implements OnInit {
     });
   }
 
+  protected setActive(user: IProfessionalUser, isActivated: boolean): void {
+    this.professionalUserService.update({ ...user, activated: isActivated }).subscribe(() => this.loadProfessionalUsers());
+  }
+
+  protected trackIdentity = (item: IProfessionalUser): string => item.login ?? item.id;
+
+  protected loadProfessionalUsers(): void {
+    this.isLoading.set(true);
+    this.professionalUserService
+      .query({
+        page: this.page() - 1,
+        size: this.itemsPerPage(),
+        sort: this.sortService.buildSortParam(this.sortState()),
+      })
+      .subscribe({
+        next: (response: any) => {
+          this.isLoading.set(false);
+          this.onProfessionalUsers(response.body, response.headers);
+        },
+        error: () => this.isLoading.set(false),
+      });
+  }
+
+  protected deleteUser(user: IProfessionalUser): void {
+    this.professionalUserService.delete(user.id).subscribe(() => this.loadProfessionalUsers());
+  }
+
   /**
    * The role tiles: a headcount and an active count for each role.
    *
@@ -567,12 +605,12 @@ export class Professional implements OnInit {
       const base = { size: 1, page: 0, 'role.equals': role, 'isArchived.notEquals': true };
 
       this.professionalService.query(base).subscribe({
-        next: response => this.mergeRoleCount(role, { total: this.totalOf(response.headers) }),
+        next: (response: any) => this.mergeRoleCount(role, { total: this.totalOf(response.headers) }),
         error: () => this.mergeRoleCount(role, { total: undefined }),
       });
 
       this.professionalService.query({ ...base, 'status.equals': 'ACTIVE' }).subscribe({
-        next: response => this.mergeRoleCount(role, { active: this.totalOf(response.headers) }),
+        next: (response: any) => this.mergeRoleCount(role, { active: this.totalOf(response.headers) }),
         error: () => this.mergeRoleCount(role, { active: undefined }),
       });
     }
@@ -624,5 +662,10 @@ export class Professional implements OnInit {
 
   private totalOf(headers: HttpHeaders): number {
     return Number(headers.get(TOTAL_COUNT_RESPONSE_HEADER) ?? 0);
+  }
+
+  private onProfessionalUsers(users: IProfessionalUser[], headers: HttpHeaders): void {
+    this.totalItems.set(Number(headers.get(TOTAL_COUNT_RESPONSE_HEADER)));
+    this.professionalUsers.set(users);
   }
 }
