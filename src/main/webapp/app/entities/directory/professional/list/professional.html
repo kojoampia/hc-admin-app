@@ -387,12 +387,7 @@
                   Activated
                 </button>
               } @else {
-                <button
-                  class="btn btn-danger btn-sm"
-                  (click)="setActive(user, true)"
-                  [disabled]="!canToggle(user)"
-                  abfTranslate="userManagement.deactivated"
-                >
+                <button class="btn btn-danger btn-sm" (click)="setActive(user, true)" abfTranslate="userManagement.deactivated">
                   Deactivated
                 </button>
               }
@@ -414,16 +409,6 @@
                   <fa-icon icon="pencil-alt" />
                   <span class="d-none d-md-inline" abfTranslate="entity.action.edit">Edit</span>
                 </a>
-                <button
-                  type="button"
-                  (click)="deleteUser(user)"
-                  class="btn btn-danger btn-sm"
-                  [disabled]="!canToggle(user)"
-                  data-cy="entityDeleteButton"
-                >
-                  <fa-icon icon="times" />
-                  <span class="d-none d-md-inline" abfTranslate="entity.action.delete">Delete</span>
-                </button>
               </div>
             </td>
           </tr>
@@ -434,13 +419,13 @@
 
   @if (totalItems() > 0) {
     <div class="d-flex justify-content-center">
-      <abf-item-count [params]="{ page: page(), totalItems: totalItems(), itemsPerPage: itemsPerPage }" />
+      <abf-item-count [params]="{ page: page(), totalItems: totalItems(), itemsPerPage: itemsPerPage() }" />
     </div>
     <div class="d-flex justify-content-center">
       <ngb-pagination
         [collectionSize]="totalItems()"
         [page]="page()"
-        [pageSize]="itemsPerPage"
+        [pageSize]="itemsPerPage()"
         [maxSize]="5"
         [rotate]="true"
         [boundaryLinks]="true"

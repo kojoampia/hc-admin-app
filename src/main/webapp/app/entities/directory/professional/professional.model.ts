@@ -6,6 +6,12 @@ import { ProfessionalRole } from 'app/entities/enumerations/professional-role.mo
 import { VerificationStatus } from 'app/entities/enumerations/verification-status.model';
 import { IHub } from 'app/entities/platform/hub/hub.model';
 import { ITeam } from 'app/entities/platform/team/team.model';
+import { IUser } from 'app/admin/user-management/user-management.model';
+
+import { IAddress } from 'app/entities/directory/address/address.model';
+import { IdType } from 'app/entities/enumerations/id-type.model';
+import { Sex } from 'app/entities/enumerations/sex.model';
+import { Title } from 'app/entities/enumerations/title.model';
 
 export interface IProfessional {
   id: string;
@@ -37,24 +43,8 @@ export interface IProfessional {
 
 export type NewProfessional = Omit<IProfessional, 'id'> & { id: null };
 
-/**
- * The gateway's Account, as the console sees it.
- *
- * User records are owned by hc-admin-gateway, not by hc-admin-service: this
- * is the same record the JDL calls `Credential`, and `authorities` holds
- * gateway `Authority` values — always in ROLE_XXXX shape, because that is the
- * exact string that rides on the JWT's `auth` claim and is compared by
- * `hasAnyAuthority`. Translating between shapes at the boundary is how you
- * get an authority that silently never matches.
- *
- * Field names follow JHipster's stock user-management payload so the module
- * reads the way a JHipster developer expects, and so pointing it at a real
- * gateway needs no mapping layer.
- */
-import dayjs from 'dayjs/esm';
-
 export interface IProfessionalUser {
-  id: string | null;
+  id: string;
   login?: string;
   firstName?: string | null;
   lastName?: string | null;
@@ -71,7 +61,7 @@ export interface IProfessionalUser {
 
 export class ProfessionalUser implements IProfessionalUser {
   constructor(
-    public id: string | null,
+    public id: string,
     public login?: string,
     public firstName?: string | null,
     public lastName?: string | null,
@@ -92,7 +82,7 @@ export type NewProfessionalUser = Omit<IProfessionalUser, 'id'> & { id: null };
 
 export class IProfessionalProfile implements IProfile {
   constructor(
-    public id: string | null,
+    public id: string,
     public accountId?: string | null,
     public title?: keyof typeof Title | null,
     public firstName?: string | null,
