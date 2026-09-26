@@ -63,6 +63,7 @@ export type PartialUpdateRestProfessionalProfile = RestOf<PartialUpdateProfessio
 
 @Injectable()
 export class ProfessionalsService {
+  readonly applicationConfigService = inject(ApplicationConfigService);
   // Professional
   readonly professionalParams = signal<Record<string, string | number | boolean | readonly (string | number | boolean)[]> | undefined>(
     undefined,
@@ -81,15 +82,7 @@ export class ProfessionalsService {
   readonly professionals = computed(() =>
     (this.professionalResource.hasValue() ? this.professionalResource.value() : []).map(item => this.convertValueFromServer(item)),
   );
-  protected readonly applicationConfigService = inject(ApplicationConfigService);
-  protected readonly resourceUrl = this.applicationConfigService.getEndpointFor('api/professionals', ADMIN_SERVICE);
-
-  protected convertValueFromServer(restProfessional: RestProfessional): IProfessional {
-    return {
-      ...restProfessional,
-      joinedOn: restProfessional.joinedOn ? dayjs(restProfessional.joinedOn) : undefined,
-    };
-  }
+  readonly resourceUrl = this.applicationConfigService.getEndpointFor('api/professionals', ADMIN_SERVICE);
 
   // User
   readonly professionalUserParams = signal<Record<string, string | number | boolean | readonly (string | number | boolean)[]> | undefined>(
@@ -111,17 +104,8 @@ export class ProfessionalsService {
       this.convertUserValueFromServer(item),
     ),
   );
-  protected readonly userResourceUrl = this.applicationConfigService.getEndpointFor('api/admin/users', PROFESSIONAL_GATEWAY);
+  readonly userResourceUrl = this.applicationConfigService.getEndpointFor('api/admin/users', PROFESSIONAL_GATEWAY);
 
-  protected convertUserValueFromServer(restProfessionalUser: RestProfessionalUser): IProfessionalUser {
-    return {
-      ...restProfessionalUser,
-      createdDate: restProfessionalUser.createdDate ? dayjs(restProfessionalUser.createdDate) : undefined,
-      lastModifiedDate: restProfessionalUser.lastModifiedDate ? dayjs(restProfessionalUser.lastModifiedDate) : undefined,
-    };
-  }
-
-  //
   readonly professionalProfileParams = signal<
     Record<string, string | number | boolean | readonly (string | number | boolean)[]> | undefined
   >(undefined);
@@ -141,12 +125,27 @@ export class ProfessionalsService {
       this.convertProfileValueFromServer(item),
     ),
   );
-  protected readonly profileResourceUrl = this.applicationConfigService.getEndpointFor('api/profiles', PROFESSIONAL_SERVICE);
+  readonly profileResourceUrl = this.applicationConfigService.getEndpointFor('api/profiles', PROFESSIONAL_SERVICE);
 
-  protected convertProfileValueFromServer(restProfessionalProfile: RestProfessionalProfile): IProfessionalProfile {
+  convertUserValueFromServer(restProfessionalUser: RestProfessionalUser): IProfessionalUser {
+    return {
+      ...restProfessionalUser,
+      createdDate: restProfessionalUser.createdDate ? dayjs(restProfessionalUser.createdDate) : undefined,
+      lastModifiedDate: restProfessionalUser.lastModifiedDate ? dayjs(restProfessionalUser.lastModifiedDate) : undefined,
+    };
+  }
+
+  convertProfileValueFromServer(restProfessionalProfile: RestProfessionalProfile): IProfessionalProfile {
     return {
       ...restProfessionalProfile,
       dateOfBirth: restProfessionalProfile.dateOfBirth ? dayjs(restProfessionalProfile.dateOfBirth) : undefined,
+    };
+  }
+
+  convertValueFromServer(restProfessional: RestProfessional): IProfessional {
+    return {
+      ...restProfessional,
+      joinedOn: restProfessional.joinedOn ? dayjs(restProfessional.joinedOn) : undefined,
     };
   }
 }

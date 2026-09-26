@@ -561,6 +561,33 @@ export class Professional implements OnInit {
     });
   }
 
+  protected setActive(user: IProfessionalUser, isActivated: boolean): void {
+    this.professionalUserService.update({ ...user, activated: isActivated }).subscribe(() => this.loadProfessionalUsers());
+  }
+
+  protected trackIdentity = (item: IProfessionalUser): string => item.login ?? item.id;
+
+  protected loadProfessionalUsers(): void {
+    this.isLoading.set(true);
+    this.professionalUserService
+      .query({
+        page: this.page() - 1,
+        size: this.itemsPerPage(),
+        sort: this.sortService.buildSortParam(this.sortState()),
+      })
+      .subscribe({
+        next: (response: any) => {
+          this.isLoading.set(false);
+          this.onProfessionalUsers(response.body, response.headers);
+        },
+        error: () => this.isLoading.set(false),
+      });
+  }
+
+  protected deleteUser(user: IProfessionalUser): void {
+    this.professionalUserService.delete(user.id).subscribe(() => this.loadProfessionalUsers());
+  }
+
   /**
    * The role tiles: a headcount and an active count for each role.
    *
@@ -637,35 +664,8 @@ export class Professional implements OnInit {
     return Number(headers.get(TOTAL_COUNT_RESPONSE_HEADER) ?? 0);
   }
 
-  setActive(user: IProfessionalUser, isActivated: boolean): void {
-    this.professionalUserService.update({ ...user, activated: isActivated }).subscribe(() => this.loadProfessionalUsers());
-  }
-
-  trackIdentity = (item: IProfessionalUser): string => item.login ?? String(item.id);
-
-  loadProfessionalUsers(): void {
-    this.isLoading.set(true);
-    this.professionalUserService
-      .query({
-        page: this.page() - 1,
-        size: this.itemsPerPage,
-        sort: this.sortService.buildSortParam(this.sortState()),
-      })
-      .subscribe({
-        next: (response: any) => {
-          this.isLoading.set(false);
-          this.onProfessionalUsers(response.body, response.headers);
-        },
-        error: () => this.isLoading.set(false),
-      });
-  }
-
   private onProfessionalUsers(users: IProfessionalUser[], headers: HttpHeaders): void {
     this.totalItems.set(Number(headers.get(TOTAL_COUNT_RESPONSE_HEADER)));
     this.professionalUsers.set(users);
-  }
-
-  deleteUser(user: IProfessionalUser): void {
-    this.professionalUserService.delete(user.id).subscribe(() => this.loadProfessionalUsers());
   }
 }
