@@ -32,7 +32,7 @@ const LOGIN_PATTERN = /^[a-zA-Z0-9!$&*+=?^_`{|}~.-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-
 })
 export class ProfessionalAccountUpdate implements OnInit {
   /** Resolved by the route; null when creating. */
-  readonly user = input<IProfessionalUser | null>(null);
+  readonly professional = input<IProfessionalUser | null>(null);
 
   readonly authorities = signal<string[]>([]);
   readonly isSaving = signal(false);
@@ -58,17 +58,17 @@ export class ProfessionalAccountUpdate implements OnInit {
   private readonly router = inject(Router);
 
   ngOnInit(): void {
-    const user = this.user();
-    if (user) {
+    const professional = this.professional();
+    if (professional) {
       this.editForm.reset({
-        id: user.id,
-        login: user.login ?? '',
-        firstName: user.firstName ?? null,
-        lastName: user.lastName ?? null,
-        email: user.email ?? '',
-        activated: user.activated ?? true,
-        langKey: user.langKey ?? 'en',
-        authorities: user.authorities ?? [],
+        id: professional.id,
+        login: professional.login ?? '',
+        firstName: professional.firstName ?? null,
+        lastName: professional.lastName ?? null,
+        email: professional.email ?? '',
+        activated: professional.activated ?? true,
+        langKey: professional.langKey ?? 'en',
+        authorities: professional.authorities ?? [],
       });
     }
     this.userService.authorities().subscribe(authorities => this.authorities.set(authorities));

@@ -21,7 +21,7 @@
           @for (user of users; track trackIdentity(user)) {
             <tr>
               <td>
-                <a [routerLink]="['./account', user.login, 'view']">{{ user.login }}</a>
+                <a [routerLink]="['./account', user.id, 'view']">{{ user.login }}</a>
               </td>
               <td>{{ user.email }}</td>
               <td>
