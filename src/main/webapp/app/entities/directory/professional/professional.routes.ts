@@ -8,7 +8,7 @@ import ProfessionalResolve from './route/professional-routing-resolve.service';
 const professionalRoute: Routes = [
   {
     path: '',
-    loadComponent: () => import('./list/professional').then(m => m.Professional),
+    loadComponent: () => import('./dashboard/professional-dashboard').then(m => m.ProfessionalDashboard),
     data: { authorities: ENTITY_READ_AUTHORITIES },
     canActivate: [UserRouteAccessService],
   },
