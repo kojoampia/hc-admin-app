@@ -42,7 +42,7 @@ import { IProfessionalUser } from '../professional.model';
   standalone: true,
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
-export default class ProfessionalAccount implements OnInit {
+export class ProfessionalAccount implements OnInit {
   readonly users = signal<IProfessionalUser[] | null>(null);
   readonly totalItems = signal(0);
   readonly itemsPerPage = ITEMS_PER_PAGE;

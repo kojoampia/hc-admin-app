@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { TranslateService } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { ProfessionalProfile } from './professional-profile';
 
 describe('ProfessionalProfile', () => {
@@ -10,7 +10,7 @@ describe('ProfessionalProfile', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [ProfessionalProfile],
-      providers: [provideRouter([]), { provide: TranslateService, useValue: {} }],
+      providers: [provideRouter([]), provideTranslateService()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ProfessionalProfile);
