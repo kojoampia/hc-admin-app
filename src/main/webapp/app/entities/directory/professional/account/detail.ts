@@ -17,5 +17,5 @@ import { IProfessionalUser } from '../professional.model';
 })
 export class ProfessionalAccountDetail {
   /** Resolved by the route, bound through withComponentInputBinding(). */
-  readonly user = input<IProfessionalUser | null>(null);
+  readonly professional = input<IProfessionalUser | null>(null);
 }
