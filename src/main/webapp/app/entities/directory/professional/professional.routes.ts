@@ -48,6 +48,15 @@ const professionalRoute: Routes = [
     },
     loadChildren: () => import('./account/routes'),
   },
+  {
+    path: 'profile',
+    data: {
+      pageTitle: 'hcAdminApp.directoryProfessional.home.title',
+      breadcrumb: 'global.menu.group.directory',
+      authorities: ENTITY_WRITE_AUTHORITIES,
+    },
+    loadChildren: () => import('./profile/routes'),
+  },
 ];
 
 export default professionalRoute;
