@@ -39,6 +39,15 @@ const professionalRoute: Routes = [
     },
     canActivate: [UserRouteAccessService],
   },
+  {
+    path: 'account',
+    data: {
+      pageTitle: 'hcAdminApp.directoryProfessional.home.title',
+      breadcrumb: 'global.menu.group.directory',
+      authorities: ENTITY_WRITE_AUTHORITIES,
+    },
+    loadChildren: () => import('./account/routes'),
+  },
 ];
 
 export default professionalRoute;

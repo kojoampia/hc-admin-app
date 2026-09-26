@@ -13,7 +13,7 @@ import { FormatMediumDatetimePipe } from 'app/shared/date';
 import { TranslateDirective } from 'app/shared/language';
 import { ItemCount } from 'app/shared/pagination';
 import { SortByDirective, SortDirective, SortService, type SortState, sortStateSignal } from 'app/shared/sort';
-import { ProfessionalAccountService } from './professional-account.service';
+import { ProfessionalAccountService } from './service';
 import { IProfessionalUser } from '../professional.model';
 /**
  * The gateway's user list.
@@ -27,7 +27,7 @@ import { IProfessionalUser } from '../professional.model';
 @Component({
   selector: 'abf-professional-account',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  templateUrl: './professional-account.html',
+  templateUrl: './list.html',
   imports: [
     RouterLink,
     FontAwesomeModule,

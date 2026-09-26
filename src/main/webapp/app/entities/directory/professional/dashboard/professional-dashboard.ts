@@ -1,12 +1,13 @@
 import { Component, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { ProfessionalAccount } from '../account/professional-account';
+import { RouterLink } from '@angular/router';
+import { ProfessionalAccount } from '../account/list';
 import { ProfessionalProfile } from '../profile/professional-profile';
 
 @Component({
   selector: 'abf-professional-dashboard',
-  imports: [ProfessionalAccount, ProfessionalProfile],
+  imports: [RouterLink, ProfessionalAccount, ProfessionalProfile],
   templateUrl: './professional-dashboard.html',
-  styleUrl: './professional-dashboard.scss',
+  styleUrls: ['./professional-dashboard.scss'],
   standalone: true,
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
