@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 
-import { ProfessionalProfileService } from './professional-profile-service';
+import { ProfessionalProfileService } from './professional-profile.service';
 
 describe('ProfessionalProfileService', () => {
   let service: ProfessionalProfileService;
