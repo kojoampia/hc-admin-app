@@ -55,7 +55,8 @@ export class ProfessionalAccountService {
   }
 
   update(user: IProfessionalUser): Observable<IProfessionalUser> {
-    return this.http.put<RestProfessionalUser>(this.resourceUrl, user).pipe(map(fromServer));
+    const login = user.login as string;
+    return this.http.put<RestProfessionalUser>(`${this.resourceUrl}/${encodeURIComponent(login)}`, user).pipe(map(fromServer));
   }
 
   /** The gateway keys users by login, not by id — the URL says so. */
