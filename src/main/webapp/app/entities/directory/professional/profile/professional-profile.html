@@ -46,9 +46,7 @@
           @for (profile of profiles(); track trackId(profile)) {
             <tr data-cy="entityTable">
               <td>
-                <a [routerLink]="['./profile', profile.id, 'view']"
-                  >{{ profile.title ?? '' }} {{ profile.firstName }} {{ profile.lastName }}</a
-                >
+                <a [routerLink]="['./', profile.id, 'view']">{{ profile.title ?? '' }} {{ profile.firstName }} {{ profile.lastName }}</a>
               </td>
               <td>{{ profile.sex }}</td>
               <td>{{ profile.mobilePhone }}</td>
