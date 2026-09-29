@@ -430,7 +430,7 @@ export class Patient implements OnInit {
     }
     // Written out rather than chained with `||`: `join` returns an empty string, which is falsy
     // but not nullish, so `??` would let "" through as a location and print a blank cell.
-    const townAndCity = [address.townDistrict, address.cityState].filter(Boolean).join(', ');
+    const townAndCity = [address.town, address.city].filter(Boolean).join(', ');
     if (townAndCity.length > 0) {
       return townAndCity;
     }

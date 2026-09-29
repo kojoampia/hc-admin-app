@@ -38,7 +38,7 @@ describe('OrganisationProfile editing', () => {
       id: 'addr-1',
       digitalAddress: 'GA-123-4567',
       streetAddress: '12 Independence Ave',
-      cityState: 'Accra',
+      city: 'Accra',
       region: 'Greater Accra',
       country: 'Ghana',
     },
@@ -51,7 +51,7 @@ describe('OrganisationProfile editing', () => {
   const aCompleteAddress = {
     digitalAddress: 'GA-123-4567',
     streetAddress: '1 Test St',
-    cityState: 'Accra',
+    city: 'Accra',
     region: 'Greater Accra',
     country: 'Ghana',
   };
@@ -234,7 +234,7 @@ describe('OrganisationProfile editing', () => {
     const component = setUp(['ROLE_ADMIN']);
 
     component.startEditing();
-    component.form.patchValue({ ...requiredFields, streetAddress: '1 Test St', cityState: 'Accra', region: 'GA', country: 'Ghana' });
+    component.form.patchValue({ ...requiredFields, streetAddress: '1 Test St', city: 'Accra', region: 'GA', country: 'Ghana' });
     component.save();
 
     expect(component.form.errors?.['addressIncomplete']).toContain('digitalAddress');

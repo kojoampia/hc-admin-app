@@ -63,7 +63,7 @@ const GHANA_POST_GPS = /^[A-Z]{2}-[0-9]{3}-[0-9]{4}$/;
 /**
  * An address is all-or-nothing.
  *
- * Five of the six fields are `@NotNull` on the api's Address — every one except `townDistrict` —
+ * Five of the six fields are `@NotNull` on the api's Address — every one except `town` —
  * so a partly filled address is rejected, and the rejection names fields the user may not have
  * realised were linked. Requiring them together only once the address is being started keeps an
  * organisation with no address at all perfectly valid, which is the common case.
@@ -73,8 +73,8 @@ const GHANA_POST_GPS = /^[A-Z]{2}-[0-9]{3}-[0-9]{4}$/;
  */
 function addressValidator(group: AbstractControl): ValidationErrors | null {
   const value = group.value as Record<string, string | null>;
-  const parts = ['digitalAddress', 'streetAddress', 'townDistrict', 'cityState', 'region', 'country'];
-  const required = ['digitalAddress', 'streetAddress', 'cityState', 'region', 'country'];
+  const parts = ['digitalAddress', 'streetAddress', 'town', 'city', 'region', 'country'];
+  const required = ['digitalAddress', 'streetAddress', 'city', 'region', 'country'];
 
   const started = parts.some(field => value[field]);
   if (!started) {
@@ -148,8 +148,8 @@ export default class OrganisationProfile implements OnInit {
         validators: [Validators.pattern(GHANA_POST_GPS), Validators.maxLength(20)],
       }),
       streetAddress: new FormControl<string | null>(null, { validators: [Validators.maxLength(120)] }),
-      townDistrict: new FormControl<string | null>(null, { validators: [Validators.maxLength(60)] }),
-      cityState: new FormControl<string | null>(null, { validators: [Validators.maxLength(60)] }),
+      town: new FormControl<string | null>(null, { validators: [Validators.maxLength(60)] }),
+      city: new FormControl<string | null>(null, { validators: [Validators.maxLength(60)] }),
       region: new FormControl<string | null>(null, { validators: [Validators.maxLength(60)] }),
       country: new FormControl<string | null>(null, { validators: [Validators.maxLength(60)] }),
     },
@@ -218,8 +218,8 @@ export default class OrganisationProfile implements OnInit {
       deskHours: org?.deskHours ?? null,
       digitalAddress: org?.address?.digitalAddress ?? null,
       streetAddress: org?.address?.streetAddress ?? null,
-      townDistrict: org?.address?.townDistrict ?? null,
-      cityState: org?.address?.cityState ?? null,
+      town: org?.address?.town ?? null,
+      city: org?.address?.city ?? null,
       region: org?.address?.region ?? null,
       country: org?.address?.country ?? null,
     });
@@ -248,8 +248,8 @@ export default class OrganisationProfile implements OnInit {
     const addressFields = {
       digitalAddress: form.digitalAddress,
       streetAddress: form.streetAddress,
-      townDistrict: form.townDistrict,
-      cityState: form.cityState,
+      town: form.town,
+      city: form.city,
       region: form.region,
       country: form.country,
     };

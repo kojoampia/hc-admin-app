@@ -13,17 +13,11 @@
         <dl class="row-md jh-entity-details">
           <dt><span abfTranslate="hcAdminApp.directoryProfile.title">Title</span></dt>
           <dd>
-            <span [abfTranslate]="'hcAdminApp.Title.' + (profileRef.title ?? 'null')">{{
-              { null: '', MR: 'MR', MRS: 'MRS', MS: 'MS', DR: 'DR', PROF: 'PROF' }[profileRef.title ?? 'null']
-            }}</span>
+            <span>{{ profileRef.title }}</span>
           </dd>
           <dt><span abfTranslate="hcAdminApp.directoryProfile.firstName">First Name</span></dt>
           <dd>
             <span>{{ profileRef.firstName }}</span>
-          </dd>
-          <dt><span abfTranslate="hcAdminApp.directoryProfile.middleName">Middle Name</span></dt>
-          <dd>
-            <span>{{ profileRef.middleName }}</span>
           </dd>
           <dt><span abfTranslate="hcAdminApp.directoryProfile.lastName">Last Name</span></dt>
           <dd>
@@ -35,9 +29,7 @@
           </dd>
           <dt><span abfTranslate="hcAdminApp.directoryProfile.sex">Sex</span></dt>
           <dd>
-            <span [abfTranslate]="'hcAdminApp.Sex.' + (profileRef.sex ?? 'null')">{{
-              { null: '', MALE: 'MALE', FEMALE: 'FEMALE' }[profileRef.sex ?? 'null']
-            }}</span>
+            <span>{{ profileRef.sex }}</span>
           </dd>
           <dt><span abfTranslate="hcAdminApp.directoryProfile.mobilePhone">Mobile Phone</span></dt>
           <dd>
@@ -49,11 +41,7 @@
           </dd>
           <dt><span abfTranslate="hcAdminApp.directoryProfile.idType">Id Type</span></dt>
           <dd>
-            <span [abfTranslate]="'hcAdminApp.IdType.' + (profileRef.idType ?? 'null')">{{
-              { null: '', GHANA_CARD: 'GHANA_CARD', PASSPORT: 'PASSPORT', VOTER_ID: 'VOTER_ID', DRIVERS_LICENCE: 'DRIVERS_LICENCE' }[
-                profileRef.idType ?? 'null'
-              ]
-            }}</span>
+            <span>{{ profileRef.idType }}</span>
           </dd>
           <dt><span abfTranslate="hcAdminApp.directoryProfile.idNumber">Id Number</span></dt>
           <dd>
@@ -72,13 +60,17 @@
                   <dd>
                     <span>{{ profileRef.address?.streetAddress }}</span>
                   </dd>
-                  <dt><span abfTranslate="hcAdminApp.directoryAddress.townDistrict">Town District</span></dt>
+                  <dt><span>Town</span></dt>
                   <dd>
-                    <span>{{ profileRef.address?.townDistrict }}</span>
+                    <span>{{ profileRef.address?.town }}</span>
                   </dd>
-                  <dt><span abfTranslate="hcAdminApp.directoryAddress.cityState">City State</span></dt>
+                  <dt><span>District</span></dt>
                   <dd>
-                    <span>{{ profileRef.address?.cityState }}</span>
+                    <span>{{ profileRef.address?.district }}</span>
+                  </dd>
+                  <dt><span abfTranslate="hcAdminApp.directoryAddress.cityState">City</span></dt>
+                  <dd>
+                    <span>{{ profileRef.address?.city }}</span>
                   </dd>
                   <dt><span abfTranslate="hcAdminApp.directoryAddress.region">Region</span></dt>
                   <dd>
@@ -96,10 +88,6 @@
 
         <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
           <fa-icon icon="arrow-left" />&nbsp;<span abfTranslate="entity.action.back">Back</span>
-        </button>
-
-        <button type="button" [routerLink]="['/profile', profileRef.id, 'edit']" class="btn btn-primary">
-          <fa-icon icon="pencil-alt" />&nbsp;<span abfTranslate="entity.action.edit">Edit</span>
         </button>
       </div>
     }
