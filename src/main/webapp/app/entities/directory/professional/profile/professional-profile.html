@@ -46,7 +46,9 @@
           @for (profile of profiles(); track trackId(profile)) {
             <tr data-cy="entityTable">
               <td>
-                <a [routerLink]="['./', profile.id, 'view']">{{ profile.title ?? '' }} {{ profile.firstName }} {{ profile.lastName }}</a>
+                <a [routerLink]="['./profile', profile.id, 'view']"
+                  >{{ profile.title ?? '' }} {{ profile.firstName }} {{ profile.lastName }}</a
+                >
               </td>
               <td>{{ profile.sex }}</td>
               <td>{{ profile.mobilePhone }}</td>
@@ -56,11 +58,6 @@
                   <a [routerLink]="['./profile', profile.id, 'view']" class="btn btn-info btn-sm" data-cy="entityDetailsButton">
                     <fa-icon icon="eye" />
                     <span class="d-none d-md-inline" abfTranslate="entity.action.view">View</span>
-                  </a>
-
-                  <a [routerLink]="['./profile', profile.id, 'edit']" class="btn btn-primary btn-sm" data-cy="entityEditButton">
-                    <fa-icon icon="pencil-alt" />
-                    <span class="d-none d-md-inline" abfTranslate="entity.action.edit">Edit</span>
                   </a>
                 </div>
               </td>

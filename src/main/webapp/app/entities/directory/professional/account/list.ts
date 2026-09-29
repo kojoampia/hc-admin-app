@@ -1,5 +1,5 @@
 import { HttpHeaders } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal, CUSTOM_ELEMENTS_SCHEMA, Output } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
@@ -32,6 +32,7 @@ import { IProfessionalUser } from '../professional.model';
     RouterLink,
     FontAwesomeModule,
     NgbPagination,
+    Alert,
     AlertError,
     SortDirective,
     SortByDirective,
@@ -43,7 +44,7 @@ import { IProfessionalUser } from '../professional.model';
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class ProfessionalAccount implements OnInit {
-  readonly users = signal<IProfessionalUser[] | null>(null);
+  @Output() readonly accounts = signal<IProfessionalUser[] | null>(null);
   readonly totalItems = signal(0);
   readonly itemsPerPage = ITEMS_PER_PAGE;
   readonly page = signal(1);
@@ -107,8 +108,8 @@ export class ProfessionalAccount implements OnInit {
     });
   }
 
-  private onSuccess(users: IProfessionalUser[] | null, headers: HttpHeaders): void {
+  private onSuccess(user: IProfessionalUser[] | null, headers: HttpHeaders): void {
     this.totalItems.set(Number(headers.get(TOTAL_COUNT_RESPONSE_HEADER)));
-    this.users.set(users);
+    this.accounts.set(user);
   }
 }

@@ -23,17 +23,16 @@ import { Subject, of } from 'rxjs';
 
 import directoryProfessional from '../../../../../i18n/en/directoryProfessional.json';
 import verificationStatus from '../../../../../i18n/en/directory-verificationStatus.json';
-import { sampleWithRequiredData } from '../professional.test-samples';
 import { ProfessionalService } from '../service/professional.service';
 
-import { Professional } from './professional';
+import { ProfessionalComponent } from './professional';
 
 vitest.useFakeTimers();
 
 describe('Professional Management Component', () => {
   let httpMock: HttpTestingController;
-  let comp: Professional;
-  let fixture: ComponentFixture<Professional>;
+  let comp: ProfessionalComponent;
+  let fixture: ComponentFixture<ProfessionalComponent>;
   let service: ProfessionalService;
   let routerNavigateSpy: MockInstance;
 
@@ -68,7 +67,7 @@ describe('Professional Management Component', () => {
       ],
     });
 
-    fixture = TestBed.createComponent(Professional);
+    fixture = TestBed.createComponent(ProfessionalComponent);
     comp = fixture.componentInstance;
     service = TestBed.inject(ProfessionalService);
     routerNavigateSpy = vitest.spyOn(comp.router, 'navigate');

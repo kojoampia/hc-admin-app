@@ -113,8 +113,9 @@ const AWAITING_ROWS = 5;
     StatusPill,
     DecimalPipe,
   ],
+  standalone: true,
 })
-export class Professional implements OnInit {
+export class ProfessionalComponent implements OnInit {
   /**
    * Every role, not the four the demo draws.
    *
