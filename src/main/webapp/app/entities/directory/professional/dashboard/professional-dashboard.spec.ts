@@ -1,17 +1,17 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { ProfessionalDashboard } from './professional-dashboard';
+import { ProfessionalDashboardComponent } from './professional-dashboard';
 import { provideTranslateService } from '@ngx-translate/core';
 import { FaIconLibrary } from '@fortawesome/angular-fontawesome';
 import { faUserDoctor, faCalendarAlt, faSync, faBoxArchive } from '@fortawesome/free-solid-svg-icons';
 
 describe('ProfessionalDashboard', () => {
-  let component: ProfessionalDashboard;
-  let fixture: ComponentFixture<ProfessionalDashboard>;
+  let component: ProfessionalDashboardComponent;
+  let fixture: ComponentFixture<ProfessionalDashboardComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ProfessionalDashboard],
+      imports: [ProfessionalDashboardComponent],
       providers: [provideRouter([]), provideTranslateService()],
     }).compileComponents();
 
@@ -21,7 +21,7 @@ describe('ProfessionalDashboard', () => {
     library.addIcons(faSync);
     library.addIcons(faBoxArchive);
 
-    fixture = TestBed.createComponent(ProfessionalDashboard);
+    fixture = TestBed.createComponent(ProfessionalDashboardComponent);
     component = fixture.componentInstance;
     await fixture.whenStable();
   });

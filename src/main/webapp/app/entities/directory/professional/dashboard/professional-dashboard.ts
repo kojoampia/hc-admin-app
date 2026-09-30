@@ -18,7 +18,11 @@ export class ProfessionalDashboardComponent {
   readonly accountList = signal<IProfessionalUser[]>([]);
   readonly profileList = signal<IProfessionalProfile[]>([]);
 
-  protected readonly trackById = (index: number, item: IProfessionalProfile | IProfessionalUser) => item.id;
-  protected readonly setAccounts = (accounts: IProfessionalUser[]) => this.accountList.set(accounts);
-  protected readonly setProfiles = (profiles: IProfessionalProfile[]) => this.profileList.set(profiles);
+  protected readonly setAccounts = (accounts: IProfessionalUser[]): void => {
+    this.accountList.set(accounts);
+  };
+
+  protected readonly setProfiles = (profiles: IProfessionalProfile[]): void => {
+    this.profileList.set(profiles);
+  };
 }
