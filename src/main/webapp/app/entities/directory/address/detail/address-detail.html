@@ -2,7 +2,7 @@
   <div class="col-8">
     @if (address(); as addressRef) {
       <div>
-        <h2 data-cy="addressDetailsHeading"><span abfTranslate="hcAdminApp.directoryAddress.detail.title">Address</span></h2>
+        <h2 data-cy="addressDetailsHeading"><span>Address</span></h2>
 
         <hr />
 
@@ -11,31 +11,31 @@
         <abf-alert />
 
         <dl class="row-md jh-entity-details">
-          <dt><span abfTranslate="hcAdminApp.directoryAddress.id">Id</span></dt>
-          <dd>
-            <span>{{ addressRef.id }}</span>
-          </dd>
-          <dt><span abfTranslate="hcAdminApp.directoryAddress.digitalAddress">Digital Address</span></dt>
+          <dt><span>Digital Address</span></dt>
           <dd>
             <span>{{ addressRef.digitalAddress }}</span>
           </dd>
-          <dt><span abfTranslate="hcAdminApp.directoryAddress.streetAddress">Street Address</span></dt>
+          <dt><span>Street Address</span></dt>
           <dd>
             <span>{{ addressRef.streetAddress }}</span>
           </dd>
-          <dt><span abfTranslate="hcAdminApp.directoryAddress.town">Town District</span></dt>
+          <dt><span>Town</span></dt>
           <dd>
             <span>{{ addressRef.town }}</span>
           </dd>
-          <dt><span abfTranslate="hcAdminApp.directoryAddress.city">City State</span></dt>
+          <dt><span>District</span></dt>
+          <dd>
+            <span>{{ addressRef.district }}</span>
+          </dd>
+          <dt><span>City</span></dt>
           <dd>
             <span>{{ addressRef.city }}</span>
           </dd>
-          <dt><span abfTranslate="hcAdminApp.directoryAddress.region">Region</span></dt>
+          <dt><span>Region</span></dt>
           <dd>
             <span>{{ addressRef.region }}</span>
           </dd>
-          <dt><span abfTranslate="hcAdminApp.directoryAddress.country">Country</span></dt>
+          <dt><span>Country</span></dt>
           <dd>
             <span>{{ addressRef.country }}</span>
           </dd>

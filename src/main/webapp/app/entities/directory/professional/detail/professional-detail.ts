@@ -57,7 +57,7 @@ export interface WeekCell {
     ProfessionalEarnings,
   ],
 })
-export class ProfessionalDetail {
+export class ProfessionalDetailComponent {
   readonly professional = input<IProfessional | null>(null);
 
   /**

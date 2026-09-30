@@ -44,7 +44,7 @@ import WizardSteps from 'app/shared/form/wizard-steps';
     NgbInputDatepicker,
   ],
 })
-export class ProfessionalUpdate implements OnInit {
+export class ProfessionalUpdateComponent implements OnInit {
   readonly isSaving = signal(false);
   professional: IProfessional | null = null;
   professionalRoleValues = Object.keys(ProfessionalRole);
