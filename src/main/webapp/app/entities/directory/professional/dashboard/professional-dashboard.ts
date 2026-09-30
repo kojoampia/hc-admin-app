@@ -5,13 +5,24 @@ import { ProfessionalComponent } from '../list/professional';
 
 @Component({
   selector: 'abf-professional-dashboard',
-  imports: [RouterLink, ProfessionalComponent],
+  imports: [RouterLink],
   templateUrl: './professional-dashboard.html',
   styleUrls: ['./professional-dashboard.scss'],
   standalone: true,
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
-export class ProfessionalDashboard {
-  @Input() readonly accounts = signal<IProfessionalUser[]>([]);
-  @Input() readonly profiles = signal<IProfessionalProfile[]>([]);
+export class ProfessionalDashboardComponent {
+  @Input() readonly accounts!: IProfessionalUser[];
+  @Input() readonly profiles!: IProfessionalProfile[];
+
+  readonly accountList = signal<IProfessionalUser[]>([]);
+  readonly profileList = signal<IProfessionalProfile[]>([]);
+
+  protected readonly setAccounts = (accounts: IProfessionalUser[]): void => {
+    this.accountList.set(accounts);
+  };
+
+  protected readonly setProfiles = (profiles: IProfessionalProfile[]): void => {
+    this.profileList.set(profiles);
+  };
 }

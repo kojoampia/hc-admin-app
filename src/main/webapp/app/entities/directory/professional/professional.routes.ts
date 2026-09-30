@@ -8,13 +8,13 @@ import ProfessionalResolve from './route/professional-routing-resolve.service';
 const professionalRoute: Routes = [
   {
     path: '',
-    loadComponent: () => import('./dashboard/professional-dashboard').then(m => m.ProfessionalDashboard),
+    loadComponent: () => import('./dashboard/professional-dashboard').then(m => m.ProfessionalDashboardComponent),
     data: { authorities: ENTITY_READ_AUTHORITIES },
     canActivate: [UserRouteAccessService],
   },
   {
     path: ':id/view',
-    loadComponent: () => import('./detail/professional-detail').then(m => m.ProfessionalDetail),
+    loadComponent: () => import('./detail/professional-detail').then(m => m.ProfessionalDetailComponent),
     data: { authorities: ENTITY_READ_AUTHORITIES },
     resolve: {
       professional: ProfessionalResolve,
@@ -23,7 +23,7 @@ const professionalRoute: Routes = [
   },
   {
     path: 'new',
-    loadComponent: () => import('./update/professional-update').then(m => m.ProfessionalUpdate),
+    loadComponent: () => import('./update/professional-update').then(m => m.ProfessionalUpdateComponent),
     data: { authorities: ENTITY_WRITE_AUTHORITIES },
     resolve: {
       professional: ProfessionalResolve,
@@ -32,7 +32,16 @@ const professionalRoute: Routes = [
   },
   {
     path: ':id/edit',
-    loadComponent: () => import('./update/professional-update').then(m => m.ProfessionalUpdate),
+    loadComponent: () => import('./update/professional-update').then(m => m.ProfessionalUpdateComponent),
+    data: { authorities: ENTITY_WRITE_AUTHORITIES },
+    resolve: {
+      professional: ProfessionalResolve,
+    },
+    canActivate: [UserRouteAccessService],
+  },
+  {
+    path: 'administration',
+    loadComponent: () => import('./list/professional').then(m => m.ProfessionalComponent),
     data: { authorities: ENTITY_WRITE_AUTHORITIES },
     resolve: {
       professional: ProfessionalResolve,
