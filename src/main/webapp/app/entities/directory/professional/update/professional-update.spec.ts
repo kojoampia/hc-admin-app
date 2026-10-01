@@ -17,11 +17,11 @@ import { IProfessional } from '../professional.model';
 import { ProfessionalService } from '../service/professional.service';
 
 import { ProfessionalFormService } from './professional-form.service';
-import { ProfessionalUpdate } from './professional-update';
+import { ProfessionalUpdateComponent } from './professional-update';
 
 describe('Professional Management Update Component', () => {
-  let comp: ProfessionalUpdate;
-  let fixture: ComponentFixture<ProfessionalUpdate>;
+  let comp: ProfessionalUpdateComponent;
+  let fixture: ComponentFixture<ProfessionalUpdateComponent>;
   let activatedRoute: ActivatedRoute;
   let professionalFormService: ProfessionalFormService;
   let professionalService: ProfessionalService;
@@ -43,7 +43,7 @@ describe('Professional Management Update Component', () => {
       ],
     });
 
-    fixture = TestBed.createComponent(ProfessionalUpdate);
+    fixture = TestBed.createComponent(ProfessionalUpdateComponent);
     activatedRoute = TestBed.inject(ActivatedRoute);
     professionalFormService = TestBed.inject(ProfessionalFormService);
     professionalService = TestBed.inject(ProfessionalService);

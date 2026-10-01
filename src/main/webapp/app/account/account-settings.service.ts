@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable, map } from 'rxjs';
+import { Observable, map, of } from 'rxjs';
 
 import dayjs from 'dayjs/esm';
 
@@ -84,21 +84,32 @@ export class AccountSettingsService {
   }
 
   /**
-   * What `Profile.accountId` holds for a given account: the gateway **login**.
+   * What `Profile.accountId` holds for a given account: the gateway **user id** — item 123's
+   * migration, which turned this function's previous answer exactly around.
    *
    * Every method below goes through this rather than reading a field off the account at the call
-   * site, because the mistake it prevents is silent in both directions. `Account` also carries `id`
-   * — the gateway user id — and the two are interchangeable-looking opaque strings. Reading with the
-   * wrong one returns 404, which this service translates to "no profile yet", so the screen offers
-   * to create a record that already exists; writing with the wrong one stores a profile no resolver
-   * on any of the three stacks can find. Neither raises anything.
+   * site, because the mistake it prevents is silent in both directions. `Account` also carries
+   * `login`, and the two are interchangeable-looking opaque strings. Reading with the wrong one
+   * returns 404, which this service translates to "no profile yet", so the screen offers to create
+   * a record that already exists; writing with the wrong one stores a profile no resolver on any
+   * stack can find. Neither raises anything. This function returned the login until 2026-09-24 for
+   * precisely that reason — the api's seed then held logins — and flipped when the api's item 123
+   * translated the field to the account's `User.id` (estate rule: `account.id = profile.accountId`).
    *
-   * The login is the JWT subject, so it is the one identifier every stack's token carries. See the
-   * api's `ProfileRepository.findByAccount`, and hc-professional's `OnboardingService`, which
-   * force-sets the same field the same way for the same reason.
+   * **No fallback to the login.** That is the second join key item 123 exists to remove, and a
+   * fallback would resolve against the migrated rows to nothing — or, worse, to whoever most
+   * recently took a freed login. An account without an id cannot be joined at all: reads treat
+   * that as "no profile" (see {@link findProfile}), writes refuse here, loudly, because storing a
+   * profile under a blank key is the unfindable-record defect this function exists to prevent.
+   * `GET /api/account` carries `id` on every response — see `account.model.ts` — so the refusal is
+   * a contract violation being surfaced, not a state a real session reaches.
    */
   private static accountKey(account: Account): string {
-    return account.login;
+    const id = account.id;
+    if (!id) {
+      throw new Error('This account carries no id, so it cannot be joined to a profile — see account.model.ts.');
+    }
+    return id;
   }
 
   /**
@@ -135,6 +146,13 @@ export class AccountSettingsService {
    * caller having to know that a 404 is expected.
    */
   findProfile(account: Account): Observable<IProfile | null> {
+    // An account with no id can have no profile here: the join key does not exist, so there is
+    // nothing to ask. Answering null keeps the greeting chain and the account screen on their
+    // fallbacks instead of crashing the chrome over a contract violation a read cannot repair.
+    // The write paths refuse instead — see accountKey.
+    if (!account.id) {
+      return of(null);
+    }
     const key = AccountSettingsService.accountKey(account);
     return new Observable<RestProfile | null>(subscriber => {
       const subscription = this.http.get<RestProfile>(`${this.profileByAccountUrl}/${encodeURIComponent(key)}`).subscribe({

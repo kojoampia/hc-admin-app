@@ -26,10 +26,12 @@ describe('console identity', () => {
   let accountService: AccountService;
   let httpMock: HttpTestingController;
 
+  // The id is what joins the account to its profile since item 123 — an id-less fixture here would
+  // make findProfile answer null without a request, and every case below would fail on requests.length.
   const account = (firstName: string | null, lastName: string | null, login = 'admin'): Account =>
-    new Account(true, ['ROLE_ADMIN'], 'admin@localhost', firstName, 'en', lastName, login, null);
+    new Account(true, ['ROLE_ADMIN'], 'admin@localhost', firstName, 'en', lastName, login, null, 'acct-1');
 
-  /** The by-login profile read, answered with a profile or with the 404 that means there is none. */
+  /** The by-account-id profile read, answered with a profile or with the 404 that means there is none. */
   const answerProfile = (profile: Record<string, string> | null): void => {
     const requests = httpMock.match((request: HttpRequest<unknown>) => request.url.includes('profiles/by-account'));
     expect(requests.length).toBe(1);
@@ -52,7 +54,7 @@ describe('console identity', () => {
   it('greets by the profile name when the account has a profile', () => {
     accountService.authenticate(account('Admin', 'User'));
     TestBed.tick();
-    answerProfile({ id: 'profile-me', accountId: 'admin', firstName: 'Efua', lastName: 'Mensah' });
+    answerProfile({ id: 'profile-me', accountId: 'acct-1', firstName: 'Efua', lastName: 'Mensah' });
 
     expect(service.firstName()).toBe('Efua');
     expect(service.displayName()).toBe('Efua Mensah');
@@ -86,14 +88,14 @@ describe('console identity', () => {
     TestBed.tick();
 
     expect(service.displayName()).toBe('Admin User');
-    answerProfile({ id: 'profile-me', accountId: 'admin', firstName: 'Efua', lastName: 'Mensah' });
+    answerProfile({ id: 'profile-me', accountId: 'acct-1', firstName: 'Efua', lastName: 'Mensah' });
     expect(service.displayName()).toBe('Efua Mensah');
   });
 
   it('clears the name on sign-out rather than leaving the last person on the chrome', () => {
     accountService.authenticate(account('Admin', 'User'));
     TestBed.tick();
-    answerProfile({ id: 'profile-me', accountId: 'admin', firstName: 'Efua', lastName: 'Mensah' });
+    answerProfile({ id: 'profile-me', accountId: 'acct-1', firstName: 'Efua', lastName: 'Mensah' });
 
     accountService.authenticate(null);
     TestBed.tick();

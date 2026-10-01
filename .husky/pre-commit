@@ -1,6 +1,39 @@
-if [ -z "$(which lint-staged)" ]; then
-    echo 'Running package manager install'
-    ./npmw install
+# Resolve lint-staged without assuming THIS checkout has been npm-installed. Backlog item 141.
+#
+# husky's own runner (.husky/_/h) prepends the RELATIVE path `node_modules/.bin`, so lint-staged
+# resolves only when the commit is made from a directory that has its own node_modules. A git
+# worktree — which is how agents work in this repository, at .claude/worktrees/* — has none, so the
+# lookup failed and this hook fell through to `./npmw install`.
+#
+# `npmw` HAS NEVER EXISTED HERE: never tracked, not gitignored, and absent from api/ and gateway/
+# too. So the recovery path was unreachable in the only circumstance that reaches it. The commit
+# died with code 127 under a message naming neither the hook nor the missing file, which is how it
+# taught `--no-verify` instead of the remedy — it did exactly that to the agent building item 135.
+#
+# core.hooksPath is absolute, so $0 is always <main-checkout>/.husky/pre-commit even when the commit
+# is made from a worktree. That checkout's node_modules is therefore a sound fallback, and using it
+# makes the hook WORK from a worktree rather than merely fail there legibly.
+
+lint_staged=""
+if command -v lint-staged >/dev/null 2>&1; then
+    lint_staged="lint-staged"
+else
+    for candidate in \
+        "node_modules/.bin/lint-staged" \
+        "$(dirname "$(dirname "$0")")/node_modules/.bin/lint-staged"; do
+        if [ -x "$candidate" ]; then
+            lint_staged="$candidate"
+            break
+        fi
+    done
 fi
 
-lint-staged
+if [ -z "$lint_staged" ]; then
+    echo "pre-commit: lint-staged was not found, so prettier and eslint did NOT run."
+    echo "  Looked on PATH, in ./node_modules/.bin, and beside .husky in the main checkout."
+    echo "  Fix it with 'npm install' in $(dirname "$(dirname "$0")") — do not reach for"
+    echo "  --no-verify, which is what this hook exists to make unnecessary."
+    exit 1
+fi
+
+exec "$lint_staged"

@@ -7,6 +7,7 @@ import { RouterTestingHarness } from '@angular/router/testing';
 import { FaIconLibrary } from '@fortawesome/angular-fontawesome';
 import {
   faArrowLeft,
+  faArrowRight,
   faBoxArchive,
   faBoxOpen,
   faCheck,
@@ -53,6 +54,7 @@ describe('Patient Management Detail Component', () => {
     library.addIcons(faPencilAlt);
     library.addIcons(faBoxArchive);
     library.addIcons(faBoxOpen);
+    library.addIcons(faArrowRight);
     // The six card icons. A record that renders every field and throws on an icon is still broken.
     library.addIcons(faUser, faLocationDot, faShieldHalved, faHeart, faCreditCard, faStethoscope);
     // The plan-choice card and its decision button (item 54). Registered here because
@@ -385,7 +387,7 @@ describe('Patient Management Detail Component', () => {
 
       const button: HTMLElement = fixture.nativeElement.querySelector('[data-cy="verifyPlanChoice"]');
       expect(button).not.toBeNull();
-      expect(button.textContent).toContain('hcAdminApp.directoryPatient.detail.planChoice.verify');
+      expect(button.textContent).toContain('Verify this choice');
 
       const catalogue = JSON.parse(readFileSync('src/main/webapp/i18n/en/directoryPatient.json', 'utf8'));
       const label: string = catalogue.hcAdminApp.directoryPatient.detail.planChoice.verify;
