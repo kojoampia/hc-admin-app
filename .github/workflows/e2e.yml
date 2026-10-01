@@ -193,7 +193,7 @@ jobs:
       # The Cypress binary is not in the npm cache — it lands in ~/.cache/Cypress — and it is ~200 MB.
       # Keyed on the resolved version so a bump misses the cache rather than running the old binary.
       - name: Cache the Cypress binary
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.cache/Cypress
           key: cypress-${{ runner.os }}-${{ hashFiles('app/package-lock.json') }}
