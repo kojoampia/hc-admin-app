@@ -12,9 +12,6 @@ import { ProfessionalComponent } from '../list/professional';
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class ProfessionalDashboardComponent {
-  @Input() readonly accounts!: IProfessionalUser[];
-  @Input() readonly profiles!: IProfessionalProfile[];
-
   readonly accountList = signal<IProfessionalUser[]>([]);
   readonly profileList = signal<IProfessionalProfile[]>([]);
 

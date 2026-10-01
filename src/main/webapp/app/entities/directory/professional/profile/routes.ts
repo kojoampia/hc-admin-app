@@ -7,13 +7,13 @@ import ProfessionalProfileResolve from './resolve.service';
 const professionalProfileRoute: Routes = [
   {
     path: '',
-    loadComponent: () => import('./professional-profile').then(m => m.ProfessionalProfile),
+    loadComponent: () => import('./professional-profile').then(m => m.ProfessionalProfileComponent),
     data: { authorities: ENTITY_READ_AUTHORITIES },
     canActivate: [UserRouteAccessService],
   },
   {
     path: ':id/view',
-    loadComponent: () => import('./detail').then(m => m.ProfessionalProfileDetail),
+    loadComponent: () => import('./detail').then(m => m.ProfessionalProfileDetailComponent),
     data: { authorities: ENTITY_READ_AUTHORITIES },
     resolve: {
       professional: ProfessionalProfileResolve,

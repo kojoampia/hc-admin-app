@@ -1,5 +1,5 @@
 import { HttpHeaders } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal, CUSTOM_ELEMENTS_SCHEMA, Output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal, CUSTOM_ELEMENTS_SCHEMA, output } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
@@ -43,8 +43,9 @@ import { IProfessionalUser } from '../professional.model';
   standalone: true,
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
-export class ProfessionalAccount implements OnInit {
-  @Output() readonly accounts = signal<IProfessionalUser[] | null>(null);
+export class ProfessionalAccountComponent implements OnInit {
+  readonly accountsChange = output<IProfessionalUser[] | null>();
+  readonly accounts = signal<IProfessionalUser[] | null>(null);
   readonly totalItems = signal(0);
   readonly itemsPerPage = ITEMS_PER_PAGE;
   readonly page = signal(1);
@@ -108,8 +109,9 @@ export class ProfessionalAccount implements OnInit {
     });
   }
 
-  private onSuccess(user: IProfessionalUser[] | null, headers: HttpHeaders): void {
+  private onSuccess(users: IProfessionalUser[] | null, headers: HttpHeaders): void {
     this.totalItems.set(Number(headers.get(TOTAL_COUNT_RESPONSE_HEADER)));
-    this.accounts.set(user);
+    this.accounts.set(users);
+    this.accountsChange.emit(users);
   }
 }
