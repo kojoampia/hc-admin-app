@@ -27,11 +27,11 @@ import { ShiftAssignmentService } from 'app/entities/operations/shift-assignment
 import { RosterWeekService } from 'app/entities/operations/roster-week/service/roster-week.service';
 import { ProfessionalService } from '../service/professional.service';
 import { ProfessionalVerificationService } from '../service/professional-verification.service';
-import { ProfessionalDetail } from './professional-detail';
+import { ProfessionalDetailComponent } from './professional-detail';
 
 describe('Professional Management Detail Component', () => {
-  let comp: ProfessionalDetail;
-  let fixture: ComponentFixture<ProfessionalDetail>;
+  let comp: ProfessionalDetailComponent;
+  let fixture: ComponentFixture<ProfessionalDetailComponent>;
   let verificationHistory: MockInstance;
   let recordVerification: MockInstance;
 
@@ -43,7 +43,7 @@ describe('Professional Management Detail Component', () => {
           [
             {
               path: '**',
-              loadComponent: () => import('./professional-detail').then(m => m.ProfessionalDetail),
+              loadComponent: () => import('./professional-detail').then(m => m.ProfessionalDetailComponent),
               resolve: { professional: () => of({ id: '2c613901-f64b-4441-b80a-f5fb03b8e466' }) },
             },
           ],
@@ -63,7 +63,7 @@ describe('Professional Management Detail Component', () => {
   });
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(ProfessionalDetail);
+    fixture = TestBed.createComponent(ProfessionalDetailComponent);
     comp = fixture.componentInstance;
     // Setting `professional` now also loads the verification history. Stubbed by default so every
     // test below is asserting its own subject rather than answering a request it does not care
@@ -77,7 +77,7 @@ describe('Professional Management Detail Component', () => {
   describe('OnInit', () => {
     it('should load professional on init', async () => {
       const harness = await RouterTestingHarness.create();
-      const instance = await harness.navigateByUrl('/', ProfessionalDetail);
+      const instance = await harness.navigateByUrl('/', ProfessionalDetailComponent);
 
       // THEN
       expect(instance.professional()).toEqual(expect.objectContaining({ id: '2c613901-f64b-4441-b80a-f5fb03b8e466' }));

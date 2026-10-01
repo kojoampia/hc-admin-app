@@ -4,10 +4,18 @@
   },
   "applications": ["hcAdmin"],
   "clientRootFolder": "directory",
+  "documentation": "A person this console administers, whose account lives on another stack.\n\n`accountId` is the identity link to that account \u2014 for a patient, an hc-patient-gateway account, since patients register there and this stack's gateway never issues ROLE_PATIENT. Backlog item 115.",
   "fields": [
     {
       "fieldName": "id",
       "fieldType": "String"
+    },
+    {
+      "documentation": "The hc-patient gateway account this record belongs to \u2014 the estate join of 2026-09-17, `account.id = accountId`, the same identifier Profile.accountId carries. An id, never a login, never an email, and never hc-patient's own patientId. It is set by the patient event stream and by the api's backfill, never typed in: the edit form carries it disabled and the guard for that is account-id-is-carried-not-offered.spec.ts, which this generator does not own.",
+      "fieldName": "accountId",
+      "fieldType": "String",
+      "fieldValidateRules": ["required", "maxlength"],
+      "fieldValidateRulesMaxlength": "60"
     },
     {
       "fieldName": "status",
@@ -29,6 +37,11 @@
       "fieldType": "Integer",
       "fieldValidateRules": ["min"],
       "fieldValidateRulesMin": "0"
+    },
+    {
+      "documentation": "Archived records are hidden from the directory rather than deleted; the list filters `isArchived.notEquals=true`, which matches a null. Absent from this file and from hc-admin.jdl until backlog item 135, so a regeneration dropped it from patient.model.ts and the form service together — which a model-to-form parity guard cannot see, both sides losing it at once. Carried through the edit form disabled, but NOT for accountId's reason: the field may be changed freely, it simply may not have a second writer. PatientService.setArchived PATCHes it alone and argues against the whole-document PUT an enabled control would make. A regeneration would re-create it as an editable checkbox; the guard is archived-survives-an-edit.spec.ts, which this generator does not own.",
+      "fieldName": "isArchived",
+      "fieldType": "Boolean"
     }
   ],
   "name": "Patient",

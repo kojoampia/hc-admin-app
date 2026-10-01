@@ -19,27 +19,23 @@
         <!-- Not `patientRef.id`, which is a 24-character ObjectId and reads as a corrupted record
              (backlog item 45). The id is on the `Account` line just below, which is where an
              identifier belongs. -->
-        <h3 class="unidentified" abfTranslate="hcAdminApp.directoryPatient.unidentified">Identity not on file</h3>
+        <h3 class="unidentified">Identity not on file</h3>
       }
       <!-- Said once, under the heading it qualifies: the name above is the address off the link
            because the lookup did not come back, not because hc-patient holds no name (item 50). It
            names no stack — three of the four causes are on this side. -->
       @if (nameUnavailable()) {
-        <p class="name-unavailable" abfTranslate="hcAdminApp.directoryPatient.nameUnavailable">
-          A name could not be looked up for this account
-        </p>
+        <p class="name-unavailable">A name could not be looked up for this account</p>
       }
       <p>
         @if (patientRef.profile?.idNumber) {
           <span>{{ 'hcAdminApp.IdType.' + (patientRef.profile?.idType ?? 'null') | translate }} {{ patientRef.profile?.idNumber }}</span>
           <span aria-hidden="true">·</span>
         }
-        <span><span abfTranslate="hcAdminApp.directoryPatient.detail.account">Account</span> {{ patientRef.id }}</span>
+        <span><span>Account</span> {{ patientRef.id }}</span>
         @if (patientRef.joinedOn) {
           <span aria-hidden="true">·</span>
-          <span
-            ><span abfTranslate="hcAdminApp.directoryPatient.detail.joined">joined</span> {{ patientRef.joinedOn | formatMediumDate }}</span
-          >
+          <span><span>joined</span> {{ patientRef.joinedOn | formatMediumDate }}</span>
         }
       </p>
     </div>
@@ -59,98 +55,96 @@
   <div class="abf-grid abf-g-3 record-grid">
     <!-- Profile -->
     <section class="card">
-      <h4><fa-icon icon="user" /><span abfTranslate="hcAdminApp.directoryPatient.detail.profile">Profile</span></h4>
+      <h4><fa-icon icon="user" /><span>Profile</span></h4>
       <dl>
         <dt abfTranslate="hcAdminApp.directoryProfile.firstName">First name</dt>
         <dd>{{ patientRef.profile?.firstName ?? '—' }}</dd>
-        <dt abfTranslate="hcAdminApp.directoryProfile.lastName">Last name</dt>
+        <dt>Last name</dt>
         <dd>{{ patientRef.profile?.lastName ?? '—' }}</dd>
-        <dt abfTranslate="hcAdminApp.directoryProfile.dateOfBirth">Date of birth</dt>
+        <dt>Date of birth</dt>
         <dd>{{ dateOfBirth() ? (dateOfBirth() | formatMediumDate) : '—' }}</dd>
         @if (age() !== null) {
-          <dt abfTranslate="hcAdminApp.directoryPatient.detail.age">Age</dt>
+          <dt>Age</dt>
           <dd>{{ age() }} <span abfTranslate="hcAdminApp.directoryPatient.detail.years">years</span></dd>
         }
-        <dt abfTranslate="hcAdminApp.directoryProfile.sex">Sex</dt>
+        <dt>Sex</dt>
         <dd>{{ patientRef.profile?.sex ? ('hcAdminApp.Sex.' + patientRef.profile?.sex | translate) : '—' }}</dd>
-        <dt abfTranslate="hcAdminApp.directoryProfile.idType">ID type</dt>
+        <dt>ID type</dt>
         <dd>{{ patientRef.profile?.idType ? ('hcAdminApp.IdType.' + patientRef.profile?.idType | translate) : '—' }}</dd>
-        <dt abfTranslate="hcAdminApp.directoryProfile.idNumber">ID number</dt>
+        <dt>ID number</dt>
         <dd>{{ patientRef.profile?.idNumber ?? '—' }}</dd>
       </dl>
     </section>
 
     <!-- Address -->
     <section class="card">
-      <h4><fa-icon icon="location-dot" /><span abfTranslate="hcAdminApp.directoryPatient.detail.address">Address</span></h4>
+      <h4><fa-icon icon="location-dot" /><span>Address</span></h4>
       @if (patientRef.profile?.address; as address) {
         <dl>
-          <dt abfTranslate="hcAdminApp.directoryAddress.digitalAddress">Digital</dt>
+          <dt>Digital</dt>
           <dd>{{ address.digitalAddress ?? '—' }}</dd>
-          <dt abfTranslate="hcAdminApp.directoryAddress.streetAddress">Street</dt>
+          <dt>Street</dt>
           <dd>{{ address.streetAddress ?? '—' }}</dd>
-          <dt abfTranslate="hcAdminApp.directoryAddress.townDistrict">Town</dt>
-          <dd>{{ address.townDistrict ?? '—' }}</dd>
-          <dt abfTranslate="hcAdminApp.directoryAddress.cityState">City</dt>
-          <dd>{{ address.cityState ?? '—' }}</dd>
-          <dt abfTranslate="hcAdminApp.directoryAddress.region">Region</dt>
+          <dt>Town</dt>
+          <dd>{{ address.town ?? '—' }}</dd>
+          <dt>City</dt>
+          <dd>{{ address.city ?? '—' }}</dd>
+          <dt>Region</dt>
           <dd>{{ address.region ?? '—' }}</dd>
-          <dt abfTranslate="hcAdminApp.directoryAddress.country">Country</dt>
+          <dt>Country</dt>
           <dd>{{ address.country ?? '—' }}</dd>
         </dl>
       } @else {
-        <p class="empty" abfTranslate="hcAdminApp.directoryPatient.detail.noAddress">No address on file.</p>
+        <p class="empty">No address on file.</p>
       }
     </section>
 
     <!-- Credential and contact -->
     <section class="card">
-      <h4>
-        <fa-icon icon="shield-halved" /><span abfTranslate="hcAdminApp.directoryPatient.detail.credential">Credential &amp; contact</span>
-      </h4>
+      <h4><fa-icon icon="shield-halved" /><span>Credential &amp; contact</span></h4>
       <dl>
-        <dt abfTranslate="hcAdminApp.directoryProfile.email">Email</dt>
+        <dt>Email</dt>
         <dd>{{ patientRef.profile?.email ?? '—' }}</dd>
-        <dt abfTranslate="hcAdminApp.directoryProfile.mobilePhone">Phone</dt>
+        <dt>Phone</dt>
         <dd>{{ patientRef.profile?.mobilePhone ?? '—' }}</dd>
-        <dt abfTranslate="hcAdminApp.directoryPatient.detail.lastActive">Last active</dt>
+        <dt>Last active</dt>
         <dd>{{ patientRef.lastActiveOn ? (patientRef.lastActiveOn | formatMediumDate) : '—' }}</dd>
-        <dt abfTranslate="hcAdminApp.directoryPatient.detail.caseCount">Cases on file</dt>
+        <dt>Cases on file</dt>
         <dd>{{ patientRef.caseCount ?? 0 }}</dd>
       </dl>
     </section>
 
     <!-- Angel / next of kin -->
     <section class="card">
-      <h4><fa-icon icon="heart" /><span abfTranslate="hcAdminApp.directoryPatient.detail.angel">Angel · next of kin</span></h4>
+      <h4><fa-icon icon="heart" /><span>Angel · next of kin</span></h4>
       @if (patientRef.angel; as angel) {
         <dl>
-          <dt abfTranslate="hcAdminApp.directoryAngel.name">Name</dt>
+          <dt>Name</dt>
           <dd>
             <a [routerLink]="['/angel', angel.id, 'view']">{{ angel.name ?? angel.id }}</a>
           </dd>
-          <dt abfTranslate="hcAdminApp.directoryAngel.relationship">Relationship</dt>
+          <dt>Relationship</dt>
           <dd>{{ angel.relationship ?? '—' }}</dd>
-          <dt abfTranslate="hcAdminApp.directoryAngel.phone">Phone</dt>
+          <dt>Phone</dt>
           <dd>{{ angel.phone ?? '—' }}</dd>
-          <dt abfTranslate="hcAdminApp.directoryAngel.email">Email</dt>
+          <dt>Email</dt>
           <dd>{{ angel.email ?? '—' }}</dd>
         </dl>
       } @else {
-        <p class="empty" abfTranslate="hcAdminApp.directoryPatient.detail.noAngel">No sponsor recorded.</p>
+        <p class="empty">No sponsor recorded.</p>
       }
     </section>
 
     <!-- Service plan -->
     <section class="card">
-      <h4><fa-icon icon="credit-card" /><span abfTranslate="hcAdminApp.directoryPatient.detail.plan">Service plan</span></h4>
+      <h4><fa-icon icon="credit-card" /><span>Service plan</span></h4>
       @if (patientRef.plan; as plan) {
         <dl>
-          <dt abfTranslate="hcAdminApp.catalogueServicePlan.name">Plan</dt>
+          <dt>Plan</dt>
           <dd>
             <a [routerLink]="['/service-plan', plan.id, 'view']">{{ plan.name ?? plan.id }}</a>
           </dd>
-          <dt abfTranslate="hcAdminApp.directoryPatient.detail.monthly">Monthly</dt>
+          <dt>Monthly</dt>
           <!--
             The same answer the plan board gives for the same value: "Not priced", never a dash and
             never a 0. This interpolated the currency beside "monthlyPrice ?? em-dash" until
@@ -163,18 +157,18 @@
             @if (plan.monthlyPrice !== null && plan.monthlyPrice !== undefined) {
               {{ plan.currency ?? '' }} {{ plan.monthlyPrice }}
             } @else {
-              <span class="text-muted" abfTranslate="hcAdminApp.catalogueServicePlan.home.notPriced">Not priced</span>
+              <span class="text-muted">Not priced</span>
             }
           </dd>
           @if (plan.tierLabel) {
-            <dt abfTranslate="hcAdminApp.directoryPatient.detail.tier">Tier</dt>
+            <dt>Tier</dt>
             <dd>{{ plan.tierLabel }}</dd>
           }
-          <dt abfTranslate="hcAdminApp.directoryPatient.detail.since">Since</dt>
+          <dt>Since</dt>
           <dd>{{ patientRef.joinedOn ? (patientRef.joinedOn | formatMediumDate) : '—' }}</dd>
         </dl>
       } @else {
-        <p class="empty" abfTranslate="hcAdminApp.directoryPatient.detail.noPlan">No plan subscribed.</p>
+        <p class="empty">No plan subscribed.</p>
       }
     </section>
 
@@ -202,10 +196,10 @@
         <section class="card" data-cy="planChoice">
           <h4>
             <fa-icon icon="clipboard-check" />
-            <span abfTranslate="hcAdminApp.directoryPatient.detail.planChoice.title">Plan choice</span>
+            <span>Plan choice</span>
           </h4>
           <dl>
-            <dt abfTranslate="hcAdminApp.directoryPatient.detail.planChoice.chosen">Tier chosen</dt>
+            <dt>Tier chosen</dt>
             <dd>
               <div>{{ choice.planName ?? choice.planCode }}</div>
               <div class="sub mono" data-cy="planChoiceCode">{{ choice.planCode }}</div>
@@ -217,19 +211,19 @@
               says so on no topic and this field goes on reading PENDING. A bare "Status" heading
               would be this screen asserting a live state it cannot see.
             -->
-            <dt abfTranslate="hcAdminApp.directoryPatient.detail.planChoice.reported">Reported</dt>
+            <dt>Reported</dt>
             <dd>
               @if (choice.planStatus) {
                 <span class="pill pill-warn" data-cy="planChoiceStatus">{{ choice.planStatus }}</span>
               } @else {
-                <span class="text-muted" abfTranslate="hcAdminApp.directoryPatient.detail.planChoice.unknown">Not reported</span>
+                <span class="text-muted">Not reported</span>
               }
             </dd>
             @if (choice.planMembershipId) {
               <!-- hc-patient's own handle for the subscription. What a person quotes when asking them
                    about it, and deliberately NOT on the wire — MembershipID is the field item 54
                    removed from the payload. -->
-              <dt abfTranslate="hcAdminApp.directoryPatient.detail.planChoice.membership">Membership</dt>
+              <dt>Membership</dt>
               <dd class="mono">{{ choice.planMembershipId }}</dd>
             }
           </dl>
@@ -242,9 +236,7 @@
               deliberately still reads PENDING: rewriting it would assert a state no event has
               reported, and the next PlanChosen would put it back.
             -->
-            <p class="empty" data-cy="planChoiceVerified">
-              {{ 'hcAdminApp.directoryPatient.detail.planChoice.sent' | translate: { plan: announced } }}
-            </p>
+            <p class="empty" data-cy="planChoiceVerified">Sent: {{ announced }}</p>
           } @else {
             <!--
               "Verify", NEVER "Activate". VERIFIED is not ACTIVE: hc-patient's clients test for
@@ -264,7 +256,7 @@
               (click)="verifyPlanChoice()"
             >
               <fa-icon icon="check" />
-              <span abfTranslate="hcAdminApp.directoryPatient.detail.planChoice.verify">Verify this choice</span>
+              <span>Verify this choice</span>
             </button>
           }
         </section>
@@ -273,17 +265,17 @@
 
     <!-- Care -->
     <section class="card">
-      <h4><fa-icon icon="stethoscope" /><span abfTranslate="hcAdminApp.directoryPatient.detail.care">Care</span></h4>
+      <h4><fa-icon icon="stethoscope" /><span>Care</span></h4>
       @if (patientRef.clinicalLead; as lead) {
         <dl>
-          <dt abfTranslate="hcAdminApp.directoryPatient.detail.clinicalLead">Clinical lead</dt>
+          <dt>Clinical lead</dt>
           <dd>
             <!-- Not the `??` chain this was: a blank licence number is storable and rendered an
                  anchor with no text in it. See `clinicalLeadLabel`. -->
             <a [routerLink]="['/professional', lead.id, 'view']">{{ clinicalLeadLabel() }}</a>
           </dd>
           @if (lead.role) {
-            <dt abfTranslate="hcAdminApp.directoryProfessional.role">Role</dt>
+            <dt>Role</dt>
             <dd>
               {{ 'hcAdminApp.ProfessionalRole.' + lead.role | translate }}
               @if (lead.speciality) {
@@ -291,9 +283,9 @@
               }
             </dd>
           }
-          <dt abfTranslate="hcAdminApp.directoryProfessional.licenceNumber">Licence</dt>
+          <dt>Licence</dt>
           <dd>{{ lead.licenceNumber ?? '—' }}</dd>
-          <dt abfTranslate="hcAdminApp.directoryPatient.detail.hub">Hub</dt>
+          <dt>Hub</dt>
           <dd>
             @if (patientRef.hub; as hub) {
               <a [routerLink]="['/hub', hub.id, 'view']">{{ hub.name ?? hub.id }}</a>
@@ -303,7 +295,7 @@
           </dd>
         </dl>
       } @else {
-        <p class="empty" abfTranslate="hcAdminApp.directoryPatient.detail.noLead">No clinical lead assigned.</p>
+        <p class="empty">No clinical lead assigned.</p>
       }
     </section>
   </div>

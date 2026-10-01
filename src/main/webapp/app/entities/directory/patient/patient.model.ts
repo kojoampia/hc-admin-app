@@ -9,6 +9,25 @@ import { IHub } from 'app/entities/platform/hub/hub.model';
 
 export interface IPatient {
   id: string;
+
+  /**
+   * The subject's hc-patient gateway account — the same identifier `IProfile.accountId`
+   * carries, and the estate join of 2026-09-17: `account.id = accountId`. It is an id,
+   * never the login and never an email address.
+   *
+   * The server owns it. It arrives on the domain event that opens the record, and
+   * `Patient.accountId` is `@NotNull` there — so this is optional in TypeScript only
+   * because a form can be built before a record has been loaded into it, exactly as
+   * `IProfile.accountId` is.
+   *
+   * It is on this interface so that the edit screen can send it back. `PUT
+   * /api/patients/{id}` replaces the whole document, so a field the form does not
+   * carry is a field the server is told to forget; with `@NotNull` on the far side
+   * that is a 400 rather than silent loss. It is deliberately not something an
+   * administrator may type — see `update/patient-form.service.ts`, which carries it
+   * disabled.
+   */
+  accountId?: string | null;
   status?: keyof typeof AccountStatus | null;
   joinedOn?: dayjs.Dayjs | null;
   lastActiveOn?: dayjs.Dayjs | null;

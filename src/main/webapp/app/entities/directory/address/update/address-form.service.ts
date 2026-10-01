@@ -20,8 +20,9 @@ type AddressFormGroupContent = {
   id: FormControl<IAddress['id'] | NewAddress['id']>;
   digitalAddress: FormControl<IAddress['digitalAddress']>;
   streetAddress: FormControl<IAddress['streetAddress']>;
-  townDistrict: FormControl<IAddress['townDistrict']>;
-  cityState: FormControl<IAddress['cityState']>;
+  town: FormControl<IAddress['town']>;
+  district: FormControl<IAddress['district']>;
+  city: FormControl<IAddress['city']>;
   region: FormControl<IAddress['region']>;
   country: FormControl<IAddress['country']>;
 };
@@ -54,10 +55,13 @@ export class AddressFormService {
       streetAddress: new FormControl(addressRawValue.streetAddress, {
         validators: [Validators.required, Validators.maxLength(120)],
       }),
-      townDistrict: new FormControl(addressRawValue.townDistrict, {
+      town: new FormControl(addressRawValue.town, {
         validators: [Validators.maxLength(60)],
       }),
-      cityState: new FormControl(addressRawValue.cityState, {
+      district: new FormControl(addressRawValue.district, {
+        validators: [Validators.required, Validators.maxLength(60)],
+      }),
+      city: new FormControl(addressRawValue.city, {
         validators: [Validators.required, Validators.maxLength(60)],
       }),
       region: new FormControl(addressRawValue.region, {

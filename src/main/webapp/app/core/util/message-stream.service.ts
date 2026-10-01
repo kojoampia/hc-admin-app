@@ -1,8 +1,8 @@
 import { DestroyRef, Injectable, computed, inject, signal } from '@angular/core';
 
 import { ApplicationConfigService } from 'app/core/config/application-config.service';
+import { StateStorageService } from 'app/core/auth/state-storage.service';
 import { ADMIN_SERVICE } from 'app/config/microservice.constants';
-import { AUTHENTICATION_TOKEN_KEY } from 'app/shared/jhipster/constants';
 
 /** What the api publishes when a message is sent. Metadata only — never the body. */
 export interface MessageSentEvent {
@@ -49,6 +49,7 @@ export class MessageStreamService {
   readonly unreadCount = computed(() => this.received().length);
 
   private readonly applicationConfigService = inject(ApplicationConfigService);
+  private readonly stateStorageService = inject(StateStorageService);
   private readonly destroyRef = inject(DestroyRef);
 
   private controller: AbortController | null = null;
@@ -62,7 +63,17 @@ export class MessageStreamService {
     if (this.controller) {
       return;
     }
-    const token = this.token();
+    // Through the service, never a second read of the same key. This reimplemented the auth-token
+    // read character-for-character until 2026-09-18 — same two stores, same fallback order, same
+    // key — which is how a key rename goes half-applied: it lands in the service, every test of the
+    // service passes, and the stream reads a key nobody writes any more. Nothing would have failed.
+    //
+    // The decode is the one thing that differed: the deleted copy fell back to the raw string where
+    // `JSON.parse` threw, and this has no such guard. Converging on it is safe because the only
+    // writer, `storeAuthenticationToken()`, always stringifies — so a value that would throw here
+    // has already thrown in the interceptor, which makes the same read on every authenticated
+    // request before the topbar ever starts this stream.
+    const token = this.stateStorageService.getAuthenticationToken();
     if (!token) {
       return;
     }
@@ -158,18 +169,6 @@ export class MessageStreamService {
       }
     } catch {
       // Not JSON, or not ours. The stream is shared; ignoring what we do not recognise is the point.
-    }
-  }
-
-  private token(): string | null {
-    const raw = localStorage.getItem(AUTHENTICATION_TOKEN_KEY) ?? sessionStorage.getItem(AUTHENTICATION_TOKEN_KEY);
-    if (!raw) {
-      return null;
-    }
-    try {
-      return JSON.parse(raw) as string;
-    } catch {
-      return raw;
     }
   }
 }

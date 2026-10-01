@@ -9,8 +9,9 @@ import { IProfile } from 'app/entities/directory/profile/profile.model';
  *
  * <p>Item 15: the dashboard greeted "Good morning Admin" and the sidebar card read `Admin User`,
  * because both took the name off the gateway account — which holds a login and, in the seeded case,
- * a placeholder for a name. The person's real name is in the admin service, on their `Profile`, and
- * `/account` has been reading it by login since item 26 fixed the join key.
+ * a placeholder for a name. The person's real name is in the admin service, on their `Profile`,
+ * which `/account` reads by the account's `User.id` — item 123's join key, which replaced the
+ * login item 26 had fixed onto (`AccountSettingsService.accountKey` is where that history lives).
  *
  * <p><b>The fallback chain is the substance of this, not the lookup.</b> Production holds no
  * profiles at all, so "read the profile" on its own would replace a wrong name with an empty one.
