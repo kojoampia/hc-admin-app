@@ -83,7 +83,7 @@ jobs:
       # for everything it cannot see, so it needs `fetch-depth: 0`. Nothing here walks history: the
       # tip of the branch is read from the API. The checkout exists only to get the script.
       - name: Check out
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           persist-credentials: false
 
