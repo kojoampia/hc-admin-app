@@ -8,7 +8,7 @@ import ProfessionalAccountResolve from './routing-resolve.service';
 const professionalAccountRoute: Routes = [
   {
     path: '',
-    loadComponent: () => import('./list').then(m => m.ProfessionalAccount),
+    loadComponent: () => import('./list').then(m => m.ProfessionalAccountComponent),
     data: { authorities: ENTITY_READ_AUTHORITIES },
     canActivate: [UserRouteAccessService],
   },

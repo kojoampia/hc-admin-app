@@ -17,7 +17,7 @@ import { Alert } from 'app/shared/alert/alert';
   styleUrls: ['./professional-profile.scss'],
   imports: [RouterLink, FontAwesomeModule, TranslateDirective, TranslatePipe, FormatMediumDatePipe, Alert, AlertError],
 })
-export class ProfessionalProfileDetail {
+export class ProfessionalProfileDetailComponent {
   /** Resolved by the route, bound through withComponentInputBinding(). */
   readonly professional = input<IProfessionalProfile | null>(null);
 

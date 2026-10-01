@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit, effect, inject, signal, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, effect, inject, signal, CUSTOM_ELEMENTS_SCHEMA, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Data, ParamMap, Router, RouterLink } from '@angular/router';
 
@@ -22,7 +22,8 @@ import { IProfessionalProfile } from '../professional.model';
   standalone: true,
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
-export class ProfessionalProfile implements OnInit {
+export class ProfessionalProfileComponent implements OnInit {
+  readonly profilesChange = output<IProfessionalProfile[] | null>();
   subscription: Subscription | null = null;
   readonly profiles = signal<IProfessionalProfile[]>([]);
 
@@ -39,6 +40,7 @@ export class ProfessionalProfile implements OnInit {
   constructor() {
     effect(() => {
       this.profiles.set(this.fillComponentAttributesFromResponseBody([...this.professionalProfileService.profiles()]));
+      this.profilesChange.emit(this.profiles());
     });
   }
 
