@@ -20,6 +20,14 @@
           "professional": "Professional"
         }
       },
+      "dashboard": {
+        "account": {
+          "title": "Accounts"
+        },
+        "profile": {
+          "title": "Profiles"
+        }
+      },
       "created": "A new Professional is created with identifier {{ param }}",
       "updated": "A Professional is updated with identifier {{ param }}",
       "deleted": "A Professional is deleted with identifier {{ param }}",
